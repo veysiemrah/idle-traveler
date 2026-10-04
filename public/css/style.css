@@ -152,7 +152,7 @@ button { font: inherit; color: inherit; }
   pointer-events: none; z-index: 3;
 }
 @container (max-width: 760px) {
-  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; }
+  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; transition: top .4s; }
   .toast:nth-last-child(n+3) { display: none; }
 }
 .toast {
@@ -184,6 +184,12 @@ button { font: inherit; color: inherit; }
   12% { opacity: 1; transform: translate(-50%, -50%); letter-spacing: 0; }
   80% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -56%); }
+}
+/* Dar ekranda afiş HUD kartının altına iner, bildirimler de afişin altına kayar */
+@container (max-width: 760px) {
+  .banner { top: max(38%, 180px); }
+  .banner-name { font-size: clamp(26px, 8cqi, 40px); }
+  .banner-on .toasts { top: calc(max(38%, 180px) + 64px); }
 }
 
 .hint {

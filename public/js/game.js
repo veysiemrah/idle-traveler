@@ -53,7 +53,9 @@
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
     for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
-    s.msIdx = count(s.msIdx, MILESTONES.length);
+    // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
+    s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
+    s.msIdx = Math.min(count(s.msIdx, MILESTONES.length), MILESTONES.filter(m => m.at <= s.distance).length);
     const buffs = isObj(d.buffs) ? d.buffs : {};
     s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max)]));
     const owned = isObj(d.owned) ? d.owned : {}, levels = isObj(d.levels) ? d.levels : {};
@@ -65,7 +67,9 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     s.badges = {};
     if (isObj(d.badges)) for (const b of BADGES) if (d.badges[b.id]) s.badges[b.id] = +d.badges[b.id] || Date.now();
-    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)) : [];
+    // Etki süresi, kelebek güçlendirmesiyle ulaşılabilecek en uzun süreyi aşamaz
+    const maxFx = Date.now() + 3600e3;
+    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx) })) : [];
     s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
     s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
@@ -263,6 +267,13 @@
     return { sec, counted, capped: sec > cap, rate, d, credits, res, cap };
   }
 
+  // Uzak kalınan süreyi say ve bildir: kısa aralar bildirimle, uzunlar pencereyle
+  function resume(gap) {
+    if (gap <= 10) return;
+    const off = applyOffline(gap);
+    if (gap > 60) showOffline(off); else if (off.d > 0) toast(`Sen yokken +${fmtGain(off.d)} yol alındı.`, 'teal');
+  }
+
   /* ---------- Satın almalar ---------- */
   function spend(cost) {
     if (S.credits + 1e-9 < cost) { Sound.deny(); return false; }
@@ -329,7 +340,7 @@
       const settings = S.settings;
       S = defaultState(); S.settings = settings; S.intro = true;
       scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-      combo = 0; rateEma = 0; creditEma = 0;
+      combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null;
       weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
       $('#hint').classList.remove('gone');
       uiDirty = { garage: true, buffs: true, journal: true };
@@ -344,11 +355,7 @@
     lastFrame = now;
 
     // Sekme gizliyken ya da cihaz uykudayken geçen süre: çevrimdışı hızla say
-    const gap = (Date.now() - S.lastSeen) / 1000;
-    if (gap > 10) {
-      const off = applyOffline(gap);
-      if (gap > 60) showOffline(off); else if (off.d > 0) toast(`Sen yokken +${fmtGain(off.d)} yol alındı.`, 'teal');
-    }
+    resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
 
     const cur = current();
@@ -406,8 +413,9 @@
     $('#bannerName').textContent = name;
     $('#bannerSub').textContent = sub;
     b.hidden = false; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    $('#stage').classList.add('banner-on');
     clearTimeout(bannerTimer);
-    bannerTimer = setTimeout(() => { b.hidden = true; }, 4600);
+    bannerTimer = setTimeout(() => { b.hidden = true; $('#stage').classList.remove('banner-on'); }, 4600);
   }
   // Pencereler sıraya girer: biri açıkken gelen yenisi öncekinin yerine geçmez
   const modalQueue = [];
@@ -713,9 +721,8 @@
     actions.tab(['garage', 'buffs', 'journal'].includes(tab) ? tab : 'garage');
 
     // İlk açılış ya da çevrimdışı dönüş
-    const gap = (Date.now() - S.lastSeen) / 1000;
     if (!S.intro) showIntro();
-    else if (gap > 30) { const o = applyOffline(gap); showOffline(o); }
+    else resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
 
     const hot = window.claude && window.claude.hot;
