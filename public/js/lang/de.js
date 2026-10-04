@@ -54,6 +54,7 @@ IT.addLang('de', {
     'gift.zeal.name': 'Eifer', 'gift.zeal.text': 'Klicks ×5',
     'gift.postcard.name': 'Verlorene Postkarte', 'gift.postcard.text': 'sofort Credits',
     'gift.rainbow.name': 'Regenbogen', 'gift.rainbow.text': 'Credits ×1,5',
+    'gift.wish.name': 'Sternenstaub', 'gift.wish.text': 'Tempo ×2, Credits ×1,5',
 
     // Regionen (in Reihenfolge)
     'region.0': 'Morgendorf', 'region.1': 'Lavendelfelder', 'region.2': 'Kiefernwald', 'region.3': 'Goldene Weizenebene',
@@ -116,8 +117,7 @@ IT.addLang('de', {
     'unit.hours': { one: '{n} Stunde', other: '{n} Stunden' }, 'unit.ordinal': '{n}.',
 
     // Garage
-    'garage.lead': 'Dein stärkstes Fahrzeug bestimmt dein Tempo: <b>{lead}</b>.',
-    'garage.convoy': 'Deine anderen Fahrzeuge geben <b>+{s}</b> dazu.',
+    'garage.rule': 'Dein stärkstes Fahrzeug bestimmt dein Tempo.', 'garage.sumLead': 'Stärkstes Fahrzeug', 'garage.sumConvoy': 'Von anderen Fahrzeugen',
     'garage.convoy0': 'Deine anderen Fahrzeuge geben {p} ihres Tempos dazu.',
     'garage.cosmetic': 'Womit du fährst, ändert nur das Aussehen.',
     'garage.mystery': {
@@ -132,6 +132,7 @@ IT.addLang('de', {
     'toast.badge': '<b>Abzeichen: {name}</b> · dauerhaft +{p} Credits',
     'toast.giftInstant': '<b>Goldener Schmetterling: {name}</b> · +{c} Credits',
     'toast.giftEffect': '<b>Goldener Schmetterling: {name}</b> · {text} für {dur}',
+    'toast.wish': '<b>Sternschnuppe! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}',
     'toast.rain': 'Ein Frühlingsregen hat begonnen. Die Tropfen kühlen die Straße.',
     'toast.rainbow': '<b>Ein Regenbogen!</b> · {text} für {dur}',
     'toast.away': 'Während du weg warst, bist du +{d} gereist.',
@@ -145,6 +146,7 @@ IT.addLang('de', {
     'toast.dawn': 'Die Sonne geht auf. Die Straße ist wieder hell.',
     'toast.lang': 'Sprache: Deutsch',
     'float.lucky': 'Glücksschritt! +{d}', 'float.gift': '{name}!',
+    'float.wish': 'Wünsch dir was!',
 
     // Rückkehr nach der Offline-Zeit
     'off.eyebrow': 'Willkommen zurück', 'off.title': 'Die Straße hat auf dich gewartet',
@@ -178,7 +180,7 @@ IT.addLang('de', {
     'intro.lead': 'Dein Rucksack ist gepackt, die Straße liegt vor dir. Jedes Tippen ist ein Schritt. Jeder Meter bringt dir Credits.',
     'intro.li1': '<b>Garage</b>: Kauf neue Fahrzeuge und verbessere sie. Jedes neue Fahrzeug bringt die Reise an einen neuen Ort.',
     'intro.li2': '<b>Verstärkungen</b>: längere Schritte, Rückenwind, Glücksschritte.',
-    'intro.li3': 'Fang die <b>goldenen Schmetterlinge</b>. Jeder bringt eine kleine Überraschung.',
+    'intro.li3': 'Fang die <b>goldenen Schmetterlinge</b>. Jeder bringt eine kleine Überraschung. Tippe nachts auf eine <b>Sternschnuppe</b> und wünsch dir etwas.',
     'intro.li4': 'Jedes Fahrzeug in deiner Garage gibt die Hälfte seines Tempos zur Reise dazu. Kein Upgrade ist umsonst.',
     'intro.li5': 'Sammle <b>Abzeichen</b>. Jedes bringt dir dauerhaft mehr Credits.',
     'intro.li6': 'Auch wenn das Spiel geschlossen ist, reist du in gemütlicherem Tempo weiter.',
@@ -188,6 +190,7 @@ IT.addLang('de', {
     // Reisetagebuch
     'j.trip': 'Reise', 'j.thisTrip': 'Diese Reise', 'j.total': 'Gesamtstrecke', 'j.credits': 'Credits gesamt', 'j.clicks': 'Gemachte Schritte',
     'j.time': 'Zeit unterwegs', 'j.best': 'Höchsttempo', 'j.gifts': 'Gefangene Schmetterlinge', 'j.crits': 'Glücksschritte', 'j.rainbows': 'Gesehene Regenbögen',
+    'j.wishes': 'Wünsche', 'j.photos': 'Postkarten',
     'j.life': 'Alle Reisen', 'j.memories': 'Erinnerungen', 'j.memVal': '{n} · Tempo +{p}', 'j.lifeVal': '{d} · Reise {n}',
     'j.stamps': 'Passstempel',
     'j.stampsSub': { one: '{n} Region · jede dauerhaft +{p} Tempo', other: '{n} Regionen · jede dauerhaft +{p} Tempo' },
@@ -205,6 +208,10 @@ IT.addLang('de', {
     "buff.pal.next": "ein treuer Reisebegleiter",
     "badge.photo1.name": "Postkartenschreiber",
     "badge.photo1.desc": "Mach deine erste Postkarte.",
+    "badge.wish1.name": "Wünsch dir was",
+    "badge.wish1.desc": "Fang nachts eine Sternschnuppe.",
+    "badge.wish10.name": "Sternensammler",
+    "badge.wish10.desc": "Fang {n} Sternschnuppen.",
     "html.photo": "Postkarte machen",
     "pc.eyebrow": "Eine Postkarte von unterwegs",
     "pc.title": "Halte diesen Moment fest",

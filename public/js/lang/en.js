@@ -50,6 +50,7 @@ IT.addLang('en', {
     'gift.zeal.name': 'Zeal', 'gift.zeal.text': 'clicks ×5',
     'gift.postcard.name': 'Lost Postcard', 'gift.postcard.text': 'instant credits',
     'gift.rainbow.name': 'Rainbow', 'gift.rainbow.text': 'credits ×1.5',
+    'gift.wish.name': 'Stardust', 'gift.wish.text': 'speed ×2, credits ×1.5',
 
     'region.0': 'Morning Village', 'region.1': 'Lavender Fields', 'region.2': 'Pine Forest', 'region.3': 'Golden Wheat Plain',
     'region.4': 'Aegean Coast Road', 'region.5': 'Red Canyon', 'region.6': 'Cherry Blossom Valley', 'region.7': 'Autumn Grove',
@@ -106,8 +107,7 @@ IT.addLang('en', {
     'ui.credits': '+{c} credits', 'ui.fx': '<b>{name}</b> {text} · {dur}',
     'unit.hours': { one: '{n} hour', other: '{n} hours' }, 'unit.ordinal': '#{n}',
 
-    'garage.lead': 'Your strongest vehicle sets your speed: <b>{lead}</b>.',
-    'garage.convoy': 'Your other vehicles add <b>+{s}</b>.',
+    'garage.rule': 'Your strongest vehicle sets your speed.', 'garage.sumLead': 'Strongest vehicle', 'garage.sumConvoy': 'From other vehicles',
     'garage.convoy0': 'Your other vehicles add {p} of their speed.',
     'garage.cosmetic': 'Which one you ride only changes the look.',
     'garage.mystery': {
@@ -121,6 +121,7 @@ IT.addLang('en', {
     'toast.badge': '<b>Badge: {name}</b> · +{p} credits for good',
     'toast.giftInstant': '<b>Golden butterfly: {name}</b> · +{c} credits',
     'toast.giftEffect': '<b>Golden butterfly: {name}</b> · {text} for {dur}',
+    'toast.wish': '<b>Shooting star! You made a wish: {name}</b> · {text} for {dur}',
     'toast.rain': 'A spring shower has started. The drops cool the road.',
     'toast.rainbow': '<b>A rainbow!</b> · {text} for {dur}',
     'toast.away': 'You travelled +{d} while you were away.',
@@ -134,6 +135,7 @@ IT.addLang('en', {
     'toast.dawn': 'The sun is rising. The road is bright again.',
     'toast.lang': 'Language: English',
     'float.lucky': 'Lucky step! +{d}', 'float.gift': '{name}!',
+    'float.wish': 'Make a wish!',
 
     'off.eyebrow': 'Welcome back', 'off.title': 'The road waited for you',
     'off.lead': '<b>{dur}</b> passed while you were away. Your traveller kept going {by}. Offline speed: <b>{p}</b> of your auto speed.',
@@ -164,7 +166,7 @@ IT.addLang('en', {
     'intro.lead': 'Your backpack is ready and the road lies ahead. Every tap is a step. Every metre you travel earns credits.',
     'intro.li1': '<b>Garage</b>: buy new vehicles and upgrade them. Each new vehicle takes the journey somewhere new.',
     'intro.li2': '<b>Boosts</b>: longer strides, a tailwind, lucky steps.',
-    'intro.li3': 'Catch the <b>golden butterflies</b>. Each one brings a small surprise.',
+    'intro.li3': 'Catch the <b>golden butterflies</b>. Each one brings a small surprise. At night, tap a <b>shooting star</b> to make a wish.',
     'intro.li4': 'Every vehicle in your garage adds half its speed to the journey. No upgrade goes to waste.',
     'intro.li5': 'Collect <b>badges</b>. Each one earns you more credits for good.',
     'intro.li6': 'Even when the game is closed, your traveller keeps going at a slower pace.',
@@ -173,6 +175,7 @@ IT.addLang('en', {
 
     'j.trip': 'Journey', 'j.thisTrip': 'This journey', 'j.total': 'Total distance', 'j.credits': 'Total credits', 'j.clicks': 'Steps taken',
     'j.time': 'Time on the road', 'j.best': 'Top speed', 'j.gifts': 'Butterflies caught', 'j.crits': 'Lucky steps', 'j.rainbows': 'Rainbows seen',
+    'j.wishes': 'Wishes made', 'j.photos': 'Postcards taken',
     'j.life': 'All journeys', 'j.memories': 'Memories', 'j.memVal': '{n} · speed +{p}', 'j.lifeVal': '{d} · journey {n}',
     'j.stamps': 'Passport stamps',
     'j.stampsSub': { one: '{n} region · each one +{p} speed for good', other: '{n} regions · each one +{p} speed for good' },
@@ -190,6 +193,10 @@ IT.addLang('en', {
     "buff.pal.next": "a loyal travel buddy",
     "badge.photo1.name": "Postcard Writer",
     "badge.photo1.desc": "Take your first postcard.",
+    "badge.wish1.name": "Make a Wish",
+    "badge.wish1.desc": "Catch a shooting star at night.",
+    "badge.wish10.name": "Star Collector",
+    "badge.wish10.desc": "Catch {n} shooting stars.",
     "html.photo": "Take a postcard",
     "pc.eyebrow": "A postcard from the road",
     "pc.title": "Keep this moment",

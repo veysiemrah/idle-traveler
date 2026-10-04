@@ -52,6 +52,7 @@ IT.addLang('fr', {
     'gift.zeal.name': 'Entrain', 'gift.zeal.text': 'clics ×5',
     'gift.postcard.name': 'Carte postale perdue', 'gift.postcard.text': 'crédits immédiats',
     'gift.rainbow.name': 'Arc-en-ciel', 'gift.rainbow.text': 'crédits ×1,5',
+    'gift.wish.name': 'Poussière d\'étoiles', 'gift.wish.text': 'vitesse ×2, crédits ×1,5',
 
     'region.0': 'Village du matin', 'region.1': 'Champs de lavande', 'region.2': 'Forêt de pins', 'region.3': 'Plaine de blé doré',
     'region.4': "Route côtière de l'Égée", 'region.5': 'Canyon rouge', 'region.6': 'Vallée des cerisiers en fleurs', 'region.7': "Bosquet d'automne",
@@ -108,8 +109,7 @@ IT.addLang('fr', {
     'ui.credits': '+{c} crédits', 'ui.fx': '<b>{name}</b> {text} · {dur}',
     'unit.hours': { one: '{n} heure', other: '{n} heures' }, 'unit.ordinal': 'n° {n}',
 
-    'garage.lead': 'Ton véhicule le plus puissant fixe ta vitesse : <b>{lead}</b>.',
-    'garage.convoy': 'Tes autres véhicules ajoutent <b>+{s}</b>.',
+    'garage.rule': 'Ton véhicule le plus puissant fixe ta vitesse.', 'garage.sumLead': 'Véhicule le plus puissant', 'garage.sumConvoy': 'Des autres véhicules',
     'garage.convoy0': 'Tes autres véhicules ajoutent {p} de leur vitesse.',
     'garage.cosmetic': "Le véhicule que tu montes ne change que l'apparence.",
     'garage.mystery': {
@@ -123,6 +123,7 @@ IT.addLang('fr', {
     'toast.badge': '<b>Badge : {name}</b> · +{p} de crédits pour toujours',
     'toast.giftInstant': '<b>Papillon doré : {name}</b> · +{c} crédits',
     'toast.giftEffect': '<b>Papillon doré : {name}</b> · {text} pendant {dur}',
+    'toast.wish': '<b>Étoile filante ! Tu as fait un vœu : {name}</b> · {text} pendant {dur}',
     'toast.rain': 'Une averse de printemps commence. Les gouttes rafraîchissent la route.',
     'toast.rainbow': '<b>Un arc-en-ciel !</b> · {text} pendant {dur}',
     'toast.away': 'Tu as parcouru +{d} pendant ton absence.',
@@ -136,6 +137,7 @@ IT.addLang('fr', {
     'toast.dawn': 'Le soleil se lève. La route est de nouveau lumineuse.',
     'toast.lang': 'Langue : français',
     'float.lucky': 'Pas chanceux ! +{d}', 'float.gift': '{name} !',
+    'float.wish': 'Fais un vœu !',
 
     'off.eyebrow': 'Bon retour', 'off.title': "La route t'attendait",
     'off.lead': 'Ton absence a duré <b>{dur}</b>. Ton voyageur a continué {by}. Vitesse hors ligne : <b>{p}</b> de ta vitesse auto.',
@@ -166,7 +168,7 @@ IT.addLang('fr', {
     'intro.lead': 'Ton sac est prêt et la route s\'étend devant toi. Chaque toucher est un pas. Chaque mètre parcouru te rapporte des crédits.',
     'intro.li1': '<b>Garage</b> : achète de nouveaux véhicules et améliore-les. Chaque nouveau véhicule emmène le voyage plus loin.',
     'intro.li2': '<b>Bonus</b> : des foulées plus longues, un vent arrière, des pas chanceux.',
-    'intro.li3': 'Attrape les <b>papillons dorés</b>. Chacun apporte une petite surprise.',
+    'intro.li3': 'Attrape les <b>papillons dorés</b>. Chacun apporte une petite surprise. La nuit, touche une <b>étoile filante</b> pour faire un vœu.',
     'intro.li4': 'Chaque véhicule de ton garage ajoute la moitié de sa vitesse au voyage. Aucune amélioration n\'est perdue.',
     'intro.li5': 'Collectionne les <b>badges</b>. Chacun te rapporte plus de crédits pour toujours.',
     'intro.li6': 'Même quand le jeu est fermé, ton voyageur continue, à un rythme plus lent.',
@@ -175,6 +177,7 @@ IT.addLang('fr', {
 
     'j.trip': 'Voyage', 'j.thisTrip': 'Ce voyage', 'j.total': 'Distance totale', 'j.credits': 'Crédits totaux', 'j.clicks': 'Pas effectués',
     'j.time': 'Temps sur la route', 'j.best': 'Vitesse maximale', 'j.gifts': 'Papillons attrapés', 'j.crits': 'Pas chanceux', 'j.rainbows': 'Arcs-en-ciel vus',
+    'j.wishes': 'Vœux faits', 'j.photos': 'Cartes postales',
     'j.life': 'Tous les voyages', 'j.memories': 'Souvenirs', 'j.memVal': '{n} · vitesse +{p}', 'j.lifeVal': '{d} · voyage {n}',
     'j.stamps': 'Tampons du passeport',
     'j.stampsSub': { one: '{n} région · chacune +{p} de vitesse pour toujours', other: '{n} régions · chacune +{p} de vitesse pour toujours' },
@@ -192,6 +195,10 @@ IT.addLang('fr', {
     "buff.pal.next": "un fidèle compagnon",
     "badge.photo1.name": "Épistolier",
     "badge.photo1.desc": "Prends ta première carte postale.",
+    "badge.wish1.name": "Fais un vœu",
+    "badge.wish1.desc": "Attrape une étoile filante la nuit.",
+    "badge.wish10.name": "Collectionneur d'étoiles",
+    "badge.wish10.desc": "Attrape {n} étoiles filantes.",
     "html.photo": "Prendre une carte postale",
     "pc.eyebrow": "Une carte postale de la route",
     "pc.title": "Garde ce moment",

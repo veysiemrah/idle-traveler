@@ -710,7 +710,7 @@
       };
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
-      this.gift = null;
+      this.gift = null; this.star = null;
       this.stars = Array.from({ length: 170 }, () => ({ x: Math.random(), y: Math.random() * 0.75, r: Math.random() * 1.3 + 0.3, p: Math.random() * TAU }));
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
       this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
@@ -847,6 +847,21 @@
     spawnGift(duration) {
       this.gift = { x: this.W + 40, y: this.H * 0.3, t: 0, dur: duration || 14, caught: false };
     }
+    // Kayan yıldız: gökyüzünün üst kısmında sağdan sola, aşağı doğru süzülür
+    spawnStar() {
+      const W = this.W, H = this.H, ang = rand(0.32, 0.52), sp = W * rand(0.15, 0.2);
+      this.star = { x: W * rand(0.5, 1.02), y: H * rand(0.12, 0.24), vx: -Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t: 0, dur: 4.2 };
+    }
+    hitStar(px, py) {
+      const s = this.star;
+      if (!s || s.t > s.dur) return false;
+      if (Math.hypot(px - s.x, py - s.y) < 52 * Math.max(this.k, 0.8)) {
+        this.burst(s.x, s.y, 30, ['#ffffff', '#cfe0ff', '#fff4c2', '#b9c8ff']);
+        this.star = null;
+        return true;
+      }
+      return false;
+    }
     hitGift(px, py) {
       const g = this.gift;
       if (!g || g.caught) return false;
@@ -959,6 +974,12 @@
         if (Math.random() < dt * 14) this.parts.push({ type: 'spark', x: g.x + rand(-6, 6), y: g.y + rand(-6, 6), vx: rand(10, 40), vy: rand(-10, 10), life: 0, max: rand(0.5, 1), size: rand(1.2, 2.6), color: pick(['#ffd56b', '#fff4c2']), rot: 0 });
         if (u >= 1) this.gift = null;
       }
+      if (this.star) {
+        const s = this.star;
+        s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt;
+        if (Math.random() < dt * 18) this.parts.push({ type: 'spark', x: s.x + rand(-3, 3), y: s.y + rand(-3, 3), vx: rand(-8, 8), vy: rand(4, 16), life: 0, max: rand(0.4, 0.9), size: rand(1, 2), color: pick(['#ffffff', '#cfe0ff']), rot: 0 });
+        if (s.t > s.dur + 0.6 || s.x < -80) this.star = null;
+      }
     }
 
     ambient(dt, night, b) {
@@ -1050,6 +1071,8 @@
         ctx.fillStyle = '#f1f0e6'; circle(ctx, mx, my, 15 * k);
         ctx.fillStyle = 'rgba(180,184,200,0.45)'; circle(ctx, mx - 5 * k, my - 3 * k, 3.4 * k); circle(ctx, mx + 4 * k, my + 5 * k, 2.4 * k);
       }
+
+      if (this.star) this.drawStar(ctx, this.star);
 
       // gökkuşağı (uzak dağların arkasında)
       const bowA = this.rainbow * (1 - night) * (1 - space);
@@ -1559,6 +1582,23 @@
       }
     }
 
+    drawStar(ctx, s) {
+      const k = Math.max(this.k, 0.8), fade = clamp((s.dur + 0.6 - s.t) / 0.6, 0, 1) * clamp(s.t / 0.25, 0, 1);
+      const len = Math.hypot(s.vx, s.vy), ux = s.vx / len, uy = s.vy / len, tail = 130 * k;
+      const g = ctx.createLinearGradient(s.x, s.y, s.x - ux * tail, s.y - uy * tail);
+      g.addColorStop(0, `rgba(255,255,255,${(0.95 * fade).toFixed(3)})`);
+      g.addColorStop(0.35, `rgba(207,224,255,${(0.45 * fade).toFixed(3)})`);
+      g.addColorStop(1, 'rgba(207,224,255,0)');
+      ctx.strokeStyle = g; ctx.lineCap = 'round'; ctx.lineWidth = 2.6 * k;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - ux * tail, s.y - uy * tail); ctx.stroke();
+      glow(ctx, s.x, s.y, 22 * k, hex('#dfe8ff'), 0.55 * fade);
+      ctx.fillStyle = `rgba(255,255,255,${fade.toFixed(3)})`;
+      // dört köşeli parıltı
+      const r = 5 * k * (1 + 0.15 * Math.sin(s.t * 18));
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y - r); ctx.quadraticCurveTo(s.x, s.y, s.x + r, s.y); ctx.quadraticCurveTo(s.x, s.y, s.x, s.y + r);
+      ctx.quadraticCurveTo(s.x, s.y, s.x - r, s.y); ctx.quadraticCurveTo(s.x, s.y, s.x, s.y - r); ctx.fill();
+    }
     drawButterfly(ctx, g) {
       const k = Math.max(this.k, 0.8);
       const flap = 0.25 + 0.75 * Math.abs(Math.sin(g.t * 12));
