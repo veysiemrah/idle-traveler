@@ -110,13 +110,16 @@
     { name: 'Peri Bacaları',       biome: 'cappadocia', at: 2.0e9 },
   ];
   const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  // Liste bitince bölgeler ikinci tura girer; her yeni bölge öncekinin bu kadar katı uzakta.
+  // (4 kat, son araçtan sonra hız artışı yetişemediği için yolu fiilen durduruyordu.)
+  const LOOP_GROWTH = 3;
   function regionAt(i) {
     if (i < REGIONS.length) return REGIONS[i];
     const loop = REGIONS.length - 1;
     const k = i - REGIONS.length;
     const base = REGIONS[(k % loop) + 1];
     const lap = Math.floor(k / loop) + 2;
-    return { name: `${base.name} ${ROMAN[lap] || lap}`, biome: base.biome, at: REGIONS[REGIONS.length - 1].at * Math.pow(4, k + 1) };
+    return { name: `${base.name} ${ROMAN[lap] || lap}`, biome: base.biome, at: REGIONS[REGIONS.length - 1].at * Math.pow(LOOP_GROWTH, k + 1) };
   }
   function regionIndexFor(dist) {
     let i = 0;

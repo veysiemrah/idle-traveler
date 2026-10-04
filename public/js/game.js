@@ -15,6 +15,9 @@
   ];
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
   const BULKS = [1, 10, 'max'];
+  // Gökyüzü: tarayıcı temasını izle ya da gündüz/gece sabitle
+  const SKIES = ['auto', 'day', 'night'];
+  const SKY_NAME = { auto: 'Otomatik', day: 'Gündüz', night: 'Gece' };
   const DOUBLINGS = [10, 25, 50, 100, 150, 200];
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1 };
@@ -34,7 +37,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1 }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto' }, intro: false,
     };
   }
   function load() {
@@ -73,6 +76,7 @@
     s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
     s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
+    if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro;
     return s;
@@ -327,6 +331,11 @@
       $('.panes').scrollTop = 0;
       try { localStorage.setItem('idle-traveler-tab', id); } catch (e) { /* yok say */ }
     },
+    sky(id) {
+      if (!SKIES.includes(id) || S.settings.sky === id) return;
+      S.settings.sky = id; applySky();
+      uiDirty.journal = true;
+    },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
     reset(_, el) {
@@ -468,6 +477,24 @@
     `, 'Yola çık', () => { S.intro = true; save(); });
   }
 
+  // Gökyüzü ayarı sayfanın data-theme özniteliğini yönetir; sahne ve arayüz bu özniteliği zaten izler.
+  // Otomatik modda yalnızca kendi koyduğumuz özniteliği kaldırırız (dışarıdan gelen tema korunur).
+  let skyOwned = false;
+  const metaColors = [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m, m.content]);
+  function applySky() {
+    const el = document.documentElement, t = { day: 'light', night: 'dark' }[S.settings.sky];
+    if (t) { el.setAttribute('data-theme', t); skyOwned = true; } else if (skyOwned) { el.removeAttribute('data-theme'); skyOwned = false; }
+    for (const [m, c] of metaColors) m.content = t ? (t === 'dark' ? '#1e2140' : '#eef0f8') : c;
+  }
+  function syncSkyBtn() {
+    const night = scene.mode === 'dark';
+    const btn = $('#btnSky');
+    btn.title = night ? 'Gündüze geç' : 'Geceye geç';
+    btn.setAttribute('aria-label', btn.title);
+    btn.querySelector('.ico-sun').hidden = night;
+    btn.querySelector('.ico-moon').hidden = !night;
+  }
+
   function syncSoundBtn() {
     const on = S.settings.sfx || S.settings.music;
     const btn = $('#btnSound');
@@ -578,6 +605,8 @@
       <div class="settings">
         <button class="toggle" data-act="sfx" aria-pressed="${S.settings.sfx}">Ses efektleri <b>${S.settings.sfx ? 'Açık' : 'Kapalı'}</b></button>
         <button class="toggle" data-act="music" aria-pressed="${S.settings.music}">Ortam sesi <b>${S.settings.music ? 'Açık' : 'Kapalı'}</b></button>
+        <div class="toggle sky"><span>Gökyüzü</span><div class="seg" role="group" aria-label="Gökyüzü">${SKIES.map(k =>
+          `<button class="seg-btn" data-act="sky" data-id="${k}" aria-pressed="${S.settings.sky === k}">${SKY_NAME[k]}</button>`).join('')}</div></div>
         <button class="danger" data-act="reset">Yolculuğu sıfırla</button>
       </div>
       <p class="tag muted small">İlerleme bu tarayıcıda otomatik kaydedilir.</p>`;
@@ -644,6 +673,7 @@
   function start(hotSave) {
     S = (hotSave && sanitize(hotSave)) || load() || defaultState();
     scene = new IT.Scene($('#scene'));
+    applySky();
     // Sahne tarayıcı temasını izler: açık tema gündüz, koyu tema gece
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     const themeMode = () => {
@@ -656,6 +686,7 @@
       const m = themeMode();
       if (m === scene.mode) return;
       scene.setMode(m);
+      syncSkyBtn();
       toast(m === 'dark' ? 'Akşam iniyor. Fenerler yanıyor, yıldızlar çıkıyor.' : 'Gün doğuyor. Yol yeniden aydınlanıyor.', 'teal');
     };
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme); }
@@ -668,7 +699,7 @@
     };
     scene.fill(true);
     Sound.sfxOn = S.settings.sfx; Sound.musicOn = S.settings.music;
-    syncSoundBtn();
+    syncSoundBtn(); syncSkyBtn();
     if (S.clicks >= 6) $('#hint').classList.add('gone');
 
     const stage = $('#stage');
@@ -709,6 +740,11 @@
       S.settings.sfx = on; S.settings.music = on;
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
+    });
+    $('#btnSky').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      S.settings.sky = scene.mode === 'dark' ? 'day' : 'night';
+      applySky(); uiDirty.journal = true;
     });
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);
