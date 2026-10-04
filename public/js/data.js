@@ -91,6 +91,12 @@
     cappadocia: { sky: ['#86b5e1', '#ffdfc2'], far: '#d8b28d', cap: null, mid: '#e3bf98', near: '#d6b188', ground: '#cdab82', road: '#bfa07c',
                   farShape: 'mesa', farH: 0.75, trees: ['chimney', 'chimney', 'bush', 'rock'], midTrees: ['chimney'],
                   deco: 'stones', flowers: ['#f2d6a2'], houses: false, particles: null, balloons: true },
+    tulip:      { sky: ['#7fb6e6', '#fff0d8'], far: '#9fb3d8', cap: null, mid: '#8cc47e', near: '#7cbf6a', ground: '#6eae5f', road: '#d9c39c',
+                  farShape: 'hills', farH: 0.55, trees: ['poplar', 'round', 'bush'], midTrees: ['poplar', 'round'],
+                  deco: 'tulips', flowers: ['#e84a5f', '#ffd25e', '#ff8fb1', '#9a7fe0', '#ffffff'], houses: true, windmills: true, particles: 'fireflies' },
+    olive:      { sky: ['#6aaee0', '#f3f0dc'], far: '#4a9cc2', cap: null, mid: '#b9b98c', near: '#a9b27a', ground: '#a3ab72', road: '#e0cfa8',
+                  farShape: 'sea', farH: 0.2, trees: ['olive', 'olive', 'cypress', 'rock'], midTrees: ['olive', 'cypress'],
+                  deco: 'flowers', flowers: ['#ffffff', '#f6d365', '#c9a4e8'], houses: true, particles: null, gulls: true },
   };
 
   /* ---------- Bölgeler: geometrik olarak uzayan eşikler ---------- */
@@ -108,6 +114,8 @@
     { name: 'Kuzey Işıkları',      biome: 'aurora',     at: 1.3e8 },
     { name: 'Rize Çay Bahçeleri',  biome: 'tea',        at: 5.0e8 },
     { name: 'Peri Bacaları',       biome: 'cappadocia', at: 2.0e9 },
+    { name: 'Lale Bahçeleri',      biome: 'tulip',      at: 6.0e9 },
+    { name: 'Zeytin Bahçeleri',    biome: 'olive',      at: 1.8e10 },
   ];
   const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   // Liste bitince bölgeler ikinci tura girer; her yeni bölge öncekinin bu kadar katı uzakta.
@@ -180,8 +188,16 @@
     { id: 'garage9',   name: 'Tam Kadro',            desc: 'Bütün araçlara sahip ol.',              test: s => ownedCount(s) >= VEHICLES.length },
     { id: 'tuned25',   name: 'Usta Tamirci',         desc: 'Bir aracı 25. seviyeye yükselt.',       test: s => maxLevel(s) >= 25 },
     { id: 'tuned100',  name: 'Efsane Motor',         desc: 'Bir aracı 100. seviyeye yükselt.',      test: s => maxLevel(s) >= 100 },
+    { id: 'home1',     name: 'Eve Dönüş',            desc: 'İlk kez eve dön.',                      test: s => s.trips >= 1 },
+    { id: 'home5',     name: 'Yolların Eskisi',      desc: '5 kez eve dön.',                        test: s => s.trips >= 5 },
+    { id: 'mem100',    name: 'Hatıra Sandığı',       desc: '100 hatıra biriktir.',                  test: s => s.memories >= 100 },
   ];
   const BADGE_BONUS = 0.03;
+
+  /* ---------- Eve dönüş ve hatıralar ---------- */
+  // Uzun bir yolculuğun sonunda eve dönülür: araçlar, yükseltmeler, güçlendirmeler ve kredi sıfırlanır.
+  // Yolculuğun uzunluğuna göre hatıra kazanılır; her hatıra sonraki yolculuklarda kalıcı hız verir.
+  const HOME = { min: 5.0e8, unit: 1.0e9, per: 10, exp: 1 / 3, bonus: 0.1 };
 
   /* ---------- Ekonomi ---------- */
   // Yol tecrübesi: binilmeyen araçlar da hızlarının bu kadarını yolculuğa katar.
@@ -207,6 +223,13 @@
     },
     buffCost(b, lvl) { return Math.ceil(b.base * Math.pow(b.growth, lvl)); },
     discoveryMult(regionIdx) { return 1 + 0.06 * regionIdx; },
+    memoryGain(dist) { return dist < HOME.min ? 0 : Math.floor(HOME.per * Math.pow(dist / HOME.unit, HOME.exp) + 1e-9); },
+    // Bir sonraki hatıra için gereken yolculuk mesafesi
+    memoryNext(dist) {
+      const g = Econ.memoryGain(dist);
+      return g === 0 ? HOME.min : HOME.unit * Math.pow((g + 1) / HOME.per, 1 / HOME.exp);
+    },
+    memoryMult(memories) { return 1 + HOME.bonus * (memories || 0); },
     rhythmCap(lvl) { return 0.5 + 0.1 * lvl; },
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
@@ -225,7 +248,7 @@
     },
     // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
     own(state, id) {
-      const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx);
+      const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories);
       return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.25 * state.buffs.stride) };
     },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
@@ -238,7 +261,7 @@
         idle += v.idle * m; click += v.click * m;
         if (v.id !== lead) cIdle += v.idle * m;
       }
-      const d = Econ.discoveryMult(state.regionIdx), bi = 1 + 0.25 * b.breeze;
+      const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories), bi = 1 + 0.25 * b.breeze;
       return {
         idle: idle * d * bi,
         click: click * d * (1 + 0.25 * b.stride),
@@ -291,7 +314,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, CONVOY, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtSpeed, fmtDuration,
   });
 })(typeof window !== 'undefined' ? window : globalThis);
