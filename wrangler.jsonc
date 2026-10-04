@@ -1,0 +1,12 @@
+// Cloudflare Workers ayarı: yalnızca statik site (Worker kodu yok).
+// GitHub'a push → Cloudflare Workers Builds `npx wrangler deploy` çalıştırır → idle-traveler.vebaban.com güncellenir.
+{
+  "name": "idle-traveler",
+  "compatibility_date": "2026-10-04",
+  "assets": {
+    "directory": "./public"
+  },
+  "routes": [
+    { "pattern": "idle-traveler.vebaban.com", "custom_domain": true }
+  ]
+}

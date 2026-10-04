@@ -6,29 +6,35 @@ Kredilerle yeni araçlar, araç yükseltmeleri ve kalıcı güçlendirmeler alı
 
 ## Oynamak
 
-Derleme adımı yok. `index.html` dosyasını tarayıcıda açman yeterli.
+Derleme adımı yok. Site dosyaları `public/` klasöründe; `public/index.html` dosyasını tarayıcıda açman yeterli.
 İstersen basit bir sunucuyla da açabilirsin:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 -d public
 # http://localhost:8000
 ```
 
-## Yayın: idle-traveler.vebaban.com
+## Yayın: Cloudflare Workers → idle-traveler.vebaban.com
 
-Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanacak şekilde hazırlandı.
+Site Cloudflare'de, statik varlık sunan bir Worker olarak barınır (`wrangler.jsonc`).
+GitHub yalnızca repoyu tutar. Actions, Pages ya da secret kullanılmaz.
+`main` dalına her push'ta Cloudflare Workers Builds repoyu çeker, `npx wrangler deploy` çalıştırır ve siteyi günceller.
 
-1. **GitHub**: Repo → *Settings → Pages → Build and deployment → Source* alanını **GitHub Actions** yap.
-   `main` dalına her push'ta `.github/workflows/pages.yml` siteyi yayınlar.
-2. **DNS** (vebaban.com'un DNS sağlayıcısında): bir CNAME kaydı ekle.
+Tek seferlik kurulum (Cloudflare panelinde):
 
-   | Tür | Ad | Değer |
-   | --- | --- | --- |
-   | CNAME | `idle-traveler` | `veysiemrah.github.io` |
+1. **Workers & Pages → Create → Import a repository** adımında GitHub hesabını bağla ve `veysiemrah/idle-traveler` reposunu seç.
+2. Ayarlar:
+   - **Project/Worker name:** `idle-traveler`. `wrangler.jsonc` içindeki `name` ile aynı olmalı, yoksa build başarısız olur.
+   - **Production branch:** `main`
+   - **Build command:** boş bırak (derleme yok).
+   - **Deploy command:** `npx wrangler deploy` (varsayılan)
+3. **Save and Deploy.** İlk deploy, `wrangler.jsonc` içindeki `routes` ayarıyla `idle-traveler.vebaban.com` özel alan adını
+   bağlar. DNS kaydını ve SSL sertifikasını Cloudflare kendisi oluşturur. Bunun için vebaban.com aynı Cloudflare hesabında olmalı.
 
-   Cloudflare kullanıyorsan kaydı önce **DNS only** (gri bulut) olarak ekle. Sertifika çıktıktan sonra proxy'yi açabilirsin.
-3. **GitHub**: *Settings → Pages → Custom domain* alanında `idle-traveler.vebaban.com` görünmeli
-   (repo kökündeki `CNAME` dosyası bunu sağlar). DNS doğrulandıktan sonra **Enforce HTTPS** kutusunu işaretle.
+> `idle-traveler` adında elle eklenmiş bir CNAME kaydı varsa (örneğin GitHub Pages için), önce onu sil.
+> Cloudflare, mevcut bir CNAME kaydı olan ada özel alan adı bağlayamaz.
+
+Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrangler deploy --dry-run`.
 
 ## Oyun
 
@@ -60,11 +66,12 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
 
 | Dosya | İçerik |
 | --- | --- |
-| `index.html` | Sayfa iskeleti, HUD ve panel |
-| `css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
-| `js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
-| `js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
-| `js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |
-| `js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, arayüz |
+| `public/index.html` | Sayfa iskeleti, HUD ve panel |
+| `public/css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
+| `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
+| `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
+| `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |
+| `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, arayüz |
+| `wrangler.jsonc` | Cloudflare Workers ayarı: statik varlık klasörü ve özel alan adı |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
