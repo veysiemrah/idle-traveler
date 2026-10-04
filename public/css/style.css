@@ -143,11 +143,17 @@ button { font: inherit; color: inherit; }
 .fx-rainbow b { background: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
 
+.stage { container-type: inline-size; }
+/* Bildirimler gökyüzünde durur; yolu ve aracı asla örtmez */
 .toasts {
-  position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
-  width: min(440px, calc(100% - 32px));
-  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 70px;
+  width: min(360px, calc(100% - 86px));
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
   pointer-events: none; z-index: 3;
+}
+@container (max-width: 760px) {
+  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; }
+  .toast:nth-last-child(n+3) { display: none; }
 }
 .toast {
   background: var(--toast); border: 1px solid var(--glass-line);
@@ -160,8 +166,8 @@ button { font: inherit; color: inherit; }
 .toast b { font-weight: 700; }
 .toast.gold b { color: var(--gold); }
 .toast.teal b { color: var(--teal); }
-.toast.out { opacity: 0; transform: translateY(8px); }
-@keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
+.toast.out { opacity: 0; transform: translateY(-8px); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-10px) scale(.96); } }
 
 /* Bölge afişi */
 .banner {
@@ -429,7 +435,6 @@ button { font: inherit; color: inherit; }
   .rhythm { display: none; }
   .hint { top: 44%; padding: 8px 16px; }
   .hint span { font-size: 15px; }
-  .toasts { bottom: 64px; }
   .toast { font-size: 13px; padding: 7px 12px; }
 }
 @media (max-width: 420px) {
