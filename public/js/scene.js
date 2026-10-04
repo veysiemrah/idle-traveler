@@ -376,6 +376,8 @@
   }
 
   const FLYING = { plane: true, rocket: true, sail: true };
+  // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
+  const FLY_Y = { plane: 0.42, rocket: 0.34, sail: 0.3 };
   function drawVehicle(ctx, id, x, y, k, st) {
     switch (id) {
       case 'walk': return drawWalker(ctx, x, y, k, st, false);
@@ -665,12 +667,13 @@
     }
 
     /* --- Konumlar --- */
-    shift(f) { return this.alt * this.H * f + (this.space || 0) * this.H * 0.55; }
-    groundY() { return this.H * 0.842 + this.shift(0.66); }
+    // Kamera artık yükselmiyor: yer katmanları uçarken de yerinde kalır (eski irtifa kaydırması sıfır)
+    shift() { return 0; }
+    groundY() { return this.H * 0.842; }
+    flyT() { return this.altTarget > 0 ? clamp(this.alt / this.altTarget, 0, 1) : 0; }
     riderY() {
       const fly = FLYING[this.vehicle];
-      const flyT = clamp(this.alt / 0.55, 0, 1);
-      return fly ? lerp(this.groundY() - 40 * this.k, this.H * 0.43, flyT) : this.groundY();
+      return fly ? lerp(this.groundY() - 40 * this.k, this.H * FLY_Y[this.vehicle], this.flyT()) : this.groundY();
     }
 
     /* --- Güncelleme --- */
@@ -680,7 +683,8 @@
       this.vs += (target - this.vs) * Math.min(1, dt * 2.5);
       this.alt += (this.altTarget - this.alt) * Math.min(1, dt * 0.9);
       if (Math.abs(this.altTarget - this.alt) < 0.001) this.alt = this.altTarget;
-      this.space = clamp((this.alt - 0.45) / 0.5, 0, 1);
+      // Roket ve yelkende gökyüzünün üstü koyulaşır, soluk yıldızlar çıkar; yer görünür kaldığı için etki kısmi
+      this.space = clamp((this.alt - 0.45) / 0.5, 0, 1) * 0.6;
       // tema: gün saati her zaman ileri akar (koyu temaya geçiş = gün batımı, açığa geçiş = gün doğumu)
       this.drift += dt;
       if (this.anchorT < 1) {
@@ -693,7 +697,7 @@
       this.rain += clamp(this.rainTarget - this.rain, -dt / 4, dt / 4);
       this.rainbow += clamp(this.rainbowTarget - this.rainbow, -dt / 6, dt / 3);
       this.roadBlend = Math.min(1, this.roadBlend + dt / 0.8);
-      const groundF = 1 - 0.55 * clamp(this.alt, 0, 1);
+      const groundF = 1 - 0.35 * clamp(this.alt, 0, 1);
       const dx = this.vs * dt;
       this.scroll += dx * groundF;
       const k = this.k;
@@ -705,7 +709,7 @@
       this.fill(false);
 
       // gökyüzü nesneleri
-      const flyT = clamp(this.alt / 0.55, 0, 1);
+      const flyT = this.flyT();
       for (const c of this.clouds) c.x -= (this.vs * (0.05 + 0.5 * flyT) * c.depth + 6 * c.depth) * dt;
       this.clouds = this.clouds.filter(c => c.x > -260);
       if (this.clouds.length < (this.W > 900 ? 9 : 6)) this.spawnCloud();
@@ -713,10 +717,8 @@
       this.nextBird -= dt;
       if (this.nextBird <= 0) {
         this.nextBird = b.gulls ? rand(6, 14) : rand(18, 40);
-        if (this.alt < 0.3) {
-          const n = 3 + (Math.random() * 4 | 0), y0 = rand(0.14, 0.34) * this.H;
-          for (let i = 0; i < n; i++) this.birds.push({ x: this.W + 30 + i * rand(16, 30), y: y0 + rand(-18, 18), p: Math.random() * TAU, s: rand(0.7, 1.1) });
-        }
+        const n = 3 + (Math.random() * 4 | 0), y0 = rand(0.14, 0.34) * this.H;
+        for (let i = 0; i < n; i++) this.birds.push({ x: this.W + 30 + i * rand(16, 30), y: y0 + rand(-18, 18), p: Math.random() * TAU, s: rand(0.7, 1.1) });
       }
       for (const bd of this.birds) { bd.x -= (this.vs * 0.12 + 28) * dt; bd.p += dt * 9; }
       this.birds = this.birds.filter(bd => bd.x > -40);
@@ -768,7 +770,7 @@
     ambient(dt, night, b) {
       const W = this.W, H = this.H, mult = this.reduced ? 0.3 : 1;
       const count = type => { let n = 0; for (const p of this.parts) if (p.type === type) n++; return n; };
-      const groundVisible = this.alt < 0.5;
+      const groundVisible = true;
       if (groundVisible && b.particles === 'petals' && Math.random() < dt * 4 * mult)
         this.parts.push({ type: 'petal', x: rand(0, W * 1.3), y: -10, vx: -rand(10, 30), vy: rand(20, 40), life: 0, max: 14, size: rand(2.5, 4), rot: Math.random() * TAU, vr: rand(-3, 3), color: pick(['#ffd0de', '#ffc2d4', '#fff0f4']) });
       if (groundVisible && b.particles === 'leaves' && Math.random() < dt * 2.5 * mult)
@@ -810,7 +812,7 @@
       // gökyüzü renkleri
       let top = mixc(NIGHT_SKY[0], pal.sky0, dayAmt), bot = mixc(NIGHT_SKY[1], pal.sky1, dayAmt);
       top = mixc(top, DUSK_SKY[0], dusk * 0.55); bot = mixc(bot, DUSK_SKY[1], dusk * 0.8);
-      top = mixc(top, SPACE_SKY[0], space); bot = mixc(bot, SPACE_SKY[1], space * 0.9);
+      top = mixc(top, SPACE_SKY[0], space); bot = mixc(bot, SPACE_SKY[1], space * 0.25);
       const haze = bot;
       const lit = (c, h) => {
         let r = h ? mixc(c, haze, h) : c;
@@ -859,11 +861,11 @@
       const bowA = this.rainbow * (1 - night) * (1 - space);
       if (bowA > 0.01) this.drawRainbow(ctx, bowA, horizon);
 
-      // uzayda gezegen kıvrımı
-      if (space > 0.02) this.drawPlanet(ctx, space, pal);
+      // güneş yelkeninde uzak halkalı gezegen
+      if (this.vehicle === 'sail' && space > 0.05) this.drawRingedPlanet(ctx, space / 0.6);
 
       // balonlar ve kuşlar (uzak)
-      if (space < 0.95) for (const bl of this.balloons) this.drawBalloon(ctx, bl, light, night, 1 - space);
+      for (const bl of this.balloons) this.drawBalloon(ctx, bl, light, night, 1);
       ctx.strokeStyle = css(lit(hex('#3a3f55')), 0.8); ctx.lineWidth = 1.6; ctx.lineCap = 'round';
       for (const bd of this.birds) {
         const f = Math.sin(bd.p) * 5 * bd.s;
@@ -941,7 +943,7 @@
       ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
 
       // yakın bulutlar (uçarken öne geçenler)
-      for (const c of this.clouds) if (c.depth >= 0.65 && this.alt < 0.3) this.drawCloud(ctx, c, cloudCol, space);
+      for (const c of this.clouds) if (c.depth >= 0.65) this.drawCloud(ctx, c, cloudCol, space);
 
       // yakın tarla
       const nearBase = H * 0.752 + this.shift(0.58);
@@ -1000,10 +1002,14 @@
       const ry = this.riderY() - this.stepKick * 2.5 * k;
       ctx.save();
       // gölge
-      if (!FLYING[this.vehicle] || this.alt < 0.15) {
+      if (!FLYING[this.vehicle]) {
         ctx.fillStyle = 'rgba(30,30,50,0.18)';
         const w = { walk: 16, skates: 18, bike: 36, moto: 42, car: 54, train: 70 }[this.vehicle] || 30;
         ellipse(ctx, this.travelerX, this.groundY() + 1, w * k, 3.5 * k);
+      } else { // uçarken yola düşen yumuşak gölge; yükseldikçe solar ve yayılır
+        const f = this.flyT();
+        ctx.fillStyle = `rgba(30,30,50,${(0.18 - 0.1 * f).toFixed(3)})`;
+        ellipse(ctx, this.travelerX + 6 * k, this.groundY() + 1, (40 + 18 * f) * k, (4 + 2 * f) * k);
       }
       drawVehicle(ctx, this.vehicle, this.travelerX, ry, k, st0);
       ctx.restore();
@@ -1064,7 +1070,7 @@
     }
 
     drawCloud(ctx, c, col, space) {
-      const a = (0.55 + 0.35 * c.depth) * (1 - space);
+      const a = (0.55 + 0.35 * c.depth) * (1 - space * 0.4);
       if (a < 0.02) return;
       const y = c.y * this.H + this.shift(0.3 * c.depth);
       ctx.fillStyle = css(col, a);
@@ -1103,28 +1109,12 @@
       ctx.restore();
     }
 
-    drawPlanet(ctx, a, pal) {
-      const W = this.W, H = this.H;
-      const R = Math.max(W, H) * 2.2;
-      const cy = H + R - H * 0.22 * a + this.shift(0.1) * 0;
-      ctx.save(); ctx.globalAlpha = a;
-      glow(ctx, W * 0.5, cy, R + 40, hex('#7fb8ff'), 0.0);
-      const g = ctx.createRadialGradient(W * 0.5, cy, R - 30, W * 0.5, cy, R + 26);
-      g.addColorStop(0, 'rgba(120,180,255,0.0)'); g.addColorStop(0.55, 'rgba(140,200,255,0.55)'); g.addColorStop(1, 'rgba(140,200,255,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(W * 0.5, cy, R + 26, 0, TAU); ctx.fill();
-      ctx.fillStyle = css(mixc(hex('#2c5d8f'), pal.mid, 0.25)); ctx.beginPath(); ctx.arc(W * 0.5, cy, R, 0, TAU); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.18)';
-      for (let i = 0; i < 6; i++) {
-        const x = ((hash(i + 3) * W * 2 - this.scroll * 0.02) % (W * 2) + W * 2) % (W * 2) - W * 0.5;
-        ellipse(ctx, x, cy - R + 8 + hash(i) * 16, 40 + hash(i + 1) * 70, 4);
-      }
-      // uzak halkalı gezegen
-      if (this.alt > 1.05) {
-        const px = W * 0.78, py = H * 0.22;
-        ctx.fillStyle = '#e7c99a'; circle(ctx, px, py, 16 * this.k);
-        ctx.strokeStyle = 'rgba(240,220,180,0.7)'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(px, py, 30 * this.k, 7 * this.k, -0.3, 0, TAU); ctx.stroke();
-      }
+    drawRingedPlanet(ctx, a) {
+      const W = this.W, H = this.H, px = W * 0.78, py = H * 0.2;
+      ctx.save(); ctx.globalAlpha = clamp(a, 0, 1) * 0.9;
+      ctx.fillStyle = '#e7c99a'; circle(ctx, px, py, 16 * this.k);
+      ctx.strokeStyle = 'rgba(240,220,180,0.7)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(px, py, 30 * this.k, 7 * this.k, -0.3, 0, TAU); ctx.stroke();
       ctx.restore();
     }
 
