@@ -2,23 +2,25 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
-  const BY = { walk: 'yürüyerek', skates: 'patenle', board: 'kaykayla', bike: 'bisikletle', horse: 'atıyla', moto: 'motosikletle', car: 'arabayla', van: 'karavanıyla',
-    train: 'trenle', balloon: 'balonuyla', plane: 'uçakla', jet: 'jetiyle', rocket: 'roketle', sail: 'güneş yelkeniyle' };
   const GIFTS = [
-    { id: 'gust',     name: 'Rüzgâr Hortumu',   text: 'hız ×3',            dur: 30, speed: 3, w: 3 },
-    { id: 'harvest',  name: 'Bereket',          text: 'kredi ×2',          dur: 45, credit: 2, w: 3 },
-    { id: 'zeal',     name: 'Coşku',            text: 'tıklama ×5',        dur: 25, click: 5, w: 2 },
-    { id: 'postcard', name: 'Kayıp Kartpostal', text: 'anında kredi',      instant: true, w: 2 },
-    { id: 'rainbow',  name: 'Gökkuşağı',        text: 'kredi ×1,5',        dur: 40, credit: 1.5, w: 0 }, // hava olayıyla gelir
+    { id: 'gust',     dur: 30, speed: 3, w: 3 },
+    { id: 'harvest',  dur: 45, credit: 2, w: 3 },
+    { id: 'zeal',     dur: 25, click: 5, w: 2 },
+    { id: 'postcard', instant: true, w: 2 },
+    { id: 'rainbow',  dur: 40, credit: 1.5, w: 0 }, // hava olayıyla gelir
   ];
+  GIFTS.forEach(g => Object.defineProperties(g, {
+    name: { get: () => t(`gift.${g.id}.name`) },
+    text: { get: () => t(`gift.${g.id}.text`) },
+  }));
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
   const BULKS = [1, 10, 'max'];
   // Gökyüzü: tarayıcı temasını izle ya da gündüz/gece sabitle
   const SKIES = ['auto', 'day', 'night'];
-  const SKY_NAME = { auto: 'Otomatik', day: 'Gündüz', night: 'Gece' };
+  const UNITS = ['auto', 'metric', 'imperial'];
   const DOUBLINGS = [10, 25, 50, 100, 150, 200];
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
@@ -27,9 +29,7 @@
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
-  const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtGain = m => (m < 10 ? nf1.format(m) + ' m' : m < 1000 ? Math.floor(m) + ' m' : fmtDist(m));
+  const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* ---------- Durum ---------- */
@@ -42,7 +42,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto' }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto' }, intro: false,
     };
   }
   function load() {
@@ -82,6 +82,8 @@
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
     s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
     if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
+    if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
+    if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro; s.homeReady = !!s.homeReady;
     return s;
@@ -152,7 +154,7 @@
       const last = found[found.length - 1];
       scene.setBiome(last.r.biome);
       if (!silent) {
-        showBanner(last.r.name, `+${fmtNum(last.bonus)} kredi · Keşif bonusu: kalıcı hız +%6`);
+        showBanner(last.r.name, t('toast.region', { c: fmtNum(last.bonus), p: fmtPct(6) }));
         Sound.region();
       }
       uiDirty.garage = uiDirty.journal = true;
@@ -166,10 +168,10 @@
       S.msIdx++;
       uiDirty.journal = true;
     }
-    if (!silent) for (const { m, bonus } of ms) { toast(`<b>Durak: ${esc(m.name)}</b> · +${fmtNum(bonus)} kredi`, 'gold'); Sound.milestone(); }
+    if (!silent) for (const { m, bonus } of ms) { toast(t('toast.milestone', { name: esc(m.name), c: fmtNum(bonus) }), 'gold'); Sound.milestone(); }
     if (!S.homeReady && Econ.memoryGain(S.distance) > 0) {
       S.homeReady = true; uiDirty.buffs = true;
-      if (!silent) toast('<b>Eve dönüş yolu açıldı</b> · Güçlendirmeler sekmesinde hatıralarını topla', 'gold');
+      if (!silent) toast(t('toast.homeReady'), 'gold');
     }
     return { regions: found, milestones: ms };
   }
@@ -183,7 +185,7 @@
     }
     if (got.length) {
       uiDirty.journal = true;
-      if (!silent) for (const b of got) { toast(`<b>Rozet: ${esc(b.name)}</b> · kalıcı +%${Math.round(BADGE_BONUS * 100)} kredi`, 'gold'); Sound.milestone(); }
+      if (!silent) for (const b of got) { toast(t('toast.badge', { name: esc(b.name), p: fmtPct(BADGE_BONUS * 100) }), 'gold'); Sound.milestone(); }
     }
     return got;
   }
@@ -200,7 +202,7 @@
     S.clicks++;
     if (crit) S.crits++;
     scene.onStep(crit);
-    scene.addFloat(crit ? `Şanslı adım! +${fmtGain(d)}` : `+${fmtGain(d)}`, crit ? { color: '#ffd56b', big: true } : null);
+    scene.addFloat(crit ? t('float.lucky', { d: fmtGain(d) }) : `+${fmtGain(d)}`, crit ? { color: '#ffd56b', big: true } : null);
     Sound.step(S.active, crit);
     if (S.clicks === 6) $('#hint').classList.add('gone');
     checkProgress();
@@ -218,12 +220,12 @@
     if (g.instant) {
       const bonus = Math.max(40, incomeRate() * 60);
       grant(bonus);
-      toast(`<b>Altın kelebek: ${g.name}</b> · +${fmtNum(bonus)} kredi`, 'gold');
-      scene.addFloat(`+${fmtNum(bonus)} kredi`, { color: '#ffd56b', big: true });
+      toast(t('toast.giftInstant', { name: g.name, c: fmtNum(bonus) }), 'gold');
+      scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffd56b', big: true });
     } else {
       const dur = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly));
-      toast(`<b>Altın kelebek: ${g.name}</b> · ${Math.round(dur)} sn boyunca ${g.text}`, 'gold');
-      scene.addFloat(`${g.name}!`, { color: '#ffd56b', big: true });
+      toast(t('toast.giftEffect', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
+      scene.addFloat(t('float.gift', { name: g.name }), { color: '#ffd56b', big: true });
     }
     checkBadges();
   }
@@ -244,7 +246,7 @@
         if (canRain) {
           weather = 'rain'; weatherT = 30 + Math.random() * 15;
           scene.setWeather(1, 0);
-          toast('Bir bahar yağmuru başladı. Damlalar yolu serinletiyor.', 'teal');
+          toast(t('toast.rain'), 'teal');
         }
       }
     } else {
@@ -256,7 +258,7 @@
           scene.setWeather(0, 1);
           addEffect(GIFT.rainbow, GIFT.rainbow.dur);
           S.rainbows++;
-          toast(`<b>Gökkuşağı çıktı!</b> · ${GIFT.rainbow.dur} sn boyunca ${GIFT.rainbow.text}`, 'gold');
+          toast(t('toast.rainbow', { dur: fmtDuration(GIFT.rainbow.dur), text: GIFT.rainbow.text }), 'gold');
           Sound.region();
           checkBadges();
         } else { weather = 'clear'; scene.setWeather(0, 0); }
@@ -284,7 +286,7 @@
   function resume(gap) {
     if (gap <= 10) return;
     const off = applyOffline(gap);
-    if (gap > 60) showOffline(off); else if (off.d > 0) toast(`Sen yokken +${fmtGain(off.d)} yol alındı.`, 'teal');
+    if (gap > 60) showOffline(off); else if (off.d > 0) toast(t('toast.away', { d: fmtGain(off.d) }), 'teal');
   }
 
   // Yeni bir yolculuk: keep verilirse bu alanlar eski durumdan taşınır
@@ -317,11 +319,8 @@
       const forward = v.index > VEH[S.active].index;
       if (forward) actions.ride(id);
       const lead = Econ.lead(S);
-      toast(!forward
-        ? `<b>${v.name} garaja katıldı</b> · ${esc(v.tagline)} Garajdan istediğin an binebilirsin.`
-        : lead === id
-          ? `<b>Yeni araç: ${v.name}</b> · ${esc(v.tagline)}`
-          : `<b>Yeni araç: ${v.name}</b> · Hızını şimdilik ${VEH[lead].name} belirliyor. Birkaç yükseltmeyle ${v.name} öne geçer.`, 'teal');
+      const vars = { name: v.name, tagline: esc(v.tagline), lead: VEH[lead].name };
+      toast(t(!forward ? 'toast.vehJoined' : lead === id ? 'toast.vehNew' : 'toast.vehNewLead', vars), 'teal');
       checkBadges();
     },
     ride(id) {
@@ -336,7 +335,7 @@
       if (!spend(q.cost)) return;
       S.levels[id] = lvl + q.n;
       const crossed = DOUBLINGS.filter(t => t > lvl && t <= lvl + q.n).length;
-      if (crossed) toast(`<b>${v.upName} Sv. ${lvl + q.n}</b> · ${v.name} hızı ${crossed > 1 ? crossed + ' kez ' : ''}ikiye katlandı!`, 'teal');
+      if (crossed) toast(t(crossed > 1 ? 'toast.doubledN' : 'toast.doubled', { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed }), 'teal');
       uiDirty.garage = true;
       checkBadges();
     },
@@ -363,15 +362,24 @@
       S.settings.sky = id; applySky();
       uiDirty.journal = true;
     },
+    lang(id) {
+      if (id !== 'auto' && !IT.LANGS[id]) return;
+      S.settings.lang = id; IT.setLang(id);
+      toast(t('toast.lang'), 'teal');
+    },
+    units(id) {
+      if (!UNITS.includes(id)) return;
+      S.settings.units = id; IT.setUnits(id);
+    },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
     home(_, el) {
       const gain = Econ.memoryGain(S.distance);
       if (gain < 1) return;
       if (el.dataset.armed !== '1') {
-        el.dataset.armed = '1'; el.textContent = 'Emin misin? Onaylamak için tekrar dokun';
+        el.dataset.armed = '1'; el.textContent = t('ui.confirmHome');
         el.classList.add('armed');
-        disarm(el, 'Eve dön');
+        disarm(el, t('ui.home'));
         return;
       }
       const trip = { dist: S.distance, regions: S.regionIdx + 1, gain, before: S.memories };
@@ -384,16 +392,16 @@
     },
     reset(_, el) {
       if (el.dataset.armed !== '1') {
-        el.dataset.armed = '1'; el.textContent = 'Emin misin? Tüm ilerleme silinir. Onaylamak için tekrar dokun';
+        el.dataset.armed = '1'; el.textContent = t('ui.confirmReset');
         el.classList.add('armed');
-        disarm(el, 'Yolculuğu sıfırla');
+        disarm(el, t('ui.reset'));
         return;
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro']);
       $('#hint').classList.remove('gone');
       save();
-      toast('Yeni bir yolculuk başladı. İyi yolculuklar!', 'teal');
+      toast(t('toast.reset'), 'teal');
     },
   };
 
@@ -485,49 +493,70 @@
     const regions = o.res.regions.map(x => x.r.name);
     const ms = o.res.milestones.map(x => x.m.name);
     const badges = (o.res.badges || []).map(b => b.name);
+    const list = a => a.map(esc).join(', ');
     openModal(`
-      <p class="eyebrow">Tekrar hoş geldin</p>
-      <h2>Yol seni bekledi, sen de yolu</h2>
-      <p class="lead">Sen yokken <b>${fmtDuration(o.sec)}</b> geçti. Yolcun ${BY[v.id]} yola devam etti. Çevrimdışı hızın: otomatik hızın <b>%${Math.round(o.rate * 100)}</b> kadarı.</p>
+      <p class="eyebrow">${t('off.eyebrow')}</p>
+      <h2>${t('off.title')}</h2>
+      <p class="lead">${t('off.lead', { dur: fmtDuration(o.sec), by: v.by, p: fmtPct(o.rate * 100) })}</p>
       <div class="gains">
-        <div><span>Kat edilen yol</span><b>+${fmtGain(o.d)}</b></div>
-        <div><span>Kazanılan kredi</span><b class="cr">+${fmtNum(o.credits)}</b></div>
+        <div><span>${t('off.dist')}</span><b>+${fmtGain(o.d)}</b></div>
+        <div><span>${t('off.credits')}</span><b class="cr">+${fmtNum(o.credits)}</b></div>
       </div>
-      ${regions.length ? `<p class="small">Yeni bölgeler: <b>${regions.map(esc).join(', ')}</b></p>` : ''}
-      ${ms.length ? `<p class="small">Geçilen duraklar: <b>${ms.map(esc).join(', ')}</b></p>` : ''}
-      ${badges.length ? `<p class="small">Kazanılan rozetler: <b>${badges.map(esc).join(', ')}</b></p>` : ''}
-      ${o.capped ? `<p class="small muted">Yalnızca ${Econ.offlineCapHours(S.buffs.camp)} saat sayıldı. <i>Uzun Mola</i> ile bu sınırı uzatabilirsin.</p>` : ''}
-      ${o.rate < 0.9 ? `<p class="small muted"><i>Rüyada Yolculuk</i> güçlendirmesi çevrimdışı hızını artırır.</p>` : ''}
-    `, 'Yola devam et', () => { if (regions.length) showBanner(regions[regions.length - 1], 'Sen yokken buraya vardın'); });
+      ${regions.length ? `<p class="small">${t('off.regions', { list: list(regions) })}</p>` : ''}
+      ${ms.length ? `<p class="small">${t('off.ms', { list: list(ms) })}</p>` : ''}
+      ${badges.length ? `<p class="small">${t('off.badges', { list: list(badges) })}</p>` : ''}
+      ${o.capped ? `<p class="small muted">${t('off.capped', { h: fmtHours(Econ.offlineCapHours(S.buffs.camp)), buff: BUFF.camp.name })}</p>` : ''}
+      ${o.rate < 0.9 ? `<p class="small muted">${t('off.dream', { buff: BUFF.dream.name })}</p>` : ''}
+    `, t('off.btn'), () => { if (regions.length) showBanner(regions[regions.length - 1], t('off.banner')); });
   }
-  function showHome(t) {
-    const pct = m => Math.round(HOME.bonus * m * 100);
+  function showHome(trip) {
+    const pct = m => fmtPct(HOME.bonus * m * 100);
     openModal(`
-      <p class="eyebrow">${S.trips}. yolculuk tamamlandı</p>
-      <h2>Eve hoş geldin</h2>
-      <p class="lead">Sırt çantanı boşalttın, kartpostalları duvara astın. ${fmtDist(t.dist)} yol ve ${t.regions} bölge artık birer hatıra.</p>
+      <p class="eyebrow">${t('home.eyebrow', { n: S.trips })}</p>
+      <h2>${t('home.title')}</h2>
+      <p class="lead">${t('home.lead', { d: fmtDist(trip.dist), r: trip.regions, n: trip.regions })}</p>
       <div class="gains">
-        <div><span>Yeni hatıra</span><b>+${fmtNum(t.gain)}</b></div>
-        <div><span>Kalıcı hız bonusu</span><b class="cr">%${fmtNum(pct(t.before))} → %${fmtNum(pct(S.memories))}</b></div>
+        <div><span>${t('home.gain')}</span><b>+${fmtNum(trip.gain)}</b></div>
+        <div><span>${t('home.bonus')}</span><b class="cr">${pct(trip.before)} → ${pct(S.memories)}</b></div>
       </div>
-      <p class="small muted">Rozetlerin, istatistiklerin ve ayarların seninle. Araçlar ve güçlendirmeler yeniden alınacak; bu kez yol daha hızlı akacak.</p>
-    `, 'Yeniden yola çık');
+      <p class="small muted">${t('home.note')}</p>
+    `, t('home.btn'));
   }
   function showIntro() {
-    openModal(`
-      <p class="eyebrow">Uzun ve sakin bir yolculuk</p>
+    openModal(introHtml(), t('intro.btn'), () => { S.intro = true; modalRender = null; save(); });
+    modalRender = () => { $('#modalBody').innerHTML = introHtml(); $('#modalBtn').textContent = t('intro.btn'); };
+  }
+  function introHtml() {
+    return `
+      <p class="eyebrow">${t('intro.eyebrow')}</p>
       <h2>Idle Traveler</h2>
-      <p class="lead">Sırt çantan hazır, yol önünde. Ekrana her dokunuşun bir adım. Kat ettiğin her metre kredi kazandırır.</p>
-      <ul class="intro-list">
-        <li><b>Garaj</b>: yeni araçlar al, onları yükselt. Her yeni araç yolculuğu başka bir yere taşır.</li>
-        <li><b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, şanslı adımlar.</li>
-        <li><b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir.</li>
-        <li>Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.</li>
-        <li><b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.</li>
-        <li>Oyunu kapatsan da yolcun daha yavaş bir tempoda yürümeye devam eder.</li>
-        <li>Uzun bir yolculuktan sonra <b>eve dönebilirsin</b>. Topladığın hatıralar sonraki yolculukları hızlandırır.</li>
-      </ul>
-    `, 'Yola çık', () => { S.intro = true; save(); });
+      <p class="lead">${t('intro.lead')}</p>
+      <ul class="intro-list">${[1, 2, 3, 4, 5, 6, 7].map(i => `<li>${t('intro.li' + i)}</li>`).join('')}</ul>
+      <label class="intro-lang"><span>${t('j.lang')}</span>${langSelect('introLang')}</label>`;
+  }
+  let modalRender = null;
+  function langSelect(id) {
+    const cur = S.settings.lang;
+    const auto = t('j.langAuto', { name: IT.LANGS[IT.detect()].name });
+    const opts = [['auto', auto], ...Object.entries(IT.LANGS).map(([k, d]) => [k, d.name])];
+    return `<select id="${id}" class="lang-select" aria-label="${t('j.lang')}">${opts.map(([k, n]) =>
+      `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>`;
+  }
+  // Sayfadaki sabit metinler: data-i18n (metin), data-i18n-title, data-i18n-aria
+  function applyStatic() {
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+    const md = document.querySelector('meta[name="description"]');
+    if (md) md.content = t('meta.desc');
+  }
+  function onLanguage() {
+    applyStatic();
+    uiDirty = { garage: true, buffs: true, journal: true };
+    $('#effects').dataset.html = '';
+    syncSoundBtn(); syncSkyBtn();
+    if (!$('#modal').hidden && modalRender) modalRender();
+    refreshUI();
   }
 
   // Gökyüzü ayarı sayfanın data-theme özniteliğini yönetir; sahne ve arayüz bu özniteliği zaten izler.
@@ -542,7 +571,7 @@
   function syncSkyBtn() {
     const night = scene.mode === 'dark';
     const btn = $('#btnSky');
-    btn.title = night ? 'Gündüze geç' : 'Geceye geç';
+    btn.title = night ? t('ui.toDay') : t('ui.toNight');
     btn.setAttribute('aria-label', btn.title);
     btn.querySelector('.ico-sun').hidden = night;
     btn.querySelector('.ico-moon').hidden = !night;
@@ -552,7 +581,7 @@
     const on = S.settings.sfx || S.settings.music;
     const btn = $('#btnSound');
     btn.setAttribute('aria-pressed', String(on));
-    btn.title = on ? 'Sesi kapat' : 'Sesi aç';
+    btn.title = on ? t('ui.soundOff') : t('ui.soundOn');
     btn.querySelector('.ico-on').hidden = !on;
     btn.querySelector('.ico-off').hidden = on;
   }
@@ -567,11 +596,11 @@
     const firstLocked = VEHICLES.findIndex(v => !S.owned[v.id]);
     const base = Econ.base(S), bulk = S.settings.bulk, lead = Econ.lead(S);
     let html = `<div class="garage-top">
-      <p class="tag">Hızını garajdaki en güçlü araç belirler: <b>${VEH[lead].name}</b>.${base.convoy > 0
-        ? ` Diğer araçlar <b>+${fmtSpeed(base.convoy)}</b> katıyor.`
-        : ` Diğer araçlar hızlarının %${Math.round(CONVOY * 100)} kadarını katar.`} Hangi araca bindiğin yalnızca görünümü değiştirir.</p>
-      <div class="seg" role="group" aria-label="Yükseltme miktarı">${BULKS.map(n =>
-        `<button class="seg-btn" data-act="bulk" data-id="${n}" aria-pressed="${bulk === n}">${n === 'max' ? 'Maks' : '×' + n}</button>`).join('')}</div>
+      <p class="tag">${t('garage.lead', { lead: VEH[lead].name })} ${base.convoy > 0
+        ? t('garage.convoy', { s: fmtSpeed(base.convoy) })
+        : t('garage.convoy0', { p: fmtPct(CONVOY * 100) })} ${t('garage.cosmetic')}</p>
+      <div class="seg" role="group" aria-label="${t('ui.bulkLabel')}">${BULKS.map(n =>
+        `<button class="seg-btn" data-act="bulk" data-id="${n}" aria-pressed="${bulk === n}">${n === 'max' ? t('ui.max') : '×' + n}</button>`).join('')}</div>
     </div>`;
     // Sıradaki araç hedef olarak görünür; ondan sonrakiler resim ya da isim vermeden tek bir kapalı kapının ardında bekler
     let hidden = 0;
@@ -584,26 +613,26 @@
       html += `<article class="card veh${active ? ' active' : ''}${owned ? '' : ' locked'}">
         <canvas class="icon" data-icon="${v.id}" width="72" height="56"></canvas>
         <div class="body">
-          <div class="row"><h3>${v.name}${owned && v.id === lead ? ' <span class="lvl" title="Hızını bu araç belirliyor">En güçlü</span>' : ''}</h3>${active ? '<span class="chip on">Yolda</span>' : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">Bin</button>` : ''}</div>
+          <div class="row"><h3>${v.name}${owned && v.id === lead ? ` <span class="lvl" title="${t('ui.strongestTip')}">${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
-          <p class="stats"><span>Otomatik <b>${fmtSpeed(st.idle)}</b></span><span>Tık başına <b>${fmtGain(st.click)}</b></span></p>
+          <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span></p>
           ${owned
-            ? `<div class="up"><div><span class="upname">${v.upName}</span> <span class="lvl">Sv. ${lvl}</span><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-            : `<div class="up">${costBtn('buyVeh', v.id, v.cost, 'Satın al')}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
+            ? `<div class="up"><div><span class="upname">${v.upName}</span> <span class="lvl">${t('ui.lvl', { n: lvl })}</span><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
+            : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
         </div></article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
-      <div class="body"><h3>???</h3><p class="tag">Garaj kapısının ardında ${hidden} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.</p></div></article>`;
+      <div class="body"><h3>???</h3><p class="tag">${t('garage.mystery', { n: hidden })}</p></div></article>`;
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, c.dataset.locked === '1'));
   }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
-    return costBtn('upgrade', v.id, q.cost, q.n > 1 ? `Yükselt ×${q.n}` : 'Yükselt');
+    return costBtn('upgrade', v.id, q.cost, q.n > 1 ? t('ui.upgradeN', { n: q.n }) : t('ui.upgrade'));
   }
   function nextDoubling(lvl) {
-    const t = DOUBLINGS.find(x => x > lvl);
-    return t ? `Her seviye +%25 hız · Sv. ${t} olunca hız ×2` : 'Her seviye +%25 hız';
+    const next = DOUBLINGS.find(x => x > lvl);
+    return next ? t('ui.doubling', { p: fmtPct(25), t: next }) : t('ui.perLevel', { p: fmtPct(25) });
   }
 
   function renderBuffs() {
@@ -612,24 +641,23 @@
       const lvl = S.buffs[b.id], maxed = b.max && lvl >= b.max;
       return `<article class="card buff">
         <div class="body">
-          <div class="row"><h3>${b.name}</h3><span class="lvl">Sv. ${lvl}${b.max ? ' / ' + b.max : ''}</span></div>
-          <p class="tag">${lvl ? b.desc(lvl) : 'Henüz alınmadı.'}</p>
-          <div class="up"><small>Sonraki seviye: ${b.next}</small>${maxed ? '<span class="chip on">Tamamlandı</span>' : costBtn('buff', b.id, Econ.buffCost(b, lvl), 'Al')}</div>
+          <div class="row"><h3>${b.name}</h3><span class="lvl">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}</span></div>
+          <p class="tag">${lvl ? b.desc(lvl) : t('ui.notYet')}</p>
+          <div class="up"><small>${t('ui.nextLevel', { x: b.next })}</small>${maxed ? `<span class="chip on">${t('ui.done')}</span>` : costBtn('buff', b.id, Econ.buffCost(b, lvl), t('ui.get'))}</div>
         </div></article>`;
     }).join('') + homeCard();
   }
   function homeCard() {
-    const gain = Econ.memoryGain(S.distance), pct = Math.round(HOME.bonus * 100);
-    const now = S.memories ? `Hatıraların: <b>${fmtNum(S.memories)}</b> · kalıcı hız +%${fmtNum(pct * S.memories)}.` : 'Henüz hatıran yok.';
+    const gain = Econ.memoryGain(S.distance), pct = HOME.bonus * 100;
+    const now = S.memories ? t('homecard.mem', { n: fmtNum(S.memories), p: fmtPct(pct * S.memories) }) : t('homecard.none');
     return `<article class="card home">
       <div class="body">
-        <div class="row"><h3>Eve Dönüş</h3><span class="lvl">${S.trips ? S.trips + '. yolculuk tamam' : 'İlk yolculuk'}</span></div>
-        <p class="tag">Yolculuğunu tamamla ve eve dön. Kredi, araçlar, yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır; rozetler ve istatistikler kalır.
-          Her hatıra sonraki yolculuklarda kalıcı olarak +%${pct} hız verir. ${now}</p>
+        <div class="row"><h3>${t('homecard.title')}</h3><span class="lvl">${S.trips ? t('homecard.trips', { n: S.trips }) : t('homecard.first')}</span></div>
+        <p class="tag">${t('homecard.desc', { p: fmtPct(pct) })} ${now}</p>
         ${gain || S.homeReady
-          ? `<p class="tag">Şimdi dönersen: <b class="mem" id="homeGain"></b> · sıradaki hatıra <span id="homeNext"></span></p>`
-          : `<p class="tag">Eve dönüş yolu <b>${fmtDist(HOME.min)}</b> yolculuktan sonra açılır.</p><div class="progress"><i id="homeProg"></i></div>`}
-        <div class="up"><small>Uzun yolculuk, çok hatıra: mesafe 8 katına çıkınca hatıralar 2 katına çıkar.</small><button class="buy home-btn" data-act="home" ${gain ? '' : 'disabled'}>Eve dön</button></div>
+          ? `<p class="tag">${t('homecard.now', { gain: '<b class="mem" id="homeGain"></b>', next: '<span id="homeNext"></span>' })}</p>`
+          : `<p class="tag">${t('homecard.locked', { d: fmtDist(HOME.min) })}</p><div class="progress"><i id="homeProg"></i></div>`}
+        <div class="up"><small>${t('homecard.hint')}</small><button class="buy home-btn" data-act="home" ${gain ? '' : 'disabled'}>${t('ui.home')}</button></div>
       </div></article>`;
   }
 
@@ -638,7 +666,7 @@
     const stamps = [];
     for (let i = 0; i <= S.regionIdx; i++) {
       const r = IT.regionAt(i);
-      stamps.push(`<li class="stamp s-${r.biome}" style="--r:${((i * 37) % 11) - 5}deg"><span>${esc(r.name)}</span><small>${i === 0 ? 'Başlangıç' : fmtDist(r.at)}</small></li>`);
+      stamps.push(`<li class="stamp s-${r.biome}" style="--r:${((i * 37) % 11) - 5}deg"><span>${esc(r.name)}</span><small>${i === 0 ? t('j.start') : fmtDist(r.at)}</small></li>`);
     }
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
@@ -649,36 +677,39 @@
       return `<li class="badge${on ? ' on' : ''}" title="${esc(b.desc)}"><span class="medal" aria-hidden="true">${on ? '★' : '?'}</span><b>${on ? esc(b.name) : '???'}</b><small>${esc(b.desc)}</small></li>`;
     }).join('');
     pane.innerHTML = `
-      <h3 class="sec">Yolculuk</h3>
+      <h3 class="sec">${t('j.trip')}</h3>
       <dl class="statgrid">
-        <div><dt>${S.trips ? 'Bu yolculuk' : 'Toplam yol'}</dt><dd id="jDist"></dd></div>
-        <div><dt>Toplam kredi</dt><dd id="jCred"></dd></div>
-        <div><dt>Atılan adım</dt><dd id="jClicks"></dd></div>
-        <div><dt>Yolda geçen süre</dt><dd id="jTime"></dd></div>
-        <div><dt>Rekor hız</dt><dd id="jBest"></dd></div>
-        <div><dt>Yakalanan kelebek</dt><dd id="jGifts"></dd></div>
-        <div><dt>Şanslı adım</dt><dd id="jCrits"></dd></div>
-        <div><dt>Görülen gökkuşağı</dt><dd id="jRainbows"></dd></div>
-        ${S.trips ? `<div><dt>Tüm yolculuklar</dt><dd id="jLife"></dd></div>
-        <div><dt>Hatıralar</dt><dd>${fmtNum(S.memories)} · hız +%${fmtNum(Math.round(HOME.bonus * S.memories * 100))}</dd></div>` : ''}
+        <div><dt>${S.trips ? t('j.thisTrip') : t('j.total')}</dt><dd id="jDist"></dd></div>
+        <div><dt>${t('j.credits')}</dt><dd id="jCred"></dd></div>
+        <div><dt>${t('j.clicks')}</dt><dd id="jClicks"></dd></div>
+        <div><dt>${t('j.time')}</dt><dd id="jTime"></dd></div>
+        <div><dt>${t('j.best')}</dt><dd id="jBest"></dd></div>
+        <div><dt>${t('j.gifts')}</dt><dd id="jGifts"></dd></div>
+        <div><dt>${t('j.crits')}</dt><dd id="jCrits"></dd></div>
+        <div><dt>${t('j.rainbows')}</dt><dd id="jRainbows"></dd></div>
+        ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
+        <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
-      <h3 class="sec">Pasaport damgaları <small>${S.regionIdx + 1} bölge · her biri kalıcı +%6 hız</small></h3>
+      <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
-      <h3 class="sec">Rozetler <small>${nBadges} / ${BADGES.length} · kredi +%${Math.round(nBadges * BADGE_BONUS * 100)}</small></h3>
+      <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGES.length, p: fmtPct(nBadges * BADGE_BONUS * 100) })}</small></h3>
       <ul class="badges">${badges}</ul>
-      <h3 class="sec">Geçilen duraklar</h3>
-      <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : '<li class="muted">Henüz bir durak geçilmedi. İlk yüz metre çok yakın.</li>'}</ul>
-      <h3 class="sec">Çevrimdışı yolculuk</h3>
-      <p class="tag">Oyun kapalıyken otomatik hızın <b>%${Math.round(Econ.offlineRate(S.buffs.dream) * 100)}</b> kadarıyla ilerlersin. Sınır: <b>${Econ.offlineCapHours(S.buffs.camp)} saat</b>.</p>
-      <h3 class="sec">Ayarlar</h3>
+      <h3 class="sec">${t('j.ms')}</h3>
+      <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : `<li class="muted">${t('j.msNone')}</li>`}</ul>
+      <h3 class="sec">${t('j.offline')}</h3>
+      <p class="tag">${t('j.offlineDesc', { p: fmtPct(Econ.offlineRate(S.buffs.dream) * 100), h: fmtHours(Econ.offlineCapHours(S.buffs.camp)) })}</p>
+      <h3 class="sec">${t('j.settings')}</h3>
       <div class="settings">
-        <button class="toggle" data-act="sfx" aria-pressed="${S.settings.sfx}">Ses efektleri <b>${S.settings.sfx ? 'Açık' : 'Kapalı'}</b></button>
-        <button class="toggle" data-act="music" aria-pressed="${S.settings.music}">Ortam sesi <b>${S.settings.music ? 'Açık' : 'Kapalı'}</b></button>
-        <div class="toggle sky"><span>Gökyüzü</span><div class="seg" role="group" aria-label="Gökyüzü">${SKIES.map(k =>
-          `<button class="seg-btn" data-act="sky" data-id="${k}" aria-pressed="${S.settings.sky === k}">${SKY_NAME[k]}</button>`).join('')}</div></div>
-        <button class="danger" data-act="reset">Yolculuğu sıfırla</button>
+        <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
+        <div class="toggle sky"><span>${t('j.units')}</span><div class="seg" role="group" aria-label="${t('j.units')}">${UNITS.map(k =>
+          `<button class="seg-btn" data-act="units" data-id="${k}" aria-pressed="${S.settings.units === k}">${t('units.' + k)}</button>`).join('')}</div></div>
+        <button class="toggle" data-act="sfx" aria-pressed="${S.settings.sfx}">${t('j.sfx')} <b>${S.settings.sfx ? t('j.on') : t('j.off')}</b></button>
+        <button class="toggle" data-act="music" aria-pressed="${S.settings.music}">${t('j.music')} <b>${S.settings.music ? t('j.on') : t('j.off')}</b></button>
+        <div class="toggle sky"><span>${t('j.sky')}</span><div class="seg" role="group" aria-label="${t('j.sky')}">${SKIES.map(k =>
+          `<button class="seg-btn" data-act="sky" data-id="${k}" aria-pressed="${S.settings.sky === k}">${t('sky.' + k)}</button>`).join('')}</div></div>
+        <button class="danger" data-act="reset">${t('ui.reset')}</button>
       </div>
-      <p class="tag muted small">İlerleme bu tarayıcıda otomatik kaydedilir.</p>`;
+      <p class="tag muted small">${t('j.saved')}</p>`;
   }
 
   function refreshUI() {
@@ -692,9 +723,9 @@
     setText('#hudSpeed', fmtSpeed(Math.max(rateEma, cur.idle)));
     setText('#hudVehicle', VEH[S.active].name);
     setText('#credits', fmtNum(S.credits));
-    setText('#income', `+${IT.fmtSmall(Math.max(creditEma, cur.idle * cur.cpm))} / sn`);
+    setText('#income', t('ui.perSec', { c: IT.fmtSmall(Math.max(creditEma, cur.idle * cur.cpm)) }));
     const cm = comboMult();
-    setText('#rhythmVal', '×' + nf2.format(cm));
+    setText('#rhythmVal', '×' + fmt2(cm));
     $('#rhythmFill').style.transform = `scaleX(${Math.min(combo, 20) / 20})`;
     // sıradaki durak
     const m = MILESTONES[S.msIdx];
@@ -704,12 +735,12 @@
       setText('#msProg', `${fmtDist(S.distance)} / ${fmtDist(m.at)}`);
       $('#msFill').style.transform = `scaleX(${Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev)))})`;
     } else {
-      setText('#msName', 'Bilinmeyen yıldızlar'); setText('#msProg', fmtDist(S.distance));
+      setText('#msName', t('ms.unknown')); setText('#msProg', fmtDist(S.distance));
       $('#msFill').style.transform = 'scaleX(1)';
     }
     // etkiler
     const now = Date.now();
-    const fx = S.effects.filter(e => e.until > now).map(e => `<span class="fx fx-${e.id}"><b>${GIFT[e.id].name}</b> ${GIFT[e.id].text} · ${Math.ceil((e.until - now) / 1000)} sn</span>`).join('');
+    const fx = S.effects.filter(e => e.until > now).map(e => `<span class="fx fx-${e.id}">${t('ui.fx', { name: GIFT[e.id].name, text: GIFT[e.id].text, dur: fmtDuration(Math.ceil((e.until - now) / 1000)) })}</span>`).join('');
     const fxBox = $('#effects');
     if (fxBox.dataset.html !== fx) { fxBox.innerHTML = fx; fxBox.dataset.html = fx; }
     // butonlar ('Maks' modunda miktar bütçeyle değişir)
@@ -717,7 +748,7 @@
       const v = VEH[b.dataset.id], q = Econ.upgradeQuote(v, S.levels[v.id] || 0, 'max', S.credits);
       if (+b.dataset.cost === q.cost) return;
       b.dataset.cost = q.cost;
-      b.innerHTML = `<span>${q.n > 1 ? `Yükselt ×${q.n}` : 'Yükselt'}</span><b>${coin}${fmtNum(q.cost)}</b>`;
+      b.innerHTML = `<span>${q.n > 1 ? t('ui.upgradeN', { n: q.n }) : t('ui.upgrade')}</span><b>${coin}${fmtNum(q.cost)}</b>`;
     });
     document.querySelectorAll('[data-cost]').forEach(b => {
       const ok = S.credits + 1e-9 >= +b.dataset.cost;
@@ -731,7 +762,7 @@
     $('.tab[data-id="buffs"]').classList.toggle('dot', canBuffs);
     if (!$('#pane-buffs').hidden) {
       const gain = Econ.memoryGain(S.distance);
-      setText('#homeGain', `+${fmtNum(gain)} hatıra`);
+      setText('#homeGain', t('homecard.gain', { n: gain, c: fmtNum(gain) }));
       setText('#homeNext', fmtDist(Econ.memoryNext(S.distance)));
       const hp = $('#homeProg'); if (hp) hp.style.transform = `scaleX(${Math.min(1, S.distance / HOME.min)})`;
       const hb = $('.home-btn'); if (hb && hb.disabled !== !gain) hb.disabled = !gain;
@@ -741,7 +772,7 @@
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
-      if (S.trips) setText('#jLife', `${fmtDist(S.lifeDist + S.distance)} · ${S.trips + 1}. yolculuk`);
+      if (S.trips) setText('#jLife', t('j.lifeVal', { d: fmtDist(S.lifeDist + S.distance), n: S.trips + 1 }));
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
@@ -749,6 +780,8 @@
   /* ---------- Başlatma ---------- */
   function start(hotSave) {
     S = (hotSave && sanitize(hotSave)) || load() || defaultState();
+    IT.setUnits(S.settings.units); IT.setLang(S.settings.lang);
+    applyStatic();
     scene = new IT.Scene($('#scene'));
     applySky();
     // Sahne tarayıcı temasını izler: açık tema gündüz, koyu tema gece
@@ -764,7 +797,7 @@
       if (m === scene.mode) return;
       scene.setMode(m);
       syncSkyBtn();
-      toast(m === 'dark' ? 'Akşam iniyor. Fenerler yanıyor, yıldızlar çıkıyor.' : 'Gün doğuyor. Yol yeniden aydınlanıyor.', 'teal');
+      toast(t(m === 'dark' ? 'toast.dusk' : 'toast.dawn'), 'teal');
     };
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme); }
     if (window.MutationObserver) new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -809,6 +842,10 @@
       // Fareyle/dokunarak basıldıysa odağı bırak: yoksa Boşluk tuşu adım yerine aynı düğmeye tekrar basar
       if (e.detail > 0 && document.activeElement && document.activeElement.blur) document.activeElement.blur();
       refreshUI();
+    });
+    IT.onLang(onLanguage);
+    document.addEventListener('change', e => {
+      if (e.target.matches && e.target.matches('.lang-select')) { Sound.unlock(); actions.lang(e.target.value); }
     });
     $('#btnSound').addEventListener('click', e => {
       Sound.unlock();

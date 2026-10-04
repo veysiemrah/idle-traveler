@@ -22,12 +22,12 @@
 <body>
 <!--APP-->
 <div class="app">
-  <main class="stage" id="stage" aria-label="Yolculuk sahnesi. Adım atmak için dokun ya da Boşluk tuşuna bas.">
+  <main class="stage" id="stage" aria-label="Yolculuk sahnesi. Adım atmak için dokun ya da Boşluk tuşuna bas." data-i18n-aria="html.stageLabel">
     <canvas id="scene"></canvas>
 
     <header class="hud">
       <div class="hud-card">
-        <p class="eyebrow">Şu an buradasın</p>
+        <p class="eyebrow" data-i18n="html.here">Şu an buradasın</p>
         <p class="region" id="hudRegion">Sabah Köyü</p>
         <p class="dist" id="hudDist">0 m</p>
         <p class="hud-row"><span class="speed" id="hudSpeed">0 km/sa</span><span class="dotsep" aria-hidden="true"></span><span id="hudVehicle">Yürüyüş</span></p>
@@ -36,12 +36,12 @@
         <button class="iconbtn" id="btnSky" type="button" title="Geceye geç">
           <svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
-          <span class="sr">Gündüz / gece</span>
+          <span class="sr" data-i18n="html.dayNight">Gündüz / gece</span>
         </button>
         <button class="iconbtn" id="btnSound" type="button" aria-pressed="true" title="Sesi kapat">
           <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span class="sr">Ses</span>
+          <span class="sr" data-i18n="html.sound">Ses</span>
         </button>
       </div>
     </header>
@@ -50,21 +50,21 @@
     <div class="toasts" id="toasts" aria-live="polite"></div>
 
     <div class="banner" id="banner" hidden>
-      <p class="eyebrow">Yeni bölge keşfedildi</p>
+      <p class="eyebrow" data-i18n="html.newRegion">Yeni bölge keşfedildi</p>
       <p class="banner-name" id="bannerName"></p>
       <p class="banner-sub" id="bannerSub"></p>
     </div>
 
-    <p class="hint" id="hint"><span>Adım atmak için dokun</span><small>ya da Boşluk tuşuna bas</small></p>
+    <p class="hint" id="hint"><span data-i18n="html.hint">Adım atmak için dokun</span><small data-i18n="html.hint2">ya da Boşluk tuşuna bas</small></p>
 
     <footer class="trail">
-      <div class="rhythm" title="Hızlı ve ritmik tıklamalar adımlarını uzatır">
-        <span class="lbl">Ritim</span>
+      <div class="rhythm" title="Hızlı ve ritmik tıklamalar adımlarını uzatır" data-i18n-title="html.rhythmTip">
+        <span class="lbl" data-i18n="html.rhythm">Ritim</span>
         <span class="bar"><i id="rhythmFill"></i></span>
         <b id="rhythmVal">×1,00</b>
       </div>
       <div class="milestone">
-        <div class="ms-top"><span class="lbl">Sıradaki durak</span><b id="msName">İlk yüz metre</b><span id="msProg" class="ms-prog"></span></div>
+        <div class="ms-top"><span class="lbl" data-i18n="html.nextStop">Sıradaki durak</span><b id="msName">İlk yüz metre</b><span id="msProg" class="ms-prog"></span></div>
         <span class="bar"><i id="msFill"></i></span>
       </div>
     </footer>
@@ -74,15 +74,15 @@
     <div class="wallet">
       <i class="coin big" aria-hidden="true"></i>
       <div>
-        <p class="eyebrow">Yol kredisi</p>
+        <p class="eyebrow" data-i18n="html.wallet">Yol kredisi</p>
         <p class="credits" id="credits">0</p>
       </div>
       <p class="income" id="income">+0 / sn</p>
     </div>
-    <nav class="tabs" role="tablist" aria-label="Mağaza">
-      <button class="tab" role="tab" data-act="tab" data-id="garage" aria-selected="true">Garaj</button>
-      <button class="tab" role="tab" data-act="tab" data-id="buffs" aria-selected="false">Güçlendirmeler</button>
-      <button class="tab" role="tab" data-act="tab" data-id="journal" aria-selected="false">Yol Defteri</button>
+    <nav class="tabs" role="tablist" aria-label="Mağaza" data-i18n-aria="html.shop">
+      <button class="tab" role="tab" data-act="tab" data-id="garage" aria-selected="true" data-i18n="tab.garage">Garaj</button>
+      <button class="tab" role="tab" data-act="tab" data-id="buffs" aria-selected="false" data-i18n="tab.buffs">Güçlendirmeler</button>
+      <button class="tab" role="tab" data-act="tab" data-id="journal" aria-selected="false" data-i18n="tab.journal">Yol Defteri</button>
     </nav>
     <div class="panes">
       <section class="tabpane" id="pane-garage" role="tabpanel"></section>
@@ -95,11 +95,17 @@
 <div class="modal" id="modal" hidden>
   <div class="modal-card" role="dialog" aria-modal="true">
     <div id="modalBody"></div>
-    <button class="primary" id="modalBtn" type="button">Tamam</button>
+    <button class="primary" id="modalBtn" type="button" data-i18n="html.ok">Tamam</button>
   </div>
 </div>
 <!--/APP-->
 
+<script src="js/i18n.js"></script>
+<script src="js/lang/tr.js"></script>
+<script src="js/lang/en.js"></script>
+<script src="js/lang/de.js"></script>
+<script src="js/lang/es.js"></script>
+<script src="js/lang/fr.js"></script>
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/scene.js"></script>

@@ -398,6 +398,14 @@ button { font: inherit; color: inherit; }
 .toggle.sky:hover { background: var(--ink-2); }
 .toggle[aria-pressed="true"] b { color: var(--teal); }
 .toggle:hover, .danger:hover { background: var(--ink-3); }
+.toggle.select { cursor: default; align-items: center; }
+.toggle.select:hover { background: var(--ink-2); }
+.lang-select {
+  font: 600 13.5px var(--font-body); color: var(--paper); background: var(--ink-3);
+  border: 1px solid var(--line-soft); border-radius: 8px; padding: 5px 8px; max-width: 60%; cursor: pointer;
+}
+.intro-lang { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
+.intro-lang .lang-select { max-width: none; }
 .danger { color: var(--rose); }
 .danger.armed { background: rgba(255, 143, 143, 0.14); border-color: rgba(255, 143, 143, 0.5); }
 
