@@ -46,14 +46,14 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
 - **Toplu yükseltme**: Garajın üstündeki ×1 / ×10 / Maks seçimiyle tek dokunuşta birden çok seviye alınır.
 - **Güçlendirmeler**: Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu (kredi), Yolun Ritmi,
-  Şanslı Adım (10 kat uzun adım), Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.
+  Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.
 - **Bölgeler**: Sabah Köyü, Lavanta Tarlaları, Çam Ormanı, Altın Buğday Ovası, Ege Sahil Yolu, Kızıl Kanyon,
   Kiraz Çiçeği Vadisi, Sonbahar Korusu, Vaha Yolu, Karlı Geçit, Kuzey Işıkları, Rize Çay Bahçeleri, Peri Bacaları…
   Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
 - **Duraklar**: Maraton, İstanbul – Ankara, Dünya turu, Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
-- **Rozetler**: Adım, kelebek, bölge, mesafe, garaj ve yükseltme hedefleriyle 22 rozet. Her rozet kalıcı olarak +%3 kredi verir.
+- **Rozetler**: Adım, ritim, kelebek, gökkuşağı, bölge, mesafe, garaj ve yükseltme hedefleriyle 22 rozet. Her rozet kalıcı olarak +%3 kredi verir.
   Yol Defteri'nde görünür.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.

@@ -30,7 +30,7 @@
     return {
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
-      crits: 0, rainbows: 0, nightTime: 0,
+      rainbows: 0, nightTime: 0,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
@@ -44,6 +44,7 @@
       return sanitize(JSON.parse(raw));
     } catch (e) { return null; }
   }
+  let refundNote = 0; // eski kayıttan kaldırılan güçlendirme için iade edilen kredi
   const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
   const count = (x, max) => { x = Math.floor(+x); return isFinite(x) && x > 0 ? Math.min(x, max === undefined ? Infinity : max) : 0; };
   // Bozuk ya da eski sürümden kalan kayıtları güvenli değerlere çeker
@@ -52,10 +53,18 @@
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
     s.msIdx = count(s.msIdx, MILESTONES.length);
     const buffs = isObj(d.buffs) ? d.buffs : {};
     s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max)]));
+    // Kaldırılan "Şanslı Adım" güçlendirmesine harcanan krediler geri verilir (eski fiyat: 250 × 3^seviye)
+    const luck = count(buffs.luck, 10);
+    if (luck) {
+      let refund = 0;
+      for (let i = 0; i < luck; i++) refund += Math.ceil(250 * Math.pow(3, i));
+      if (typeof s.credits === 'number' && isFinite(s.credits)) s.credits += refund; else s.credits = refund;
+      refundNote = refund;
+    }
     const owned = isObj(d.owned) ? d.owned : {}, levels = isObj(d.levels) ? d.levels : {};
     s.owned = { walk: true }; s.levels = {};
     for (const v of VEHICLES) {
@@ -177,14 +186,12 @@
     combo = now - lastClick < 650 ? combo + 1 : Math.max(1, combo * 0.5);
     lastClick = now;
     const cur = current();
-    const crit = Math.random() < Econ.luckChance(S.buffs.luck);
-    const d = cur.click * comboMult() * (crit ? 10 : 1);
+    const d = cur.click * comboMult();
     addDistance(d, cur.cpm);
     S.clicks++;
-    if (crit) S.crits++;
-    scene.onStep(crit);
-    scene.addFloat(crit ? `Şanslı adım! +${fmtGain(d)}` : `+${fmtGain(d)}`, crit ? { color: '#ffd56b', big: true } : null);
-    Sound.step(S.active, crit);
+    scene.onStep();
+    scene.addFloat(`+${fmtGain(d)}`);
+    Sound.step(S.active);
     if (S.clicks === 6) $('#hint').classList.add('gone');
     checkProgress();
     checkBadges();
@@ -451,7 +458,7 @@
       <p class="lead">Sırt çantan hazır, yol önünde. Ekrana her dokunuşun bir adım. Kat ettiğin her metre kredi kazandırır.</p>
       <ul class="intro-list">
         <li><b>Garaj</b>: yeni araçlar al, onları yükselt. Her yeni araç yolculuğu başka bir yere taşır.</li>
-        <li><b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, şanslı adımlar.</li>
+        <li><b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, rüyada yolculuk.</li>
         <li><b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir.</li>
         <li>Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.</li>
         <li><b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.</li>
@@ -555,7 +562,7 @@
         <div><dt>Yolda geçen süre</dt><dd id="jTime"></dd></div>
         <div><dt>Rekor hız</dt><dd id="jBest"></dd></div>
         <div><dt>Yakalanan kelebek</dt><dd id="jGifts"></dd></div>
-        <div><dt>Şanslı adım</dt><dd id="jCrits"></dd></div>
+        <div><dt>Geçilen durak</dt><dd id="jStops"></dd></div>
         <div><dt>Görülen gökkuşağı</dt><dd id="jRainbows"></dd></div>
       </dl>
       <h3 class="sec">Pasaport damgaları <small>${S.regionIdx + 1} bölge · her biri kalıcı +%6 hız</small></h3>
@@ -627,7 +634,7 @@
       setText('#jDist', fmtDist(S.distance)); setText('#jCred', fmtNum(S.totalCredits));
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
-      setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
+      setText('#jStops', `${S.msIdx} / ${MILESTONES.length}`); setText('#jRainbows', fmtNum(S.rainbows));
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
@@ -714,6 +721,11 @@
 
     // İlk açılış ya da çevrimdışı dönüş
     const gap = (Date.now() - S.lastSeen) / 1000;
+    if (refundNote) {
+      save(); // iade bir kez verilsin: kayıt artık eski güçlendirmeyi içermiyor
+      toast(`<b>Şanslı Adım kaldırıldı</b> · Ona harcadığın ${fmtNum(refundNote)} kredi geri verildi.`, 'gold');
+      refundNote = 0;
+    }
     if (!S.intro) showIntro();
     else if (gap > 30) { const o = applyOffline(gap); showOffline(o); }
     S.lastSeen = Date.now();

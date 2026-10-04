@@ -3,7 +3,6 @@
 (function (root) {
   'use strict';
 
-  const nfp = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
@@ -40,8 +39,6 @@
       desc: l => `Metre başına kredi +%${25 * l}.`, next: '+%25 kredi' },
     { id: 'rhythm',   name: 'Yolun Ritmi',            base: 150,  growth: 3.0, max: 10,
       desc: l => `Seri tıklama bonusu en fazla %${Math.round((0.5 + 0.1 * l) * 100)}.`, next: '+%10 ritim tavanı' },
-    { id: 'luck',     name: 'Şanslı Adım',            base: 250,  growth: 3.0, max: 10,
-      desc: l => `Tıklamaların %${nfp.format(1.5 * l)} ihtimalle 10 kat uzun.`, next: '+%1,5 şans' },
     { id: 'dream',    name: 'Rüyada Yolculuk',        base: 400,  growth: 2.4, max: 10,
       desc: l => `Oyun kapalıyken ilerleme hızı: otomatik hızın %${30 + 6 * l} kadarı.`, next: '+%6 çevrimdışı hız' },
     { id: 'camp',     name: 'Uzun Mola',              base: 600,  growth: 2.1, max: 20,
@@ -160,16 +157,16 @@
     { id: 'steps1k',   name: 'Yorulmak Bilmez',      desc: '1.000 adım at.',                        test: s => s.clicks >= 1000 },
     { id: 'steps10k',  name: 'Demir Bacaklar',       desc: '10.000 adım at.',                       test: s => s.clicks >= 10000 },
     { id: 'rhythm',    name: 'Ritim Ustası',         desc: 'Ritim çubuğunu sonuna kadar doldur.',   test: (s, rt) => rt && rt.combo >= 20 },
-    { id: 'lucky',     name: 'Uğur Böceği',          desc: 'İlk şanslı adımını at.',                test: s => s.crits >= 1 },
-    { id: 'lucky100',  name: 'Talih Kuşu',           desc: '100 şanslı adım at.',                   test: s => s.crits >= 100 },
     { id: 'fly1',      name: 'Kelebek Avcısı',       desc: 'İlk altın kelebeği yakala.',            test: s => s.gifts >= 1 },
     { id: 'fly25',     name: 'Kelebek Bahçesi',      desc: '25 altın kelebek yakala.',              test: s => s.gifts >= 25 },
     { id: 'rainbow',   name: 'Gökkuşağının Altında', desc: 'Yağmurdan sonra bir gökkuşağı gör.',    test: s => s.rainbows >= 1 },
+    { id: 'rainbow10', name: 'Renk Avcısı',          desc: '10 gökkuşağı gör.',                     test: s => s.rainbows >= 10 },
     { id: 'night',     name: 'Gece Kuşu',            desc: 'Gece yolculuğunda 10 dakika geçir.',    test: s => s.nightTime >= 600 },
     { id: 'reg5',      name: 'Gezgin',               desc: '5 bölge keşfet.',                       test: s => s.regionIdx >= 4 },
     { id: 'reg13',     name: 'Dolu Pasaport',        desc: 'Bütün bölgeleri bir kez gör.',          test: s => s.regionIdx >= REGIONS.length - 1 },
     { id: 'reg25',     name: 'İkinci Tur',           desc: '25 bölge keşfet.',                      test: s => s.regionIdx >= 24 },
     { id: 'marathon',  name: 'Maratoncu',            desc: 'Maraton mesafesini geç.',               test: s => s.distance >= 42195 },
+    { id: 'km100',     name: 'Uzun Yolcu',           desc: '100 km yol al.',                        test: s => s.distance >= 1e5 },
     { id: 'world',     name: 'Dünya Turu',           desc: 'Dünyanın çevresi kadar yol al.',        test: s => s.distance >= 4.0075e7 },
     { id: 'moon',      name: 'Ay Yolcusu',           desc: "Ay'a varacak kadar yol al.",            test: s => s.distance >= 3.844e8 },
     { id: 'sun',       name: "Güneş'e Selam",        desc: "Güneş'e varacak kadar yol al.",         test: s => s.distance >= 1.496e11 },
@@ -208,7 +205,6 @@
     rhythmCap(lvl) { return 0.5 + 0.1 * lvl; },
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
-    luckChance(lvl) { return 0.015 * lvl; },
     badgeMult(state) { return 1 + BADGE_BONUS * Object.keys(state.badges || {}).length; },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {
