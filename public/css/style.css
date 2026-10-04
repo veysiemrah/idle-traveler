@@ -190,7 +190,10 @@ button { font: inherit; color: inherit; }
   .banner { top: max(38%, 180px); }
   .banner-name { font-size: clamp(26px, 8cqi, 40px); }
   .banner-on .toasts { top: calc(max(38%, 180px) + 64px); }
+  /* Uzun bölge adları her dilde sığsın diye afiş görünürken HUD kartı ve etkiler solar */
+  .banner-on .hud-card, .banner-on .effects { opacity: 0.12; }
 }
+.hud-card, .effects { transition: opacity .5s; }
 
 .hint {
   position: absolute; left: 50%; top: 52%; transform: translateX(-50%);

@@ -60,17 +60,19 @@
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'memories', 'trips']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
+    s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
     s.msIdx = Math.min(count(s.msIdx, MILESTONES.length), MILESTONES.filter(m => m.at <= s.distance).length);
     const buffs = isObj(d.buffs) ? d.buffs : {};
-    s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max)]));
+    // Sınırsız güçlendirmelerde de makul bir tavan: bozuk kayıt sonsuz fiyat ve hız üretmesin
+    s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max || 300)]));
     const owned = isObj(d.owned) ? d.owned : {}, levels = isObj(d.levels) ? d.levels : {};
     s.owned = { walk: true }; s.levels = {};
     for (const v of VEHICLES) {
       if (owned[v.id]) s.owned[v.id] = true;
-      if (s.owned[v.id]) s.levels[v.id] = count(levels[v.id]);
+      if (s.owned[v.id]) s.levels[v.id] = count(levels[v.id], 1000);
     }
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     s.badges = {};
@@ -238,7 +240,7 @@
   /* ---------- Hava ---------- */
   function updateWeather(dt) {
     const biome = IT.regionAt(S.regionIdx).biome;
-    const canRain = RAINY[biome] && scene.alt < 0.3;
+    const canRain = !!RAINY[biome]; // kamera uçarken de yerde kaldığı için yağmur her araçta yağabilir
     if (weather === 'clear') {
       weatherIn -= dt;
       if (weatherIn <= 0) {
@@ -262,7 +264,7 @@
           Sound.region();
           checkBadges();
         } else { weather = 'clear'; scene.setWeather(0, 0); }
-      } else if (weather === 'rainbow' && (weatherT <= 0 || scene.alt >= 0.3)) {
+      } else if (weather === 'rainbow' && weatherT <= 0) {
         weather = 'clear'; scene.setWeather(0, 0);
       }
     }
@@ -359,17 +361,17 @@
     },
     sky(id) {
       if (!SKIES.includes(id) || S.settings.sky === id) return;
-      S.settings.sky = id; applySky();
+      S.settings.sky = id; applySky(); save();
       uiDirty.journal = true;
     },
     lang(id) {
       if (id !== 'auto' && !IT.LANGS[id]) return;
-      S.settings.lang = id; IT.setLang(id);
+      S.settings.lang = id; IT.setLang(id); save();
       toast(t('toast.lang'), 'teal');
     },
     units(id) {
       if (!UNITS.includes(id)) return;
-      S.settings.units = id; IT.setUnits(id);
+      S.settings.units = id; IT.setUnits(id); save();
     },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
@@ -493,7 +495,8 @@
     const regions = o.res.regions.map(x => x.r.name);
     const ms = o.res.milestones.map(x => x.m.name);
     const badges = (o.res.badges || []).map(b => b.name);
-    const list = a => a.map(esc).join(', ');
+    // Uzun aralardan sonra listeler ekranı doldurmasın: son birkaç öğe ve kalan sayısı
+    const list = a => a.slice(-6).map(esc).join(', ') + (a.length > 6 ? ' ' + t('off.more', { n: a.length - 6 }) : '');
     openModal(`
       <p class="eyebrow">${t('off.eyebrow')}</p>
       <h2>${t('off.title')}</h2>
@@ -556,6 +559,7 @@
     $('#effects').dataset.html = '';
     syncSoundBtn(); syncSkyBtn();
     if (!$('#modal').hidden && modalRender) modalRender();
+    scene.relabel();
     refreshUI();
   }
 

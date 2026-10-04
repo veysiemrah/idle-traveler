@@ -4,7 +4,7 @@ IT.addLang('tr', {
   name: 'Türkçe',
   locale: 'tr-TR',
   // 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 için kısaltmalar
-  suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk'],
+  suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk', 'Sp', 'Ok', 'Nn', 'Ds'],
   units: { m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
   strings: {
     'meta.desc': 'Manzaralı bir yolda rahatlatıcı bir idle yolculuk oyunu. Yürüyerek başla; yolun seni nereye götüreceğini keşfet.',
@@ -151,6 +151,7 @@ IT.addLang('tr', {
     'off.regions': 'Yeni bölgeler: <b>{list}</b>', 'off.ms': 'Geçilen duraklar: <b>{list}</b>', 'off.badges': 'Kazanılan rozetler: <b>{list}</b>',
     'off.capped': 'Yalnızca {h} sayıldı. <i>{buff}</i> ile bu sınırı uzatabilirsin.',
     'off.dream': '<i>{buff}</i> güçlendirmesi çevrimdışı hızını artırır.',
+    'off.more': '(+{n} daha)',
     'off.btn': 'Yola devam et', 'off.banner': 'Sen yokken buraya vardın',
 
     // Eve dönüş

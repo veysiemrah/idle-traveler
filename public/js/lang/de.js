@@ -3,7 +3,7 @@ IT.addLang('de', {
   name: 'Deutsch',
   locale: 'de-DE',
   // Abkürzungen für 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 (lange Skala)
-  suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.'],
+  suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.', 'Quadr.', 'Quadrd.', 'Quint.', 'Quintd.'],
   units: { m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
   strings: {
     'meta.desc': 'Eine entspannte Idle-Reise auf einer malerischen Straße. Starte zu Fuß und finde heraus, wohin dich der Weg führt.',
@@ -153,6 +153,7 @@ IT.addLang('de', {
     'off.regions': 'Neue Regionen: <b>{list}</b>', 'off.ms': 'Passierte Stationen: <b>{list}</b>', 'off.badges': 'Neue Abzeichen: <b>{list}</b>',
     'off.capped': 'Nur {h} wurden gezählt. <i>{buff}</i> hebt diese Grenze an.',
     'off.dream': 'Die Verstärkung <i>{buff}</i> erhöht dein Offline-Tempo.',
+    'off.more': '(+{n} weitere)',
     'off.btn': 'Weiterreisen', 'off.banner': 'Hier bist du angekommen, während du weg warst',
 
     // Heimkehr

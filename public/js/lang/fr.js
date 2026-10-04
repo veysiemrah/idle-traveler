@@ -4,7 +4,7 @@ IT.addLang('fr', {
   name: 'Français',
   locale: 'fr-FR',
   // abréviations pour 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 (échelle longue)
-  suffixes: ['M', 'Md', 'Bn', 'Bd', 'Tn', 'Td'],
+  suffixes: ['M', 'Md', 'Bn', 'Bd', 'Tn', 'Td', 'Qn', 'Qd', 'Qt', 'Qtd'],
   units: { m: 'm', km: 'km', au: 'UA', ly: 'années-lumière', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'j', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': "Un voyage idle tout en douceur sur une route pleine de paysages. Pars à pied et découvre où la route te mène.",
@@ -143,6 +143,7 @@ IT.addLang('fr', {
     'off.regions': 'Nouvelles régions : <b>{list}</b>', 'off.ms': 'Étapes franchies : <b>{list}</b>', 'off.badges': 'Badges obtenus : <b>{list}</b>',
     'off.capped': "Le décompte s'arrête à {h}. <i>{buff}</i> relève cette limite.",
     'off.dream': 'Le bonus <i>{buff}</i> augmente ta vitesse hors ligne.',
+    'off.more': '(+{n} autres)',
     'off.btn': 'Continuer la route', 'off.banner': 'Atteint pendant ton absence',
 
     'home.eyebrow': 'Voyage {n} terminé', 'home.title': 'Bienvenue à la maison',

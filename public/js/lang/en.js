@@ -2,7 +2,7 @@
 IT.addLang('en', {
   name: 'English',
   locale: 'en-GB',
-  suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx'],
+  suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'],
   units: { m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': 'A relaxing idle journey along a scenic road. Start on foot and find out where the road takes you.',
@@ -141,6 +141,7 @@ IT.addLang('en', {
     'off.regions': 'New regions: <b>{list}</b>', 'off.ms': 'Stops passed: <b>{list}</b>', 'off.badges': 'Badges earned: <b>{list}</b>',
     'off.capped': 'Only {h} counted. <i>{buff}</i> raises this limit.',
     'off.dream': 'The <i>{buff}</i> boost raises your offline speed.',
+    'off.more': '(+{n} more)',
     'off.btn': 'Keep going', 'off.banner': 'You got here while you were away',
 
     'home.eyebrow': 'Journey {n} complete', 'home.title': 'Welcome home',

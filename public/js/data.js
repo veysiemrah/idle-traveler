@@ -292,12 +292,12 @@
     const key = loc() + digits;
     return NF[key] || (NF[key] = new Intl.NumberFormat(loc(), { minimumFractionDigits: digits, maximumFractionDigits: digits }));
   }
-  const DEFAULT_SUFFIX = ['M', 'B', 'T', 'Qa', 'Qi', 'Sx'];
+  const DEFAULT_SUFFIX = ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
   function fmtNum(n) {
     if (!isFinite(n)) return '∞';
     if (n < 0) return '-' + fmtNum(-n);
-    if (n >= 1e24) return n.toExponential(2).replace('.', nf(1).format(1.5).charAt(1));
     const suf = (L() && L().suffixes) || DEFAULT_SUFFIX;
+    if (n >= Math.pow(10, 6 + 3 * suf.length)) return n.toExponential(2).replace('.', nf(1).format(1.5).charAt(1));
     for (let i = suf.length - 1; i >= 0; i--) {
       const v = Math.pow(10, 6 + 3 * i);
       if (n < v) continue;
