@@ -728,6 +728,11 @@
       else { this.anchorFrom = this.anchor; this.anchorTo = target; this.anchorT = 0; }
     }
 
+    // Dil ya da birim değişince yoldaki tabelaları yeni metinle yeniden yaz
+    relabel() {
+      for (const it of this.layers.road.items) if (it.type === 'sign') { const t = this.signText(); if (t) it.txt = t; }
+    }
+
     setVehicle(id, instant) {
       const v = IT.VEH[id];
       if (id !== this.vehicle && !instant) this.burst(this.travelerX, this.riderY() - 30 * this.k, 26, ['#ffd56b', '#ffffff', '#ffb067']);

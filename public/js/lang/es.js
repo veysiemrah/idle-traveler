@@ -2,7 +2,7 @@
 IT.addLang('es', {
   name: 'Español',
   locale: 'es-ES',
-  suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T'],
+  suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T', 'C', 'mil C', 'Qn', 'mil Qn'],
   units: { m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': 'Un viaje idle y relajante por una carretera llena de paisajes. Empieza a pie y descubre adónde te lleva el camino.',
@@ -141,6 +141,7 @@ IT.addLang('es', {
     'off.regions': 'Nuevas regiones: <b>{list}</b>', 'off.ms': 'Paradas superadas: <b>{list}</b>', 'off.badges': 'Insignias ganadas: <b>{list}</b>',
     'off.capped': 'Solo se han contado {h}. <i>{buff}</i> amplía este límite.',
     'off.dream': 'La mejora <i>{buff}</i> aumenta tu velocidad sin conexión.',
+    'off.more': '(+{n} más)',
     'off.btn': 'Seguir adelante', 'off.banner': 'Llegaste hasta aquí mientras no estabas',
 
     'home.eyebrow': 'Viaje {n} completado', 'home.title': 'Bienvenido a casa',
