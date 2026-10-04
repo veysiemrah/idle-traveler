@@ -375,6 +375,31 @@
     ctx.restore();
   }
 
+  // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar
+  function drawDog(ctx, x, y, k, ph, t) {
+    const bob = Math.abs(Math.sin(ph)) * 1.8 * k;
+    const body = '#ecdcb6', shade = '#cdb88e', dark = '#3b2d27';
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const leg = (lx, off, col) => {
+      const a = Math.sin(ph + off) * 0.65, top = [lx, y - 12 * k - bob];
+      line(ctx, [top[0], top[1], top[0] + Math.sin(a) * 9 * k, y - 1.2 * k - Math.max(0, Math.cos(ph + off)) * 2.5 * k], 3.4 * k, col);
+    };
+    leg(x - 9 * k, 0.5, shade); leg(x + 7 * k, 2.1, shade);
+    ctx.strokeStyle = body; ctx.lineWidth = 3.4 * k;
+    const wag = Math.sin(t * 14) * 2.5 * k;
+    ctx.beginPath(); ctx.moveTo(x - 12 * k, y - 18 * k - bob);
+    ctx.quadraticCurveTo(x - 20 * k, y - 22 * k - bob, x - 15 * k + wag, y - 28 * k - bob); ctx.stroke();
+    ctx.fillStyle = body; ellipse(ctx, x, y - 16.5 * k - bob, 13.5 * k, 6.8 * k);
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ellipse(ctx, x - 2 * k, y - 20 * k - bob, 8 * k, 2 * k);
+    ctx.fillStyle = P.jacket; ellipse(ctx, x + 10 * k, y - 20 * k - bob, 2.2 * k, 4.2 * k, -0.4);
+    ctx.fillStyle = body; ellipse(ctx, x + 14 * k, y - 24.5 * k - bob, 6.4 * k, 5.4 * k);
+    ctx.fillStyle = dark; ellipse(ctx, x + 19.5 * k, y - 23 * k - bob, 3.6 * k, 2.8 * k);
+    ctx.fillStyle = dark; ellipse(ctx, x + 11 * k, y - 27.5 * k - bob, 2.6 * k, 4.4 * k, 0.5);
+    ctx.fillStyle = '#1d1716'; circle(ctx, x + 23 * k, y - 23.6 * k - bob, 1.3 * k); circle(ctx, x + 16 * k, y - 26 * k - bob, 1 * k);
+    if (Math.sin(ph * 0.5) > 0) { ctx.fillStyle = '#e8838e'; ellipse(ctx, x + 20 * k, y - 20 * k - bob, 1.6 * k, 2.4 * k); }
+    leg(x - 6 * k, 3.7, body); leg(x + 10 * k, 5.3, body);
+  }
+
   // Kaykay: ön ayak tahtada, arka ayak yere basıp iter
   function drawBoard(ctx, x, y, k, st) {
     const by = y - 6 * k, q = st.phase;
@@ -873,6 +898,7 @@
       const stride = { walk: 23, skates: 34, board: 44, bike: 30, horse: 24, moto: 1, car: 1, van: 1, train: 1 }[this.vehicle] || 30;
       this.phase += dx / (stride * k) * (this.vehicle === 'bike' ? 1 : 1.1);
       this.wheel += dx / (13 * k);
+      this.dogPhase = (this.dogPhase || 0) + dx / (11 * k);
       this.stepKick = Math.max(0, this.stepKick - dt * 4);
       this.fill(false);
 
@@ -1178,6 +1204,13 @@
         const f = this.flyT();
         ctx.fillStyle = `rgba(30,30,50,${(0.18 - 0.1 * f).toFixed(3)})`;
         ellipse(ctx, this.travelerX + 6 * k, this.groundY() + 1, (40 + 18 * f) * k, (4 + 2 * f) * k);
+      }
+      // Yol arkadaşı yalnızca yerde, yavaş araçlarda yanında koşar
+      const dogBack = this.companion && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[this.vehicle];
+      if (dogBack && this.flyT() === 0) {
+        const dx = this.travelerX - dogBack * k, gy = this.groundY() + 4 * k;
+        ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, dx, gy + 1, 15 * k, 2.6 * k);
+        drawDog(ctx, dx, gy, k * 0.95, this.dogPhase, this.t);
       }
       drawVehicle(ctx, this.vehicle, this.travelerX, ry, k, st0);
       ctx.restore();

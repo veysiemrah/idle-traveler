@@ -25,7 +25,7 @@
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
-  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits',
+  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -37,7 +37,7 @@
     return {
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
-      crits: 0, rainbows: 0, nightTime: 0,
+      crits: 0, rainbows: 0, nightTime: 0, photos: 0,
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -60,7 +60,7 @@
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
@@ -295,6 +295,8 @@
   function newTrip(keep) {
     const fresh = defaultState();
     if (keep) for (const k of keep) fresh[k] = S[k];
+    // Yol arkadaşı Karabaş eve dönüşte de yolcuyla kalır
+    if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
     combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null;
@@ -351,6 +353,7 @@
       if (b.max && lvl >= b.max) return;
       if (!spend(Econ.buffCost(b, lvl))) return;
       S.buffs[id]++;
+      if (id === 'pal') { toast(t('toast.pal'), 'teal'); scene.burst(scene.travelerX - 34 * scene.k, scene.groundY() - 20 * scene.k, 18, ['#ffd56b', '#ffffff', '#ecdcb6']); }
       uiDirty.buffs = uiDirty.garage = uiDirty.journal = true;
     },
     tab(id) {
@@ -442,6 +445,7 @@
       giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly);
     }
 
+    scene.companion = S.buffs.pal > 0;
     scene.update(dt, Math.max(rateEma, cur.idle), scene.nightAmt || 0);
     scene.draw();
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
@@ -454,6 +458,63 @@
   }
   // Tıklamalarla gelen mesafe, hız ortalamasına bir sonraki karede eklenir
   let clickBuffer = 0;
+
+  /* ---------- Kartpostal ---------- */
+  // Sahnenin arayüzsüz görüntüsünden kenarlıklı, yazılı, pullu bir kartpostal üretir
+  function makePostcard() {
+    const src = scene.canvas, W = src.width, H = src.height;
+    const pad = Math.round(Math.min(W, H) * 0.045), capH = Math.round(Math.max(H * 0.17, pad * 3.2));
+    const c = document.createElement('canvas');
+    c.width = W + pad * 2; c.height = H + pad * 2 + capH;
+    const x = c.getContext('2d');
+    x.fillStyle = '#fbf5e9'; x.fillRect(0, 0, c.width, c.height);
+    x.drawImage(src, pad, pad);
+    x.strokeStyle = 'rgba(60,50,40,0.18)'; x.lineWidth = Math.max(1, pad * 0.08); x.strokeRect(pad, pad, W, H);
+    const region = IT.regionAt(S.regionIdx).name, fs = capH * 0.3;
+    x.fillStyle = '#2b2a45'; x.textBaseline = 'alphabetic';
+    x.font = `800 ${Math.round(fs)}px "Baloo 2", system-ui, sans-serif`;
+    // Sol sütun (başlık ve alt satır) sağdaki marka yazısına ve pula binmesin diye genişliği sınırlı
+    const colW = W - capH * 0.78 - Math.max(W * 0.22, capH * 1.6) - pad;
+    x.fillText(t('pc.greet', { region }), pad, H + pad + capH * 0.5, colW);
+    x.fillStyle = '#6a6788'; x.font = `600 ${Math.round(fs * 0.5)}px "Figtree", system-ui, sans-serif`;
+    const date = new Intl.DateTimeFormat(IT.locale(), { dateStyle: 'long' }).format(new Date());
+    x.fillText(`${fmtDist(S.distance)} · ${VEH[S.active].name} · ${date}`, pad, H + pad + capH * 0.82, colW);
+    // pul: dişli kenar, içinde günün renkleriyle küçük bir manzara
+    const sw = capH * 0.78, sx = c.width - pad - sw, sy = H + pad + capH * 0.12;
+    x.fillStyle = '#ffffff'; x.fillRect(sx, sy, sw, sw * 0.82);
+    x.fillStyle = '#fbf5e9';
+    for (let i = 0; i <= 8; i++) for (const [px, py] of [[sx + i * sw / 8, sy], [sx + i * sw / 8, sy + sw * 0.82], [sx, sy + i * sw * 0.82 / 8], [sx + sw, sy + i * sw * 0.82 / 8]]) {
+      x.beginPath(); x.arc(px, py, sw * 0.035, 0, Math.PI * 2); x.fill();
+    }
+    x.drawImage(src, src.width * 0.18, src.height * 0.35, src.width * 0.3, src.height * 0.5, sx + sw * 0.1, sy + sw * 0.08, sw * 0.8, sw * 0.66);
+    x.fillStyle = 'rgba(231,105,78,0.85)'; x.font = `800 ${Math.round(sw * 0.13)}px "Baloo 2", system-ui, sans-serif`;
+    x.textAlign = 'right'; x.fillText('Idle Traveler', sx - pad * 0.4, sy + sw * 0.2);
+    x.fillStyle = '#9a97b3'; x.font = `600 ${Math.round(sw * 0.1)}px "Figtree", system-ui, sans-serif`;
+    x.fillText('idle-traveler.vebaban.com', sx - pad * 0.4, sy + sw * 0.36);
+    x.textAlign = 'left';
+    return c;
+  }
+  function takePostcard() {
+    Sound.unlock(); Sound.gift();
+    const c = makePostcard();
+    const url = c.toDataURL('image/png');
+    const name = `idle-traveler-${Date.now()}.png`;
+    S.photos++; checkBadges(); save();
+    openModal(`
+      <p class="eyebrow">${t('pc.eyebrow')}</p>
+      <h2>${t('pc.title')}</h2>
+      <img class="postcard" src="${url}" alt="${esc(t('pc.greet', { region: IT.regionAt(S.regionIdx).name }))}">
+      <div class="pc-actions">
+        <a class="buy pc-btn" href="${url}" download="${name}"><b>${t('pc.download')}</b></a>
+        ${navigator.canShare ? `<button class="buy pc-btn" id="pcShare" type="button"><b>${t('pc.share')}</b></button>` : ''}
+      </div>`, t('pc.close'));
+    const sh = $('#pcShare');
+    if (sh) sh.onclick = () => c.toBlob(blob => {
+      const file = new File([blob], name, { type: 'image/png' });
+      const data = { files: [file], title: 'Idle Traveler', text: t('pc.shareText', { d: fmtDist(S.distance), region: IT.regionAt(S.regionIdx).name }) };
+      if (navigator.canShare(data)) navigator.share(data).catch(() => {}); else sh.hidden = true;
+    });
+  }
 
   /* ---------- Arayüz ---------- */
   function toast(html, tone) {
@@ -858,6 +919,10 @@
       S.settings.sfx = on; S.settings.music = on;
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
+    });
+    $('#btnPhoto').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      takePostcard();
     });
     $('#btnSky').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();

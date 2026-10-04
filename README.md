@@ -59,6 +59,10 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (1 Mn km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
+- **Yol Arkadaşı**: Güçlendirmeler'den bir kez alınan Karabaş, yürürken, paten ya da kaykayla, bisiklette ve at sırtında
+  yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
+- **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
+  (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Rozetler**: Adım, kelebek, bölge, mesafe, garaj, yükseltme ve eve dönüş hedefleriyle 25 rozet. Her rozet kalıcı olarak +%3 kredi verir.
   Yol Defteri'nde görünür.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile

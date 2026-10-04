@@ -47,6 +47,8 @@
     { id: 'dream',    base: 400,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
     { id: 'camp',     base: 600,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
     { id: 'butterfly', base: 900, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
+    // Yol arkadaşı Karabaş: tek seferlik, eve dönüşte de kalır
+    { id: 'pal',      base: 2500, growth: 1,   max: 1,   vals: l => ({ p: fmtPct(10 * l) }),                    step: () => ({}) },
   ];
   BUFFS.forEach(b => Object.defineProperties(b, {
     name: { get: () => T(`buff.${b.id}.name`) },
@@ -197,6 +199,7 @@
     { id: 'tuned100',  n: 100, test: s => maxLevel(s) >= 100 },
     { id: 'home1',     test: s => s.trips >= 1 },
     { id: 'home5',     n: 5, test: s => s.trips >= 5 },
+    { id: 'photo1',    test: s => s.photos >= 1 },
     { id: 'mem100',    n: 100, test: s => s.memories >= 100 },
   ];
   BADGES.forEach(b => Object.defineProperties(b, {
@@ -276,7 +279,7 @@
       return {
         idle: idle * d * bi,
         click: click * d * (1 + 0.2 * b.stride),
-        cpm: (1 + 0.25 * b.postcard) * Econ.badgeMult(state),
+        cpm: (1 + 0.25 * b.postcard) * (1 + 0.1 * (b.pal || 0)) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
     },

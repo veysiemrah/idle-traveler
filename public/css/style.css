@@ -409,6 +409,9 @@ button { font: inherit; color: inherit; }
 }
 .intro-lang { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
 .intro-lang .lang-select { max-width: none; }
+.postcard { width: 100%; max-width: 100%; border-radius: 6px; box-shadow: 0 10px 28px rgba(20, 20, 50, 0.28); transform: rotate(-1.2deg); margin: 4px 0 6px; }
+.pc-actions { display: flex; gap: 10px; justify-content: center; }
+.pc-btn { text-decoration: none; align-items: center; min-width: 120px; padding: 10px 16px; }
 .danger { color: var(--rose); }
 .danger.armed { background: rgba(255, 143, 143, 0.14); border-color: rgba(255, 143, 143, 0.5); }
 
