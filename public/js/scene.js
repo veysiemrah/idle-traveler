@@ -613,12 +613,13 @@
     }
 
     /* --- Olaylar --- */
-    onStep() {
+    onStep(crit) {
       this.stepKick = 1;
       const y = this.groundY();
       if (!FLYING[this.vehicle]) {
-        for (let i = 0; i < 4; i++) this.parts.push({ type: 'dust', x: this.travelerX - rand(0, 18) * this.k, y: y - rand(0, 4), vx: -rand(20, 60), vy: -rand(8, 26), life: 0, max: rand(0.5, 0.9), size: rand(2, 5) * this.k });
+        for (let i = 0; i < (crit ? 10 : 4); i++) this.parts.push({ type: 'dust', x: this.travelerX - rand(0, 18) * this.k, y: y - rand(0, 4), vx: -rand(20, 60), vy: -rand(8, 26), life: 0, max: rand(0.5, 0.9), size: rand(2, 5) * this.k });
       }
+      if (crit) this.burst(this.travelerX, this.riderY() - 40 * this.k, 18, ['#ffd56b', '#fff4c2', '#ffb067']);
     }
     burst(x, y, n, colors) {
       for (let i = 0; i < n; i++) {

@@ -83,13 +83,14 @@
       s.connect(f); f.connect(g); g.connect(dest || this.sfx);
       s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.02);
     },
-    step(vehicle) {
+    step(vehicle, crit) {
       if (!this.ctx || !this.sfxOn) return;
       const r = 0.85 + Math.random() * 0.3;
       if (vehicle === 'walk') this.noise(0.5, 0.09, 700 * r, 1.4);
       else if (vehicle === 'skates' || vehicle === 'bike') { this.noise(0.25, 0.12, 1500 * r, 2); this.tone(1800 * r, 0.015, 0.05, 'triangle'); }
       else if (vehicle === 'moto' || vehicle === 'car' || vehicle === 'train') { this.tone(95 * r, 0.12, 0.18, 'triangle'); this.noise(0.2, 0.15, 300, 0.8); }
       else this.noise(0.3, 0.25, 900 * r, 0.6);
+      if (crit) [0, 0.07, 0.14].forEach((w, i) => this.tone(PENTA[i + 3] * 2, 0.06, 0.6, 'sine', this.sfx, true, w));
     },
     buy() { if (!this.ctx) return; this.tone(659.25, 0.08, 0.5, 'triangle', this.sfx, true); this.tone(987.77, 0.07, 0.7, 'sine', this.sfx, true, 0.08); },
     deny() { if (!this.ctx) return; this.tone(220, 0.05, 0.18, 'triangle'); },
