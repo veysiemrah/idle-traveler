@@ -375,18 +375,181 @@
     ctx.restore();
   }
 
-  const FLYING = { plane: true, rocket: true, sail: true };
+  // Kaykay: ön ayak tahtada, arka ayak yere basıp iter
+  function drawBoard(ctx, x, y, k, st) {
+    const by = y - 6 * k, q = st.phase;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.fillStyle = '#7d8496'; ctx.fillRect(x - 15 * k, by + 1 * k, 6 * k, 2 * k); ctx.fillRect(x + 9 * k, by + 1 * k, 6 * k, 2 * k);
+    ctx.fillStyle = '#ffd56b'; circle(ctx, x - 12 * k, y - 2.4 * k, 2.4 * k); circle(ctx, x + 12 * k, y - 2.4 * k, 2.4 * k);
+    ctx.strokeStyle = '#c96f3b'; ctx.lineWidth = 3.4 * k;
+    ctx.beginPath(); ctx.moveTo(x - 24 * k, by - 4 * k); ctx.quadraticCurveTo(x - 21 * k, by, x - 16 * k, by);
+    ctx.lineTo(x + 16 * k, by); ctx.quadraticCurveTo(x + 21 * k, by, x + 24 * k, by - 4 * k); ctx.stroke();
+    ctx.strokeStyle = P.teal; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.moveTo(x - 10 * k, by - 0.4 * k); ctx.lineTo(x + 10 * k, by - 0.4 * k); ctx.stroke();
+    const push = Math.max(0, Math.sin(q));
+    const hx = x - 1 * k, hy = by - 29 * k - push * 2 * k;
+    const sx = hx + 6 * k, sy = hy - 24 * k;
+    const L = 16 * k;
+    const backFoot = [x - 8 * k - push * 14 * k, lerp(by - 1.5 * k, y, push)];
+    const frontFoot = [x + 9 * k, by - 1.5 * k];
+    const kb = ik(hx, hy, backFoot[0], backFoot[1], L, L, 1);
+    line(ctx, [hx, hy, kb[0], kb[1], backFoot[0], backFoot[1]], 7 * k, P.pantsDark); shoe(ctx, backFoot[0], backFoot[1], k);
+    const ab = [sx - 16 * k, sy + 12 * k], eb = ik(sx, sy + 2 * k, ab[0], ab[1], 11.5 * k, 11.5 * k, -1);
+    line(ctx, [sx, sy + 2 * k, eb[0], eb[1], ab[0], ab[1]], 5.6 * k, P.jacketDark);
+    backpack(ctx, sx, sy, k, 0.25);
+    torso(ctx, hx, hy, sx, sy, k);
+    head(ctx, sx + 3 * k, sy - 9 * k, k);
+    const kf = ik(hx, hy, frontFoot[0], frontFoot[1], L, L, 1);
+    line(ctx, [hx, hy, kf[0], kf[1], frontFoot[0], frontFoot[1]], 7 * k, P.pants); shoe(ctx, frontFoot[0], frontFoot[1], k);
+    const af = [sx + 15 * k, sy + 10 * k], ef = ik(sx, sy + 2 * k, af[0], af[1], 11.5 * k, 11.5 * k, -1);
+    line(ctx, [sx, sy + 2 * k, ef[0], ef[1], af[0], af[1]], 5.6 * k, P.jacket);
+    ctx.fillStyle = P.skin; circle(ctx, af[0], af[1], 2.6 * k); circle(ctx, ab[0], ab[1], 2.6 * k);
+  }
+
+  // At: dört nala koşan doru at, yolcu eyerde
+  function drawHorse(ctx, x, y, k, st) {
+    const q = st.phase, bob = Math.abs(Math.sin(q)) * 2 * k;
+    const coat = '#a8703f', dark = '#7d4f2a', mane = '#3d2a22';
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const leg = (lx, off, back) => {
+      const a = Math.sin(q + off) * 0.55, top = [lx, y - 26 * k - bob];
+      const knee = [top[0] + Math.sin(a) * 11 * k, top[1] + Math.cos(a) * 11 * k];
+      const bend = Math.max(0, Math.cos(q + off)) * 0.9 * (back ? -1 : 1);
+      const hoof = [knee[0] + Math.sin(a + bend) * 12 * k, Math.min(y - 1 * k, knee[1] + Math.cos(a + bend) * 12 * k)];
+      line(ctx, [top[0], top[1], knee[0], knee[1], hoof[0], hoof[1]], 4.2 * k, back ? dark : coat);
+      ctx.fillStyle = '#2f2722'; ellipse(ctx, hoof[0] + 1 * k, hoof[1], 2.6 * k, 1.6 * k);
+    };
+    leg(x - 16 * k, 0.6, true); leg(x + 12 * k, 2.2, true);
+    // kuyruk
+    ctx.strokeStyle = mane; ctx.lineWidth = 4 * k;
+    ctx.beginPath(); ctx.moveTo(x - 23 * k, y - 36 * k - bob);
+    ctx.quadraticCurveTo(x - 34 * k, y - 34 * k - bob + Math.sin(q * 2) * 2 * k, x - 33 * k, y - 20 * k - bob + Math.sin(q * 2) * 3 * k); ctx.stroke();
+    // gövde ve boyun
+    ctx.fillStyle = coat; ellipse(ctx, x, y - 33 * k - bob, 25 * k, 10.5 * k);
+    ctx.beginPath(); ctx.moveTo(x + 13 * k, y - 40 * k - bob); ctx.quadraticCurveTo(x + 22 * k, y - 52 * k - bob, x + 27 * k, y - 58 * k - bob);
+    ctx.lineTo(x + 33 * k, y - 50 * k - bob); ctx.quadraticCurveTo(x + 26 * k, y - 38 * k - bob, x + 20 * k, y - 28 * k - bob); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = coat; ellipse(ctx, x + 34 * k, y - 53 * k - bob, 9 * k, 4.6 * k, 0.55);
+    ctx.fillStyle = dark; circle(ctx, x + 39 * k, y - 49 * k - bob, 1.3 * k);
+    ctx.fillStyle = coat; ctx.beginPath(); ctx.moveTo(x + 27 * k, y - 59 * k - bob); ctx.lineTo(x + 28 * k, y - 65 * k - bob); ctx.lineTo(x + 31 * k, y - 59 * k - bob); ctx.fill();
+    ctx.fillStyle = P.dark; circle(ctx, x + 32 * k, y - 56 * k - bob, 1.1 * k);
+    ctx.strokeStyle = mane; ctx.lineWidth = 3.4 * k;
+    ctx.beginPath(); ctx.moveTo(x + 27 * k, y - 59 * k - bob); ctx.quadraticCurveTo(x + 20 * k, y - 50 * k - bob, x + 14 * k, y - 42 * k - bob); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ellipse(ctx, x - 4 * k, y - 38 * k - bob, 14 * k, 3 * k, -0.05);
+    leg(x - 12 * k, 3.6, false); leg(x + 16 * k, 5.2, false);
+    // eyer ve yolcu
+    ctx.fillStyle = P.teal; rrect(ctx, x - 12 * k, y - 45 * k - bob, 18 * k, 9 * k, 3 * k); ctx.fill();
+    ctx.fillStyle = '#5a3d2a'; rrect(ctx, x - 10 * k, y - 47 * k - bob, 14 * k, 4 * k, 2 * k); ctx.fill();
+    const hip = [x - 3 * k, y - 47 * k - bob], sh = [x + 3 * k, y - 70 * k - bob];
+    backpack(ctx, sh[0], sh[1], k, 0.2);
+    torso(ctx, hip[0], hip[1], sh[0], sh[1], k);
+    const knee = [x + 7 * k, y - 37 * k - bob], foot = [x + 4 * k, y - 26 * k - bob];
+    line(ctx, [hip[0], hip[1], knee[0], knee[1], foot[0], foot[1]], 7 * k, P.pants); shoe(ctx, foot[0], foot[1], k);
+    head(ctx, sh[0] + 3 * k, sh[1] - 9 * k, k);
+    const hand = [x + 17 * k, y - 50 * k - bob], el = ik(sh[0], sh[1] + 2 * k, hand[0], hand[1], 11.5 * k, 11.5 * k, -1);
+    line(ctx, [sh[0], sh[1] + 2 * k, el[0], el[1], hand[0], hand[1]], 5.6 * k, P.jacket);
+    ctx.strokeStyle = '#3a2c2a'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(hand[0], hand[1]); ctx.lineTo(x + 35 * k, y - 51 * k - bob); ctx.stroke();
+    ctx.fillStyle = P.skin; circle(ctx, hand[0], hand[1], 2.6 * k);
+  }
+
+  // Karavan: iki renkli, yuvarlak burunlu, portbagajında sörf tahtası olan eski usul kamp aracı
+  function drawVan(ctx, x, y, k, st) {
+    const by = y - 10 * k + Math.sin(st.t * 8) * 0.6 * k;
+    const lit = st.night > 0.5;
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ffd56b'; rrect(ctx, x - 38 * k, by - 62 * k, 62 * k, 5 * k, 2.5 * k); ctx.fill();
+    ctx.fillStyle = '#7a5a43'; ctx.fillRect(x - 32 * k, by - 57 * k, 2 * k, 4 * k); ctx.fillRect(x + 16 * k, by - 57 * k, 2 * k, 4 * k);
+    ctx.fillStyle = '#efe6d4'; ctx.beginPath();
+    ctx.moveTo(x - 46 * k, by - 30 * k); ctx.lineTo(x - 46 * k, by - 48 * k); ctx.quadraticCurveTo(x - 46 * k, by - 54 * k, x - 40 * k, by - 54 * k);
+    ctx.lineTo(x + 30 * k, by - 54 * k); ctx.quadraticCurveTo(x + 44 * k, by - 54 * k, x + 46 * k, by - 34 * k); ctx.lineTo(x + 46 * k, by - 30 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = P.teal; ctx.beginPath();
+    ctx.moveTo(x - 46 * k, by - 31 * k); ctx.lineTo(x + 46 * k, by - 31 * k); ctx.lineTo(x + 46 * k, by - 12 * k);
+    ctx.quadraticCurveTo(x + 46 * k, by - 4 * k, x + 38 * k, by - 4 * k); ctx.lineTo(x - 40 * k, by - 4 * k);
+    ctx.quadraticCurveTo(x - 46 * k, by - 4 * k, x - 46 * k, by - 10 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#efe6d4'; ctx.beginPath(); ctx.moveTo(x + 30 * k, by - 31 * k); ctx.lineTo(x + 44 * k, by - 31 * k); ctx.lineTo(x + 37 * k, by - 22 * k); ctx.closePath(); ctx.fill();
+    const win = lit ? '#ffe7a8' : P.glass;
+    ctx.fillStyle = win;
+    for (let i = 0; i < 3; i++) { rrect(ctx, x - 40 * k + i * 16 * k, by - 49 * k, 12 * k, 12 * k, 3 * k); ctx.fill(); }
+    ctx.fillStyle = lit ? '#3d4a6b' : P.glass; ctx.beginPath();
+    ctx.moveTo(x + 14 * k, by - 49 * k); ctx.lineTo(x + 30 * k, by - 49 * k); ctx.quadraticCurveTo(x + 40 * k, by - 48 * k, x + 42 * k, by - 35 * k); ctx.lineTo(x + 14 * k, by - 35 * k); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.rect(x + 14 * k, by - 50 * k, 30 * k, 15 * k); ctx.clip(); head(ctx, x + 24 * k, by - 38 * k, k * 0.9); ctx.restore();
+    if (lit) { ctx.fillStyle = 'rgba(255,214,140,0.35)'; ctx.fillRect(x - 40 * k, by - 49 * k, 44 * k, 12 * k); }
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(x + 8 * k, by - 30 * k); ctx.lineTo(x + 8 * k, by - 6 * k); ctx.stroke();
+    ctx.fillStyle = '#fff3c4'; circle(ctx, x + 44 * k, by - 18 * k, 3 * k);
+    ctx.fillStyle = '#ff6b6b'; ellipse(ctx, x - 45 * k, by - 16 * k, 1.8 * k, 3 * k);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; rrect(ctx, x - 42 * k, by - 28 * k, 70 * k, 2.5 * k, 1.2 * k); ctx.fill();
+    wheel(ctx, x - 28 * k, y - 11 * k, 11 * k, st.wheel, k, '#22262f', '#c7ccd8');
+    wheel(ctx, x + 28 * k, y - 11 * k, 11 * k, st.wheel, k, '#22262f', '#c7ccd8');
+  }
+
+  // Sıcak hava balonu: çizgili zarf, hasır sepet, brülör alevi
+  function drawHotAir(ctx, x, y, k, st) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(st.t * 0.7) * 0.04);
+    const env = new Path2D();
+    env.moveTo(-12 * k, 6 * k);
+    env.bezierCurveTo(-46 * k, -18 * k, -40 * k, -66 * k, 0, -66 * k);
+    env.bezierCurveTo(40 * k, -66 * k, 46 * k, -18 * k, 12 * k, 6 * k);
+    env.closePath();
+    ctx.fillStyle = P.jacket; ctx.fill(env);
+    ctx.save(); ctx.clip(env);
+    const cols = ['#fbf4e6', '#f0b445', '#2f9e8f', '#fbf4e6'];
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = cols[i]; ctx.beginPath();
+      const x0 = -40 * k + i * 22 * k;
+      ctx.ellipse(x0 + 9 * k, -30 * k, 5 * k, 40 * k, 0, 0, TAU); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(14 * k, -70 * k, 40 * k, 80 * k);
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ellipse(ctx, -16 * k, -46 * k, 6 * k, 12 * k, -0.3);
+    ctx.restore();
+    ctx.fillStyle = '#c9553d'; rrect(ctx, -12 * k, 3 * k, 24 * k, 5 * k, 2 * k); ctx.fill();
+    ctx.strokeStyle = 'rgba(80,60,40,0.8)'; ctx.lineWidth = 1 * k;
+    ctx.beginPath(); ctx.moveTo(-11 * k, 8 * k); ctx.lineTo(-9 * k, 20 * k); ctx.moveTo(11 * k, 8 * k); ctx.lineTo(9 * k, 20 * k);
+    ctx.moveTo(-4 * k, 8 * k); ctx.lineTo(-4 * k, 20 * k); ctx.moveTo(4 * k, 8 * k); ctx.lineTo(4 * k, 20 * k); ctx.stroke();
+    const fl = 5 + 2 * Math.sin(st.t * 23);
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 10 * k, 14 * k, hex('#ffb060'), 0.7); ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#ffd56b'; ctx.beginPath(); ctx.moveTo(-2.5 * k, 14 * k); ctx.quadraticCurveTo(0, (14 - fl * 2) * k, 2.5 * k, 14 * k); ctx.fill();
+    head(ctx, -3 * k, 16 * k, k * 0.85);
+    ctx.fillStyle = '#b98a55'; rrect(ctx, -10 * k, 19 * k, 20 * k, 13 * k, 2.5 * k); ctx.fill();
+    ctx.strokeStyle = '#8a6440'; ctx.lineWidth = 1 * k;
+    ctx.beginPath(); for (let i = 1; i < 4; i++) { ctx.moveTo(-10 * k, 19 * k + i * 3.2 * k); ctx.lineTo(10 * k, 19 * k + i * 3.2 * k); } ctx.stroke();
+    ctx.restore();
+  }
+
+  // Süpersonik jet: iğne burunlu, delta kanatlı
+  function drawJet(ctx, x, y, k, st) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(st.t * 0.9) * 0.02 - 0.03);
+    const fl = 12 + 5 * Math.sin(st.t * 37);
+    const g = ctx.createLinearGradient(-52 * k, 0, (-52 - fl) * k, 0);
+    g.addColorStop(0, 'rgba(255,240,190,0.9)'); g.addColorStop(1, 'rgba(255,150,90,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-50 * k, -3 * k); ctx.lineTo((-52 - fl) * k, 0); ctx.lineTo(-50 * k, 3 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#c9c2b4'; ctx.beginPath(); ctx.moveTo(-14 * k, 4 * k); ctx.lineTo(-44 * k, 13 * k); ctx.lineTo(-34 * k, 4 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = P.cream; ctx.beginPath();
+    ctx.moveTo(-50 * k, -4 * k); ctx.lineTo(20 * k, -6 * k); ctx.quadraticCurveTo(44 * k, -4 * k, 62 * k, 1 * k);
+    ctx.quadraticCurveTo(44 * k, 5 * k, 20 * k, 5 * k); ctx.lineTo(-50 * k, 5 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = P.jacket; ctx.beginPath(); ctx.moveTo(-50 * k, -3 * k); ctx.lineTo(-46 * k, -22 * k); ctx.lineTo(-38 * k, -22 * k); ctx.lineTo(-30 * k, -4 * k); ctx.closePath(); ctx.fill();
+    ctx.fillRect(-46 * k, 0, 70 * k, 2 * k);
+    ctx.fillStyle = P.glass; ctx.beginPath(); ctx.moveTo(18 * k, -5.5 * k); ctx.quadraticCurveTo(30 * k, -12 * k, 38 * k, -4 * k); ctx.lineTo(18 * k, -4 * k); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.moveTo(18 * k, -5.5 * k); ctx.quadraticCurveTo(30 * k, -12 * k, 38 * k, -4 * k); ctx.lineTo(18 * k, -4 * k); ctx.closePath(); ctx.clip();
+    head(ctx, 26 * k, -3 * k, k * 0.6); ctx.restore();
+    ctx.fillStyle = '#e2d9c8'; ctx.beginPath(); ctx.moveTo(14 * k, 3 * k); ctx.lineTo(-30 * k, 16 * k); ctx.lineTo(-24 * k, 4 * k); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true };
   // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
-  const FLY_Y = { plane: 0.42, rocket: 0.34, sail: 0.3 };
+  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3 };
   function drawVehicle(ctx, id, x, y, k, st) {
     switch (id) {
       case 'walk': return drawWalker(ctx, x, y, k, st, false);
       case 'skates': return drawWalker(ctx, x, y, k, st, true);
+      case 'board': return drawBoard(ctx, x, y, k, st);
+      case 'horse': return drawHorse(ctx, x, y, k, st);
       case 'bike': return drawBike(ctx, x, y, k, st);
       case 'moto': return drawMoto(ctx, x, y, k, st);
       case 'car': return drawCar(ctx, x, y, k, st);
+      case 'van': return drawVan(ctx, x, y, k, st);
       case 'train': return drawTrain(ctx, x, y, k, st);
+      case 'balloon': return drawHotAir(ctx, x, y, k, st);
       case 'plane': return drawPlane(ctx, x, y, k, st);
+      case 'jet': return drawJet(ctx, x, y, k, st);
       case 'rocket': return drawRocket(ctx, x, y, k, st);
       case 'sail': return drawSail(ctx, x, y, k, st);
     }
@@ -702,7 +865,7 @@
       this.scroll += dx * groundF;
       const k = this.k;
       // yürüyüş/teker fazları
-      const stride = { walk: 23, skates: 34, bike: 30, moto: 1, car: 1, train: 1 }[this.vehicle] || 30;
+      const stride = { walk: 23, skates: 34, board: 44, bike: 30, horse: 24, moto: 1, car: 1, van: 1, train: 1 }[this.vehicle] || 30;
       this.phase += dx / (stride * k) * (this.vehicle === 'bike' ? 1 : 1.1);
       this.wheel += dx / (13 * k);
       this.stepKick = Math.max(0, this.stepKick - dt * 4);
@@ -791,9 +954,9 @@
         const ry = this.riderY();
         this.parts.push({ type: 'smoke', x: this.travelerX - 70 * this.k, y: ry + rand(-4, 4) + 6 * this.k, vx: -rand(80, 160), vy: rand(-12, 12), life: 0, max: rand(0.6, 1.3), size: rand(4, 9) * this.k, color: '#ffffff' });
       }
-      if (v === 'plane' && Math.random() < dt * 22 * mult) {
+      if ((v === 'plane' || v === 'jet') && Math.random() < dt * 22 * mult) {
         const ry = this.riderY();
-        this.parts.push({ type: 'puff', x: this.travelerX - 50 * this.k, y: ry + rand(-2, 2), vx: -rand(20, 40), vy: 0, life: 0, max: rand(1.2, 2), size: rand(2, 4) * this.k, color: '#ffffff' });
+        this.parts.push({ type: 'puff', x: this.travelerX - (v === 'jet' ? 66 : 50) * this.k, y: ry + rand(-2, 2), vx: -rand(20, 40), vy: 0, life: 0, max: rand(1.2, 2), size: rand(2, 4) * this.k, color: '#ffffff' });
       }
     }
 
@@ -985,10 +1148,10 @@
       }
 
       // far ışığı
-      if (night > 0.25 && (this.vehicle === 'car' || this.vehicle === 'moto' || this.vehicle === 'train') && this.alt < 0.3) {
+      if (night > 0.25 && (this.vehicle === 'car' || this.vehicle === 'van' || this.vehicle === 'moto' || this.vehicle === 'train') && this.alt < 0.3) {
         const gy = this.groundY();
-        const hx = this.travelerX + (this.vehicle === 'car' ? 45 : this.vehicle === 'moto' ? 24 : 56) * k;
-        const hy = gy - (this.vehicle === 'moto' ? 34 : this.vehicle === 'car' ? 27 : 19) * k;
+        const hx = this.travelerX + (this.vehicle === 'car' ? 45 : this.vehicle === 'van' ? 46 : this.vehicle === 'moto' ? 24 : 56) * k;
+        const hy = gy - (this.vehicle === 'moto' ? 34 : this.vehicle === 'car' ? 27 : this.vehicle === 'van' ? 28 : 19) * k;
         const lg = ctx.createLinearGradient(hx, hy, hx + 220 * k, hy);
         lg.addColorStop(0, `rgba(255,240,190,${(0.45 * night).toFixed(3)})`); lg.addColorStop(1, 'rgba(255,240,190,0)');
         ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(hx, hy - 3 * k); ctx.lineTo(hx + 220 * k, hy - 30 * k); ctx.lineTo(hx + 220 * k, hy + 34 * k); ctx.closePath(); ctx.fill();
@@ -1004,7 +1167,7 @@
       // gölge
       if (!FLYING[this.vehicle]) {
         ctx.fillStyle = 'rgba(30,30,50,0.18)';
-        const w = { walk: 16, skates: 18, bike: 36, moto: 42, car: 54, train: 70 }[this.vehicle] || 30;
+        const w = { walk: 16, skates: 18, board: 26, bike: 36, horse: 34, moto: 42, car: 54, van: 54, train: 70 }[this.vehicle] || 30;
         ellipse(ctx, this.travelerX, this.groundY() + 1, w * k, 3.5 * k);
       } else { // uçarken yola düşen yumuşak gölge; yükseldikçe solar ve yayılır
         const f = this.flyT();
@@ -1410,8 +1573,9 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     if (id === 'mystery') return drawGarageDoor(ctx, w, h, getComputedStyle(canvas).color);
-    const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85],
-      train: [0.36, 0.5, 0.86], plane: [0.52, 0.48, 0.5], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62] };
+    const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], board: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], horse: [0.5, 0.44, 0.96],
+      moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85], van: [0.46, 0.5, 0.88], train: [0.36, 0.5, 0.86], balloon: [0.46, 0.5, 0.62],
+      plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62] };
     const [k, xf, yf] = sizes[id];
     const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0 };
     ctx.save();

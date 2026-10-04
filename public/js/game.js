@@ -5,7 +5,8 @@
   const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
-  const BY = { walk: 'yürüyerek', skates: 'patenle', bike: 'bisikletle', moto: 'motosikletle', car: 'arabayla', train: 'trenle', plane: 'uçakla', rocket: 'roketle', sail: 'güneş yelkeniyle' };
+  const BY = { walk: 'yürüyerek', skates: 'patenle', board: 'kaykayla', bike: 'bisikletle', horse: 'atıyla', moto: 'motosikletle', car: 'arabayla', van: 'karavanıyla',
+    train: 'trenle', balloon: 'balonuyla', plane: 'uçakla', jet: 'jetiyle', rocket: 'roketle', sail: 'güneş yelkeniyle' };
   const GIFTS = [
     { id: 'gust',     name: 'Rüzgâr Hortumu',   text: 'hız ×3',            dur: 30, speed: 3, w: 3 },
     { id: 'harvest',  name: 'Bereket',          text: 'kredi ×2',          dur: 45, credit: 2, w: 3 },
@@ -311,12 +312,16 @@
       if (S.owned[id] || !spend(v.cost)) return;
       S.owned[id] = true; S.levels[id] = 0;
       uiDirty.garage = true;
-      // Yeni araca her zaman hemen binilir. Hız garajdaki en güçlü araca göre hesaplandığı için düşmez.
-      actions.ride(id);
+      // Yeni araca hemen binilir (hız garajdaki en güçlü araca göre hesaplandığı için düşmez).
+      // Sonradan eklenen ara bir araç, daha ileri bir araçtayken alınırsa yalnızca garaja katılır.
+      const forward = v.index > VEH[S.active].index;
+      if (forward) actions.ride(id);
       const lead = Econ.lead(S);
-      toast(lead === id
-        ? `<b>Yeni araç: ${v.name}</b> · ${esc(v.tagline)}`
-        : `<b>Yeni araç: ${v.name}</b> · Hızını şimdilik ${VEH[lead].name} belirliyor. Birkaç yükseltmeyle ${v.name} öne geçer.`, 'teal');
+      toast(!forward
+        ? `<b>${v.name} garaja katıldı</b> · ${esc(v.tagline)} Garajdan istediğin an binebilirsin.`
+        : lead === id
+          ? `<b>Yeni araç: ${v.name}</b> · ${esc(v.tagline)}`
+          : `<b>Yeni araç: ${v.name}</b> · Hızını şimdilik ${VEH[lead].name} belirliyor. Birkaç yükseltmeyle ${v.name} öne geçer.`, 'teal');
       checkBadges();
     },
     ride(id) {

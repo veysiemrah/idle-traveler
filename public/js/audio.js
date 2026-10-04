@@ -87,8 +87,9 @@
       if (!this.ctx || !this.sfxOn) return;
       const r = 0.85 + Math.random() * 0.3;
       if (vehicle === 'walk') this.noise(0.5, 0.09, 700 * r, 1.4);
-      else if (vehicle === 'skates' || vehicle === 'bike') { this.noise(0.25, 0.12, 1500 * r, 2); this.tone(1800 * r, 0.015, 0.05, 'triangle'); }
-      else if (vehicle === 'moto' || vehicle === 'car' || vehicle === 'train') { this.tone(95 * r, 0.12, 0.18, 'triangle'); this.noise(0.2, 0.15, 300, 0.8); }
+      else if (vehicle === 'horse') { this.tone(520 * r, 0.05, 0.07, 'triangle'); this.tone(430 * r, 0.05, 0.07, 'triangle', this.sfx, false, 0.09); }
+      else if (vehicle === 'skates' || vehicle === 'board' || vehicle === 'bike') { this.noise(0.25, 0.12, 1500 * r, 2); this.tone(1800 * r, 0.015, 0.05, 'triangle'); }
+      else if (vehicle === 'moto' || vehicle === 'car' || vehicle === 'van' || vehicle === 'train') { this.tone(95 * r, 0.12, 0.18, 'triangle'); this.noise(0.2, 0.15, 300, 0.8); }
       else this.noise(0.3, 0.25, 900 * r, 0.6);
       if (crit) [0, 0.07, 0.14].forEach((w, i) => this.tone(PENTA[i + 3] * 2, 0.06, 0.6, 'sine', this.sfx, true, w));
     },
