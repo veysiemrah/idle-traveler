@@ -39,9 +39,10 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 ## Oyun
 
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur.
-- **Araçlar**: Yürüyüş → Paten → Bisiklet → Motosiklet → Araba → Tren → Uçak → Roket → Güneş Yelkeni.
+- **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
+  Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
-  Uçakla birlikte kamera bulutların arasına yükselir, roketle uzaya çıkılır.
+  Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
 - **Toplu yükseltme**: Garajın üstündeki ×1 / ×10 / Maks seçimiyle tek dokunuşta birden çok seviye alınır.
@@ -68,12 +69,30 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
 
+## Diller ve ülkeler
+
+Oyun Türkçe, İngilizce, Almanca, İspanyolca ve Fransızca oynanabilir. Dil tarayıcıdan otomatik seçilir;
+tanıtım penceresinden ya da Yol Defteri → Ayarlar'dan değiştirilebilir.
+
+- **Sayılar** her dilin kendi biçimiyle gösterilir: `3,24 Mn`, `3.24 M`, `3,24 Mio.`; yüzdeler `%25`, `25%`, `25 %`.
+- **Birimler**: ABD ve Birleşik Krallık'ta mesafe mil, hız mph ile; diğer ülkelerde km ve km/sa (km/h) ile gösterilir.
+  Ayarlardan elle seçilebilir.
+- **Gerçek dünya durakları** ülkeye göre yerelleşir: Türkçede "İstanbul – Ankara", Fransızcada "Paris – Lyon",
+  Almancada "Berlin – Frankfurt" gibi benzer uzunlukta rotalar.
+
+**Yeni dil eklemek:** `public/js/lang/en.js` dosyasını `public/js/lang/<kod>.js` olarak kopyala, `IT.addLang('<kod>', …)`
+içindeki adı, `locale`, `suffixes` ve `units` alanlarını ve bütün metinleri çevir. `{ad}` yer tutucularını olduğu gibi bırak;
+`{ one, other }` nesneleri çoğul biçimlerdir. Sonra dosyayı `public/index.html` içinde diğer dil dosyalarının yanına ekle.
+Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
+
 ## Dosyalar
 
 | Dosya | İçerik |
 | --- | --- |
 | `public/index.html` | Sayfa iskeleti, HUD ve panel |
 | `public/css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
+| `public/js/i18n.js` | Yerelleştirme çekirdeği: dil seçimi, çeviri (`IT.t`), çoğul biçimler, birim sistemi |
+| `public/js/lang/*.js` | Dil sözlükleri: `tr`, `en`, `de`, `es`, `fr` |
 | `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
 | `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
 | `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |

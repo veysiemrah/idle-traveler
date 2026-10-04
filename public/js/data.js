@@ -2,52 +2,57 @@
    Tarayıcıda window.IT altında, Node'da (denge simülasyonu için) globalThis.IT altında yayınlanır. */
 (function (root) {
   'use strict';
+  // Çeviri: tarayıcıda IT.t, Node'daki denge simülasyonunda anahtarın kendisi
+  const T = (k, v) => (root.IT && root.IT.t ? root.IT.t(k, v) : k);
 
 
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   const VEHICLES = [
-    { id: 'walk',   name: 'Yürüyüş',       cost: 0,       idle: 0.35,  click: 0.8,   upName: 'Rahat Ayakkabılar', road: 'path',    alt: 0,
-      tagline: 'Sırt çantan ve iki ayağın. Her yolculuk böyle başlar.' },
-    { id: 'skates', name: 'Paten',         cost: 150,     idle: 1.5,   click: 2.5,   upName: 'Bilyeli Rulmanlar', road: 'path',    alt: 0,
-      tagline: 'Tekerlekler tıkırdıyor, rüzgâr yüzüne vuruyor.' },
-    { id: 'bike',   name: 'Bisiklet',      cost: 5000,    idle: 6,     click: 8,     upName: 'Karbon Kadro',      road: 'path',    alt: 0,
-      tagline: 'Pedal çevir, tepeler birer birer geride kalsın.' },
-    { id: 'moto',   name: 'Motosiklet',    cost: 2.0e5,   idle: 24,    click: 28,    upName: 'Turbo Egzoz',       road: 'asphalt', alt: 0,
-      tagline: 'Virajlar seni çağırıyor.' },
-    { id: 'car',    name: 'Araba',         cost: 8.0e6,   idle: 95,    click: 100,   upName: 'V6 Motor',          road: 'asphalt', alt: 0,
-      tagline: 'Camı aç, sevdiğin şarkıyı aç. Yol uzun.' },
-    { id: 'train',  name: 'Tren',          cost: 2.0e8,   idle: 380,   click: 380,   upName: 'Manyetik Raylar',   road: 'rail',    alt: 0,
-      tagline: 'Raylarda ritmik bir ninni, pencerede akan manzara.' },
-    { id: 'plane',  name: 'Uçak',          cost: 4.0e9,   idle: 2000,  click: 1800,  upName: 'Jet Motorları',     road: 'asphalt', alt: 0.55,
-      tagline: 'Bulutların arasından dünyaya yukarıdan bak.' },
-    { id: 'rocket', name: 'Roket',         cost: 1.0e11,  idle: 10000, click: 8000,  upName: 'İyon İticiler',     road: 'asphalt', alt: 1,
-      tagline: 'Gökyüzü artık bir sınır değil.' },
-    { id: 'sail',   name: 'Güneş Yelkeni', cost: 2.5e12,  idle: 50000, click: 40000, upName: 'Foton Aynaları',    road: 'asphalt', alt: 1.15,
-      tagline: 'Işığın kendisiyle yelken aç, yıldızlara doğru süzül.' },
+    { id: 'walk',   cost: 0,       idle: 0.35,  click: 0.4,   road: 'path',    alt: 0 },
+    { id: 'skates', cost: 150,     idle: 1.5,   click: 1.25,   road: 'path',    alt: 0 },
+    { id: 'board',  cost: 900,     idle: 3,     click: 2.2,   road: 'path',    alt: 0 },
+    { id: 'bike',   cost: 5000,    idle: 6,     click: 4,     road: 'path',    alt: 0 },
+    { id: 'horse',  cost: 3.2e4,   idle: 12,    click: 7.5,   road: 'path',    alt: 0 },
+    { id: 'moto',   cost: 2.0e5,   idle: 24,    click: 14,    road: 'asphalt', alt: 0 },
+    { id: 'car',    cost: 8.0e6,   idle: 95,    click: 50,   road: 'asphalt', alt: 0 },
+    { id: 'van',    cost: 4.0e7,   idle: 190,   click: 95,    road: 'asphalt', alt: 0 },
+    { id: 'train',  cost: 2.0e8,   idle: 380,   click: 190,   road: 'rail',    alt: 0 },
+    { id: 'balloon', cost: 9.0e8, idle: 870, click: 410,   road: 'asphalt', alt: 0.4 },
+    { id: 'plane',  cost: 4.0e9,   idle: 2000,  click: 900,  road: 'asphalt', alt: 0.55 },
+    { id: 'jet',    cost: 2.0e10, idle: 4500,  click: 1900,  road: 'asphalt', alt: 0.55 },
+    { id: 'rocket', cost: 1.0e11,  idle: 10000, click: 4000,  road: 'asphalt', alt: 1 },
+    { id: 'sail',   cost: 2.5e12,  idle: 50000, click: 20000, road: 'asphalt', alt: 1.15 },
   ];
-  VEHICLES.forEach((v, i) => { v.index = i; v.upBase = i === 0 ? 8 : Math.round(v.cost * 0.05); });
+  VEHICLES.forEach((v, i) => {
+    v.index = i; v.upBase = i === 0 ? 8 : Math.round(v.cost * 0.05);
+    // Metinler seçili dilden okunur
+    Object.defineProperties(v, {
+      name: { get: () => T(`veh.${v.id}.name`) },
+      upName: { get: () => T(`veh.${v.id}.up`) },
+      tagline: { get: () => T(`veh.${v.id}.tagline`) },
+      by: { get: () => T(`veh.${v.id}.by`) },
+    });
+  });
   const VEH = Object.fromEntries(VEHICLES.map(v => [v.id, v]));
 
   /* ---------- Kalıcı güçlendirmeler ---------- */
+  // vals: açıklamadaki yer tutucuların değerleri (seviyeye göre), step: bir sonraki seviyenin getirdiği
   const BUFFS = [
-    { id: 'stride',   name: 'Güçlü Adımlar',          base: 20,   growth: 2.2,
-      desc: l => `Her tıklama %${25 * l} daha uzağa taşır.`, next: '+%25 tıklama mesafesi' },
-    { id: 'breeze',   name: 'Arkadan Esen Rüzgâr',    base: 35,   growth: 2.2,
-      desc: l => `Otomatik hız +%${25 * l}.`, next: '+%25 otomatik hız' },
-    { id: 'postcard', name: 'Kartpostal Koleksiyonu', base: 120,  growth: 2.6,
-      desc: l => `Metre başına kredi +%${25 * l}.`, next: '+%25 kredi' },
-    { id: 'rhythm',   name: 'Yolun Ritmi',            base: 150,  growth: 3.0, max: 10,
-      desc: l => `Seri tıklama bonusu en fazla %${Math.round((0.5 + 0.1 * l) * 100)}.`, next: '+%10 ritim tavanı' },
-    { id: 'luck',     name: 'Şanslı Adım',            base: 250,  growth: 3.0, max: 10,
-      desc: l => `Tıklamaların %${l} ihtimalle 5 kat uzun.`, next: '+%1 şans' },
-    { id: 'dream',    name: 'Rüyada Yolculuk',        base: 400,  growth: 2.4, max: 10,
-      desc: l => `Oyun kapalıyken ilerleme hızı: otomatik hızın %${30 + 6 * l} kadarı.`, next: '+%6 çevrimdışı hız' },
-    { id: 'camp',     name: 'Uzun Mola',              base: 600,  growth: 2.1, max: 20,
-      desc: l => `Çevrimdışı ilerleme en fazla ${8 + 2 * l} saat sürer.`, next: '+2 saat çevrimdışı süre' },
-    { id: 'butterfly', name: 'Kelebek Dostu',         base: 900,  growth: 2.5, max: 10,
-      desc: l => `Altın kelebekler %${10 * l} daha sık gelir, etkileri %${15 * l} uzun sürer.`, next: 'daha sık kelebek' },
+    { id: 'stride',   base: 20,   growth: 2.2,           vals: l => ({ p: fmtPct(20 * l) }),                    step: () => ({ p: fmtPct(20) }) },
+    { id: 'breeze',   base: 35,   growth: 2.2,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
+    { id: 'postcard', base: 120,  growth: 2.6,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
+    { id: 'rhythm',   base: 150,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
+    { id: 'luck',     base: 250,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
+    { id: 'dream',    base: 400,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
+    { id: 'camp',     base: 600,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
+    { id: 'butterfly', base: 900, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
   ];
+  BUFFS.forEach(b => Object.defineProperties(b, {
+    name: { get: () => T(`buff.${b.id}.name`) },
+    next: { get: () => T(`buff.${b.id}.next`, b.step()) },
+  }));
+  BUFFS.forEach(b => { b.desc = l => T(`buff.${b.id}.desc`, b.vals(l)); });
   const BUFF = Object.fromEntries(BUFFS.map(b => [b.id, b]));
 
   /* ---------- Biyomlar (gündüz renk paletleri ve sahne dekoru) ---------- */
@@ -101,22 +106,23 @@
 
   /* ---------- Bölgeler: geometrik olarak uzayan eşikler ---------- */
   const REGIONS = [
-    { name: 'Sabah Köyü',          biome: 'meadow',     at: 0 },
-    { name: 'Lavanta Tarlaları',   biome: 'lavender',   at: 250 },
-    { name: 'Çam Ormanı',          biome: 'pine',       at: 1500 },
-    { name: 'Altın Buğday Ovası',  biome: 'wheat',      at: 7000 },
-    { name: 'Ege Sahil Yolu',      biome: 'coast',      at: 30000 },
-    { name: 'Kızıl Kanyon',        biome: 'canyon',     at: 120000 },
-    { name: 'Kiraz Çiçeği Vadisi', biome: 'sakura',     at: 500000 },
-    { name: 'Sonbahar Korusu',     biome: 'autumn',     at: 2.0e6 },
-    { name: 'Vaha Yolu',           biome: 'desert',     at: 8.0e6 },
-    { name: 'Karlı Geçit',         biome: 'snow',       at: 3.2e7 },
-    { name: 'Kuzey Işıkları',      biome: 'aurora',     at: 1.3e8 },
-    { name: 'Rize Çay Bahçeleri',  biome: 'tea',        at: 5.0e8 },
-    { name: 'Peri Bacaları',       biome: 'cappadocia', at: 2.0e9 },
-    { name: 'Lale Bahçeleri',      biome: 'tulip',      at: 6.0e9 },
-    { name: 'Zeytin Bahçeleri',    biome: 'olive',      at: 1.8e10 },
+    { biome: 'meadow',     at: 0 },
+    { biome: 'lavender',   at: 250 },
+    { biome: 'pine',       at: 1500 },
+    { biome: 'wheat',      at: 7000 },
+    { biome: 'coast',      at: 30000 },
+    { biome: 'canyon',     at: 120000 },
+    { biome: 'sakura',     at: 500000 },
+    { biome: 'autumn',     at: 2.0e6 },
+    { biome: 'desert',     at: 8.0e6 },
+    { biome: 'snow',       at: 3.2e7 },
+    { biome: 'aurora',     at: 1.3e8 },
+    { biome: 'tea',        at: 5.0e8 },
+    { biome: 'cappadocia', at: 2.0e9 },
+    { biome: 'tulip',      at: 6.0e9 },
+    { biome: 'olive',      at: 1.8e10 },
   ];
+  REGIONS.forEach((r, i) => Object.defineProperty(r, 'name', { get: () => T(`region.${i}`) }));
   const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   // Liste bitince bölgeler ikinci tura girer; her yeni bölge öncekinin bu kadar katı uzakta.
   // (4 kat, son araçtan sonra hız artışı yetişemediği için yolu fiilen durduruyordu.)
@@ -127,7 +133,7 @@
     const k = i - REGIONS.length;
     const base = REGIONS[(k % loop) + 1];
     const lap = Math.floor(k / loop) + 2;
-    return { name: `${base.name} ${ROMAN[lap] || lap}`, biome: base.biome, at: REGIONS[REGIONS.length - 1].at * Math.pow(LOOP_GROWTH, k + 1) };
+    return { get name() { return `${base.name} ${ROMAN[lap] || lap}`; }, biome: base.biome, at: REGIONS[REGIONS.length - 1].at * Math.pow(LOOP_GROWTH, k + 1) };
   }
   function regionIndexFor(dist) {
     let i = 0;
@@ -137,61 +143,66 @@
 
   /* ---------- Gerçek dünyadan mesafe durakları ---------- */
   const MILESTONES = [
-    { at: 100,      name: 'İlk yüz metre' },
-    { at: 1000,     name: 'İlk kilometre' },
-    { at: 5000,     name: 'Bir sabah koşusu' },
-    { at: 21097,    name: 'Yarı maraton' },
-    { at: 42195,    name: 'Maraton' },
-    { at: 1.6e5,    name: 'İzmir – Çeşme, gidiş dönüş' },
-    { at: 4.5e5,    name: 'İstanbul – Ankara' },
-    { at: 1.0e6,    name: 'Bin kilometre' },
-    { at: 1.7e6,    name: 'Edirne – Kars, boydan boya' },
-    { at: 2.5e6,    name: 'İstanbul – Londra' },
-    { at: 9.0e6,    name: 'İstanbul – Tokyo' },
-    { at: 2.0e7,    name: 'Dünyanın yarısı' },
-    { at: 4.0075e7, name: 'Dünya turu' },
-    { at: 1.0e8,    name: 'Ekvatoru iki buçuk kez' },
-    { at: 3.844e8,  name: "Ay'a varış" },
-    { at: 7.688e8,  name: "Ay'a gidiş dönüş" },
-    { at: 5.46e10,  name: "Mars'a en yakın an" },
-    { at: 1.496e11, name: "Güneş'e kadar (1 AB)" },
-    { at: 7.78e11,  name: "Jüpiter'in yörüngesi" },
-    { at: 4.5e12,   name: "Neptün'ün yörüngesi" },
-    { at: 2.5e13,   name: "Voyager 1'in izinde" },
-    { at: 9.46e15,  name: 'Bir ışık yılı' },
-    { at: 4.01e16,  name: 'Proxima Centauri' },
+    { at: 100 },
+    { at: 1000 },
+    { at: 5000 },
+    { at: 21097 },
+    { at: 42195 },
+    { at: 1.6e5 },
+    { at: 4.5e5 },
+    { at: 1.0e6 },
+    { at: 1.7e6 },
+    { at: 2.5e6 },
+    { at: 9.0e6 },
+    { at: 2.0e7 },
+    { at: 4.0075e7 },
+    { at: 1.0e8 },
+    { at: 3.844e8 },
+    { at: 7.688e8 },
+    { at: 5.46e10 },
+    { at: 1.496e11 },
+    { at: 7.78e11 },
+    { at: 4.5e12 },
+    { at: 2.5e13 },
+    { at: 9.46e15 },
+    { at: 4.01e16 },
   ];
+  MILESTONES.forEach((m, i) => Object.defineProperty(m, 'name', { get: () => T(`ms.${i}`) }));
 
   /* ---------- Rozetler: her biri kalıcı +%3 kredi ---------- */
   const maxLevel = s => Math.max(0, ...Object.values(s.levels || {}));
   const ownedCount = s => VEHICLES.filter(v => s.owned[v.id]).length;
   const BADGES = [
-    { id: 'steps100',  name: 'İlk Adımlar',          desc: '100 adım at.',                          test: s => s.clicks >= 100 },
-    { id: 'steps1k',   name: 'Yorulmak Bilmez',      desc: '1.000 adım at.',                        test: s => s.clicks >= 1000 },
-    { id: 'steps10k',  name: 'Demir Bacaklar',       desc: '10.000 adım at.',                       test: s => s.clicks >= 10000 },
-    { id: 'rhythm',    name: 'Ritim Ustası',         desc: 'Ritim çubuğunu sonuna kadar doldur.',   test: (s, rt) => rt && rt.combo >= 20 },
-    { id: 'lucky',     name: 'Uğur Böceği',          desc: 'İlk şanslı adımını at.',                test: s => s.crits >= 1 },
-    { id: 'lucky100',  name: 'Talih Kuşu',           desc: '100 şanslı adım at.',                   test: s => s.crits >= 100 },
-    { id: 'fly1',      name: 'Kelebek Avcısı',       desc: 'İlk altın kelebeği yakala.',            test: s => s.gifts >= 1 },
-    { id: 'fly25',     name: 'Kelebek Bahçesi',      desc: '25 altın kelebek yakala.',              test: s => s.gifts >= 25 },
-    { id: 'rainbow',   name: 'Gökkuşağının Altında', desc: 'Yağmurdan sonra bir gökkuşağı gör.',    test: s => s.rainbows >= 1 },
-    { id: 'night',     name: 'Gece Kuşu',            desc: 'Gece yolculuğunda 10 dakika geçir.',    test: s => s.nightTime >= 600 },
-    { id: 'reg5',      name: 'Gezgin',               desc: '5 bölge keşfet.',                       test: s => s.regionIdx >= 4 },
-    { id: 'reg13',     name: 'Dolu Pasaport',        desc: 'Bütün bölgeleri bir kez gör.',          test: s => s.regionIdx >= REGIONS.length - 1 },
-    { id: 'reg25',     name: 'İkinci Tur',           desc: '25 bölge keşfet.',                      test: s => s.regionIdx >= 24 },
-    { id: 'marathon',  name: 'Maratoncu',            desc: 'Maraton mesafesini geç.',               test: s => s.distance >= 42195 },
-    { id: 'world',     name: 'Dünya Turu',           desc: 'Dünyanın çevresi kadar yol al.',        test: s => s.distance >= 4.0075e7 },
-    { id: 'moon',      name: 'Ay Yolcusu',           desc: "Ay'a varacak kadar yol al.",            test: s => s.distance >= 3.844e8 },
-    { id: 'sun',       name: "Güneş'e Selam",        desc: "Güneş'e varacak kadar yol al.",         test: s => s.distance >= 1.496e11 },
-    { id: 'garage3',   name: 'Küçük Garaj',          desc: '3 araca sahip ol.',                     test: s => ownedCount(s) >= 3 },
-    { id: 'garage6',   name: 'Koleksiyoncu',         desc: '6 araca sahip ol.',                     test: s => ownedCount(s) >= 6 },
-    { id: 'garage9',   name: 'Tam Kadro',            desc: 'Bütün araçlara sahip ol.',              test: s => ownedCount(s) >= VEHICLES.length },
-    { id: 'tuned25',   name: 'Usta Tamirci',         desc: 'Bir aracı 25. seviyeye yükselt.',       test: s => maxLevel(s) >= 25 },
-    { id: 'tuned100',  name: 'Efsane Motor',         desc: 'Bir aracı 100. seviyeye yükselt.',      test: s => maxLevel(s) >= 100 },
-    { id: 'home1',     name: 'Eve Dönüş',            desc: 'İlk kez eve dön.',                      test: s => s.trips >= 1 },
-    { id: 'home5',     name: 'Yolların Eskisi',      desc: '5 kez eve dön.',                        test: s => s.trips >= 5 },
-    { id: 'mem100',    name: 'Hatıra Sandığı',       desc: '100 hatıra biriktir.',                  test: s => s.memories >= 100 },
+    { id: 'steps100',  n: 100, test: s => s.clicks >= 100 },
+    { id: 'steps1k',   n: 1000, test: s => s.clicks >= 1000 },
+    { id: 'steps10k',  n: 10000, test: s => s.clicks >= 10000 },
+    { id: 'rhythm',    test: (s, rt) => rt && rt.combo >= 20 },
+    { id: 'lucky',     test: s => s.crits >= 1 },
+    { id: 'lucky100',  n: 100, test: s => s.crits >= 100 },
+    { id: 'fly1',      test: s => s.gifts >= 1 },
+    { id: 'fly25',     n: 25, test: s => s.gifts >= 25 },
+    { id: 'rainbow',   test: s => s.rainbows >= 1 },
+    { id: 'night',     n: 10, test: s => s.nightTime >= 600 },
+    { id: 'reg5',      n: 5, test: s => s.regionIdx >= 4 },
+    { id: 'reg13',     test: s => s.regionIdx >= REGIONS.length - 1 },
+    { id: 'reg25',     n: 25, test: s => s.regionIdx >= 24 },
+    { id: 'marathon',  test: s => s.distance >= 42195 },
+    { id: 'world',     test: s => s.distance >= 4.0075e7 },
+    { id: 'moon',      test: s => s.distance >= 3.844e8 },
+    { id: 'sun',       test: s => s.distance >= 1.496e11 },
+    { id: 'garage3',   n: 3, test: s => ownedCount(s) >= 3 },
+    { id: 'garage6',   n: 6, test: s => ownedCount(s) >= 6 },
+    { id: 'garage9',   test: s => ownedCount(s) >= VEHICLES.length },
+    { id: 'tuned25',   n: 25, test: s => maxLevel(s) >= 25 },
+    { id: 'tuned100',  n: 100, test: s => maxLevel(s) >= 100 },
+    { id: 'home1',     test: s => s.trips >= 1 },
+    { id: 'home5',     n: 5, test: s => s.trips >= 5 },
+    { id: 'mem100',    n: 100, test: s => s.memories >= 100 },
   ];
+  BADGES.forEach(b => Object.defineProperties(b, {
+    name: { get: () => T(`badge.${b.id}.name`) },
+    desc: { get: () => T(`badge.${b.id}.desc`, { n: b.n !== undefined ? fmtNum(b.n) : '' }) },
+  }));
   const BADGE_BONUS = 0.03;
 
   /* ---------- Eve dönüş ve hatıralar ---------- */
@@ -249,7 +260,7 @@
     // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
     own(state, id) {
       const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories);
-      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.25 * state.buffs.stride) };
+      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.2 * state.buffs.stride) };
     },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
     base(state) {
@@ -264,57 +275,89 @@
       const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories), bi = 1 + 0.25 * b.breeze;
       return {
         idle: idle * d * bi,
-        click: click * d * (1 + 0.25 * b.stride),
+        click: click * d * (1 + 0.2 * b.stride),
         cpm: (1 + 0.25 * b.postcard) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
     },
   };
 
-  /* ---------- Biçimlendirme (tr-TR) ---------- */
-  const nf0 = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
-  const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  const nf2 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const SUFFIX = [[1e21, 'Sk'], [1e18, 'Kn'], [1e15, 'Ka'], [1e12, 'Tn'], [1e9, 'Mr'], [1e6, 'Mn']];
+  /* ---------- Biçimlendirme (seçili dile ve birim sistemine göre) ---------- */
+  const L = () => (root.IT && root.IT.langDef ? root.IT.langDef() : null);
+  const loc = () => (root.IT && root.IT.locale ? root.IT.locale() : 'tr-TR');
+  const imperial = () => !!(root.IT && root.IT.units && root.IT.units() === 'imperial');
+  const unit = k => { const d = L(); return (d && d.units && d.units[k]) || k; };
+  const NF = {};
+  function nf(digits) {
+    const key = loc() + digits;
+    return NF[key] || (NF[key] = new Intl.NumberFormat(loc(), { minimumFractionDigits: digits, maximumFractionDigits: digits }));
+  }
+  const DEFAULT_SUFFIX = ['M', 'B', 'T', 'Qa', 'Qi', 'Sx'];
   function fmtNum(n) {
     if (!isFinite(n)) return '∞';
     if (n < 0) return '-' + fmtNum(-n);
-    if (n >= 1e24) return n.toExponential(2).replace('.', ',');
-    for (const [v, s] of SUFFIX) if (n >= v) {
+    if (n >= 1e24) return n.toExponential(2).replace('.', nf(1).format(1.5).charAt(1));
+    const suf = (L() && L().suffixes) || DEFAULT_SUFFIX;
+    for (let i = suf.length - 1; i >= 0; i--) {
+      const v = Math.pow(10, 6 + 3 * i);
+      if (n < v) continue;
       const x = n / v;
-      return (x >= 100 ? nf0.format(x) : x >= 10 ? nf1.format(Math.floor(x * 10) / 10) : nf2.format(Math.floor(x * 100) / 100)) + ' ' + s;
+      return (x >= 100 ? nf(0).format(Math.floor(x)) : x >= 10 ? nf(1).format(Math.floor(x * 10) / 10) : nf(2).format(Math.floor(x * 100) / 100)) + ' ' + suf[i];
     }
-    return nf0.format(Math.floor(n));
+    return nf(0).format(Math.floor(n));
   }
-  function fmtSmall(n) { // tıklama metinleri için: küçük değerlerde ondalık göster
-    if (n < 10) return nf1.format(n);
+  function fmtSmall(n) { // küçük değerlerde ondalık göster
+    if (n < 10) return nf(1).format(n);
     return fmtNum(n);
   }
-  const AU = 1.496e11, LY = 9.4607e15;
+  // Yüzde: dile göre işaret yeri değişir (%25, 25%, 25 %)
+  const PF = {};
+  function fmtPct(n) {
+    const key = loc();
+    const f = PF[key] || (PF[key] = new Intl.NumberFormat(loc(), { style: 'percent', maximumFractionDigits: 1 }));
+    return f.format(n / 100);
+  }
+  function fmtHours(h) { return T('unit.hours', { n: h }); }
+  const AU = 1.496e11, LY = 9.4607e15, MI = 1609.344, YD = 0.9144;
   function fmtDist(m) {
-    if (m < 1000) return nf0.format(Math.floor(m)) + ' m';
-    if (m < 1e5) return nf2.format(Math.floor(m / 10) / 100) + ' km';
-    if (m < 1e9) return nf0.format(Math.floor(m / 1000)) + ' km';
-    if (m < 0.5 * AU) return fmtNum(m / 1000) + ' km';
-    if (m < 0.1 * LY) return nf2.format(m / AU) + ' AB';
-    return nf2.format(m / LY) + ' ışık yılı';
+    if (imperial()) {
+      if (m < MI) return nf(0).format(Math.floor(m / YD)) + ' ' + unit('yd');
+      const mi = m / MI;
+      if (mi < 100) return nf(2).format(Math.floor(mi * 100) / 100) + ' ' + unit('mi');
+      if (m < 1e9) return nf(0).format(Math.floor(mi)) + ' ' + unit('mi');
+      if (m < 0.5 * AU) return fmtNum(mi) + ' ' + unit('mi');
+    } else {
+      if (m < 1000) return nf(0).format(Math.floor(m)) + ' ' + unit('m');
+      if (m < 1e5) return nf(2).format(Math.floor(m / 10) / 100) + ' ' + unit('km');
+      if (m < 1e9) return nf(0).format(Math.floor(m / 1000)) + ' ' + unit('km');
+      if (m < 0.5 * AU) return fmtNum(m / 1000) + ' ' + unit('km');
+    }
+    if (m < 0.1 * LY) return nf(2).format(m / AU) + ' ' + unit('au');
+    return nf(2).format(m / LY) + ' ' + unit('ly');
+  }
+  // Tıklama başına mesafe gibi küçük kazançlar
+  function fmtGain(m) {
+    const u = imperial() ? m / YD : m, lim = imperial() ? MI / YD : 1000, k = imperial() ? 'yd' : 'm';
+    if (u < 10) return nf(1).format(u) + ' ' + unit(k);
+    if (u < lim) return nf(0).format(Math.floor(u)) + ' ' + unit(k);
+    return fmtDist(m);
   }
   function fmtSpeed(ms) {
-    const kmh = ms * 3.6;
-    if (kmh < 100) return nf1.format(kmh) + ' km/sa';
-    return fmtNum(kmh) + ' km/sa';
+    const v = imperial() ? ms * 3600 / MI : ms * 3.6, k = imperial() ? 'mph' : 'kmh';
+    return (v < 100 ? nf(1).format(v) : fmtNum(v)) + ' ' + unit(k);
   }
   function fmtDuration(sec) {
     sec = Math.floor(sec);
     const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
-    if (d) return `${d} g ${h} sa`;
-    if (h) return `${h} sa ${m} dk`;
-    if (m) return `${m} dk ${s} sn`;
-    return `${s} sn`;
+    const u = k => ' ' + unit(k);
+    if (d) return `${d}${u('d')} ${h}${u('h')}`;
+    if (h) return `${h}${u('h')} ${m}${u('min')}`;
+    if (m) return `${m}${u('min')} ${s}${u('s')}`;
+    return `${s}${u('s')}`;
   }
 
   root.IT = Object.assign(root.IT || {}, {
     VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, regionAt, regionIndexFor, Econ,
-    fmtNum, fmtSmall, fmtDist, fmtSpeed, fmtDuration,
+    fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);
