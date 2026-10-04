@@ -210,15 +210,30 @@
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.015 * lvl; },
     badgeMult(state) { return 1 + BADGE_BONUS * Object.keys(state.badges || {}).length; },
+    // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
+    lead(state) {
+      let best = null, bestIdle = -1;
+      for (const v of VEHICLES) {
+        if (!state.owned[v.id]) continue;
+        const idle = v.idle * Econ.vehicleMult(state.levels[v.id] || 0);
+        if (idle > bestIdle) { best = v.id; bestIdle = idle; }
+      }
+      return best || 'walk';
+    },
+    // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
+    own(state, id) {
+      const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx);
+      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.25 * state.buffs.stride) };
+    },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
     base(state) {
-      const b = state.buffs;
+      const b = state.buffs, lead = Econ.lead(state);
       let idle = 0, click = 0, cIdle = 0;
       for (const v of VEHICLES) {
         if (!state.owned[v.id]) continue;
-        const m = Econ.vehicleMult(state.levels[v.id] || 0) * (v.id === state.active ? 1 : CONVOY);
+        const m = Econ.vehicleMult(state.levels[v.id] || 0) * (v.id === lead ? 1 : CONVOY);
         idle += v.idle * m; click += v.click * m;
-        if (v.id !== state.active) cIdle += v.idle * m;
+        if (v.id !== lead) cIdle += v.idle * m;
       }
       const d = Econ.discoveryMult(state.regionIdx), bi = 1 + 0.25 * b.breeze;
       return {

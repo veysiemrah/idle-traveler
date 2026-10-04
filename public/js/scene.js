@@ -1363,6 +1363,7 @@
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
+    if (id === 'mystery') return drawGarageDoor(ctx, w, h, getComputedStyle(canvas).color);
     const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85],
       train: [0.36, 0.5, 0.86], plane: [0.52, 0.48, 0.5], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62] };
     const [k, xf, yf] = sizes[id];
@@ -1376,6 +1377,22 @@
       ctx.fillStyle = 'rgba(40,44,82,0.92)'; ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'source-over';
     }
+  }
+
+  // Kilitli araçlar için kapalı garaj kapısı: aracın biçimini ele vermez
+  function drawGarageDoor(ctx, w, h, col) {
+    const x = w * 0.18, y = h * 0.16, dw = w * 0.64, dh = h * 0.72;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath(); ctx.moveTo(x - 4, y + 6); ctx.lineTo(w / 2, y - 4); ctx.lineTo(x + dw + 4, y + 6); ctx.stroke();
+    ctx.globalAlpha = 0.35;
+    for (let i = 1; i < 6; i++) { const yy = y + 6 + (dh - 6) * i / 6; ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + dw, yy); ctx.stroke(); }
+    ctx.globalAlpha = 0.9;
+    rrect(ctx, x, y + 6, dw, dh - 6, 3); ctx.stroke();
+    ctx.font = `800 ${Math.round(h * 0.42)}px "Baloo 2", system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('?', w / 2, y + 6 + (dh - 6) / 2 + 1);
+    ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
   IT.Scene = Scene;
