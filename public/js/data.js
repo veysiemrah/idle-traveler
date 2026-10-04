@@ -7,23 +7,23 @@
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   const VEHICLES = [
-    { id: 'walk',   name: 'Yürüyüş',       cost: 0,       idle: 0.35,  click: 0.8,   upName: 'Rahat Ayakkabılar', road: 'path',    alt: 0,
+    { id: 'walk',   name: 'Yürüyüş',       cost: 0,       idle: 0.35,  click: 0.4,   upName: 'Rahat Ayakkabılar', road: 'path',    alt: 0,
       tagline: 'Sırt çantan ve iki ayağın. Her yolculuk böyle başlar.' },
-    { id: 'skates', name: 'Paten',         cost: 150,     idle: 1.5,   click: 2.5,   upName: 'Bilyeli Rulmanlar', road: 'path',    alt: 0,
+    { id: 'skates', name: 'Paten',         cost: 150,     idle: 1.5,   click: 1.25,   upName: 'Bilyeli Rulmanlar', road: 'path',    alt: 0,
       tagline: 'Tekerlekler tıkırdıyor, rüzgâr yüzüne vuruyor.' },
-    { id: 'bike',   name: 'Bisiklet',      cost: 5000,    idle: 6,     click: 8,     upName: 'Karbon Kadro',      road: 'path',    alt: 0,
+    { id: 'bike',   name: 'Bisiklet',      cost: 5000,    idle: 6,     click: 4,     upName: 'Karbon Kadro',      road: 'path',    alt: 0,
       tagline: 'Pedal çevir, tepeler birer birer geride kalsın.' },
-    { id: 'moto',   name: 'Motosiklet',    cost: 2.0e5,   idle: 24,    click: 28,    upName: 'Turbo Egzoz',       road: 'asphalt', alt: 0,
+    { id: 'moto',   name: 'Motosiklet',    cost: 2.0e5,   idle: 24,    click: 14,    upName: 'Turbo Egzoz',       road: 'asphalt', alt: 0,
       tagline: 'Virajlar seni çağırıyor.' },
-    { id: 'car',    name: 'Araba',         cost: 8.0e6,   idle: 95,    click: 100,   upName: 'V6 Motor',          road: 'asphalt', alt: 0,
+    { id: 'car',    name: 'Araba',         cost: 8.0e6,   idle: 95,    click: 50,   upName: 'V6 Motor',          road: 'asphalt', alt: 0,
       tagline: 'Camı aç, sevdiğin şarkıyı aç. Yol uzun.' },
-    { id: 'train',  name: 'Tren',          cost: 2.0e8,   idle: 380,   click: 380,   upName: 'Manyetik Raylar',   road: 'rail',    alt: 0,
+    { id: 'train',  name: 'Tren',          cost: 2.0e8,   idle: 380,   click: 190,   upName: 'Manyetik Raylar',   road: 'rail',    alt: 0,
       tagline: 'Raylarda ritmik bir ninni, pencerede akan manzara.' },
-    { id: 'plane',  name: 'Uçak',          cost: 4.0e9,   idle: 2000,  click: 1800,  upName: 'Jet Motorları',     road: 'asphalt', alt: 0.55,
+    { id: 'plane',  name: 'Uçak',          cost: 4.0e9,   idle: 2000,  click: 900,  upName: 'Jet Motorları',     road: 'asphalt', alt: 0.55,
       tagline: 'Bulutların arasından dünyaya yukarıdan bak.' },
-    { id: 'rocket', name: 'Roket',         cost: 1.0e11,  idle: 10000, click: 8000,  upName: 'İyon İticiler',     road: 'asphalt', alt: 1,
+    { id: 'rocket', name: 'Roket',         cost: 1.0e11,  idle: 10000, click: 4000,  upName: 'İyon İticiler',     road: 'asphalt', alt: 1,
       tagline: 'Gökyüzü artık bir sınır değil.' },
-    { id: 'sail',   name: 'Güneş Yelkeni', cost: 2.5e12,  idle: 50000, click: 40000, upName: 'Foton Aynaları',    road: 'asphalt', alt: 1.15,
+    { id: 'sail',   name: 'Güneş Yelkeni', cost: 2.5e12,  idle: 50000, click: 20000, upName: 'Foton Aynaları',    road: 'asphalt', alt: 1.15,
       tagline: 'Işığın kendisiyle yelken aç, yıldızlara doğru süzül.' },
   ];
   VEHICLES.forEach((v, i) => { v.index = i; v.upBase = i === 0 ? 8 : Math.round(v.cost * 0.05); });
@@ -32,7 +32,7 @@
   /* ---------- Kalıcı güçlendirmeler ---------- */
   const BUFFS = [
     { id: 'stride',   name: 'Güçlü Adımlar',          base: 20,   growth: 2.2,
-      desc: l => `Her tıklama %${25 * l} daha uzağa taşır.`, next: '+%25 tıklama mesafesi' },
+      desc: l => `Her tıklama %${20 * l} daha uzağa taşır.`, next: '+%20 tıklama mesafesi' },
     { id: 'breeze',   name: 'Arkadan Esen Rüzgâr',    base: 35,   growth: 2.2,
       desc: l => `Otomatik hız +%${25 * l}.`, next: '+%25 otomatik hız' },
     { id: 'postcard', name: 'Kartpostal Koleksiyonu', base: 120,  growth: 2.6,
@@ -249,7 +249,7 @@
     // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
     own(state, id) {
       const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories);
-      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.25 * state.buffs.stride) };
+      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.2 * state.buffs.stride) };
     },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
     base(state) {
@@ -264,7 +264,7 @@
       const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories), bi = 1 + 0.25 * b.breeze;
       return {
         idle: idle * d * bi,
-        click: click * d * (1 + 0.25 * b.stride),
+        click: click * d * (1 + 0.2 * b.stride),
         cpm: (1 + 0.25 * b.postcard) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
