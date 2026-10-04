@@ -278,7 +278,7 @@ button { font: inherit; color: inherit; }
   width: 72px; height: 56px; border-radius: 10px;
   background: var(--icon-bg);
 }
-.card.mystery .icon { background: var(--well); }
+.card.mystery .icon { background: var(--well); color: var(--muted); }
 .body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card h3 { font: 700 17px/1.15 var(--font-display); }

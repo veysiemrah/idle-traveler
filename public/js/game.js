@@ -450,7 +450,7 @@
       <h2>Idle Traveler</h2>
       <p class="lead">Sırt çantan hazır, yol önünde. Ekrana her dokunuşun bir adım. Kat ettiğin her metre kredi kazandırır.</p>
       <ul class="intro-list">
-        <li><b>Garaj</b>: patenden güneş yelkenine kadar yeni araçlar al, onları yükselt.</li>
+        <li><b>Garaj</b>: yeni araçlar al, onları yükselt. Her yeni araç yolculuğu başka bir yere taşır.</li>
         <li><b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, şanslı adımlar.</li>
         <li><b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir.</li>
         <li>Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.</li>
@@ -485,13 +485,11 @@
       <div class="seg" role="group" aria-label="Yükseltme miktarı">${BULKS.map(n =>
         `<button class="seg-btn" data-act="bulk" data-id="${n}" aria-pressed="${bulk === n}">${n === 'max' ? 'Maks' : '×' + n}</button>`).join('')}</div>
     </div>`;
+    // Sıradaki araç hedef olarak görünür; ondan sonrakiler resim ya da isim vermeden tek bir kapalı kapının ardında bekler
+    let hidden = 0;
     for (const v of VEHICLES) {
       const owned = !!S.owned[v.id];
-      if (!owned && firstLocked !== -1 && v.index > firstLocked) {
-        html += `<article class="card veh mystery"><canvas class="icon" data-icon="${v.id}" data-locked="1" width="72" height="56"></canvas>
-          <div class="body"><h3>???</h3><p class="tag">${esc(VEHICLES[v.index - 1].name)} alındıktan sonra görünür.</p></div></article>`;
-        continue;
-      }
+      if (!owned && firstLocked !== -1 && v.index > firstLocked) { hidden++; continue; }
       const st = Econ.own(S, v.id);
       const active = S.active === v.id;
       const lvl = S.levels[v.id] || 0;
@@ -506,6 +504,8 @@
             : `<div class="up">${costBtn('buyVeh', v.id, v.cost, 'Satın al')}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
         </div></article>`;
     }
+    if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
+      <div class="body"><h3>???</h3><p class="tag">Garaj kapısının ardında ${hidden} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.</p></div></article>`;
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, c.dataset.locked === '1'));
   }
