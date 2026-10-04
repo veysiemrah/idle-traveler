@@ -50,6 +50,7 @@ IT.addLang('es', {
     'gift.zeal.name': 'Entusiasmo', 'gift.zeal.text': 'clics ×5',
     'gift.postcard.name': 'Postal Perdida', 'gift.postcard.text': 'créditos al instante',
     'gift.rainbow.name': 'Arcoíris', 'gift.rainbow.text': 'créditos ×1,5',
+    'gift.wish.name': 'Polvo de estrellas', 'gift.wish.text': 'velocidad ×2, créditos ×1,5',
 
     'region.0': 'Pueblo del Amanecer', 'region.1': 'Campos de Lavanda', 'region.2': 'Pinar', 'region.3': 'Llanura de Trigo Dorado',
     'region.4': 'Carretera de la costa del Egeo', 'region.5': 'Cañón Rojo', 'region.6': 'Valle de los Cerezos en Flor', 'region.7': 'Arboleda Otoñal',
@@ -106,8 +107,7 @@ IT.addLang('es', {
     'ui.credits': '+{c} créditos', 'ui.fx': '<b>{name}</b> {text} · {dur}',
     'unit.hours': { one: '{n} hora', other: '{n} horas' }, 'unit.ordinal': '{n}.º',
 
-    'garage.lead': 'Tu vehículo más fuerte marca tu velocidad: <b>{lead}</b>.',
-    'garage.convoy': 'Tus otros vehículos suman <b>+{s}</b>.',
+    'garage.rule': 'Tu vehículo más fuerte marca tu velocidad.', 'garage.sumLead': 'Vehículo más fuerte', 'garage.sumConvoy': 'De otros vehículos',
     'garage.convoy0': 'Tus otros vehículos suman el {p} de su velocidad.',
     'garage.cosmetic': 'El vehículo que montas solo cambia el aspecto.',
     'garage.mystery': {
@@ -121,6 +121,7 @@ IT.addLang('es', {
     'toast.badge': '<b>Insignia: {name}</b> · +{p} de créditos para siempre',
     'toast.giftInstant': '<b>Mariposa dorada: {name}</b> · +{c} créditos',
     'toast.giftEffect': '<b>Mariposa dorada: {name}</b> · {text} durante {dur}',
+    'toast.wish': '<b>¡Estrella fugaz! Pediste un deseo: {name}</b> · {text} durante {dur}',
     'toast.rain': 'Ha empezado un chaparrón de primavera. Las gotas refrescan el camino.',
     'toast.rainbow': '<b>¡Un arcoíris!</b> · {text} durante {dur}',
     'toast.away': 'Has recorrido +{d} mientras no estabas.',
@@ -134,6 +135,7 @@ IT.addLang('es', {
     'toast.dawn': 'Sale el sol. El camino vuelve a brillar.',
     'toast.lang': 'Idioma: español',
     'float.lucky': '¡Paso de la suerte! +{d}', 'float.gift': '¡{name}!',
+    'float.wish': '¡Pide un deseo!',
 
     'off.eyebrow': 'Bienvenido de nuevo', 'off.title': 'El camino te ha esperado',
     'off.lead': 'Han pasado <b>{dur}</b> mientras no estabas. Tu viajero siguió {by}. Velocidad sin conexión: <b>{p}</b> de tu velocidad automática.',
@@ -164,7 +166,7 @@ IT.addLang('es', {
     'intro.lead': 'Tu mochila está lista y el camino te espera. Cada toque es un paso. Cada metro que recorres te da créditos.',
     'intro.li1': '<b>Garaje</b>: compra vehículos nuevos y mejóralos. Cada vehículo nuevo lleva el viaje a otro lugar.',
     'intro.li2': '<b>Mejoras</b>: pasos más largos, viento a favor, pasos de la suerte.',
-    'intro.li3': 'Atrapa las <b>mariposas doradas</b>. Cada una trae una pequeña sorpresa.',
+    'intro.li3': 'Atrapa las <b>mariposas doradas</b>. Cada una trae una pequeña sorpresa. De noche, toca una <b>estrella fugaz</b> y pide un deseo.',
     'intro.li4': 'Cada vehículo de tu garaje suma la mitad de su velocidad al viaje. Ninguna mejora se desperdicia.',
     'intro.li5': 'Consigue <b>insignias</b>. Cada una te da más créditos para siempre.',
     'intro.li6': 'Aunque cierres el juego, tu viajero sigue avanzando a un ritmo más lento.',
@@ -173,6 +175,7 @@ IT.addLang('es', {
 
     'j.trip': 'Viaje', 'j.thisTrip': 'Este viaje', 'j.total': 'Distancia total', 'j.credits': 'Créditos totales', 'j.clicks': 'Pasos dados',
     'j.time': 'Tiempo en camino', 'j.best': 'Velocidad máxima', 'j.gifts': 'Mariposas atrapadas', 'j.crits': 'Pasos de la suerte', 'j.rainbows': 'Arcoíris vistos',
+    'j.wishes': 'Deseos pedidos', 'j.photos': 'Postales hechas',
     'j.life': 'Todos los viajes', 'j.memories': 'Recuerdos', 'j.memVal': '{n} · velocidad +{p}', 'j.lifeVal': '{d} · viaje {n}',
     'j.stamps': 'Sellos del pasaporte',
     'j.stampsSub': { one: '{n} región · cada una da +{p} de velocidad para siempre', other: '{n} regiones · cada una da +{p} de velocidad para siempre' },
@@ -190,6 +193,10 @@ IT.addLang('es', {
     "buff.pal.next": "un compañero fiel",
     "badge.photo1.name": "Postal enviada",
     "badge.photo1.desc": "Haz tu primera postal.",
+    "badge.wish1.name": "Pide un deseo",
+    "badge.wish1.desc": "Atrapa una estrella fugaz de noche.",
+    "badge.wish10.name": "Coleccionista de estrellas",
+    "badge.wish10.desc": "Atrapa {n} estrellas fugaces.",
     "html.photo": "Hacer una postal",
     "pc.eyebrow": "Una postal del camino",
     "pc.title": "Guarda este momento",

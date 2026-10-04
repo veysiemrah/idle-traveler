@@ -55,6 +55,7 @@ IT.addLang('tr', {
     'gift.zeal.name': 'Coşku', 'gift.zeal.text': 'tıklama ×5',
     'gift.postcard.name': 'Kayıp Kartpostal', 'gift.postcard.text': 'anında kredi',
     'gift.rainbow.name': 'Gökkuşağı', 'gift.rainbow.text': 'kredi ×1,5',
+    'gift.wish.name': 'Yıldız Tozu', 'gift.wish.text': 'hız ×2, kredi ×1,5',
 
     // Bölgeler (sırayla)
     'region.0': 'Sabah Köyü', 'region.1': 'Lavanta Tarlaları', 'region.2': 'Çam Ormanı', 'region.3': 'Altın Buğday Ovası',
@@ -117,8 +118,7 @@ IT.addLang('tr', {
     'unit.hours': '{n} saat', 'unit.ordinal': '{n}.',
 
     // Garaj
-    'garage.lead': 'Hızını garajdaki en güçlü araç belirler: <b>{lead}</b>.',
-    'garage.convoy': 'Diğer araçlar <b>+{s}</b> katıyor.',
+    'garage.rule': 'Hızını garajdaki en güçlü araç belirler.', 'garage.sumLead': 'En güçlü araç', 'garage.sumConvoy': 'Diğer araçlardan',
     'garage.convoy0': 'Diğer araçlar hızlarının {p} kadarını katar.',
     'garage.cosmetic': 'Hangi araca bindiğin yalnızca görünümü değiştirir.',
     'garage.mystery': 'Garaj kapısının ardında {n} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.',
@@ -130,6 +130,7 @@ IT.addLang('tr', {
     'toast.badge': '<b>Rozet: {name}</b> · kalıcı +{p} kredi',
     'toast.giftInstant': '<b>Altın kelebek: {name}</b> · +{c} kredi',
     'toast.giftEffect': '<b>Altın kelebek: {name}</b> · {dur} boyunca {text}',
+    'toast.wish': '<b>Kayan yıldız! Dilek tuttun: {name}</b> · {dur} boyunca {text}',
     'toast.rain': 'Bir bahar yağmuru başladı. Damlalar yolu serinletiyor.',
     'toast.rainbow': '<b>Gökkuşağı çıktı!</b> · {dur} boyunca {text}',
     'toast.away': 'Sen yokken +{d} yol alındı.',
@@ -143,6 +144,7 @@ IT.addLang('tr', {
     'toast.dawn': 'Gün doğuyor. Yol yeniden aydınlanıyor.',
     'toast.lang': 'Dil: Türkçe',
     'float.lucky': 'Şanslı adım! +{d}', 'float.gift': '{name}!',
+    'float.wish': 'Dilek tuttun!',
 
     // Çevrimdışı dönüş penceresi
     'off.eyebrow': 'Tekrar hoş geldin', 'off.title': 'Yol seni bekledi, sen de yolu',
@@ -173,7 +175,7 @@ IT.addLang('tr', {
     'intro.lead': 'Sırt çantan hazır, yol önünde. Ekrana her dokunuşun bir adım. Kat ettiğin her metre kredi kazandırır.',
     'intro.li1': '<b>Garaj</b>: yeni araçlar al, onları yükselt. Her yeni araç yolculuğu başka bir yere taşır.',
     'intro.li2': '<b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, şanslı adımlar.',
-    'intro.li3': '<b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir.',
+    'intro.li3': '<b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir. Geceleri <b>kayan yıldızlara</b> dokunup dilek tut.',
     'intro.li4': 'Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.',
     'intro.li5': '<b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.',
     'intro.li6': 'Oyunu kapatsan da yolcun daha yavaş bir tempoda yürümeye devam eder.',
@@ -183,6 +185,7 @@ IT.addLang('tr', {
     // Yol defteri
     'j.trip': 'Yolculuk', 'j.thisTrip': 'Bu yolculuk', 'j.total': 'Toplam yol', 'j.credits': 'Toplam kredi', 'j.clicks': 'Atılan adım',
     'j.time': 'Yolda geçen süre', 'j.best': 'Rekor hız', 'j.gifts': 'Yakalanan kelebek', 'j.crits': 'Şanslı adım', 'j.rainbows': 'Görülen gökkuşağı',
+    'j.wishes': 'Tutulan dilek', 'j.photos': 'Çekilen kartpostal',
     'j.life': 'Tüm yolculuklar', 'j.memories': 'Hatıralar', 'j.memVal': '{n} · hız +{p}', 'j.lifeVal': '{d} · {n}. yolculuk',
     'j.stamps': 'Pasaport damgaları', 'j.stampsSub': '{n} bölge · her biri kalıcı +{p} hız', 'j.start': 'Başlangıç',
     'j.badges': 'Rozetler', 'j.badgesSub': '{n} / {m} · kredi +{p}',
@@ -198,6 +201,10 @@ IT.addLang('tr', {
     "buff.pal.next": "sadık bir yol arkadaşı",
     "badge.photo1.name": "Kartpostalcı",
     "badge.photo1.desc": "İlk kartpostalını çek.",
+    "badge.wish1.name": "Dilek Tut",
+    "badge.wish1.desc": "Gece kayan bir yıldız yakala.",
+    "badge.wish10.name": "Yıldız Toplayıcı",
+    "badge.wish10.desc": "{n} kayan yıldız yakala.",
     "html.photo": "Kartpostal çek",
     "pc.eyebrow": "Yoldan bir kartpostal",
     "pc.title": "Bu anı sakla",

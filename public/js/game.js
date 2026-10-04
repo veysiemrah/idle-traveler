@@ -11,6 +11,7 @@
     { id: 'zeal',     dur: 25, click: 5, w: 2 },
     { id: 'postcard', instant: true, w: 2 },
     { id: 'rainbow',  dur: 40, credit: 1.5, w: 0 }, // hava olayıyla gelir
+    { id: 'wish',     dur: 60, speed: 2, credit: 1.5, w: 0 }, // gece kayan yıldızla gelir
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -25,7 +26,7 @@
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
-  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos',
+  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -37,7 +38,7 @@
     return {
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
-      crits: 0, rainbows: 0, nightTime: 0, photos: 0,
+      crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -60,7 +61,7 @@
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
@@ -118,6 +119,8 @@
   let combo = 0, lastClick = 0;
   let rateEma = 0, creditEma = 0;
   let giftIn = 25;
+  // Kayan yıldız: yalnızca gece gökyüzünde
+  let starIn = 20 + Math.random() * 25;
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
   let uiDirty = { garage: true, buffs: true, journal: true };
@@ -231,6 +234,16 @@
     }
     checkBadges();
   }
+  // Gece kayan yıldızı yakalamak bir dilek tutmaktır: Yıldız Tozu etkisi
+  function catchStar() {
+    Sound.unlock();
+    S.wishes++;
+    const g = GIFT.wish, dur = addEffect(g, g.dur);
+    Sound.wish();
+    toast(t('toast.wish', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
+    scene.addFloat(t('float.wish'), { color: '#cfe0ff', big: true });
+    checkBadges();
+  }
   function addEffect(g, dur) {
     const ex = S.effects.find(e => e.id === g.id && e.until > Date.now());
     if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: Date.now() + dur * 1000, dur });
@@ -299,7 +312,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null;
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true };
   }
@@ -444,6 +457,12 @@
       if (!scene.gift) scene.spawnGift(14);
       giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly);
     }
+    // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
+    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.6 && weather !== 'rain') starIn -= dt;
+    if (starIn <= 0) {
+      if (!scene.star) scene.spawnStar();
+      starIn = 50 + Math.random() * 70;
+    }
 
     scene.companion = S.buffs.pal > 0;
     scene.update(dt, Math.max(rateEma, cur.idle), scene.nightAmt || 0);
@@ -499,20 +518,23 @@
     const c = makePostcard();
     const url = c.toDataURL('image/png');
     const name = `idle-traveler-${Date.now()}.png`;
+    // Paylaşım metni fotoğrafın çekildiği anı anlatsın
+    const dist = S.distance, region = IT.regionAt(S.regionIdx).name;
     S.photos++; checkBadges(); save();
-    openModal(`
+    openModal(() => ({ btn: t('pc.close'), html: `
       <p class="eyebrow">${t('pc.eyebrow')}</p>
       <h2>${t('pc.title')}</h2>
       <img class="postcard" src="${url}" alt="${esc(t('pc.greet', { region: IT.regionAt(S.regionIdx).name }))}">
       <div class="pc-actions">
         <a class="buy pc-btn" href="${url}" download="${name}"><b>${t('pc.download')}</b></a>
         ${navigator.canShare ? `<button class="buy pc-btn" id="pcShare" type="button"><b>${t('pc.share')}</b></button>` : ''}
-      </div>`, t('pc.close'));
-    const sh = $('#pcShare');
-    if (sh) sh.onclick = () => c.toBlob(blob => {
-      const file = new File([blob], name, { type: 'image/png' });
-      const data = { files: [file], title: 'Idle Traveler', text: t('pc.shareText', { d: fmtDist(S.distance), region: IT.regionAt(S.regionIdx).name }) };
-      if (navigator.canShare(data)) navigator.share(data).catch(() => {}); else sh.hidden = true;
+      </div>` }), null, () => {
+      const sh = $('#pcShare');
+      if (sh) sh.onclick = () => c.toBlob(blob => {
+        const file = new File([blob], name, { type: 'image/png' });
+        const data = { files: [file], title: 'Idle Traveler', text: t('pc.shareText', { d: fmtDist(dist), region }) };
+        if (navigator.canShare(data)) navigator.share(data).catch(() => {}); else sh.hidden = true;
+      });
     });
   }
 
@@ -538,27 +560,32 @@
   }
   // Pencereler sıraya girer: biri açıkken gelen yenisi öncekinin yerine geçmez
   const modalQueue = [];
-  function openModal(html, btn, onClose) {
-    if (!$('#modal').hidden) { modalQueue.push([html, btn, onClose]); return; }
-    $('#modalBody').innerHTML = html;
+  // render: { html, btn } döndürür; dil değişince pencere yeni dilde yeniden çizilir. after: çizimden sonra (olay bağlama)
+  function openModal(render, onClose, after) {
+    if (!$('#modal').hidden) { modalQueue.push([render, onClose, after]); return; }
     const b = $('#modalBtn');
-    b.textContent = btn;
+    modalRender = () => {
+      const r = render();
+      $('#modalBody').innerHTML = r.html; b.textContent = r.btn;
+      if (after) after();
+    };
+    modalRender();
     $('#modal').hidden = false;
     b.focus({ preventScroll: true });
     b.onclick = () => {
-      $('#modal').hidden = true; Sound.unlock();
+      $('#modal').hidden = true; modalRender = null; Sound.unlock();
       if (onClose) onClose();
       if (modalQueue.length) openModal(...modalQueue.shift());
     };
   }
   function showOffline(o) {
     const v = VEH[S.active];
-    const regions = o.res.regions.map(x => x.r.name);
-    const ms = o.res.milestones.map(x => x.m.name);
-    const badges = (o.res.badges || []).map(b => b.name);
     // Uzun aralardan sonra listeler ekranı doldurmasın: son birkaç öğe ve kalan sayısı
     const list = a => a.slice(-6).map(esc).join(', ') + (a.length > 6 ? ' ' + t('off.more', { n: a.length - 6 }) : '');
-    openModal(`
+    const names = () => [o.res.regions.map(x => x.r.name), o.res.milestones.map(x => x.m.name), (o.res.badges || []).map(b => b.name)];
+    openModal(() => {
+      const [regions, ms, badges] = names();
+      return { btn: t('off.btn'), html: `
       <p class="eyebrow">${t('off.eyebrow')}</p>
       <h2>${t('off.title')}</h2>
       <p class="lead">${t('off.lead', { dur: fmtDuration(o.sec), by: v.by, p: fmtPct(o.rate * 100) })}</p>
@@ -571,11 +598,12 @@
       ${badges.length ? `<p class="small">${t('off.badges', { list: list(badges) })}</p>` : ''}
       ${o.capped ? `<p class="small muted">${t('off.capped', { h: fmtHours(Econ.offlineCapHours(S.buffs.camp)), buff: BUFF.camp.name })}</p>` : ''}
       ${o.rate < 0.9 ? `<p class="small muted">${t('off.dream', { buff: BUFF.dream.name })}</p>` : ''}
-    `, t('off.btn'), () => { if (regions.length) showBanner(regions[regions.length - 1], t('off.banner')); });
+    ` };
+    }, () => { const r = o.res.regions; if (r.length) showBanner(r[r.length - 1].r.name, t('off.banner')); });
   }
   function showHome(trip) {
     const pct = m => fmtPct(HOME.bonus * m * 100);
-    openModal(`
+    openModal(() => ({ btn: t('home.btn'), html: `
       <p class="eyebrow">${t('home.eyebrow', { n: S.trips })}</p>
       <h2>${t('home.title')}</h2>
       <p class="lead">${t('home.lead', { d: fmtDist(trip.dist), r: trip.regions, n: trip.regions })}</p>
@@ -584,11 +612,10 @@
         <div><span>${t('home.bonus')}</span><b class="cr">${pct(trip.before)} → ${pct(S.memories)}</b></div>
       </div>
       <p class="small muted">${t('home.note')}</p>
-    `, t('home.btn'));
+    ` }));
   }
   function showIntro() {
-    openModal(introHtml(), t('intro.btn'), () => { S.intro = true; modalRender = null; save(); });
-    modalRender = () => { $('#modalBody').innerHTML = introHtml(); $('#modalBtn').textContent = t('intro.btn'); };
+    openModal(() => ({ html: introHtml(), btn: t('intro.btn') }), () => { S.intro = true; save(); });
   }
   function introHtml() {
     return `
@@ -659,14 +686,17 @@
   function renderGarage() {
     const pane = $('#pane-garage');
     const firstLocked = VEHICLES.findIndex(v => !S.owned[v.id]);
-    const base = Econ.base(S), bulk = S.settings.bulk, lead = Econ.lead(S);
+    const bulk = S.settings.bulk, lead = Econ.lead(S);
+    // Açıklama sabit metindir; değişen değerler tek satırlık özet kutularında durur, böylece alttaki kartlar kaymaz
     let html = `<div class="garage-top">
-      <p class="tag">${t('garage.lead', { lead: VEH[lead].name })} ${base.convoy > 0
-        ? t('garage.convoy', { s: fmtSpeed(base.convoy) })
-        : t('garage.convoy0', { p: fmtPct(CONVOY * 100) })} ${t('garage.cosmetic')}</p>
+      <p class="tag">${t('garage.rule')} ${t('garage.convoy0', { p: fmtPct(CONVOY * 100) })} ${t('garage.cosmetic')}</p>
       <div class="seg" role="group" aria-label="${t('ui.bulkLabel')}">${BULKS.map(n =>
         `<button class="seg-btn" data-act="bulk" data-id="${n}" aria-pressed="${bulk === n}">${n === 'max' ? t('ui.max') : '×' + n}</button>`).join('')}</div>
-    </div>`;
+    </div>
+    <dl class="garage-sum">
+      <div><dt>${t('garage.sumLead')}</dt><dd id="gLead"></dd></div>
+      <div><dt>${t('garage.sumConvoy')}</dt><dd id="gConvoy"></dd></div>
+    </dl>`;
     // Sıradaki araç hedef olarak görünür; ondan sonrakiler resim ya da isim vermeden tek bir kapalı kapının ardında bekler
     let hidden = 0;
     for (const v of VEHICLES) {
@@ -678,7 +708,7 @@
       html += `<article class="card veh${active ? ' active' : ''}${owned ? '' : ' locked'}">
         <canvas class="icon" data-icon="${v.id}" width="72" height="56"></canvas>
         <div class="body">
-          <div class="row"><h3>${v.name}${owned && v.id === lead ? ` <span class="lvl" title="${t('ui.strongestTip')}">${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
+          <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
           <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span></p>
           ${owned
@@ -752,6 +782,8 @@
         <div><dt>${t('j.gifts')}</dt><dd id="jGifts"></dd></div>
         <div><dt>${t('j.crits')}</dt><dd id="jCrits"></dd></div>
         <div><dt>${t('j.rainbows')}</dt><dd id="jRainbows"></dd></div>
+        <div><dt>${t('j.wishes')}</dt><dd id="jWishes"></dd></div>
+        <div><dt>${t('j.photos')}</dt><dd id="jPhotos"></dd></div>
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
@@ -787,6 +819,11 @@
     setText('#hudDist', fmtDist(S.distance));
     setText('#hudSpeed', fmtSpeed(Math.max(rateEma, cur.idle)));
     setText('#hudVehicle', VEH[S.active].name);
+    if (!$('#pane-garage').hidden) {
+      const b = cur.base;
+      setText('#gLead', VEH[Econ.lead(S)].name);
+      setText('#gConvoy', b.convoy > 0 ? '+' + fmtSpeed(b.convoy) : '—');
+    }
     setText('#credits', fmtNum(S.credits));
     setText('#income', t('ui.perSec', { c: IT.fmtSmall(Math.max(creditEma, cur.idle * cur.cpm)) }));
     const cm = comboMult();
@@ -837,6 +874,7 @@
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
+      setText('#jWishes', fmtNum(S.wishes)); setText('#jPhotos', fmtNum(S.photos));
       if (S.trips) setText('#jLife', t('j.lifeVal', { d: fmtDist(S.lifeDist + S.distance), n: S.trips + 1 }));
     }
   }
@@ -884,6 +922,7 @@
       const r = scene.canvas.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
       if (scene.hitGift(x, y)) { catchGift(); return; }
+      if (scene.hitStar(x, y)) { catchStar(); return; }
       const before = S.distance;
       step();
       clickBuffer += S.distance - before;
@@ -891,7 +930,7 @@
     document.addEventListener('keydown', e => {
       if ((e.code === 'Space' || e.code === 'Enter') && !e.repeat) {
         const t = e.target;
-        if (t && t.closest && t.closest('button, input, a, [role="tab"]')) return;
+        if (t && t.closest && t.closest('button, input, select, textarea, a, [role="tab"]')) return;
         if (!$('#modal').hidden) return;
         e.preventDefault();
         const before = S.distance;
@@ -927,7 +966,7 @@
     $('#btnSky').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
       S.settings.sky = scene.mode === 'dark' ? 'day' : 'night';
-      applySky(); uiDirty.journal = true;
+      applySky(); save(); uiDirty.journal = true;
     });
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);

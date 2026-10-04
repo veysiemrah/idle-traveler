@@ -96,6 +96,8 @@
     buy() { if (!this.ctx) return; this.tone(659.25, 0.08, 0.5, 'triangle', this.sfx, true); this.tone(987.77, 0.07, 0.7, 'sine', this.sfx, true, 0.08); },
     deny() { if (!this.ctx) return; this.tone(220, 0.05, 0.18, 'triangle'); },
     gift() { if (!this.ctx) return; [0, 2, 4, 5, 6].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.06, 0.9, 'sine', this.sfx, true, i * 0.06)); },
+    // kayan yıldız: yukarıdan aşağı inen ince, parıltılı bir dizi
+    wish() { if (!this.ctx) return; [6, 5, 4, 2, 0].forEach((n, i) => this.tone(PENTA[n] * 2, 0.04, 1.6, 'sine', this.sfx, true, i * 0.09)); },
     region() {
       if (!this.ctx) return;
       [261.63, 329.63, 392.0, 493.88, 587.33].forEach((f, i) => this.tone(f, 0.05, 3.5, 'sine', this.sfx, true, i * 0.12));

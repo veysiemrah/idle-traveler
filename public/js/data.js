@@ -200,6 +200,8 @@
     { id: 'home1',     test: s => s.trips >= 1 },
     { id: 'home5',     n: 5, test: s => s.trips >= 5 },
     { id: 'photo1',    test: s => s.photos >= 1 },
+    { id: 'wish1',     test: s => s.wishes >= 1 },
+    { id: 'wish10',    n: 10, test: s => s.wishes >= 10 },
     { id: 'mem100',    n: 100, test: s => s.memories >= 100 },
   ];
   BADGES.forEach(b => Object.defineProperties(b, {

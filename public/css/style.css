@@ -140,6 +140,8 @@ button { font: inherit; color: inherit; }
 }
 .fx b { color: var(--gold); font-weight: 700; }
 .fx-rainbow { border-color: rgba(140, 233, 154, 0.75); }
+.fx-wish { border-color: rgba(185, 200, 255, 0.8); }
+.fx-wish b { color: #cfe0ff; text-shadow: 0 0 8px rgba(185, 200, 255, 0.7); }
 .fx-rainbow b { background: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
 
@@ -303,9 +305,18 @@ button { font: inherit; color: inherit; }
 .card h3 { font: 700 17px/1.15 var(--font-display); }
 .tag { color: var(--muted); font-size: 13px; }
 .stats { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; color: var(--muted); }
+/* Araç kartında değerler büyüdükçe satır kırılımı değişmesin: her değer kendi satırında */
+.card.veh .stats { flex-direction: column; }
+.card.veh .stats span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stats b { color: var(--paper); font-weight: 600; font-variant-numeric: tabular-nums; }
-.up { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
-.up > div { min-width: 0; }
+/* Buton sabit genişlikte ve satırın üstüne yaslı: fiyat ya da seviye metni değişince yeri kaymaz */
+.up { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.up > div, .up > small { min-width: 0; flex: 1 1 auto; }
+.up > .buy:not(.home-btn) { width: 124px; margin-left: auto; }
+.up > .chip { margin-left: auto; }
+.buy:not(.home-btn) > span, .buy:not(.home-btn) > b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Güçlendirme açıklaması seviye 0'da kısa, sonra uzun: iki satırlık yer baştan ayrılır */
+.card.buff .tag { line-height: 1.4; min-height: 2.8em; }
 .up small, .card small { display: block; color: var(--muted); font-size: 11.5px; }
 .upname { font-weight: 600; font-size: 13.5px; }
 .lvl {
@@ -317,6 +328,9 @@ button { font: inherit; color: inherit; }
   border: 1px solid var(--glass-line); background: transparent;
 }
 .chip.on { color: var(--teal); border-color: rgba(111, 211, 193, 0.5); }
+.row > .chip { min-width: 72px; text-align: center; }
+/* "En güçlü" etiketi her sahip olunan araçta yer kaplar, yalnızca en güçlüde görünür */
+.lvl.ghost { visibility: hidden; }
 .chip.ride { cursor: pointer; color: var(--paper); }
 .chip.ride:hover { background: var(--ink-3); }
 
@@ -337,6 +351,10 @@ button { font: inherit; color: inherit; }
 .garage-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .garage-top .tag { flex: 1 1 160px; min-width: 0; }
 .garage-top .tag b { color: var(--teal); font-weight: 700; }
+.garage-sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.garage-sum > div { background: var(--well); border-radius: 10px; padding: 6px 10px; min-width: 0; }
+.garage-sum dt { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.garage-sum dd { margin: 1px 0 0; font-weight: 700; font-size: 13.5px; color: var(--teal); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--well); flex: none; }
 .seg-btn {
   border: 0; background: transparent; cursor: pointer; padding: 4px 10px; border-radius: 8px;
