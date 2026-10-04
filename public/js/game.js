@@ -26,7 +26,7 @@
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
-  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes',
+  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -39,6 +39,7 @@
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
+      day: { last: '', streak: 0, best: 0 },
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -89,6 +90,9 @@
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro; s.homeReady = !!s.homeReady;
+    const day = isObj(d.day) ? d.day : {};
+    s.day = { last: /^\d{4}-\d{2}-\d{2}$/.test(day.last) ? day.last : '', streak: count(day.streak, 1e5), best: count(day.best, 1e5) };
+    s.day.best = Math.max(s.day.best, s.day.streak);
     return s;
   }
   function save() {
@@ -248,6 +252,32 @@
     const ex = S.effects.find(e => e.id === g.id && e.until > Date.now());
     if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: Date.now() + dur * 1000, dur });
     return dur;
+  }
+
+  /* ---------- Günün hediyesi ---------- */
+  // Yerel takvime göre gün anahtarı (YYYY-AA-GG)
+  const dayKey = (ts) => { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  // Her yeni günün ilk ziyaretinde küçük bir hediye; üst üste gelinen günler hediyeyi 7 güne kadar büyütür.
+  // Saat geri alınırsa (bugün < son gün) hediye verilmez.
+  function checkDaily(silent) {
+    const today = dayKey(Date.now());
+    if (S.day.last && today <= S.day.last) return;
+    const y = new Date(); y.setDate(y.getDate() - 1); // yaz saati geçişlerinde de doğru dün
+    const yesterday = dayKey(y.getTime());
+    S.day.streak = S.day.last === yesterday ? S.day.streak + 1 : 1;
+    S.day.best = Math.max(S.day.best, S.day.streak);
+    const first = !S.day.last;
+    S.day.last = today;
+    uiDirty.journal = true;
+    if (first) return; // ilk gün tanıtımla başlar, hediye ertesi günden itibaren
+    const days = Math.min(S.day.streak, 7);
+    const gift = Math.max(100, incomeRate() * 120 * days);
+    grant(gift);
+    if (!silent) {
+      toast(t(S.day.streak > 1 ? 'toast.daily' : 'toast.daily1', { c: fmtNum(gift), n: S.day.streak }), 'gold');
+      Sound.gift();
+    }
+    checkBadges(silent);
   }
 
   /* ---------- Hava ---------- */
@@ -470,7 +500,7 @@
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 
     uiTimer += dt;
-    if (uiTimer > 0.12) { uiTimer = 0; checkBadges(); refreshUI(); }
+    if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); }
     saveTimer += dt;
     if (saveTimer > 5) { saveTimer = 0; save(); }
     requestAnimationFrame(frame);
@@ -711,10 +741,11 @@
           <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
           <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span></p>
-          ${owned
-            ? `<div class="up"><div><span class="upname">${v.upName}</span> <span class="lvl">${t('ui.lvl', { n: lvl })}</span><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-            : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
-        </div></article>`;
+        </div>
+        ${owned
+          ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
+          : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
+        </article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
       <div class="body"><h3>???</h3><p class="tag">${t('garage.mystery', { n: hidden })}</p></div></article>`;
@@ -784,6 +815,7 @@
         <div><dt>${t('j.rainbows')}</dt><dd id="jRainbows"></dd></div>
         <div><dt>${t('j.wishes')}</dt><dd id="jWishes"></dd></div>
         <div><dt>${t('j.photos')}</dt><dd id="jPhotos"></dd></div>
+        <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
@@ -982,6 +1014,7 @@
     if (!S.intro) showIntro();
     else resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
+    checkDaily();
 
     const hot = window.claude && window.claude.hot;
     if (hot && hot.snapshot) { try { hot.snapshot(() => { save(); return { save: S }; }); } catch (e) { /* yok say */ } }
