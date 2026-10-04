@@ -6,29 +6,35 @@ Kredilerle yeni araçlar, araç yükseltmeleri ve kalıcı güçlendirmeler alı
 
 ## Oynamak
 
-Derleme adımı yok. `index.html` dosyasını tarayıcıda açman yeterli.
+Derleme adımı yok. Site dosyaları `public/` klasöründe; `public/index.html` dosyasını tarayıcıda açman yeterli.
 İstersen basit bir sunucuyla da açabilirsin:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 -d public
 # http://localhost:8000
 ```
 
-## Yayın: idle-traveler.vebaban.com
+## Yayın: Cloudflare Workers → idle-traveler.vebaban.com
 
-Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanacak şekilde hazırlandı.
+Site Cloudflare'de, statik varlık sunan bir Worker olarak barınır (`wrangler.jsonc`).
+GitHub yalnızca repoyu tutar. Actions, Pages ya da secret kullanılmaz.
+`main` dalına her push'ta Cloudflare Workers Builds repoyu çeker, `npx wrangler deploy` çalıştırır ve siteyi günceller.
 
-1. **GitHub**: Repo → *Settings → Pages → Build and deployment → Source* alanını **GitHub Actions** yap.
-   `main` dalına her push'ta `.github/workflows/pages.yml` siteyi yayınlar.
-2. **DNS** (vebaban.com'un DNS sağlayıcısında): bir CNAME kaydı ekle.
+Tek seferlik kurulum (Cloudflare panelinde):
 
-   | Tür | Ad | Değer |
-   | --- | --- | --- |
-   | CNAME | `idle-traveler` | `veysiemrah.github.io` |
+1. **Workers & Pages → Create → Import a repository** adımında GitHub hesabını bağla ve `veysiemrah/idle-traveler` reposunu seç.
+2. Ayarlar:
+   - **Project/Worker name:** `idle-traveler`. `wrangler.jsonc` içindeki `name` ile aynı olmalı, yoksa build başarısız olur.
+   - **Production branch:** `main`
+   - **Build command:** boş bırak (derleme yok).
+   - **Deploy command:** `npx wrangler deploy` (varsayılan)
+3. **Save and Deploy.** İlk deploy, `wrangler.jsonc` içindeki `routes` ayarıyla `idle-traveler.vebaban.com` özel alan adını
+   bağlar. DNS kaydını ve SSL sertifikasını Cloudflare kendisi oluşturur. Bunun için vebaban.com aynı Cloudflare hesabında olmalı.
 
-   Cloudflare kullanıyorsan kaydı önce **DNS only** (gri bulut) olarak ekle. Sertifika çıktıktan sonra proxy'yi açabilirsin.
-3. **GitHub**: *Settings → Pages → Custom domain* alanında `idle-traveler.vebaban.com` görünmeli
-   (repo kökündeki `CNAME` dosyası bunu sağlar). DNS doğrulandıktan sonra **Enforce HTTPS** kutusunu işaretle.
+> `idle-traveler` adında elle eklenmiş bir CNAME kaydı varsa (örneğin GitHub Pages için), önce onu sil.
+> Cloudflare, mevcut bir CNAME kaydı olan ada özel alan adı bağlayamaz.
+
+Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrangler deploy --dry-run`.
 
 ## Oyun
 
@@ -36,6 +42,9 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
 - **Araçlar**: Yürüyüş → Paten → Bisiklet → Motosiklet → Araba → Tren → Uçak → Roket → Güneş Yelkeni.
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
   Uçakla birlikte kamera bulutların arasına yükselir, roketle uzaya çıkılır.
+- **Yol tecrübesi**: Binmediğin araçlar da hızlarının yarısını yolculuğuna katar. Yeni araç almak hızı hiç düşürmez,
+  eski araçlara yapılan yükseltmeler de boşa gitmez. Yeni araç şu ankinden yavaşsa garaja katılır, birkaç yükseltmeyle öne geçer.
+- **Toplu yükseltme**: Garajın üstündeki ×1 / ×10 / Maks seçimiyle tek dokunuşta birden çok seviye alınır.
 - **Güçlendirmeler**: Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu (kredi), Yolun Ritmi,
   Şanslı Adım (10 kat uzun adım), Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.
 - **Bölgeler**: Sabah Köyü, Lavanta Tarlaları, Çam Ormanı, Altın Buğday Ovası, Ege Sahil Yolu, Kızıl Kanyon,
@@ -43,6 +52,9 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
   Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
 - **Duraklar**: Maraton, İstanbul – Ankara, Dünya turu, Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
+- **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
+- **Rozetler**: Adım, kelebek, bölge, mesafe, garaj ve yükseltme hedefleriyle 22 rozet. Her rozet kalıcı olarak +%3 kredi verir.
+  Yol Defteri'nde görünür.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
 - **Tema**: Sahne tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı yıldızlı gecedir.
@@ -54,11 +66,12 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
 
 | Dosya | İçerik |
 | --- | --- |
-| `index.html` | Sayfa iskeleti, HUD ve panel |
-| `css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
-| `js/data.js` | Araçlar, güçlendirmeler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
-| `js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, araç çizimleri, parçacıklar |
-| `js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, rüzgâr çanları |
-| `js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, arayüz |
+| `public/index.html` | Sayfa iskeleti, HUD ve panel |
+| `public/css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
+| `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
+| `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
+| `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |
+| `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, arayüz |
+| `wrangler.jsonc` | Cloudflare Workers ayarı: statik varlık klasörü ve özel alan adı |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.

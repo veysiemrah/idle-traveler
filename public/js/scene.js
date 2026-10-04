@@ -508,6 +508,7 @@
       this.gift = null;
       this.stars = Array.from({ length: 170 }, () => ({ x: Math.random(), y: Math.random() * 0.75, r: Math.random() * 1.3 + 0.3, p: Math.random() * TAU }));
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
+      this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
       this.signText = () => null;
       this.resize();
       for (let i = 0; i < 7; i++) this.spawnCloud(Math.random() * this.W);
@@ -555,6 +556,9 @@
       if (instant) this.alt = v.alt;
       if (v.road !== this.roadTo) { this.roadFrom = this.roadTo; this.roadTo = v.road; this.roadBlend = instant ? 1 : 0; }
     }
+
+    // Hava: yağmur ve gökkuşağı yavaşça belirip kaybolur (0..1)
+    setWeather(rain, rainbow) { this.rainTarget = rain; this.rainbowTarget = rainbow; }
 
     /* --- Katman nesneleri --- */
     fill(initial) {
@@ -670,6 +674,8 @@
       }
       this.tod = ((this.anchor + 0.12 * Math.sin(this.drift * TAU / 600)) % 1 + 1) % 1;
       this.blend = Math.min(1, this.blend + dt / 5);
+      this.rain += clamp(this.rainTarget - this.rain, -dt / 4, dt / 4);
+      this.rainbow += clamp(this.rainbowTarget - this.rainbow, -dt / 6, dt / 3);
       this.roadBlend = Math.min(1, this.roadBlend + dt / 0.8);
       const groundF = 1 - 0.55 * clamp(this.alt, 0, 1);
       const dx = this.vs * dt;
@@ -717,6 +723,8 @@
         } else if (p.type === 'petal' || p.type === 'leaf' || p.type === 'snow') {
           p.x += (p.vx - this.vs * 0.35) * dt + Math.sin(p.life * 2 + p.rot) * 10 * dt;
           p.y += p.vy * dt; p.rot += p.vr * dt;
+        } else if (p.type === 'rain') {
+          p.x += (p.vx - this.vs * 0.3) * dt; p.y += p.vy * dt;
         } else if (p.type === 'streak') {
           p.x -= (this.vs * 2.2 + 300) * dt;
         } else {
@@ -751,7 +759,12 @@
         this.parts.push({ type: 'leaf', x: rand(0, W * 1.3), y: -10, vx: -rand(15, 40), vy: rand(25, 45), life: 0, max: 14, size: rand(3, 5), rot: Math.random() * TAU, vr: rand(-4, 4), color: pick(['#e59a3a', '#cc5a3c', '#e6b545']) });
       if (groundVisible && b.particles === 'snow' && Math.random() < dt * 28 * mult)
         this.parts.push({ type: 'snow', x: rand(0, W * 1.4), y: -6, vx: -rand(5, 25), vy: rand(25, 55), life: 0, max: 16, size: rand(1, 2.6), rot: Math.random() * TAU, vr: 0, color: '#ffffff' });
-      if (groundVisible && b.particles === 'fireflies' && night > 0.45 && count('firefly') < 22 * mult && Math.random() < dt * 6)
+      if (groundVisible && this.rain > 0.02) {
+        const n = dt * 110 * this.rain * mult;
+        for (let i = Math.floor(n) + (Math.random() < n % 1 ? 1 : 0); i > 0; i--)
+          this.parts.push({ type: 'rain', x: rand(0, W * 1.3), y: rand(-20, H * 0.2), vx: -rand(60, 90), vy: rand(520, 680), life: 0, max: 3, size: rand(9, 15), color: '#ffffff' });
+      }
+      if (groundVisible && b.particles === 'fireflies' && night > 0.45 && this.rain < 0.3 && count('firefly') < 22 * mult && Math.random() < dt * 6)
         this.parts.push({ type: 'firefly', x: rand(0, W * 1.2), y: rand(0.6, 0.8) * H + this.shift(0.58), vx: rand(-10, 10), vy: rand(-8, 8), life: 0, max: rand(5, 10), size: rand(1.4, 2.4), color: '#fff3a0' });
       if (!this.reduced && this.vs > 250 && Math.random() < dt * (this.vs - 250) / 25)
         this.parts.push({ type: 'streak', x: W + 20, y: rand(0.2, 0.98) * H, vx: 0, vy: 0, life: 0, max: 2, size: rand(30, 120), color: '#ffffff' });
@@ -763,9 +776,6 @@
       if (v === 'plane' && Math.random() < dt * 22 * mult) {
         const ry = this.riderY();
         this.parts.push({ type: 'puff', x: this.travelerX - 50 * this.k, y: ry + rand(-2, 2), vx: -rand(20, 40), vy: 0, life: 0, max: rand(1.2, 2), size: rand(2, 4) * this.k, color: '#ffffff' });
-      }
-      if (v === 'train' && Math.random() < dt * 3 * mult && this.alt < 0.2) {
-        // tren düdüğü buharı yerine yumuşak bir egzoz bulutu
       }
     }
 
@@ -795,6 +805,8 @@
       const g = ctx.createLinearGradient(0, 0, 0, H * 0.8);
       g.addColorStop(0, css(top)); g.addColorStop(1, css(bot));
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // yağmur bulutları gökyüzünü griye çeker
+      if (this.rain > 0.01) { ctx.fillStyle = css(mixc(hex('#8d95a8'), NIGHT_SKY[1], night), 0.55 * this.rain * (1 - space)); ctx.fillRect(0, 0, W, H); }
 
       // yıldızlar
       const starA = Math.max(night * 0.95, space);
@@ -826,6 +838,10 @@
         ctx.fillStyle = '#f1f0e6'; circle(ctx, mx, my, 15 * k);
         ctx.fillStyle = 'rgba(180,184,200,0.45)'; circle(ctx, mx - 5 * k, my - 3 * k, 3.4 * k); circle(ctx, mx + 4 * k, my + 5 * k, 2.4 * k);
       }
+
+      // gökkuşağı (uzak dağların arkasında)
+      const bowA = this.rainbow * (1 - night) * (1 - space);
+      if (bowA > 0.01) this.drawRainbow(ctx, bowA, horizon);
 
       // uzayda gezegen kıvrımı
       if (space > 0.02) this.drawPlanet(ctx, space, pal);
@@ -972,11 +988,7 @@
         const w = { walk: 16, skates: 18, bike: 36, moto: 42, car: 54, train: 70 }[this.vehicle] || 30;
         ellipse(ctx, this.travelerX, this.groundY() + 1, w * k, 3.5 * k);
       }
-      if (night > 0.05) ctx.filter = 'none';
       drawVehicle(ctx, this.vehicle, this.travelerX, ry, k, st0);
-      if (night > 0.05) { // gece yolcuyu biraz karart
-        ctx.globalCompositeOperation = 'source-atop';
-      }
       ctx.restore();
 
       // ön plan
@@ -993,6 +1005,8 @@
         ctx.fillStyle = css(NIGHT_TINT, night * 0.22);
         ctx.fillRect(0, 0, W, H);
       }
+      // yağmurda sahne biraz kararır
+      if (this.rain > 0.01) { ctx.fillStyle = css(hex('#3c4560'), 0.16 * this.rain * (1 - space)); ctx.fillRect(0, 0, W, H); }
       // lamba ışıkları (örtünün üstünde parlasın)
       if (night > 0.2) {
         ctx.globalCompositeOperation = 'lighter';
@@ -1054,6 +1068,20 @@
         for (let x = 0; x <= W + 10; x += 10) ctx.lineTo(x, y0 + Math.sin(x * 0.006 + this.t * 0.3 + band * 2) * 28 + Math.sin(x * 0.017 - this.t * 0.5) * 10);
         ctx.lineTo(W, y0 + 90); ctx.closePath(); ctx.fill();
       }
+      ctx.restore();
+    }
+
+    drawRainbow(ctx, a, horizon) {
+      const W = this.W, H = this.H, k = this.k;
+      const cx = W * 0.64, cy = horizon + H * 0.18, R = Math.min(W * 0.55, H * 0.72);
+      const band = 6 * k;
+      const cols = ['#ff6b6b', '#ffa94d', '#ffe066', '#8ce99a', '#74c0fc', '#9775fa'];
+      ctx.save();
+      ctx.lineWidth = band + 0.6;
+      cols.forEach((c, i) => {
+        ctx.strokeStyle = css(hex(c), 0.32 * a);
+        ctx.beginPath(); ctx.arc(cx, cy, R - i * band, Math.PI * 1.04, Math.PI * 1.96); ctx.stroke();
+      });
       ctx.restore();
     }
 
@@ -1246,7 +1274,7 @@
 
     drawParts(ctx, front) {
       for (const p of this.parts) {
-        const isFront = p.type === 'spark' || p.type === 'petal' || p.type === 'leaf' || p.type === 'snow' || p.type === 'streak' || p.type === 'firefly';
+        const isFront = p.type === 'spark' || p.type === 'petal' || p.type === 'leaf' || p.type === 'snow' || p.type === 'streak' || p.type === 'firefly' || p.type === 'rain';
         if (isFront !== front) continue;
         const u = p.life / p.max;
         switch (p.type) {
@@ -1263,6 +1291,12 @@
           case 'petal': case 'leaf':
             ctx.fillStyle = p.color; ellipse(ctx, p.x, p.y, p.size, p.size * 0.55, p.rot); break;
           case 'snow': ctx.fillStyle = 'rgba(255,255,255,0.9)'; circle(ctx, p.x, p.y, p.size); break;
+          case 'rain': {
+            const f = p.size / p.vy;
+            ctx.strokeStyle = `rgba(214,226,246,${(0.55 * Math.min(1, this.rain * 1.5)).toFixed(3)})`; ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - (p.vx - this.vs * 0.3) * f, p.y - p.size); ctx.stroke();
+            break;
+          }
           case 'firefly': {
             const a = Math.min(1, p.life, (p.max - p.life)) * (0.5 + 0.5 * Math.sin(p.life * 5 + p.x));
             glow(ctx, p.x, p.y, 9, hex('#fff3a0'), 0.55 * a);

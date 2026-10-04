@@ -139,6 +139,8 @@ button { font: inherit; color: inherit; }
   animation: fxIn .4s ease-out;
 }
 .fx b { color: var(--gold); font-weight: 700; }
+.fx-rainbow { border-color: rgba(140, 233, 154, 0.75); }
+.fx-rainbow b { background: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
 
 .toasts {
@@ -211,6 +213,7 @@ button { font: inherit; color: inherit; }
 .rhythm i { background: linear-gradient(90deg, var(--teal), var(--gold)); }
 .rhythm b { font-variant-numeric: tabular-nums; font-size: 13px; }
 .ms-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; min-width: 0; }
+.ms-top .lbl { white-space: nowrap; }
 .ms-top b { font: 700 15px/1.2 var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ms-prog { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .milestone i { background: linear-gradient(90deg, var(--apricot), var(--gold)); }
@@ -305,6 +308,16 @@ button { font: inherit; color: inherit; }
 .buy:hover:not(:disabled) { filter: brightness(1.06); }
 .buy:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #c9692c; }
 .buy:disabled { cursor: not-allowed; background: var(--ink-3); color: var(--muted); box-shadow: none; }
+/* Garaj üst satırı: yol tecrübesi + toplu yükseltme */
+.garage-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.garage-top .tag { flex: 1 1 160px; min-width: 0; }
+.garage-top .tag b { color: var(--teal); font-weight: 700; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--well); flex: none; }
+.seg-btn {
+  border: 0; background: transparent; cursor: pointer; padding: 4px 10px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.seg-btn[aria-pressed="true"] { background: var(--ink-3); color: var(--paper); }
 .progress { height: 4px; border-radius: 99px; background: var(--track); overflow: hidden; margin-top: 4px; }
 .progress i { display: block; height: 100%; background: var(--apricot); transform-origin: left; transform: scaleX(0); }
 
@@ -331,6 +344,21 @@ button { font: inherit; color: inherit; }
 .s-meadow { --c: #8fd18a; } .s-lavender { --c: #b9a2f0; } .s-pine { --c: #6fc49a; } .s-wheat { --c: #f2cf6e; }
 .s-coast { --c: #6cc5ec; } .s-canyon { --c: #ff9a72; } .s-sakura { --c: #ffb3c8; } .s-autumn { --c: #f0a24a; }
 .s-desert { --c: #f3c98c; } .s-snow { --c: #dbe7f5; } .s-aurora { --c: #8affd0; } .s-tea { --c: #74d38a; } .s-cappadocia { --c: #f1c49a; }
+/* Rozetler */
+.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.badge {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; align-items: center;
+  background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 8px 10px; min-width: 0;
+}
+.badge .medal {
+  grid-row: span 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 14px; font-weight: 800; background: var(--well); color: var(--muted);
+}
+.badge b { font: 700 13.5px/1.15 var(--font-display); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.badge small { font-size: 11px; color: var(--muted); line-height: 1.25; }
+.badge.on { border-color: rgba(255, 213, 107, 0.45); }
+.badge.on .medal { background: radial-gradient(circle at 35% 30%, #fff1c2, var(--gold) 60%, #d99a2b); color: #6a4510; }
+.badge.on b { color: var(--paper); }
 .mslist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .mslist li { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
 .mslist b { color: var(--muted); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
