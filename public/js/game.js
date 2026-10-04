@@ -178,7 +178,7 @@
     lastClick = now;
     const cur = current();
     const crit = Math.random() < Econ.luckChance(S.buffs.luck);
-    const d = cur.click * comboMult() * (crit ? 10 : 1);
+    const d = cur.click * comboMult() * (crit ? Econ.luckMult : 1);
     addDistance(d, cur.cpm);
     S.clicks++;
     if (crit) S.crits++;

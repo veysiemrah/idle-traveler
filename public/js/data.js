@@ -3,7 +3,6 @@
 (function (root) {
   'use strict';
 
-  const nfp = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
 
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
@@ -41,7 +40,7 @@
     { id: 'rhythm',   name: 'Yolun Ritmi',            base: 150,  growth: 3.0, max: 10,
       desc: l => `Seri tıklama bonusu en fazla %${Math.round((0.5 + 0.1 * l) * 100)}.`, next: '+%10 ritim tavanı' },
     { id: 'luck',     name: 'Şanslı Adım',            base: 250,  growth: 3.0, max: 10,
-      desc: l => `Tıklamaların %${nfp.format(1.5 * l)} ihtimalle 10 kat uzun.`, next: '+%1,5 şans' },
+      desc: l => `Tıklamaların %${l} ihtimalle 5 kat uzun.`, next: '+%1 şans' },
     { id: 'dream',    name: 'Rüyada Yolculuk',        base: 400,  growth: 2.4, max: 10,
       desc: l => `Oyun kapalıyken ilerleme hızı: otomatik hızın %${30 + 6 * l} kadarı.`, next: '+%6 çevrimdışı hız' },
     { id: 'camp',     name: 'Uzun Mola',              base: 600,  growth: 2.1, max: 20,
@@ -208,7 +207,8 @@
     rhythmCap(lvl) { return 0.5 + 0.1 * lvl; },
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
-    luckChance(lvl) { return 0.015 * lvl; },
+    luckChance(lvl) { return 0.01 * lvl; },
+    luckMult: 5, // şanslı adım kaç kat uzun
     badgeMult(state) { return 1 + BADGE_BONUS * Object.keys(state.badges || {}).length; },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {
