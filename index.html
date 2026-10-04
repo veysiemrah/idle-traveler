@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Idle Traveler</title>
+  <meta name="description" content="Manzaralı bir yolda rahatlatıcı bir idle yolculuk oyunu: yürü, paten kay, pedal çevir, uç ve yıldızlara yelken aç.">
+  <link rel="canonical" href="https://idle-traveler.vebaban.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://idle-traveler.vebaban.com/">
+  <meta property="og:title" content="Idle Traveler">
+  <meta property="og:description" content="Manzaralı bir yolda rahatlatıcı bir yolculuk: yürü, paten kay, pedal çevir, uç ve yıldızlara yelken aç.">
+  <meta property="og:locale" content="tr_TR">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231e2140'/%3E%3Ccircle cx='44' cy='20' r='8' fill='%23ffd56b'/%3E%3Cpath d='M0 46 L18 30 L30 40 L42 28 L64 46 V64 H0Z' fill='%236fd3c1'/%3E%3Cpath d='M0 54 H64 V64 H0Z' fill='%23ffb067'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#eef0f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1e2140" media="(prefers-color-scheme: dark)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!--APP-->
+<div class="app">
+  <main class="stage" id="stage" aria-label="Yolculuk sahnesi. Adım atmak için dokun ya da Boşluk tuşuna bas.">
+    <canvas id="scene"></canvas>
+
+    <header class="hud">
+      <div class="hud-card">
+        <p class="eyebrow">Şu an buradasın</p>
+        <p class="region" id="hudRegion">Sabah Köyü</p>
+        <p class="dist" id="hudDist">0 m</p>
+        <p class="hud-row"><span class="speed" id="hudSpeed">0 km/sa</span><span class="dotsep" aria-hidden="true"></span><span id="hudVehicle">Yürüyüş</span></p>
+      </div>
+      <div class="hud-tools">
+        <button class="iconbtn" id="btnSound" type="button" aria-pressed="true" title="Sesi kapat">
+          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="sr">Ses</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="effects" id="effects" aria-live="polite"></div>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+
+    <div class="banner" id="banner" hidden>
+      <p class="eyebrow">Yeni bölge keşfedildi</p>
+      <p class="banner-name" id="bannerName"></p>
+      <p class="banner-sub" id="bannerSub"></p>
+    </div>
+
+    <p class="hint" id="hint"><span>Adım atmak için dokun</span><small>ya da Boşluk tuşuna bas</small></p>
+
+    <footer class="trail">
+      <div class="rhythm" title="Hızlı ve ritmik tıklamalar adımlarını uzatır">
+        <span class="lbl">Ritim</span>
+        <span class="bar"><i id="rhythmFill"></i></span>
+        <b id="rhythmVal">×1,00</b>
+      </div>
+      <div class="milestone">
+        <div class="ms-top"><span class="lbl">Sıradaki durak</span><b id="msName">İlk yüz metre</b><span id="msProg" class="ms-prog"></span></div>
+        <span class="bar"><i id="msFill"></i></span>
+      </div>
+    </footer>
+  </main>
+
+  <aside class="panel" id="panel">
+    <div class="wallet">
+      <i class="coin big" aria-hidden="true"></i>
+      <div>
+        <p class="eyebrow">Yol kredisi</p>
+        <p class="credits" id="credits">0</p>
+      </div>
+      <p class="income" id="income">+0 / sn</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Mağaza">
+      <button class="tab" role="tab" data-act="tab" data-id="garage" aria-selected="true">Garaj</button>
+      <button class="tab" role="tab" data-act="tab" data-id="buffs" aria-selected="false">Güçlendirmeler</button>
+      <button class="tab" role="tab" data-act="tab" data-id="journal" aria-selected="false">Yol Defteri</button>
+    </nav>
+    <div class="panes">
+      <section class="tabpane" id="pane-garage" role="tabpanel"></section>
+      <section class="tabpane" id="pane-buffs" role="tabpanel" hidden></section>
+      <section class="tabpane" id="pane-journal" role="tabpanel" hidden></section>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div id="modalBody"></div>
+    <button class="primary" id="modalBtn" type="button">Tamam</button>
+  </div>
+</div>
+<!--/APP-->
+
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
