@@ -63,7 +63,7 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
-- **Rozetler**: Adım, kelebek, bölge, mesafe, garaj, yükseltme ve eve dönüş hedefleriyle 25 rozet. Her rozet kalıcı olarak +%3 kredi verir.
+- **Rozetler**: Adım, kelebek, bölge, mesafe, garaj, yükseltme, eve dönüş ve kartpostal hedefleriyle 26 rozet. Her rozet kalıcı olarak +%3 kredi verir.
   Yol Defteri'nde görünür.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
