@@ -1,12 +1,12 @@
 /* Idle Traveler — prosedürel sesler (dosya yok, tamamen Web Audio).
-   Efektler: adım, satın alma, kelebek, yeni bölge. Ortam: hafif rüzgâr + seyrek rüzgâr çanı notaları. */
+   Efektler: adım, satın alma, kelebek, yeni bölge. Ortam: hafif rüzgâr, yağmur + seyrek rüzgâr çanı notaları. */
 (function () {
   'use strict';
   const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66];
 
   const Sound = {
     ctx: null, master: null, sfx: null, music: null, delay: null,
-    sfxOn: true, musicOn: true, chimeTimer: 0, wind: null,
+    sfxOn: true, musicOn: true, chimeTimer: 0, wind: null, rain: null,
 
     unlock() {
       if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
@@ -44,12 +44,20 @@
       src.connect(f); f.connect(g); g.connect(this.music);
       src.start(); lfo.start();
       this.wind = { src, f };
+      // yağmur: yüksek frekanslı hışırtı, kazancı hava durumuyla açılır
+      const rs = c.createBufferSource(); rs.buffer = this.noiseBuf; rs.loop = true; rs.playbackRate.value = 3.2;
+      const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+      const rg = c.createGain(); rg.gain.value = 0;
+      rs.connect(hp); hp.connect(rg); rg.connect(this.music);
+      rs.start();
+      this.rain = rg;
     },
     // Her karede çağrılır: seyrek, rastgele pentatonik çan sesleri
-    tick(dt, speedFactor) {
+    tick(dt, speedFactor, rain) {
       if (!this.ctx || !this.musicOn) return;
       this.chimeTimer -= dt;
       if (this.wind) this.wind.f.frequency.setTargetAtTime(380 + speedFactor * 500, this.ctx.currentTime, 0.8);
+      if (this.rain) this.rain.gain.setTargetAtTime(0.09 * (rain || 0), this.ctx.currentTime, 0.5);
       if (this.chimeTimer <= 0) {
         this.chimeTimer = 2.2 + Math.random() * 4.5;
         const n = PENTA[(Math.random() * PENTA.length) | 0] * (Math.random() < 0.3 ? 0.5 : 1);

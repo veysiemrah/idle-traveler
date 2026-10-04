@@ -3,6 +3,8 @@
 (function (root) {
   'use strict';
 
+  const nfp = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 1 });
+
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   const VEHICLES = [
@@ -39,7 +41,7 @@
     { id: 'rhythm',   name: 'Yolun Ritmi',            base: 150,  growth: 3.0, max: 10,
       desc: l => `Seri tıklama bonusu en fazla %${Math.round((0.5 + 0.1 * l) * 100)}.`, next: '+%10 ritim tavanı' },
     { id: 'luck',     name: 'Şanslı Adım',            base: 250,  growth: 3.0, max: 10,
-      desc: l => `Tıklamaların %${1.5 * l} ihtimalle 10 kat uzun.`, next: '+%1,5 şans' },
+      desc: l => `Tıklamaların %${nfp.format(1.5 * l)} ihtimalle 10 kat uzun.`, next: '+%1,5 şans' },
     { id: 'dream',    name: 'Rüyada Yolculuk',        base: 400,  growth: 2.4, max: 10,
       desc: l => `Oyun kapalıyken ilerleme hızı: otomatik hızın %${30 + 6 * l} kadarı.`, next: '+%6 çevrimdışı hız' },
     { id: 'camp',     name: 'Uzun Mola',              base: 600,  growth: 2.1, max: 20,
@@ -150,7 +152,39 @@
     { at: 4.01e16,  name: 'Proxima Centauri' },
   ];
 
+  /* ---------- Rozetler: her biri kalıcı +%3 kredi ---------- */
+  const maxLevel = s => Math.max(0, ...Object.values(s.levels || {}));
+  const ownedCount = s => VEHICLES.filter(v => s.owned[v.id]).length;
+  const BADGES = [
+    { id: 'steps100',  name: 'İlk Adımlar',          desc: '100 adım at.',                          test: s => s.clicks >= 100 },
+    { id: 'steps1k',   name: 'Yorulmak Bilmez',      desc: '1.000 adım at.',                        test: s => s.clicks >= 1000 },
+    { id: 'steps10k',  name: 'Demir Bacaklar',       desc: '10.000 adım at.',                       test: s => s.clicks >= 10000 },
+    { id: 'rhythm',    name: 'Ritim Ustası',         desc: 'Ritim çubuğunu sonuna kadar doldur.',   test: (s, rt) => rt && rt.combo >= 20 },
+    { id: 'lucky',     name: 'Uğur Böceği',          desc: 'İlk şanslı adımını at.',                test: s => s.crits >= 1 },
+    { id: 'lucky100',  name: 'Talih Kuşu',           desc: '100 şanslı adım at.',                   test: s => s.crits >= 100 },
+    { id: 'fly1',      name: 'Kelebek Avcısı',       desc: 'İlk altın kelebeği yakala.',            test: s => s.gifts >= 1 },
+    { id: 'fly25',     name: 'Kelebek Bahçesi',      desc: '25 altın kelebek yakala.',              test: s => s.gifts >= 25 },
+    { id: 'rainbow',   name: 'Gökkuşağının Altında', desc: 'Yağmurdan sonra bir gökkuşağı gör.',    test: s => s.rainbows >= 1 },
+    { id: 'night',     name: 'Gece Kuşu',            desc: 'Gece yolculuğunda 10 dakika geçir.',    test: s => s.nightTime >= 600 },
+    { id: 'reg5',      name: 'Gezgin',               desc: '5 bölge keşfet.',                       test: s => s.regionIdx >= 4 },
+    { id: 'reg13',     name: 'Dolu Pasaport',        desc: 'Bütün bölgeleri bir kez gör.',          test: s => s.regionIdx >= REGIONS.length - 1 },
+    { id: 'reg25',     name: 'İkinci Tur',           desc: '25 bölge keşfet.',                      test: s => s.regionIdx >= 24 },
+    { id: 'marathon',  name: 'Maratoncu',            desc: 'Maraton mesafesini geç.',               test: s => s.distance >= 42195 },
+    { id: 'world',     name: 'Dünya Turu',           desc: 'Dünyanın çevresi kadar yol al.',        test: s => s.distance >= 4.0075e7 },
+    { id: 'moon',      name: 'Ay Yolcusu',           desc: "Ay'a varacak kadar yol al.",            test: s => s.distance >= 3.844e8 },
+    { id: 'sun',       name: "Güneş'e Selam",        desc: "Güneş'e varacak kadar yol al.",         test: s => s.distance >= 1.496e11 },
+    { id: 'garage3',   name: 'Küçük Garaj',          desc: '3 araca sahip ol.',                     test: s => ownedCount(s) >= 3 },
+    { id: 'garage6',   name: 'Koleksiyoncu',         desc: '6 araca sahip ol.',                     test: s => ownedCount(s) >= 6 },
+    { id: 'garage9',   name: 'Tam Kadro',            desc: 'Bütün araçlara sahip ol.',              test: s => ownedCount(s) >= VEHICLES.length },
+    { id: 'tuned25',   name: 'Usta Tamirci',         desc: 'Bir aracı 25. seviyeye yükselt.',       test: s => maxLevel(s) >= 25 },
+    { id: 'tuned100',  name: 'Efsane Motor',         desc: 'Bir aracı 100. seviyeye yükselt.',      test: s => maxLevel(s) >= 100 },
+  ];
+  const BADGE_BONUS = 0.03;
+
   /* ---------- Ekonomi ---------- */
+  // Yol tecrübesi: binilmeyen araçlar da hızlarının bu kadarını yolculuğa katar.
+  // Böylece yeni araç almak hızı hiç düşürmez, eski araçlara yapılan yükseltmeler de boşa gitmez.
+  const CONVOY = 0.5;
   const Econ = {
     vehicleMult(lvl) {
       let m = 1 + 0.25 * lvl;
@@ -158,21 +192,40 @@
       return m;
     },
     upgradeCost(v, lvl) { return Math.ceil(v.upBase * Math.pow(1.55, lvl)); },
+    // n seviyenin toplam maliyeti; n = 'max' ise bütçenin yettiği kadar (en az 1 seviye gösterilir)
+    upgradeQuote(v, lvl, n, budget) {
+      let cost = 0, k = 0;
+      const limit = n === 'max' ? 1000 : n;
+      while (k < limit) {
+        const c = Econ.upgradeCost(v, lvl + k);
+        if (n === 'max' && k > 0 && cost + c > budget) break;
+        cost += c; k++;
+      }
+      return { n: k, cost };
+    },
     buffCost(b, lvl) { return Math.ceil(b.base * Math.pow(b.growth, lvl)); },
     discoveryMult(regionIdx) { return 1 + 0.06 * regionIdx; },
     rhythmCap(lvl) { return 0.5 + 0.1 * lvl; },
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.015 * lvl; },
-    // Kalıcı değerler (geçici kelebek etkileri hariç)
+    badgeMult(state) { return 1 + BADGE_BONUS * Object.keys(state.badges || {}).length; },
+    // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
     base(state) {
-      const v = VEH[state.active];
       const b = state.buffs;
-      const vm = Econ.vehicleMult(state.levels[v.id] || 0) * Econ.discoveryMult(state.regionIdx);
+      let idle = 0, click = 0, cIdle = 0;
+      for (const v of VEHICLES) {
+        if (!state.owned[v.id]) continue;
+        const m = Econ.vehicleMult(state.levels[v.id] || 0) * (v.id === state.active ? 1 : CONVOY);
+        idle += v.idle * m; click += v.click * m;
+        if (v.id !== state.active) cIdle += v.idle * m;
+      }
+      const d = Econ.discoveryMult(state.regionIdx), bi = 1 + 0.25 * b.breeze;
       return {
-        idle: v.idle * vm * (1 + 0.25 * b.breeze),
-        click: v.click * vm * (1 + 0.25 * b.stride),
-        cpm: 1 + 0.25 * b.postcard,
+        idle: idle * d * bi,
+        click: click * d * (1 + 0.25 * b.stride),
+        cpm: (1 + 0.25 * b.postcard) * Econ.badgeMult(state),
+        convoy: cIdle * d * bi,
       };
     },
   };
@@ -220,7 +273,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, CONVOY, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtSpeed, fmtDuration,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

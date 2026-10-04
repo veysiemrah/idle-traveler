@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
   const BY = { walk: 'yürüyerek', skates: 'patenle', bike: 'bisikletle', moto: 'motosikletle', car: 'arabayla', train: 'trenle', plane: 'uçakla', rocket: 'roketle', sail: 'güneş yelkeniyle' };
@@ -11,8 +11,13 @@
     { id: 'harvest',  name: 'Bereket',          text: 'kredi ×2',          dur: 45, credit: 2, w: 3 },
     { id: 'zeal',     name: 'Coşku',            text: 'tıklama ×5',        dur: 25, click: 5, w: 2 },
     { id: 'postcard', name: 'Kayıp Kartpostal', text: 'anında kredi',      instant: true, w: 2 },
+    { id: 'rainbow',  name: 'Gökkuşağı',        text: 'kredi ×1,5',        dur: 40, credit: 1.5, w: 0 }, // hava olayıyla gelir
   ];
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
+  const BULKS = [1, 10, 'max'];
+  const DOUBLINGS = [10, 25, 50, 100, 150, 200];
+  // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
+  const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1 };
 
   const $ = sel => document.querySelector(sel);
   const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -25,10 +30,11 @@
     return {
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
+      crits: 0, rainbows: 0, nightTime: 0,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
-      regionIdx: 0, msIdx: 0, effects: [],
-      settings: { sfx: true, music: true }, intro: false,
+      regionIdx: 0, msIdx: 0, effects: [], badges: {},
+      settings: { sfx: true, music: true, bulk: 1 }, intro: false,
     };
   }
   function load() {
@@ -38,15 +44,33 @@
       return sanitize(JSON.parse(raw));
     } catch (e) { return null; }
   }
+  const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
+  const count = (x, max) => { x = Math.floor(+x); return isFinite(x) && x > 0 ? Math.min(x, max === undefined ? Infinity : max) : 0; };
+  // Bozuk ya da eski sürümden kalan kayıtları güvenli değerlere çeker
   function sanitize(d) {
-    if (!d || typeof d !== 'object') return null;
+    if (!isObj(d)) return null;
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
-    s.buffs = Object.assign(defaultState().buffs, d.buffs || {});
-    s.settings = Object.assign(defaultState().settings, d.settings || {});
+    for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
+    s.msIdx = count(s.msIdx, MILESTONES.length);
+    const buffs = isObj(d.buffs) ? d.buffs : {};
+    s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max)]));
+    const owned = isObj(d.owned) ? d.owned : {}, levels = isObj(d.levels) ? d.levels : {};
+    s.owned = { walk: true }; s.levels = {};
+    for (const v of VEHICLES) {
+      if (owned[v.id]) s.owned[v.id] = true;
+      if (s.owned[v.id]) s.levels[v.id] = count(levels[v.id]);
+    }
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
-    for (const k of ['distance', 'credits', 'totalCredits', 'clicks', 'playTime', 'best']) if (!isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    if (!Array.isArray(s.effects)) s.effects = [];
+    s.badges = {};
+    if (isObj(d.badges)) for (const b of BADGES) if (d.badges[b.id]) s.badges[b.id] = +d.badges[b.id] || Date.now();
+    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)) : [];
+    s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
+    if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
+    s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
+    if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
+    s.intro = !!s.intro;
     return s;
   }
   function save() {
@@ -68,8 +92,9 @@
     }
     return m;
   }
+  // Bu araca binilseydi (henüz alınmadıysa alınıp binilseydi) kalıcı değerler
   function statsFor(id) {
-    return Econ.base(Object.assign({}, S, { active: id }));
+    return Econ.base(Object.assign({}, S, { active: id, owned: Object.assign({}, S.owned, { [id]: true }) }));
   }
   function current() {
     const b = Econ.base(S), t = tempMult();
@@ -80,6 +105,8 @@
   let combo = 0, lastClick = 0;
   let rateEma = 0, creditEma = 0;
   let giftIn = 25;
+  // Hava: bahar yağmuru, ardından gökkuşağı
+  let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
   let uiDirty = { garage: true, buffs: true, journal: true };
   let uiTimer = 0, saveTimer = 0;
   let lastFrame = performance.now();
@@ -96,6 +123,11 @@
     return c;
   }
   function grant(c) { S.credits += c; S.totalCredits += c; }
+  // Ödüller son gelire göre ölçeklenir. Çevrimdışıyken ortalama sıfır olduğundan otomatik gelir esas alınır.
+  function incomeRate() {
+    const b = Econ.base(S);
+    return Math.max(creditEma, b.idle * b.cpm);
+  }
 
   function checkProgress(silent) {
     const found = [];
@@ -103,7 +135,7 @@
     while (S.regionIdx < idx) {
       S.regionIdx++;
       const r = IT.regionAt(S.regionIdx);
-      const bonus = Math.max(20, creditEma * 20);
+      const bonus = Math.max(20, incomeRate() * 20);
       grant(bonus);
       found.push({ r, bonus });
     }
@@ -119,7 +151,7 @@
     const ms = [];
     while (S.msIdx < MILESTONES.length && S.distance >= MILESTONES[S.msIdx].at) {
       const m = MILESTONES[S.msIdx];
-      const bonus = Math.max(15, creditEma * 15);
+      const bonus = Math.max(15, incomeRate() * 15);
       grant(bonus);
       ms.push({ m, bonus });
       S.msIdx++;
@@ -127,6 +159,20 @@
     }
     if (!silent) for (const { m, bonus } of ms) { toast(`<b>Durak: ${esc(m.name)}</b> · +${fmtNum(bonus)} kredi`, 'gold'); Sound.milestone(); }
     return { regions: found, milestones: ms };
+  }
+
+  function checkBadges(silent) {
+    const got = [];
+    for (const b of BADGES) {
+      if (S.badges[b.id] || !b.test(S, { combo })) continue;
+      S.badges[b.id] = Date.now();
+      got.push(b);
+    }
+    if (got.length) {
+      uiDirty.journal = true;
+      if (!silent) for (const b of got) { toast(`<b>Rozet: ${esc(b.name)}</b> · kalıcı +%${Math.round(BADGE_BONUS * 100)} kredi`, 'gold'); Sound.milestone(); }
+    }
+    return got;
   }
 
   function step() {
@@ -139,31 +185,71 @@
     const d = cur.click * comboMult() * (crit ? 10 : 1);
     addDistance(d, cur.cpm);
     S.clicks++;
+    if (crit) S.crits++;
     scene.onStep(crit);
     scene.addFloat(crit ? `Şanslı adım! +${fmtGain(d)}` : `+${fmtGain(d)}`, crit ? { color: '#ffd56b', big: true } : null);
     Sound.step(S.active, crit);
     if (S.clicks === 6) $('#hint').classList.add('gone');
     checkProgress();
+    checkBadges();
   }
 
   function catchGift() {
     Sound.unlock();
     S.gifts++;
-    const total = GIFTS.reduce((a, g) => a + g.w, 0);
-    let r = Math.random() * total, g = GIFTS[0];
-    for (const x of GIFTS) { r -= x.w; if (r <= 0) { g = x; break; } }
+    const pool = GIFTS.filter(x => x.w > 0);
+    const total = pool.reduce((a, x) => a + x.w, 0);
+    let r = Math.random() * total, g = pool[0];
+    for (const x of pool) { r -= x.w; if (r <= 0) { g = x; break; } }
     Sound.gift();
     if (g.instant) {
-      const bonus = Math.max(40, creditEma * 60);
+      const bonus = Math.max(40, incomeRate() * 60);
       grant(bonus);
       toast(`<b>Altın kelebek: ${g.name}</b> · +${fmtNum(bonus)} kredi`, 'gold');
       scene.addFloat(`+${fmtNum(bonus)} kredi`, { color: '#ffd56b', big: true });
     } else {
-      const dur = g.dur * (1 + 0.15 * S.buffs.butterfly);
-      const ex = S.effects.find(e => e.id === g.id && e.until > Date.now());
-      if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: Date.now() + dur * 1000, dur });
+      const dur = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly));
       toast(`<b>Altın kelebek: ${g.name}</b> · ${Math.round(dur)} sn boyunca ${g.text}`, 'gold');
       scene.addFloat(`${g.name}!`, { color: '#ffd56b', big: true });
+    }
+    checkBadges();
+  }
+  function addEffect(g, dur) {
+    const ex = S.effects.find(e => e.id === g.id && e.until > Date.now());
+    if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: Date.now() + dur * 1000, dur });
+    return dur;
+  }
+
+  /* ---------- Hava ---------- */
+  function updateWeather(dt) {
+    const biome = IT.regionAt(S.regionIdx).biome;
+    const canRain = RAINY[biome] && scene.alt < 0.3;
+    if (weather === 'clear') {
+      weatherIn -= dt;
+      if (weatherIn <= 0) {
+        weatherIn = 360 + Math.random() * 360;
+        if (canRain) {
+          weather = 'rain'; weatherT = 30 + Math.random() * 15;
+          scene.setWeather(1, 0);
+          toast('Bir bahar yağmuru başladı. Damlalar yolu serinletiyor.', 'teal');
+        }
+      }
+    } else {
+      weatherT -= dt;
+      if (weather === 'rain' && (weatherT <= 0 || !canRain)) {
+        // Gökkuşağı yalnızca gündüz ve yerdeyken çıkar
+        if (canRain && (scene.nightAmt || 0) < 0.5) {
+          weather = 'rainbow'; weatherT = GIFT.rainbow.dur;
+          scene.setWeather(0, 1);
+          addEffect(GIFT.rainbow, GIFT.rainbow.dur);
+          S.rainbows++;
+          toast(`<b>Gökkuşağı çıktı!</b> · ${GIFT.rainbow.dur} sn boyunca ${GIFT.rainbow.text}`, 'gold');
+          Sound.region();
+          checkBadges();
+        } else { weather = 'clear'; scene.setWeather(0, 0); }
+      } else if (weather === 'rainbow' && (weatherT <= 0 || scene.alt >= 0.3)) {
+        weather = 'clear'; scene.setWeather(0, 0);
+      }
     }
   }
 
@@ -177,6 +263,7 @@
     const credits = addDistance(d, b.cpm);
     S.effects = S.effects.filter(e => e.until > Date.now());
     const res = checkProgress(true);
+    res.badges = checkBadges(true);
     return { sec, counted, capped: sec > cap, rate, d, credits, res, cap };
   }
 
@@ -190,8 +277,15 @@
       const v = VEH[id];
       if (S.owned[id] || !spend(v.cost)) return;
       S.owned[id] = true; S.levels[id] = 0;
-      actions.ride(id);
-      toast(`<b>Yeni araç: ${v.name}</b> · ${esc(v.tagline)}`, 'teal');
+      uiDirty.garage = true;
+      // Yeni araç ancak şu ankinden yavaş değilse hemen binilir; hız hiçbir zaman düşmez
+      if (statsFor(id).idle >= Econ.base(S).idle) {
+        actions.ride(id);
+        toast(`<b>Yeni araç: ${v.name}</b> · ${esc(v.tagline)}`, 'teal');
+      } else {
+        toast(`<b>${v.name} garaja katıldı</b> · Birkaç yükseltmeyle ${VEH[S.active].name} aracını geçer. O zamana kadar hızının yarısını yolculuğuna katıyor.`, 'teal');
+      }
+      checkBadges();
     },
     ride(id) {
       if (!S.owned[id] || S.active === id) return;
@@ -200,10 +294,19 @@
     },
     upgrade(id) {
       const v = VEH[id], lvl = S.levels[id] || 0;
-      if (!spend(Econ.upgradeCost(v, lvl))) return;
-      S.levels[id] = lvl + 1;
-      if ([10, 25, 50, 100, 150, 200].includes(lvl + 1)) toast(`<b>${v.upName} Sv. ${lvl + 1}</b> · ${v.name} hızı ikiye katlandı!`, 'teal');
+      if (!S.owned[id]) return;
+      const q = Econ.upgradeQuote(v, lvl, S.settings.bulk, S.credits);
+      if (!spend(q.cost)) return;
+      S.levels[id] = lvl + q.n;
+      const crossed = DOUBLINGS.filter(t => t > lvl && t <= lvl + q.n).length;
+      if (crossed) toast(`<b>${v.upName} Sv. ${lvl + q.n}</b> · ${v.name} hızı ${crossed > 1 ? crossed + ' kez ' : ''}ikiye katlandı!`, 'teal');
       uiDirty.garage = true;
+      checkBadges();
+    },
+    bulk(id) {
+      const n = id === 'max' ? 'max' : +id;
+      if (!BULKS.includes(n)) return;
+      S.settings.bulk = n; uiDirty.garage = true;
     },
     buff(id) {
       const b = BUFF[id], lvl = S.buffs[id];
@@ -215,6 +318,7 @@
     tab(id) {
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === id)));
       document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.id !== 'pane-' + id; });
+      $('.panes').scrollTop = 0;
       try { localStorage.setItem('idle-traveler-tab', id); } catch (e) { /* yok say */ }
     },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
@@ -231,6 +335,7 @@
       S = defaultState(); S.settings = settings; S.intro = true;
       scene.setBiome('meadow', true); scene.setVehicle('walk', true);
       combo = 0; rateEma = 0; creditEma = 0;
+      weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
       $('#hint').classList.remove('gone');
       uiDirty = { garage: true, buffs: true, journal: true };
       save();
@@ -252,12 +357,14 @@
     S.lastSeen = Date.now();
 
     const cur = current();
-    if (now - lastClick > 900) combo = Math.max(0, combo - dt * 10);
+    if (performance.now() - lastClick > 900) combo = Math.max(0, combo - dt * 10);
     const before = S.distance;
     addDistance(cur.idle * dt, cur.cpm);
     S.playTime += dt;
+    if (scene.mode === 'dark') S.nightTime += dt;
     checkProgress();
     S.effects = S.effects.filter(e => e.until > Date.now());
+    updateWeather(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -268,8 +375,8 @@
     }
     if (rateEma > S.best) S.best = rateEma;
 
-    // altın kelebek
-    giftIn -= dt;
+    // altın kelebek (pencere açıkken yakalanamayacağı için gelmez)
+    if ($('#modal').hidden) giftIn -= dt;
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
       giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly);
@@ -277,10 +384,10 @@
 
     scene.update(dt, Math.max(rateEma, cur.idle), scene.nightAmt || 0);
     scene.draw();
-    Sound.tick(dt, Math.min(1, scene.vs / 700));
+    Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 
     uiTimer += dt;
-    if (uiTimer > 0.12) { uiTimer = 0; refreshUI(); }
+    if (uiTimer > 0.12) { uiTimer = 0; checkBadges(); refreshUI(); }
     saveTimer += dt;
     if (saveTimer > 5) { saveTimer = 0; save(); }
     requestAnimationFrame(frame);
@@ -307,18 +414,26 @@
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => { b.hidden = true; }, 4600);
   }
+  // Pencereler sıraya girer: biri açıkken gelen yenisi öncekinin yerine geçmez
+  const modalQueue = [];
   function openModal(html, btn, onClose) {
+    if (!$('#modal').hidden) { modalQueue.push([html, btn, onClose]); return; }
     $('#modalBody').innerHTML = html;
     const b = $('#modalBtn');
     b.textContent = btn;
     $('#modal').hidden = false;
     b.focus({ preventScroll: true });
-    b.onclick = () => { $('#modal').hidden = true; Sound.unlock(); if (onClose) onClose(); };
+    b.onclick = () => {
+      $('#modal').hidden = true; Sound.unlock();
+      if (onClose) onClose();
+      if (modalQueue.length) openModal(...modalQueue.shift());
+    };
   }
   function showOffline(o) {
     const v = VEH[S.active];
     const regions = o.res.regions.map(x => x.r.name);
     const ms = o.res.milestones.map(x => x.m.name);
+    const badges = (o.res.badges || []).map(b => b.name);
     openModal(`
       <p class="eyebrow">Tekrar hoş geldin</p>
       <h2>Yol seni bekledi, sen de yolu</h2>
@@ -329,6 +444,7 @@
       </div>
       ${regions.length ? `<p class="small">Yeni bölgeler: <b>${regions.map(esc).join(', ')}</b></p>` : ''}
       ${ms.length ? `<p class="small">Geçilen duraklar: <b>${ms.map(esc).join(', ')}</b></p>` : ''}
+      ${badges.length ? `<p class="small">Kazanılan rozetler: <b>${badges.map(esc).join(', ')}</b></p>` : ''}
       ${o.capped ? `<p class="small muted">Yalnızca ${Econ.offlineCapHours(S.buffs.camp)} saat sayıldı. <i>Uzun Mola</i> ile bu sınırı uzatabilirsin.</p>` : ''}
       ${o.rate < 0.9 ? `<p class="small muted"><i>Rüyada Yolculuk</i> güçlendirmesi çevrimdışı hızını artırır.</p>` : ''}
     `, 'Yola devam et', () => { if (regions.length) showBanner(regions[regions.length - 1], 'Sen yokken buraya vardın'); });
@@ -342,6 +458,8 @@
         <li><b>Garaj</b>: patenden güneş yelkenine kadar yeni araçlar al, onları yükselt.</li>
         <li><b>Güçlendirmeler</b>: daha uzun adımlar, arkadan esen rüzgâr, şanslı adımlar.</li>
         <li><b>Altın kelebekleri</b> yakala. Her biri küçük bir sürpriz getirir.</li>
+        <li>Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.</li>
+        <li><b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.</li>
         <li>Oyunu kapatsan da yolcun daha yavaş bir tempoda yürümeye devam eder.</li>
       </ul>
     `, 'Yola çık', () => { S.intro = true; save(); });
@@ -364,7 +482,14 @@
   function renderGarage() {
     const pane = $('#pane-garage');
     const firstLocked = VEHICLES.findIndex(v => !S.owned[v.id]);
-    let html = '';
+    const base = Econ.base(S), bulk = S.settings.bulk;
+    let html = `<div class="garage-top">
+      <p class="tag">${base.convoy > 0
+        ? `Yol tecrübesi: diğer araçların <b>+${fmtSpeed(base.convoy)}</b> katıyor`
+        : `Binmediğin araçlar hızlarının %${Math.round(CONVOY * 100)} kadarını yolculuğuna katar.`}</p>
+      <div class="seg" role="group" aria-label="Yükseltme miktarı">${BULKS.map(n =>
+        `<button class="seg-btn" data-act="bulk" data-id="${n}" aria-pressed="${bulk === n}">${n === 'max' ? 'Maks' : '×' + n}</button>`).join('')}</div>
+    </div>`;
     for (const v of VEHICLES) {
       const owned = !!S.owned[v.id];
       if (!owned && firstLocked !== -1 && v.index > firstLocked) {
@@ -382,15 +507,19 @@
           <p class="tag">${esc(v.tagline)}</p>
           <p class="stats"><span>Otomatik <b>${fmtSpeed(st.idle)}</b></span><span>Tık başına <b>${fmtGain(st.click)}</b></span></p>
           ${owned
-            ? `<div class="up"><div><span class="upname">${v.upName}</span> <span class="lvl">Sv. ${lvl}</span><small>${nextDoubling(lvl)}</small></div>${costBtn('upgrade', v.id, Econ.upgradeCost(v, lvl), 'Yükselt')}</div>`
+            ? `<div class="up"><div><span class="upname">${v.upName}</span> <span class="lvl">Sv. ${lvl}</span><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
             : `<div class="up">${costBtn('buyVeh', v.id, v.cost, 'Satın al')}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
         </div></article>`;
     }
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, c.dataset.locked === '1'));
   }
+  function upgradeBtn(v) {
+    const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
+    return costBtn('upgrade', v.id, q.cost, q.n > 1 ? `Yükselt ×${q.n}` : 'Yükselt');
+  }
   function nextDoubling(lvl) {
-    const t = [10, 25, 50, 100, 150, 200].find(x => x > lvl);
+    const t = DOUBLINGS.find(x => x > lvl);
     return t ? `Her seviye +%25 hız · Sv. ${t} olunca hız ×2` : 'Her seviye +%25 hız';
   }
 
@@ -417,6 +546,11 @@
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
+    const nBadges = Object.keys(S.badges).length;
+    const badges = BADGES.map(b => {
+      const on = !!S.badges[b.id];
+      return `<li class="badge${on ? ' on' : ''}" title="${esc(b.desc)}"><span class="medal" aria-hidden="true">${on ? '★' : '?'}</span><b>${on ? esc(b.name) : '???'}</b><small>${esc(b.desc)}</small></li>`;
+    }).join('');
     pane.innerHTML = `
       <h3 class="sec">Yolculuk</h3>
       <dl class="statgrid">
@@ -426,9 +560,13 @@
         <div><dt>Yolda geçen süre</dt><dd id="jTime"></dd></div>
         <div><dt>Rekor hız</dt><dd id="jBest"></dd></div>
         <div><dt>Yakalanan kelebek</dt><dd id="jGifts"></dd></div>
+        <div><dt>Şanslı adım</dt><dd id="jCrits"></dd></div>
+        <div><dt>Görülen gökkuşağı</dt><dd id="jRainbows"></dd></div>
       </dl>
       <h3 class="sec">Pasaport damgaları <small>${S.regionIdx + 1} bölge · her biri kalıcı +%6 hız</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
+      <h3 class="sec">Rozetler <small>${nBadges} / ${BADGES.length} · kredi +%${Math.round(nBadges * BADGE_BONUS * 100)}</small></h3>
+      <ul class="badges">${badges}</ul>
       <h3 class="sec">Geçilen duraklar</h3>
       <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : '<li class="muted">Henüz bir durak geçilmedi. İlk yüz metre çok yakın.</li>'}</ul>
       <h3 class="sec">Çevrimdışı yolculuk</h3>
@@ -473,7 +611,13 @@
     const fx = S.effects.filter(e => e.until > now).map(e => `<span class="fx fx-${e.id}"><b>${GIFT[e.id].name}</b> ${GIFT[e.id].text} · ${Math.ceil((e.until - now) / 1000)} sn</span>`).join('');
     const fxBox = $('#effects');
     if (fxBox.dataset.html !== fx) { fxBox.innerHTML = fx; fxBox.dataset.html = fx; }
-    // butonlar
+    // butonlar ('Maks' modunda miktar bütçeyle değişir)
+    if (S.settings.bulk === 'max') document.querySelectorAll('#pane-garage [data-act="upgrade"]').forEach(b => {
+      const v = VEH[b.dataset.id], q = Econ.upgradeQuote(v, S.levels[v.id] || 0, 'max', S.credits);
+      if (+b.dataset.cost === q.cost) return;
+      b.dataset.cost = q.cost;
+      b.innerHTML = `<span>${q.n > 1 ? `Yükselt ×${q.n}` : 'Yükselt'}</span><b>${coin}${fmtNum(q.cost)}</b>`;
+    });
     document.querySelectorAll('[data-cost]').forEach(b => {
       const ok = S.credits + 1e-9 >= +b.dataset.cost;
       if (b.disabled === ok) b.disabled = !ok;
@@ -488,6 +632,7 @@
       setText('#jDist', fmtDist(S.distance)); setText('#jCred', fmtNum(S.totalCredits));
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
+      setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
@@ -550,10 +695,13 @@
       if (!el || el.disabled) return;
       Sound.unlock();
       actions[el.dataset.act](el.dataset.id, el);
+      // Fareyle/dokunarak basıldıysa odağı bırak: yoksa Boşluk tuşu adım yerine aynı düğmeye tekrar basar
+      if (e.detail > 0 && document.activeElement && document.activeElement.blur) document.activeElement.blur();
       refreshUI();
     });
-    $('#btnSound').addEventListener('click', () => {
+    $('#btnSound').addEventListener('click', e => {
       Sound.unlock();
+      if (e.detail > 0) e.currentTarget.blur();
       const on = !(S.settings.sfx || S.settings.music);
       S.settings.sfx = on; S.settings.music = on;
       Sound.setSfx(on); Sound.setMusic(on);

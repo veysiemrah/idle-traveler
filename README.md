@@ -36,6 +36,9 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
 - **Araçlar**: Yürüyüş → Paten → Bisiklet → Motosiklet → Araba → Tren → Uçak → Roket → Güneş Yelkeni.
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
   Uçakla birlikte kamera bulutların arasına yükselir, roketle uzaya çıkılır.
+- **Yol tecrübesi**: Binmediğin araçlar da hızlarının yarısını yolculuğuna katar. Yeni araç almak hızı hiç düşürmez,
+  eski araçlara yapılan yükseltmeler de boşa gitmez. Yeni araç şu ankinden yavaşsa garaja katılır, birkaç yükseltmeyle öne geçer.
+- **Toplu yükseltme**: Garajın üstündeki ×1 / ×10 / Maks seçimiyle tek dokunuşta birden çok seviye alınır.
 - **Güçlendirmeler**: Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu (kredi), Yolun Ritmi,
   Şanslı Adım (10 kat uzun adım), Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.
 - **Bölgeler**: Sabah Köyü, Lavanta Tarlaları, Çam Ormanı, Altın Buğday Ovası, Ege Sahil Yolu, Kızıl Kanyon,
@@ -43,6 +46,9 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
   Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
 - **Duraklar**: Maraton, İstanbul – Ankara, Dünya turu, Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
+- **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
+- **Rozetler**: Adım, kelebek, bölge, mesafe, garaj ve yükseltme hedefleriyle 22 rozet. Her rozet kalıcı olarak +%3 kredi verir.
+  Yol Defteri'nde görünür.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
 - **Tema**: Sahne tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı yıldızlı gecedir.
@@ -56,9 +62,9 @@ Oyun GitHub Pages ile `https://idle-traveler.vebaban.com` adresinde yayınlanaca
 | --- | --- |
 | `index.html` | Sayfa iskeleti, HUD ve panel |
 | `css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
-| `js/data.js` | Araçlar, güçlendirmeler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
-| `js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, araç çizimleri, parçacıklar |
-| `js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, rüzgâr çanları |
-| `js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, arayüz |
+| `js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi formülleri, sayı biçimleri |
+| `js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
+| `js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |
+| `js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, arayüz |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
