@@ -117,7 +117,7 @@ button { font: inherit; color: inherit; }
 .hud-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 14px; }
 .speed { color: var(--teal); font-weight: 700; font-variant-numeric: tabular-nums; }
 .dotsep { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); opacity: 0.6; }
-.hud-tools { pointer-events: auto; }
+.hud-tools { pointer-events: auto; display: flex; gap: 8px; }
 .iconbtn {
   width: 42px; height: 42px; border-radius: 50%;
   border: 1px solid var(--glass-line); background: var(--glass);
@@ -146,13 +146,13 @@ button { font: inherit; color: inherit; }
 .stage { container-type: inline-size; }
 /* Bildirimler gökyüzünde durur; yolu ve aracı asla örtmez */
 .toasts {
-  position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 70px;
-  width: min(360px, calc(100% - 86px));
+  position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 120px;
+  width: min(360px, calc(100% - 136px));
   display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
   pointer-events: none; z-index: 3;
 }
 @container (max-width: 760px) {
-  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; }
+  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; transition: top .4s; }
   .toast:nth-last-child(n+3) { display: none; }
 }
 .toast {
@@ -184,6 +184,12 @@ button { font: inherit; color: inherit; }
   12% { opacity: 1; transform: translate(-50%, -50%); letter-spacing: 0; }
   80% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -56%); }
+}
+/* Dar ekranda afiş HUD kartının altına iner, bildirimler de afişin altına kayar */
+@container (max-width: 760px) {
+  .banner { top: max(38%, 180px); }
+  .banner-name { font-size: clamp(26px, 8cqi, 40px); }
+  .banner-on .toasts { top: calc(max(38%, 180px) + 64px); }
 }
 
 .hint {
@@ -271,6 +277,16 @@ button { font: inherit; color: inherit; }
   border-radius: var(--r-md); padding: 12px;
 }
 .card.buff { grid-template-columns: minmax(0, 1fr); }
+/* Eve dönüş: yolculuğu tamamla, hatıra topla */
+.card.home {
+  grid-template-columns: minmax(0, 1fr); margin-top: 6px;
+  border: 1px dashed rgba(255, 213, 107, 0.55);
+  background: linear-gradient(180deg, rgba(255, 213, 107, 0.09), transparent 70%), var(--ink-2);
+}
+.card.home .tag b { color: var(--paper); }
+.card.home .mem { color: var(--gold); }
+.home-btn { align-items: center; justify-content: center; font-weight: 800; font-size: 14px; max-width: 170px; text-align: center; }
+.home-btn.armed { font-size: 12px; background: linear-gradient(180deg, #ffe08a, var(--gold)); }
 .card.active { border-color: rgba(111, 211, 193, 0.55); background: linear-gradient(180deg, rgba(111, 211, 193, 0.08), transparent 60%), var(--ink-2); }
 .card.locked .icon { opacity: .8; }
 .card.mystery { opacity: .6; }
@@ -350,6 +366,7 @@ button { font: inherit; color: inherit; }
 .s-meadow { --c: #8fd18a; } .s-lavender { --c: #b9a2f0; } .s-pine { --c: #6fc49a; } .s-wheat { --c: #f2cf6e; }
 .s-coast { --c: #6cc5ec; } .s-canyon { --c: #ff9a72; } .s-sakura { --c: #ffb3c8; } .s-autumn { --c: #f0a24a; }
 .s-desert { --c: #f3c98c; } .s-snow { --c: #dbe7f5; } .s-aurora { --c: #8affd0; } .s-tea { --c: #74d38a; } .s-cappadocia { --c: #f1c49a; }
+.s-tulip { --c: #ff8fa8; } .s-olive { --c: #b9c98a; }
 /* Rozetler */
 .badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .badge {
@@ -377,6 +394,8 @@ button { font: inherit; color: inherit; }
   display: flex; justify-content: space-between; gap: 10px;
 }
 .toggle b { color: var(--muted); }
+.toggle.sky { cursor: default; align-items: center; flex-wrap: wrap; }
+.toggle.sky:hover { background: var(--ink-2); }
 .toggle[aria-pressed="true"] b { color: var(--teal); }
 .toggle:hover, .danger:hover { background: var(--ink-3); }
 .danger { color: var(--rose); }

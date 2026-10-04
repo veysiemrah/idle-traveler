@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtSpeed, fmtDuration } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
   const BY = { walk: 'yürüyerek', skates: 'patenle', bike: 'bisikletle', moto: 'motosikletle', car: 'arabayla', train: 'trenle', plane: 'uçakla', rocket: 'roketle', sail: 'güneş yelkeniyle' };
@@ -15,9 +15,15 @@
   ];
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
   const BULKS = [1, 10, 'max'];
+  // Gökyüzü: tarayıcı temasını izle ya da gündüz/gece sabitle
+  const SKIES = ['auto', 'day', 'night'];
+  const SKY_NAME = { auto: 'Otomatik', day: 'Gündüz', night: 'Gece' };
   const DOUBLINGS = [10, 25, 50, 100, 150, 200];
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
-  const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1 };
+  const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
+  // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
+  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits',
+    'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const nf1 = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -31,10 +37,11 @@
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0,
+      memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1 }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto' }, intro: false,
     };
   }
   function load() {
@@ -51,9 +58,11 @@
     if (!isObj(d)) return null;
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
-    for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx']) s[k] = count(s[k]);
-    s.msIdx = count(s.msIdx, MILESTONES.length);
+    for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'memories', 'trips']) s[k] = count(s[k]);
+    // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
+    s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
+    s.msIdx = Math.min(count(s.msIdx, MILESTONES.length), MILESTONES.filter(m => m.at <= s.distance).length);
     const buffs = isObj(d.buffs) ? d.buffs : {};
     s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max)]));
     const owned = isObj(d.owned) ? d.owned : {}, levels = isObj(d.levels) ? d.levels : {};
@@ -65,12 +74,15 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     s.badges = {};
     if (isObj(d.badges)) for (const b of BADGES) if (d.badges[b.id]) s.badges[b.id] = +d.badges[b.id] || Date.now();
-    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)) : [];
+    // Etki süresi, kelebek güçlendirmesiyle ulaşılabilecek en uzun süreyi aşamaz
+    const maxFx = Date.now() + 3600e3;
+    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx) })) : [];
     s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
     s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
+    if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
-    s.intro = !!s.intro;
+    s.intro = !!s.intro; s.homeReady = !!s.homeReady;
     return s;
   }
   function save() {
@@ -154,6 +166,10 @@
       uiDirty.journal = true;
     }
     if (!silent) for (const { m, bonus } of ms) { toast(`<b>Durak: ${esc(m.name)}</b> · +${fmtNum(bonus)} kredi`, 'gold'); Sound.milestone(); }
+    if (!S.homeReady && Econ.memoryGain(S.distance) > 0) {
+      S.homeReady = true; uiDirty.buffs = true;
+      if (!silent) toast('<b>Eve dönüş yolu açıldı</b> · Güçlendirmeler sekmesinde hatıralarını topla', 'gold');
+    }
     return { regions: found, milestones: ms };
   }
 
@@ -263,6 +279,27 @@
     return { sec, counted, capped: sec > cap, rate, d, credits, res, cap };
   }
 
+  // Uzak kalınan süreyi say ve bildir: kısa aralar bildirimle, uzunlar pencereyle
+  function resume(gap) {
+    if (gap <= 10) return;
+    const off = applyOffline(gap);
+    if (gap > 60) showOffline(off); else if (off.d > 0) toast(`Sen yokken +${fmtGain(off.d)} yol alındı.`, 'teal');
+  }
+
+  // Yeni bir yolculuk: keep verilirse bu alanlar eski durumdan taşınır
+  function newTrip(keep) {
+    const fresh = defaultState();
+    if (keep) for (const k of keep) fresh[k] = S[k];
+    S = fresh;
+    scene.setBiome('meadow', true); scene.setVehicle('walk', true);
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null;
+    weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
+    uiDirty = { garage: true, buffs: true, journal: true };
+  }
+  function disarm(el, label) {
+    setTimeout(() => { if (el.isConnected) { el.dataset.armed = ''; el.textContent = label; el.classList.remove('armed'); } }, 4000);
+  }
+
   /* ---------- Satın almalar ---------- */
   function spend(cost) {
     if (S.credits + 1e-9 < cost) { Sound.deny(); return false; }
@@ -316,23 +353,40 @@
       $('.panes').scrollTop = 0;
       try { localStorage.setItem('idle-traveler-tab', id); } catch (e) { /* yok say */ }
     },
+    sky(id) {
+      if (!SKIES.includes(id) || S.settings.sky === id) return;
+      S.settings.sky = id; applySky();
+      uiDirty.journal = true;
+    },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
+    home(_, el) {
+      const gain = Econ.memoryGain(S.distance);
+      if (gain < 1) return;
+      if (el.dataset.armed !== '1') {
+        el.dataset.armed = '1'; el.textContent = 'Emin misin? Onaylamak için tekrar dokun';
+        el.classList.add('armed');
+        disarm(el, 'Eve dön');
+        return;
+      }
+      const trip = { dist: S.distance, regions: S.regionIdx + 1, gain, before: S.memories };
+      S.memories += gain; S.trips++; S.lifeDist += S.distance;
+      newTrip(KEEP);
+      save();
+      Sound.region();
+      showHome(trip);
+      checkBadges();
+    },
     reset(_, el) {
       if (el.dataset.armed !== '1') {
         el.dataset.armed = '1'; el.textContent = 'Emin misin? Tüm ilerleme silinir. Onaylamak için tekrar dokun';
         el.classList.add('armed');
-        setTimeout(() => { if (el.isConnected) { el.dataset.armed = ''; el.textContent = 'Yolculuğu sıfırla'; el.classList.remove('armed'); } }, 4000);
+        disarm(el, 'Yolculuğu sıfırla');
         return;
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
-      const settings = S.settings;
-      S = defaultState(); S.settings = settings; S.intro = true;
-      scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-      combo = 0; rateEma = 0; creditEma = 0;
-      weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
+      newTrip(['settings', 'intro']);
       $('#hint').classList.remove('gone');
-      uiDirty = { garage: true, buffs: true, journal: true };
       save();
       toast('Yeni bir yolculuk başladı. İyi yolculuklar!', 'teal');
     },
@@ -344,11 +398,7 @@
     lastFrame = now;
 
     // Sekme gizliyken ya da cihaz uykudayken geçen süre: çevrimdışı hızla say
-    const gap = (Date.now() - S.lastSeen) / 1000;
-    if (gap > 10) {
-      const off = applyOffline(gap);
-      if (gap > 60) showOffline(off); else if (off.d > 0) toast(`Sen yokken +${fmtGain(off.d)} yol alındı.`, 'teal');
-    }
+    resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
 
     const cur = current();
@@ -406,8 +456,9 @@
     $('#bannerName').textContent = name;
     $('#bannerSub').textContent = sub;
     b.hidden = false; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    $('#stage').classList.add('banner-on');
     clearTimeout(bannerTimer);
-    bannerTimer = setTimeout(() => { b.hidden = true; }, 4600);
+    bannerTimer = setTimeout(() => { b.hidden = true; $('#stage').classList.remove('banner-on'); }, 4600);
   }
   // Pencereler sıraya girer: biri açıkken gelen yenisi öncekinin yerine geçmez
   const modalQueue = [];
@@ -444,6 +495,19 @@
       ${o.rate < 0.9 ? `<p class="small muted"><i>Rüyada Yolculuk</i> güçlendirmesi çevrimdışı hızını artırır.</p>` : ''}
     `, 'Yola devam et', () => { if (regions.length) showBanner(regions[regions.length - 1], 'Sen yokken buraya vardın'); });
   }
+  function showHome(t) {
+    const pct = m => Math.round(HOME.bonus * m * 100);
+    openModal(`
+      <p class="eyebrow">${S.trips}. yolculuk tamamlandı</p>
+      <h2>Eve hoş geldin</h2>
+      <p class="lead">Sırt çantanı boşalttın, kartpostalları duvara astın. ${fmtDist(t.dist)} yol ve ${t.regions} bölge artık birer hatıra.</p>
+      <div class="gains">
+        <div><span>Yeni hatıra</span><b>+${fmtNum(t.gain)}</b></div>
+        <div><span>Kalıcı hız bonusu</span><b class="cr">%${fmtNum(pct(t.before))} → %${fmtNum(pct(S.memories))}</b></div>
+      </div>
+      <p class="small muted">Rozetlerin, istatistiklerin ve ayarların seninle. Araçlar ve güçlendirmeler yeniden alınacak; bu kez yol daha hızlı akacak.</p>
+    `, 'Yeniden yola çık');
+  }
   function showIntro() {
     openModal(`
       <p class="eyebrow">Uzun ve sakin bir yolculuk</p>
@@ -456,8 +520,27 @@
         <li>Garajdaki her araç hızının yarısını yolculuğuna katar. Hiçbir yükseltme boşa gitmez.</li>
         <li><b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.</li>
         <li>Oyunu kapatsan da yolcun daha yavaş bir tempoda yürümeye devam eder.</li>
+        <li>Uzun bir yolculuktan sonra <b>eve dönebilirsin</b>. Topladığın hatıralar sonraki yolculukları hızlandırır.</li>
       </ul>
     `, 'Yola çık', () => { S.intro = true; save(); });
+  }
+
+  // Gökyüzü ayarı sayfanın data-theme özniteliğini yönetir; sahne ve arayüz bu özniteliği zaten izler.
+  // Otomatik modda yalnızca kendi koyduğumuz özniteliği kaldırırız (dışarıdan gelen tema korunur).
+  let skyOwned = false;
+  const metaColors = [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m, m.content]);
+  function applySky() {
+    const el = document.documentElement, t = { day: 'light', night: 'dark' }[S.settings.sky];
+    if (t) { el.setAttribute('data-theme', t); skyOwned = true; } else if (skyOwned) { el.removeAttribute('data-theme'); skyOwned = false; }
+    for (const [m, c] of metaColors) m.content = t ? (t === 'dark' ? '#1e2140' : '#eef0f8') : c;
+  }
+  function syncSkyBtn() {
+    const night = scene.mode === 'dark';
+    const btn = $('#btnSky');
+    btn.title = night ? 'Gündüze geç' : 'Geceye geç';
+    btn.setAttribute('aria-label', btn.title);
+    btn.querySelector('.ico-sun').hidden = night;
+    btn.querySelector('.ico-moon').hidden = !night;
   }
 
   function syncSoundBtn() {
@@ -528,7 +611,21 @@
           <p class="tag">${lvl ? b.desc(lvl) : 'Henüz alınmadı.'}</p>
           <div class="up"><small>Sonraki seviye: ${b.next}</small>${maxed ? '<span class="chip on">Tamamlandı</span>' : costBtn('buff', b.id, Econ.buffCost(b, lvl), 'Al')}</div>
         </div></article>`;
-    }).join('');
+    }).join('') + homeCard();
+  }
+  function homeCard() {
+    const gain = Econ.memoryGain(S.distance), pct = Math.round(HOME.bonus * 100);
+    const now = S.memories ? `Hatıraların: <b>${fmtNum(S.memories)}</b> · kalıcı hız +%${fmtNum(pct * S.memories)}.` : 'Henüz hatıran yok.';
+    return `<article class="card home">
+      <div class="body">
+        <div class="row"><h3>Eve Dönüş</h3><span class="lvl">${S.trips ? S.trips + '. yolculuk tamam' : 'İlk yolculuk'}</span></div>
+        <p class="tag">Yolculuğunu tamamla ve eve dön. Kredi, araçlar, yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır; rozetler ve istatistikler kalır.
+          Her hatıra sonraki yolculuklarda kalıcı olarak +%${pct} hız verir. ${now}</p>
+        ${gain || S.homeReady
+          ? `<p class="tag">Şimdi dönersen: <b class="mem" id="homeGain"></b> · sıradaki hatıra <span id="homeNext"></span></p>`
+          : `<p class="tag">Eve dönüş yolu <b>${fmtDist(HOME.min)}</b> yolculuktan sonra açılır.</p><div class="progress"><i id="homeProg"></i></div>`}
+        <div class="up"><small>Uzun yolculuk, çok hatıra: mesafe 8 katına çıkınca hatıralar 2 katına çıkar.</small><button class="buy home-btn" data-act="home" ${gain ? '' : 'disabled'}>Eve dön</button></div>
+      </div></article>`;
   }
 
   function renderJournal() {
@@ -549,7 +646,7 @@
     pane.innerHTML = `
       <h3 class="sec">Yolculuk</h3>
       <dl class="statgrid">
-        <div><dt>Toplam yol</dt><dd id="jDist"></dd></div>
+        <div><dt>${S.trips ? 'Bu yolculuk' : 'Toplam yol'}</dt><dd id="jDist"></dd></div>
         <div><dt>Toplam kredi</dt><dd id="jCred"></dd></div>
         <div><dt>Atılan adım</dt><dd id="jClicks"></dd></div>
         <div><dt>Yolda geçen süre</dt><dd id="jTime"></dd></div>
@@ -557,6 +654,8 @@
         <div><dt>Yakalanan kelebek</dt><dd id="jGifts"></dd></div>
         <div><dt>Şanslı adım</dt><dd id="jCrits"></dd></div>
         <div><dt>Görülen gökkuşağı</dt><dd id="jRainbows"></dd></div>
+        ${S.trips ? `<div><dt>Tüm yolculuklar</dt><dd id="jLife"></dd></div>
+        <div><dt>Hatıralar</dt><dd>${fmtNum(S.memories)} · hız +%${fmtNum(Math.round(HOME.bonus * S.memories * 100))}</dd></div>` : ''}
       </dl>
       <h3 class="sec">Pasaport damgaları <small>${S.regionIdx + 1} bölge · her biri kalıcı +%6 hız</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
@@ -570,6 +669,8 @@
       <div class="settings">
         <button class="toggle" data-act="sfx" aria-pressed="${S.settings.sfx}">Ses efektleri <b>${S.settings.sfx ? 'Açık' : 'Kapalı'}</b></button>
         <button class="toggle" data-act="music" aria-pressed="${S.settings.music}">Ortam sesi <b>${S.settings.music ? 'Açık' : 'Kapalı'}</b></button>
+        <div class="toggle sky"><span>Gökyüzü</span><div class="seg" role="group" aria-label="Gökyüzü">${SKIES.map(k =>
+          `<button class="seg-btn" data-act="sky" data-id="${k}" aria-pressed="${S.settings.sky === k}">${SKY_NAME[k]}</button>`).join('')}</div></div>
         <button class="danger" data-act="reset">Yolculuğu sıfırla</button>
       </div>
       <p class="tag muted small">İlerleme bu tarayıcıda otomatik kaydedilir.</p>`;
@@ -586,7 +687,7 @@
     setText('#hudSpeed', fmtSpeed(Math.max(rateEma, cur.idle)));
     setText('#hudVehicle', VEH[S.active].name);
     setText('#credits', fmtNum(S.credits));
-    setText('#income', `+${fmtNum(Math.max(creditEma, cur.idle * cur.cpm))} / sn`);
+    setText('#income', `+${IT.fmtSmall(Math.max(creditEma, cur.idle * cur.cpm))} / sn`);
     const cm = comboMult();
     setText('#rhythmVal', '×' + nf2.format(cm));
     $('#rhythmFill').style.transform = `scaleX(${Math.min(combo, 20) / 20})`;
@@ -623,11 +724,19 @@
     const canBuffs = !!document.querySelector('#pane-buffs [data-cost]:not(:disabled)');
     $('.tab[data-id="garage"]').classList.toggle('dot', canGarage);
     $('.tab[data-id="buffs"]').classList.toggle('dot', canBuffs);
+    if (!$('#pane-buffs').hidden) {
+      const gain = Econ.memoryGain(S.distance);
+      setText('#homeGain', `+${fmtNum(gain)} hatıra`);
+      setText('#homeNext', fmtDist(Econ.memoryNext(S.distance)));
+      const hp = $('#homeProg'); if (hp) hp.style.transform = `scaleX(${Math.min(1, S.distance / HOME.min)})`;
+      const hb = $('.home-btn'); if (hb && hb.disabled !== !gain) hb.disabled = !gain;
+    }
     if (!$('#pane-journal').hidden) {
       setText('#jDist', fmtDist(S.distance)); setText('#jCred', fmtNum(S.totalCredits));
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
+      if (S.trips) setText('#jLife', `${fmtDist(S.lifeDist + S.distance)} · ${S.trips + 1}. yolculuk`);
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
@@ -636,6 +745,7 @@
   function start(hotSave) {
     S = (hotSave && sanitize(hotSave)) || load() || defaultState();
     scene = new IT.Scene($('#scene'));
+    applySky();
     // Sahne tarayıcı temasını izler: açık tema gündüz, koyu tema gece
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     const themeMode = () => {
@@ -648,6 +758,7 @@
       const m = themeMode();
       if (m === scene.mode) return;
       scene.setMode(m);
+      syncSkyBtn();
       toast(m === 'dark' ? 'Akşam iniyor. Fenerler yanıyor, yıldızlar çıkıyor.' : 'Gün doğuyor. Yol yeniden aydınlanıyor.', 'teal');
     };
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme); }
@@ -660,7 +771,7 @@
     };
     scene.fill(true);
     Sound.sfxOn = S.settings.sfx; Sound.musicOn = S.settings.music;
-    syncSoundBtn();
+    syncSoundBtn(); syncSkyBtn();
     if (S.clicks >= 6) $('#hint').classList.add('gone');
 
     const stage = $('#stage');
@@ -702,6 +813,11 @@
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
     });
+    $('#btnSky').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      S.settings.sky = scene.mode === 'dark' ? 'day' : 'night';
+      applySky(); uiDirty.journal = true;
+    });
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);
     document.addEventListener('visibilitychange', () => { if (document.hidden) save(); else lastFrame = performance.now(); });
@@ -713,9 +829,8 @@
     actions.tab(['garage', 'buffs', 'journal'].includes(tab) ? tab : 'garage');
 
     // İlk açılış ya da çevrimdışı dönüş
-    const gap = (Date.now() - S.lastSeen) / 1000;
     if (!S.intro) showIntro();
-    else if (gap > 30) { const o = applyOffline(gap); showOffline(o); }
+    else resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
 
     const hot = window.claude && window.claude.hot;

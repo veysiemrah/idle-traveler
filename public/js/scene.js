@@ -32,7 +32,7 @@
   const TREE = {
     round: '#4f9a57', autumn: '#e59a3a', autumnRed: '#cc5a3c', sakura: '#f5b3c8', poplar: '#5c9a4c', poplarGold: '#e6b545',
     cypress: '#2f6a4d', pine: '#2e6a50', snowpine: '#2e6a5a', palm: '#4f9b4e', cactus: '#5b9a58', bush: '#4a8f52',
-    rock: '#9b948c', teabush: '#3b8a4e', chimney: '#ead2ad',
+    rock: '#9b948c', teabush: '#3b8a4e', chimney: '#ead2ad', olive: '#93a87c',
   };
   const TREE_RGB = Object.fromEntries(Object.entries(TREE).map(([k, v]) => [k, hex(v)]));
   const TRUNK = hex('#7a5a43');
@@ -462,6 +462,21 @@
         ctx.fillStyle = c.light; ellipse(ctx, x - 4 * u, y - 10 * u, 4 * u, 2.5 * u);
         break;
       }
+      case 'olive': { // boğumlu gövdeli, gümüşi yapraklı zeytin ağacı
+        ctx.strokeStyle = trunk; ctx.lineCap = 'round';
+        const lean = (hash(seed) - 0.5) * 8 * u;
+        ctx.lineWidth = 5 * u; ctx.beginPath(); ctx.moveTo(x - 3 * u, y);
+        ctx.bezierCurveTo(x - 6 * u, y - 10 * u, x + 4 * u + lean, y - 14 * u, x + lean, y - 24 * u); ctx.stroke();
+        ctx.lineWidth = 3.4 * u; ctx.beginPath(); ctx.moveTo(x + 3 * u, y);
+        ctx.bezierCurveTo(x + 7 * u, y - 9 * u, x - 2 * u + lean, y - 16 * u, x + 6 * u + lean, y - 26 * u); ctx.stroke();
+        const cx = x + lean;
+        ctx.fillStyle = c.dark; ellipse(ctx, cx - 12 * u, y - 30 * u, 13 * u, 8 * u); ellipse(ctx, cx + 13 * u, y - 31 * u, 12 * u, 8 * u);
+        ctx.fillStyle = c.base; ellipse(ctx, cx, y - 37 * u, 18 * u, 10 * u); ellipse(ctx, cx - 7 * u, y - 31 * u, 11 * u, 7 * u);
+        ctx.fillStyle = c.light; ellipse(ctx, cx - 5 * u, y - 42 * u, 9 * u, 4 * u);
+        ctx.fillStyle = 'rgba(60,52,70,0.55)';
+        for (let i = 0; i < 5; i++) circle(ctx, cx + (hash(seed + i) - 0.5) * 30 * u, y - 28 * u - hash(seed + i * 5) * 12 * u, 1.3 * u);
+        break;
+      }
       case 'chimney': { // peri bacası
         const h = (52 + hash(seed) * 30) * u;
         ctx.fillStyle = c.base; ctx.beginPath(); ctx.moveTo(x - 14 * u, y); ctx.quadraticCurveTo(x - 9 * u, y - h * 0.6, x - 5 * u, y - h);
@@ -580,9 +595,10 @@
         case 'mid': return { type: pick(b.midTrees), s: rand(0.32, 0.46), seed, gap: rand(18, 110) * (Math.random() < 0.2 ? 4 : 1) };
         case 'near': {
           const r = Math.random();
+          if (b.windmills && r < 0.05) return { type: 'windmill', s: rand(0.62, 0.8), seed, gap: rand(140, 220) };
           if (b.houses && r < 0.07) return { type: 'house', s: rand(0.55, 0.7), seed, roof: pick(['#c8553d', '#b84a3a', '#d06a45', '#5b7fa8']), gap: rand(90, 160) };
           if (r < 0.22) return { type: pick(b.trees), tree: true, s: rand(0.5, 0.68), seed, gap: rand(30, 80) };
-          return { type: b.deco, deco: true, s: rand(0.8, 1.2), seed, colors: b.flowers, gap: b.deco === 'lavender' || b.deco === 'tea' ? 34 : rand(22, 50) };
+          return { type: b.deco, deco: true, s: rand(0.8, 1.2), seed, colors: b.flowers, gap: b.deco === 'lavender' || b.deco === 'tea' || b.deco === 'tulips' ? 34 : rand(22, 50) };
         }
         case 'road': {
           const r = Math.random();
@@ -940,6 +956,7 @@
         if (x < -120 || x > W + 120) continue;
         const y = nearY(it.x) + 4;
         if (it.type === 'house') this.drawHouse(ctx, x, y, it.s * k, it, lit, night);
+        else if (it.type === 'windmill') this.drawWindmill(ctx, x, y, it.s * k, it, lit, night);
         else if (it.tree) drawTree(ctx, it.type, x, y, it.s * k, this.treeCols(it.type, 0.1, lit, pal), it.seed, night);
         else this.drawDeco(ctx, it, x, y + 6 * k, k, lit, pal);
       }
@@ -1016,10 +1033,11 @@
           glow(ctx, x + 9 * k, roadTop - 56 * k, 70 * k, hex('#ffcf7a'), 0.32 * night);
         }
         for (const it of this.layers.near.items) {
-          if (it.type !== 'house') continue;
+          if (it.type !== 'house' && it.type !== 'windmill') continue;
           const x = it.x - offNear;
           if (x < -100 || x > W + 100) continue;
-          glow(ctx, x, nearY(it.x) - 14 * k * it.s, 34 * k * it.s, hex('#ffcf7a'), 0.28 * night);
+          const wy = it.type === 'windmill' ? 34 : 14;
+          glow(ctx, x, nearY(it.x) - wy * k * it.s, 34 * k * it.s, hex('#ffcf7a'), 0.28 * night);
         }
         ctx.globalCompositeOperation = 'source-over';
       }
@@ -1141,9 +1159,47 @@
       ctx.fillStyle = css(lit(hex('#8a6448'))); ctx.fillRect(x - 4 * u, y - 13 * u, 6 * u, 13 * u);
     }
 
+    // Lale bahçelerinin yel değirmeni: kanatlar rüzgârla yavaşça döner
+    drawWindmill(ctx, x, y, u, it, lit, night) {
+      ctx.fillStyle = css(lit(hex('#efe6d6'))); ctx.beginPath();
+      ctx.moveTo(x - 13 * u, y); ctx.lineTo(x - 8 * u, y - 52 * u); ctx.lineTo(x + 8 * u, y - 52 * u); ctx.lineTo(x + 13 * u, y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = css(lit(hex('#d9cdb8'))); ctx.beginPath();
+      ctx.moveTo(x + 4 * u, y); ctx.lineTo(x + 3 * u, y - 52 * u); ctx.lineTo(x + 8 * u, y - 52 * u); ctx.lineTo(x + 13 * u, y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = css(lit(hex('#7a4a3a'))); ctx.beginPath();
+      ctx.moveTo(x - 11 * u, y - 51 * u); ctx.quadraticCurveTo(x, y - 66 * u, x + 11 * u, y - 51 * u); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = css(lit(hex('#8a6448'))); rrect(ctx, x - 3.5 * u, y - 12 * u, 7 * u, 12 * u, 3 * u); ctx.fill();
+      ctx.fillStyle = night > 0.4 ? '#ffd889' : css(lit(hex('#7fa6c4'))); rrect(ctx, x - 3 * u, y - 38 * u, 6 * u, 7 * u, 3 * u); ctx.fill();
+      const hx = x, hy = y - 54 * u, ang = this.t * 0.9 + it.seed;
+      ctx.save(); ctx.translate(hx, hy); ctx.rotate(ang);
+      for (let i = 0; i < 4; i++) {
+        ctx.rotate(Math.PI / 2);
+        ctx.fillStyle = css(lit(hex('#6e5442'))); ctx.fillRect(-1 * u, 0, 2 * u, 34 * u);
+        ctx.fillStyle = css(lit(hex('#f6f1e6')), 0.92); ctx.fillRect(1 * u, 8 * u, 7 * u, 25 * u);
+      }
+      ctx.restore();
+      ctx.fillStyle = css(lit(hex('#4a3a30'))); circle(ctx, hx, hy, 2.4 * u);
+    }
+
     drawDeco(ctx, it, x, y, k, lit, pal) {
       const s = it.s * k;
       switch (it.type) {
+        case 'tulips': { // aynı renkte sıralı laleler, tarla şeritleri gibi
+          const col = it.colors[(hash(it.seed) * it.colors.length) | 0];
+          const stem = css(lit(hex('#4f8f4a'))), cup = css(lit(hex(col))), hi = css(lit(mixc(hex(col), WHITE, 0.35)));
+          for (let i = 0; i < 4; i++) {
+            const xx = x + i * 8 * s, h = (9 + hash(it.seed + i) * 4) * s;
+            ctx.strokeStyle = stem; ctx.lineWidth = 1.3 * s;
+            ctx.beginPath(); ctx.moveTo(xx, y); ctx.lineTo(xx, y - h); ctx.stroke();
+            ctx.fillStyle = stem; ellipse(ctx, xx + 2 * s, y - 3 * s, 1.4 * s, 3.4 * s, 0.4);
+            ctx.fillStyle = cup; ctx.beginPath();
+            ctx.moveTo(xx - 3 * s, y - h - 4.5 * s); ctx.lineTo(xx - 1.5 * s, y - h - 2.5 * s); ctx.lineTo(xx, y - h - 5 * s);
+            ctx.lineTo(xx + 1.5 * s, y - h - 2.5 * s); ctx.lineTo(xx + 3 * s, y - h - 4.5 * s);
+            ctx.quadraticCurveTo(xx + 3.2 * s, y - h + 0.6 * s, xx, y - h + 0.6 * s); ctx.quadraticCurveTo(xx - 3.2 * s, y - h + 0.6 * s, xx - 3 * s, y - h - 4.5 * s);
+            ctx.fill();
+            ctx.fillStyle = hi; ellipse(ctx, xx - 1 * s, y - h - 2 * s, 0.8 * s, 1.6 * s);
+          }
+          break;
+        }
         case 'lavender': {
           const c1 = css(lit(hex('#8a6fd1'))), c2 = css(lit(hex('#b49af0')));
           for (let i = 0; i < 2; i++) {
