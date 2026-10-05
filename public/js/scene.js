@@ -987,7 +987,7 @@
       };
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
-      this.gift = null; this.star = null;
+      this.gift = null; this.star = null; this.chest = null;
       this.stars = Array.from({ length: 170 }, () => ({ x: Math.random(), y: Math.random() * 0.75, r: Math.random() * 1.3 + 0.3, p: Math.random() * TAU }));
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
       this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
@@ -1156,6 +1156,23 @@
       }
       return false;
     }
+    // Hazine sandığı: yolcunun önünde, yol kenarında 25 saniye parıldar
+    spawnChest() { this.chest = { t: 0, dur: 25 }; }
+    chestPos() {
+      const k = this.k;
+      return { x: Math.min(this.W - 50 * k, this.travelerX + 170 * k), y: this.groundY() - 4 * k };
+    }
+    hitChest(px, py) {
+      const c = this.chest;
+      if (!c) return false;
+      const p = this.chestPos(), k = Math.max(this.k, 0.8);
+      if (Math.hypot(px - p.x, py - (p.y - 14 * k)) < 46 * k) {
+        this.burst(p.x, p.y - 16 * this.k, 40, ['#ffd56b', '#fff1c2', '#ffffff', '#e8b93c']);
+        this.chest = null;
+        return true;
+      }
+      return false;
+    }
     hitGift(px, py) {
       const g = this.gift;
       if (!g || g.caught) return false;
@@ -1278,6 +1295,11 @@
         g.y = this.H * (0.26 + 0.07 * Math.sin(g.t * 1.1)) + Math.sin(g.t * 3.3) * 8;
         if (Math.random() < dt * 14) this.parts.push({ type: 'spark', x: g.x + rand(-6, 6), y: g.y + rand(-6, 6), vx: rand(10, 40), vy: rand(-10, 10), life: 0, max: rand(0.5, 1), size: rand(1.2, 2.6), color: pick(['#ffd56b', '#fff4c2']), rot: 0 });
         if (u >= 1) this.gift = null;
+      }
+      if (this.chest) {
+        const c = this.chest; c.t += dt;
+        if (Math.random() < dt * 6) { const p = this.chestPos(); this.parts.push({ type: 'spark', x: p.x + rand(-14, 14) * this.k, y: p.y - rand(10, 30) * this.k, vx: rand(-10, 10), vy: rand(-30, -10), life: 0, max: rand(0.6, 1.2), size: rand(1.2, 2.4), color: pick(['#ffd56b', '#fff1c2']), rot: 0 }); }
+        if (c.t > c.dur) this.chest = null;
       }
       if (this.star) {
         const s = this.star;
@@ -1588,6 +1610,7 @@
       }
 
       this.drawParts(ctx, true);
+      if (this.chest) this.drawChest(ctx, this.chest);
       if (this.gift) this.drawButterfly(ctx, this.gift);
       this.drawFloats(ctx);
 
@@ -1897,6 +1920,23 @@
       }
     }
 
+    drawChest(ctx, c) {
+      const k = this.k, p = this.chestPos(), a = clamp(c.t / 0.5, 0, 1) * clamp((c.dur - c.t) / 1.5, 0, 1);
+      const bob = Math.abs(Math.sin(c.t * 3)) * 4 * k, x = p.x, y = p.y - bob;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - 14 * k, 46 * k, hex('#ffd56b'), 0.45 + 0.15 * Math.sin(c.t * 5)); ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(30,30,50,0.18)'; ellipse(ctx, x, p.y + 2 * k, 18 * k, 3 * k);
+      ctx.fillStyle = '#8a5a32'; rrect(ctx, x - 16 * k, y - 18 * k, 32 * k, 18 * k, 3 * k); ctx.fill(); // gövde
+      const open = Math.min(1, Math.max(0, Math.sin(c.t * 1.3)) * 0.35);
+      ctx.save(); ctx.translate(x - 16 * k, y - 18 * k); ctx.rotate(-open);
+      ctx.fillStyle = '#a06a3c'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(16 * k, -14 * k, 32 * k, 0); ctx.closePath(); ctx.fill(); // kapak
+      ctx.fillStyle = GOLD; ctx.fillRect(14 * k, -7 * k, 4 * k, 7 * k);
+      ctx.restore();
+      if (open > 0.05) { ctx.fillStyle = `rgba(255,236,160,${(open * 2).toFixed(3)})`; ellipse(ctx, x, y - 18 * k, 14 * k, 2.4 * k); }
+      ctx.fillStyle = GOLD; ctx.fillRect(x - 16 * k, y - 12 * k, 32 * k, 3 * k); ctx.fillRect(x - 2 * k, y - 18 * k, 4 * k, 18 * k);
+      ctx.fillStyle = '#5a3a20'; rrect(ctx, x - 3 * k, y - 11 * k, 6 * k, 5 * k, 1 * k); ctx.fill(); // kilit
+      ctx.restore();
+    }
     drawStar(ctx, s) {
       const k = Math.max(this.k, 0.8), fade = clamp((s.dur + 0.6 - s.t) / 0.6, 0, 1) * clamp(s.t / 0.25, 0, 1);
       const len = Math.hypot(s.vx, s.vy), ux = s.vx / len, uy = s.vy / len, tail = 130 * k;

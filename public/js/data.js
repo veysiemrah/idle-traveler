@@ -240,6 +240,7 @@
     { id: 'photo',     at: [1, 3, 10, 25, 50, 100, 250, 500],                 stat: s => s.photos },
     { id: 'wish',      at: [1, 3, 10, 25, 50, 100, 200, 400],                 stat: s => s.wishes },
     { id: 'streak',    at: [2, 3, 5, 7, 14, 30, 60, 100],                     stat: s => s.day ? s.day.best : 0 },
+    { id: 'treasure',  at: [1, 2, 3, 5, 8, 12, 20, 30],                       stat: s => s.treasures },
   ];
   BADGES.forEach(b => {
     Object.defineProperty(b, 'name', { get: () => T(`badge.${b.id}.name`) });

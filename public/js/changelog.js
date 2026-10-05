@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.17';
+  IT.VERSION = '1.18';
 
   IT.CHANGELOG = [
+    { v: '1.18', date: '2026-10-05', items: {
+      tr: ['Hazine haritası: altın kelebeklerden ve kayan yıldızlardan harita parçaları düşer. Dört parça tamamlanınca yol kenarında parlayan bir sandık belirir; dokun, hazineyi al.',
+        'Yeni rozet ailesi: Hazine Avcısı. Yol Defteri haritanın açılan parçalarını gösterir.'],
+      en: ['Treasure map: golden butterflies and shooting stars drop map pieces. Complete all four and a glowing chest appears by the roadside; tap it to claim the treasure.',
+        'New badge family: Treasure Hunter. The Journal shows which map pieces you have.'],
+      de: ['Schatzkarte: Goldene Schmetterlinge und Sternschnuppen lassen Kartenteile fallen. Sind alle vier beisammen, leuchtet am Wegesrand eine Truhe; tippe darauf und hol dir den Schatz.',
+        'Neue Abzeichen-Familie: Schatzsucher. Das Reisetagebuch zeigt die gefundenen Kartenteile.'],
+      es: ['Mapa del tesoro: las mariposas doradas y las estrellas fugaces sueltan trozos del mapa. Con los cuatro aparece un cofre brillante junto al camino; tócalo y llévate el tesoro.',
+        'Nueva familia de insignias: Cazatesoros. El Diario muestra los trozos del mapa que tienes.'],
+      fr: ['Carte au trésor : les papillons dorés et les étoiles filantes font tomber des morceaux de carte. Avec les quatre, un coffre brillant apparaît au bord de la route ; touche-le pour prendre le trésor.',
+        'Nouvelle famille de badges : Chasseur de trésors. Le Carnet montre les morceaux de carte trouvés.'],
+    } },
     { v: '1.17', date: '2026-10-05', items: {
       tr: ['Kelebek etkisinin süresi 5 dakikayı aşmışken aynı kelebek yeniden gelirse süre değil çarpan artar: Rüzgâr Hortumu ×3 → ×5 → ×7 (en çok 10 kat).',
         'Gökkuşağı ve kayan yıldız kısa ama çok güçlü: gökkuşağı 20 sn boyunca hız ×10, Yıldız Tozu 20 sn boyunca kredi ×10.',
