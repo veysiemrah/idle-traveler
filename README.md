@@ -38,6 +38,12 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 ## Oyun
 
+- **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile kartpostal, tema (gündüz/gece)
+  ve ses düğmeleri durur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
+- **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
+  yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
+  Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
+
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
@@ -110,6 +116,7 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `public/css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
 | `public/js/i18n.js` | Yerelleştirme çekirdeği: dil seçimi, çeviri (`IT.t`), çoğul biçimler, birim sistemi |
 | `public/js/lang/*.js` | Dil sözlükleri: `tr`, `en`, `de`, `es`, `fr` |
+| `public/js/changelog.js` | Sürüm numarası (`IT.VERSION`) ve beş dilde sürüm notları (`IT.CHANGELOG`) |
 | `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, kıyafetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
 | `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
 | `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları. Sekme gizlenince susar |
@@ -117,3 +124,8 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `wrangler.jsonc` | Cloudflare Workers ayarı: statik varlık klasörü ve özel alan adı |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
+
+## Sürüm yayınlamak
+
+Her yayında `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin başına yeni sürümün
+notlarını beş dilde (tr, en, de, es, fr) ekle. Oyuncular bir sonraki açılışta Yenilikler düğmesinde noktayı görür.

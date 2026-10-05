@@ -100,6 +100,7 @@ IT.addLang('de', {
     // Feste Texte auf der Seite
     'html.stageLabel': 'Reiseszene. Tippe für einen Schritt oder drück die Leertaste.',
     'html.here': 'Du bist hier', 'html.dayNight': 'Tag / Nacht', 'html.sound': 'Ton',
+    'html.news': 'Neuigkeiten',
     'html.newRegion': 'Neue Region entdeckt', 'html.hint': 'Tippe für einen Schritt', 'html.hint2': 'oder drück die Leertaste',
     'html.rhythm': 'Rhythmus', 'html.rhythmTip': 'Schnelle, gleichmäßige Klicks machen deine Schritte länger', 'html.nextStop': 'Nächste Station',
     'html.wallet': 'Reise-Credits', 'html.shop': 'Laden', 'html.ok': 'OK',
@@ -135,6 +136,7 @@ IT.addLang('de', {
     'toast.giftEffect': '<b>Goldener Schmetterling: {name}</b> · {text} für {dur}',
     'toast.wish': '<b>Sternschnuppe! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}',
     'toast.outfit': '<b>Neues Outfit: {name}</b> · im Reisetagebuch anziehen',
+    'toast.newVersion': '<b>Neue Version: v{v}</b> · was neu ist, steht oben unter Neuigkeiten',
     'toast.daily': '<b>Geschenk des Tages: {c} Credits</b> · Tag {n} in Folge',
     'toast.daily1': '<b>Geschenk des Tages: {c} Credits</b> · komm morgen wieder, dann wird es größer',
     'toast.rain': 'Ein Frühlingsregen hat begonnen. Die Tropfen kühlen die Straße.',
@@ -205,6 +207,7 @@ IT.addLang('de', {
     'j.offline': 'Offline-Reise', 'j.offlineDesc': 'Während das Spiel geschlossen ist, reist du mit <b>{p}</b> deines Auto-Tempos. Grenze: <b>{h}</b>.',
     'j.settings': 'Einstellungen', 'j.sfx': 'Soundeffekte', 'j.music': 'Umgebungsklang', 'j.on': 'An', 'j.off': 'Aus',
     'j.outfit': 'Outfit', 'j.outfitSub': 'neue Farben mit jedem gesammelten Abzeichen', 'j.wearing': 'Angezogen',
+    'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Neuigkeiten', 'news.btn': 'Weiter geht\'s', 'news.new': 'Neu',
     'j.sky': 'Himmel', 'sky.auto': 'Automatisch', 'sky.day': 'Tag', 'sky.night': 'Nacht',
     'j.lang': 'Sprache', 'j.langAuto': 'Automatisch ({name})', 'j.units': 'Einheiten', 'units.auto': 'Automatisch', 'units.metric': 'Kilometer', 'units.imperial': 'Meilen',
     'j.saved': 'Dein Fortschritt wird automatisch in diesem Browser gespeichert.',

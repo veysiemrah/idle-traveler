@@ -92,6 +92,7 @@ IT.addLang('en', {
 
     'html.stageLabel': 'Journey scene. Tap to take a step, or press Space.',
     'html.here': 'You are here', 'html.dayNight': 'Day / night', 'html.sound': 'Sound',
+    'html.news': 'What\'s new',
     'html.newRegion': 'New region discovered', 'html.hint': 'Tap to take a step', 'html.hint2': 'or press Space',
     'html.rhythm': 'Rhythm', 'html.rhythmTip': 'Quick, steady clicks make your steps longer', 'html.nextStop': 'Next stop',
     'html.wallet': 'Road credits', 'html.shop': 'Shop', 'html.ok': 'OK',
@@ -124,6 +125,7 @@ IT.addLang('en', {
     'toast.giftEffect': '<b>Golden butterfly: {name}</b> · {text} for {dur}',
     'toast.wish': '<b>Shooting star! You made a wish: {name}</b> · {text} for {dur}',
     'toast.outfit': '<b>New outfit unlocked: {name}</b> · wear it from the Journal',
+    'toast.newVersion': '<b>New version: v{v}</b> · see what changed under What\'s new at the top',
     'toast.daily': '<b>Today\'s gift: {c} credits</b> · day {n} in a row',
     'toast.daily1': '<b>Today\'s gift: {c} credits</b> · come back tomorrow for a bigger one',
     'toast.rain': 'A spring shower has started. The drops cool the road.',
@@ -190,6 +192,7 @@ IT.addLang('en', {
     'j.offline': 'Offline travel', 'j.offlineDesc': 'While the game is closed you travel at <b>{p}</b> of your auto speed. Limit: <b>{h}</b>.',
     'j.settings': 'Settings', 'j.sfx': 'Sound effects', 'j.music': 'Ambient sound', 'j.on': 'On', 'j.off': 'Off',
     'j.outfit': 'Traveller\'s outfit', 'j.outfitSub': 'new colours unlock as you collect badges', 'j.wearing': 'Wearing',
+    'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'What\'s new', 'news.btn': 'Back to the road', 'news.new': 'New',
     'j.sky': 'Sky', 'sky.auto': 'Auto', 'sky.day': 'Day', 'sky.night': 'Night',
     'j.lang': 'Language', 'j.langAuto': 'Auto ({name})', 'j.units': 'Units', 'units.auto': 'Auto', 'units.metric': 'Kilometres', 'units.imperial': 'Miles',
     'j.saved': 'Progress is saved automatically in this browser.',

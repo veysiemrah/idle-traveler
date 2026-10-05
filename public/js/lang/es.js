@@ -92,6 +92,7 @@ IT.addLang('es', {
 
     'html.stageLabel': 'Escena del viaje. Toca para dar un paso o pulsa la barra espaciadora.',
     'html.here': 'Estás aquí', 'html.dayNight': 'Día / noche', 'html.sound': 'Sonido',
+    'html.news': 'Novedades',
     'html.newRegion': 'Nueva región descubierta', 'html.hint': 'Toca para dar un paso', 'html.hint2': 'o pulsa la barra espaciadora',
     'html.rhythm': 'Ritmo', 'html.rhythmTip': 'Los clics rápidos y constantes alargan tus pasos', 'html.nextStop': 'Próxima parada',
     'html.wallet': 'Créditos de viaje', 'html.shop': 'Tienda', 'html.ok': 'Vale',
@@ -124,6 +125,7 @@ IT.addLang('es', {
     'toast.giftEffect': '<b>Mariposa dorada: {name}</b> · {text} durante {dur}',
     'toast.wish': '<b>¡Estrella fugaz! Pediste un deseo: {name}</b> · {text} durante {dur}',
     'toast.outfit': '<b>Nueva ropa desbloqueada: {name}</b> · póntela desde el Diario',
+    'toast.newVersion': '<b>Nueva versión: v{v}</b> · mira qué cambió en Novedades, arriba',
     'toast.daily': '<b>Regalo del día: {c} créditos</b> · día {n} seguido',
     'toast.daily1': '<b>Regalo del día: {c} créditos</b> · vuelve mañana y será mayor',
     'toast.rain': 'Ha empezado un chaparrón de primavera. Las gotas refrescan el camino.',
@@ -190,6 +192,7 @@ IT.addLang('es', {
     'j.offline': 'Viaje sin conexión', 'j.offlineDesc': 'Con el juego cerrado viajas al <b>{p}</b> de tu velocidad automática. Límite: <b>{h}</b>.',
     'j.settings': 'Ajustes', 'j.sfx': 'Efectos de sonido', 'j.music': 'Sonido ambiente', 'j.on': 'Activado', 'j.off': 'Desactivado',
     'j.outfit': 'Ropa del viajero', 'j.outfitSub': 'nuevos colores al reunir insignias', 'j.wearing': 'Puesta',
+    'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Novedades', 'news.btn': 'Seguir el camino', 'news.new': 'Nuevo',
     'j.sky': 'Cielo', 'sky.auto': 'Automático', 'sky.day': 'Día', 'sky.night': 'Noche',
     'j.lang': 'Idioma', 'j.langAuto': 'Automático ({name})', 'j.units': 'Unidades', 'units.auto': 'Automático', 'units.metric': 'Kilómetros', 'units.imperial': 'Millas',
     'j.saved': 'El progreso se guarda automáticamente en este navegador.',

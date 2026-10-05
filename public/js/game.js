@@ -26,7 +26,7 @@
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
-  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day',
+  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -39,7 +39,7 @@
       v: 1, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
-      day: { last: '', streak: 0, best: 0 },
+      day: { last: '', streak: 0, best: 0 }, seenVer: '',
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -94,6 +94,7 @@
     const day = isObj(d.day) ? d.day : {};
     s.day = { last: /^\d{4}-\d{2}-\d{2}$/.test(day.last) ? day.last : '', streak: count(day.streak, 1e5), best: count(day.best, 1e5) };
     s.day.best = Math.max(s.day.best, s.day.streak);
+    if (typeof s.seenVer !== 'string' || !/^\d+(\.\d+)*$/.test(s.seenVer)) s.seenVer = '';
     return s;
   }
   function save() {
@@ -668,7 +669,32 @@
     ` }));
   }
   function showIntro() {
-    openModal(() => ({ html: introHtml(), btn: t('intro.btn') }), () => { S.intro = true; save(); });
+    // Yeni oyuncu eski sürüm notlarını "yeni" olarak görmesin
+    openModal(() => ({ html: introHtml(), btn: t('intro.btn') }), () => { S.intro = true; S.seenVer = IT.VERSION; syncNews(); save(); });
+  }
+
+  /* ---------- Sürüm ve yenilikler ---------- */
+  const hasNews = () => IT.verCmp(IT.VERSION, S.seenVer) > 0;
+  function syncNews() {
+    setText('#verNum', 'v' + IT.VERSION);
+    $('.ver-dot').hidden = !hasNews();
+  }
+  function showNews() {
+    // Daha önce görülen sürümden sonrakiler "yeni" işaretlenir (sürüm bilinmiyorsa yalnızca son sürüm)
+    const seen = S.seenVer || IT.CHANGELOG[1].v;
+    S.seenVer = IT.VERSION; syncNews(); save();
+    openModal(() => {
+      const df = new Intl.DateTimeFormat(IT.locale(), { dateStyle: 'long' });
+      const items = c => c.items[IT.lang()] || c.items.en;
+      return { btn: t('news.btn'), html: `
+        <p class="eyebrow">${t('news.eyebrow', { v: IT.VERSION })}</p>
+        <h2>${t('news.title')}</h2>
+        <ol class="news">${IT.CHANGELOG.map(c => {
+          const fresh = IT.verCmp(c.v, seen) > 0;
+          return `<li${fresh ? ' class="fresh"' : ''}><h3>v${c.v} <small>${df.format(new Date(c.date + 'T12:00:00'))}</small>${fresh ? `<span class="tagnew">${t('news.new')}</span>` : ''}</h3>
+            <ul>${items(c).map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`;
+        }).join('')}</ol>` };
+    });
   }
   function introHtml() {
     return `
@@ -980,7 +1006,7 @@
     const stage = $('#stage');
     stage.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button > 0) return;
-      if (e.target.closest('button, a, .hud-tools')) return;
+      if (e.target.closest('button, a')) return;
       const r = scene.canvas.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
       if (scene.hitGift(x, y)) { catchGift(); return; }
@@ -1021,6 +1047,10 @@
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
     });
+    $('#btnNews').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      Sound.unlock(); showNews();
+    });
     $('#btnPhoto').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
       takePostcard();
@@ -1047,6 +1077,8 @@
     else resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
     checkDaily();
+    syncNews();
+    if (S.intro && hasNews()) toast(t('toast.newVersion', { v: IT.VERSION }), 'teal');
 
     const hot = window.claude && window.claude.hot;
     if (hot && hot.snapshot) { try { hot.snapshot(() => { save(); return { save: S }; }); } catch (e) { /* yok say */ } }

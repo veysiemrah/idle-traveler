@@ -22,6 +22,30 @@
 <body>
 <!--APP-->
 <div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1e2140"/><circle cx="44" cy="20" r="8" fill="#ffd56b"/><path d="M0 46 L18 30 L30 40 L42 28 L64 46 V64 H0Z" fill="#6fd3c1"/><path d="M0 54 H64 V64 H0Z" fill="#ffb067"/></svg>
+      <span class="brand-name">Idle Traveler</span>
+      <button class="ver" id="btnNews" type="button" title="Yenilikler" data-i18n-title="html.news">
+        <span class="ver-label" data-i18n="html.news">Yenilikler</span><b id="verNum">v1.9</b><i class="ver-dot" aria-hidden="true" hidden></i>
+      </button>
+    </div>
+    <div class="top-tools">
+      <button class="iconbtn" id="btnPhoto" type="button" title="Kartpostal çek" data-i18n-title="html.photo" data-i18n-aria="html.photo" aria-label="Kartpostal çek">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="var(--ink-2)" stroke-width="1.8"/></svg>
+      </button>
+      <button class="iconbtn" id="btnSky" type="button" title="Geceye geç">
+        <svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+        <span class="sr" data-i18n="html.dayNight">Gündüz / gece</span>
+      </button>
+      <button class="iconbtn" id="btnSound" type="button" aria-pressed="true" title="Sesi kapat">
+        <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="sr" data-i18n="html.sound">Ses</span>
+      </button>
+    </div>
+  </header>
   <main class="stage" id="stage" aria-label="Yolculuk sahnesi. Adım atmak için dokun ya da Boşluk tuşuna bas." data-i18n-aria="html.stageLabel">
     <canvas id="scene"></canvas>
 
@@ -31,21 +55,6 @@
         <p class="region" id="hudRegion">Sabah Köyü</p>
         <p class="dist" id="hudDist">0 m</p>
         <p class="hud-row"><span class="speed" id="hudSpeed">0 km/sa</span><span class="dotsep" aria-hidden="true"></span><span id="hudVehicle">Yürüyüş</span></p>
-      </div>
-      <div class="hud-tools">
-        <button class="iconbtn" id="btnPhoto" type="button" title="Kartpostal çek" data-i18n-title="html.photo" data-i18n-aria="html.photo" aria-label="Kartpostal çek">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="var(--glass)" stroke-width="1.8"/></svg>
-        </button>
-        <button class="iconbtn" id="btnSky" type="button" title="Geceye geç">
-          <svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
-          <span class="sr" data-i18n="html.dayNight">Gündüz / gece</span>
-        </button>
-        <button class="iconbtn" id="btnSound" type="button" aria-pressed="true" title="Sesi kapat">
-          <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span class="sr" data-i18n="html.sound">Ses</span>
-        </button>
       </div>
     </header>
 
@@ -109,6 +118,7 @@
 <script src="js/lang/de.js"></script>
 <script src="js/lang/es.js"></script>
 <script src="js/lang/fr.js"></script>
+<script src="js/changelog.js"></script>
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/scene.js"></script>

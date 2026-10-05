@@ -15,3 +15,5 @@ Kullanıcı "oyunu geliştir" dediğinde işleri şu sırayla yap:
    rahatlatıcı tonuna ve mevcut yapısına uymalı.
 
 Her adımın sonunda neyin değiştiğini kısaca özetle. `README.md` dosyasını da yeni özelliklere göre güncelle.
+Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin
+başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.
