@@ -28,3 +28,8 @@ Her değişiklikte tasarımın harika hissettirmesi için ayrıntıları önemse
 Her adımın sonunda neyin değiştiğini kısaca özetle. `README.md` dosyasını da yeni özelliklere göre güncelle.
 Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin
 başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.
+
+Sürüm notlarını yazarken:
+- Hata düzeltmelerini açıkça yazma ("X bozuktu, düzeldi" gibi). Gerekirse yalnızca "küçük rötuşlar" gibi genel bir satırla geç.
+- Merak uyandırması gereken yenilikleri (gizli ödüller, sürprizler, açılan görünümler, yeni yol arkadaşları gibi) ayrıntısıyla
+  anlatma; ne olduğunu ve nasıl açıldığını söylemeden yalnızca ipucu ver ve oyuncunun kendisi keşfetmesine bırak.
