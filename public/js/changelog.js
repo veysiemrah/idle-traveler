@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.14';
+  IT.VERSION = '1.15';
 
   IT.CHANGELOG = [
+    { v: '1.15', date: '2026-10-05', items: {
+      tr: ['Yol Arkadaşı artık gelişir: 10 seviye, her seviye daha çok kredi; 2, 4, 7 ve 10. seviyede tasma, boyunluk, heybe ve altın süsler.',
+        'Yeni yol arkadaşları: 3. seviyede martı Kanat, 5. seviyede kedi Tekir. Kanat uçan araçlarda da yanında süzülür; Karabaş ve Tekir arabada, karavanda, trende ve balonda camdan bakar.',
+        'Geçici etkiler ekranda artık her saniye yanıp sönmez; yalnızca son 10 saniyede yumuşakça nabız atar.'],
+      en: ['Your travel buddy now grows: 10 levels with more credits each; a collar, a neckerchief, saddlebags and golden trims at levels 2, 4, 7 and 10.',
+        'New travel buddies: Kanat the seagull at level 3 and Tekir the cat at level 5. Kanat glides beside flying vehicles too; Karabaş and Tekir peek out of the car, camper van, train and balloon.',
+        'Temporary boosts no longer blink every second; they only pulse gently in their last 10 seconds.'],
+      de: ['Dein Reisebegleiter wächst jetzt mit: 10 Stufen mit mehr Credits; Halsband, Halstuch, Satteltaschen und goldener Schmuck auf Stufe 2, 4, 7 und 10.',
+        'Neue Reisebegleiter: die Möwe Kanat auf Stufe 3 und die Katze Tekir auf Stufe 5. Kanat gleitet auch neben Fluggeräten; Karabaş und Tekir schauen aus Auto, Wohnmobil, Zug und Ballon.',
+        'Zeitweise Effekte blinken nicht mehr jede Sekunde; sie pulsieren nur in den letzten 10 Sekunden sanft.'],
+      es: ['Tu compañero de viaje ahora crece: 10 niveles con más créditos; collar, pañuelo, alforjas y adornos dorados en los niveles 2, 4, 7 y 10.',
+        'Nuevos compañeros: la gaviota Kanat en el nivel 3 y el gato Tekir en el nivel 5. Kanat planea junto a los vehículos voladores; Karabaş y Tekir se asoman del coche, la autocaravana, el tren y el globo.',
+        'Los efectos temporales ya no parpadean cada segundo; solo laten suavemente en sus últimos 10 segundos.'],
+      fr: ['Ton compagnon de route grandit : 10 niveaux avec plus de crédits ; collier, foulard, sacoches et dorures aux niveaux 2, 4, 7 et 10.',
+        'Nouveaux compagnons : la mouette Kanat au niveau 3 et le chat Tekir au niveau 5. Kanat plane aussi à côté des véhicules volants ; Karabaş et Tekir regardent par la fenêtre de la voiture, du camping-car, du train et de la montgolfière.',
+        'Les effets temporaires ne clignotent plus chaque seconde ; ils pulsent doucement seulement pendant leurs 10 dernières secondes.'],
+    } },
     { v: '1.14', date: '2026-10-05', items: {
       tr: ['Araçlar yükseldikçe değişir: seviye 10, 25, 50 ve 100\'de her araç yeni bir parça kazanır. Yürüyüş sopası, atkı, flama, sörf tahtası, dördüncü vagon, uçağın arkasında pankart… 100. seviyede altın süsler ve parıltı.',
         'Garajdaki simgeler aracın o anki görünümünü gösterir; yükseltme satırı bir sonraki yeni görünümün seviyesini söyler.'],

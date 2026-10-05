@@ -28,7 +28,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -44,6 +44,7 @@
       day: { last: '', streak: 0, best: 0 }, seenVer: '',
       // Ömür boyu rekorlar: rozetler eve dönüşte kaybolmasın diye
       bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
+      palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -88,6 +89,7 @@
     }
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
+    if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
     if (typeof s.legacyDist !== 'number' || !isFinite(s.legacyDist) || s.legacyDist < 0) s.legacyDist = 0;
     // Rozetler v3'te kademeli: { aile: kazanılan kademe sayısı }. Kademeler bir kez kazanılınca düşmez.
     s.badges = {};
@@ -448,8 +450,20 @@
       if (b.max && lvl >= b.max) return;
       if (!spend(Econ.buffCost(b, lvl))) return;
       S.buffs[id]++;
-      if (id === 'pal') { toast(t('toast.pal'), 'teal'); scene.burst(scene.travelerX - 34 * scene.k, scene.groundY() - 20 * scene.k, 18, ['#ffd56b', '#ffffff', '#ecdcb6']); }
+      if (id === 'pal') {
+        const n = S.buffs.pal, opened = Econ.pals.find(x => x.need === n && n > 1);
+        if (n === 1) toast(t('toast.pal'), 'teal');
+        else if (opened) toast(t('toast.palNew', { name: t(`pal.${opened.id}.name`) }), 'gold');
+        else if (Econ.palLooks.includes(n)) toast(t('toast.palLook', { name: t(`pal.${S.palPick}.name`) }), 'gold');
+        scene.burst(scene.travelerX - 34 * scene.k, scene.groundY() - 20 * scene.k, 18, ['#ffd56b', '#ffffff', '#ecdcb6']);
+      }
       uiDirty.buffs = uiDirty.garage = uiDirty.journal = true;
+    },
+    palPick(id) {
+      const p = Econ.pals.find(x => x.id === id);
+      if (!p || (S.buffs.pal || 0) < p.need || S.palPick === id) return;
+      S.palPick = id; save(); uiDirty.buffs = true;
+      scene.burst(scene.travelerX - 30 * scene.k, scene.riderY() - 30 * scene.k, 14, ['#ffd56b', '#ffffff', '#ecdcb6']);
     },
     tab(id) {
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === id)));
@@ -562,7 +576,8 @@
       starIn = 50 + Math.random() * 70;
     }
 
-    scene.companion = S.buffs.pal > 0;
+    scene.companion = S.buffs.pal > 0 ? S.palPick : null;
+    scene.palTier = Econ.palTier(S.buffs.pal);
     scene.vehTier = Econ.lookTier(S.levels[S.active]);
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
@@ -768,7 +783,7 @@
   function onLanguage() {
     applyStatic();
     uiDirty = { garage: true, buffs: true, journal: true };
-    $('#effects').dataset.html = '';
+    $('#effects').replaceChildren(); // yeni dilde yeniden kurulur
     syncSoundBtn(); syncSkyBtn();
     if (!$('#modal').hidden && modalRender) modalRender();
     scene.relabel();
@@ -867,11 +882,22 @@
     const pane = $('#pane-buffs');
     pane.innerHTML = BUFFS.map(b => {
       const lvl = S.buffs[b.id], maxed = b.max && lvl >= b.max;
+      let next = b.next, extra = '';
+      if (b.id === 'pal' && lvl) {
+        // Yol arkadaşının gelişimi: sonraki seviyede yeni hayvan ya da yeni görünüm var mı
+        const opens = Econ.pals.find(x => x.need === lvl + 1);
+        next = t(opens ? 'buff.pal.moreNew' : Econ.palLooks.includes(lvl + 1) ? 'buff.pal.moreLook' : 'buff.pal.more', { p: fmtPct(5) });
+        extra = `<div class="pals" role="group" aria-label="${t('buff.pal.name')}">${Econ.pals.map(x => {
+          const open = lvl >= x.need, on = S.palPick === x.id;
+          return `<button class="pal-btn${on ? ' on' : ''}" data-act="palPick" data-id="${x.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}>
+            <b>${open ? t(`pal.${x.id}.name`) : '???'}</b><small>${open ? t(`pal.${x.id}.desc`) : t('ui.lvl', { n: x.need })}</small></button>`;
+        }).join('')}</div>`;
+      }
       return `<article class="card buff">
         <div class="body">
           <div class="row"><h3>${b.name}</h3><span class="lvl">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}</span></div>
-          <p class="tag">${lvl ? b.desc(lvl) : t('ui.notYet')}</p>
-          <div class="up"><small>${t('ui.nextLevel', { x: b.next })}</small>${maxed ? `<span class="chip on">${t('ui.done')}</span>` : costBtn('buff', b.id, Econ.buffCost(b, lvl), t('ui.get'))}</div>
+          <p class="tag">${lvl ? b.desc(lvl) : t('ui.notYet')}</p>${extra}
+          <div class="up"><small>${t('ui.nextLevel', { x: next })}</small>${maxed ? `<span class="chip on">${t('ui.done')}</span>` : costBtn('buff', b.id, Econ.buffCost(b, lvl), t('ui.get'))}</div>
         </div></article>`;
     }).join('') + homeCard();
   }
@@ -1000,9 +1026,20 @@
     }
     // etkiler
     const now = Date.now();
-    const fx = S.effects.filter(e => e.until > now).map(e => `<span class="fx fx-${e.id}">${t('ui.fx', { name: GIFT[e.id].name, text: GIFT[e.id].text, dur: fmtDuration(Math.ceil((e.until - now) / 1000)) })}</span>`).join('');
-    const fxBox = $('#effects');
-    if (fxBox.dataset.html !== fx) { fxBox.innerHTML = fx; fxBox.dataset.html = fx; }
+    // Her etki kalıcı bir öğe: yalnızca yazısı güncellenir (giriş animasyonu her saniye baştan oynamaz).
+    // Son 10 saniyede yumuşakça yanıp söner.
+    const fxBox = $('#effects'), live = new Set();
+    for (const e of S.effects) {
+      if (e.until <= now) continue;
+      live.add(e.id);
+      let el = fxBox.querySelector(`[data-fx="${e.id}"]`);
+      if (!el) { el = document.createElement('span'); el.className = `fx fx-${e.id}`; el.dataset.fx = e.id; fxBox.appendChild(el); }
+      const left = Math.ceil((e.until - now) / 1000);
+      const html = t('ui.fx', { name: GIFT[e.id].name, text: GIFT[e.id].text, dur: fmtDuration(left) });
+      if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
+      el.classList.toggle('ending', left <= 10);
+    }
+    for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx)) el.remove();
     // butonlar ('Maks' modunda miktar bütçeyle değişir)
     if (S.settings.bulk === 'max') document.querySelectorAll('#pane-garage [data-act="upgrade"]').forEach(b => {
       const v = VEH[b.dataset.id], q = Econ.upgradeQuote(v, S.levels[v.id] || 0, 'max', S.credits);

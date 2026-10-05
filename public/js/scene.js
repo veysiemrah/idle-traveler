@@ -341,6 +341,7 @@
     ctx.quadraticCurveTo(x + 17 * k, by - 38 * k, x + 22 * k, by - 23 * k); ctx.closePath(); ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(x - 3 * k, by - 40 * k, 30 * k, 18 * k); ctx.clip();
     head(ctx, x + 5 * k, by - 28 * k, k * 0.95); ctx.restore();
+    if (st.pal) petHead(ctx, st.palKind, x - 17 * k, by - 28 * k, k * 0.95, st.t, st.pal - 1); // arka camdan Karabaş
     const T = st.tier || 0;
     ctx.fillStyle = P.jacket; rrect(ctx, x - 46 * k, by - 25 * k, 92 * k, 21 * k, 9 * k); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.28)'; rrect(ctx, x - 40 * k, by - 22 * k, 80 * k, 3 * k, 1.5 * k); ctx.fill();
@@ -391,6 +392,7 @@
     head(ctx, x + 30 * k, top + 22 * k, k * 0.9); ctx.restore();
     ctx.fillStyle = winCol;
     for (let w = 0; w < 3; w++) { rrect(ctx, x - 44 * k + w * 20 * k, top + 10 * k, 13 * k, 13 * k, 3 * k); ctx.fill(); }
+    if (st.pal) { ctx.save(); ctx.beginPath(); ctx.rect(x - 4 * k, top + 10 * k, 13 * k, 13 * k); ctx.clip(); petHead(ctx, st.palKind, x + 1 * k, top + 18 * k, k * 0.8, st.t, st.pal - 1); ctx.restore(); }
     ctx.fillStyle = '#fff3c4'; circle(ctx, x + 54 * k, bot - 10 * k, 2.8 * k);
     for (const wx of [x - 36 * k, x - 20 * k, x + 22 * k, x + 38 * k]) wheel(ctx, wx, bot + 2 * k, 6.5 * k, st.wheel, k * 0.7, '#2b2f3a', T >= 4 ? GOLD : '#6d7486');
     if (T >= 1) pennant(ctx, x - 40 * k, top, k, st.t, 18 * k, P.hat); // lokomotifte bayrak
@@ -508,8 +510,9 @@
     ctx.restore();
   }
 
-  // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar
-  function drawDog(ctx, x, y, k, ph, t) {
+  // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar.
+  // tier: görünüm aşaması (1 tasma ve künye, 2 boyunluk, 3 sırtta heybe, 4 altın tasma ve parıltı)
+  function drawDog(ctx, x, y, k, ph, t, tier) {
     const bob = Math.abs(Math.sin(ph)) * 1.8 * k;
     const body = '#ecdcb6', shade = '#cdb88e', dark = '#3b2d27';
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -530,7 +533,77 @@
     ctx.fillStyle = dark; ellipse(ctx, x + 11 * k, y - 27.5 * k - bob, 2.6 * k, 4.4 * k, 0.5);
     ctx.fillStyle = '#1d1716'; circle(ctx, x + 23 * k, y - 23.6 * k - bob, 1.3 * k); circle(ctx, x + 16 * k, y - 26 * k - bob, 1 * k);
     if (Math.sin(ph * 0.5) > 0) { ctx.fillStyle = '#e8838e'; ellipse(ctx, x + 20 * k, y - 20 * k - bob, 1.6 * k, 2.4 * k); }
+    const T = tier || 0;
+    if (T >= 3) { // sırtında küçük heybe
+      ctx.fillStyle = '#b5532f'; rrect(ctx, x - 8 * k, y - 24 * k - bob, 12 * k, 8 * k, 2.5 * k); ctx.fill();
+      ctx.fillStyle = P.pack; rrect(ctx, x - 7 * k, y - 25 * k - bob, 10 * k, 4 * k, 2 * k); ctx.fill();
+    }
+    if (T >= 2) { // boyunluk
+      ctx.fillStyle = T >= 4 ? GOLD : P.hat; ctx.beginPath();
+      ctx.moveTo(x + 6.5 * k, y - 23 * k - bob); ctx.lineTo(x + 14 * k, y - 21.5 * k - bob); ctx.lineTo(x + 9 * k, y - 13.5 * k - bob); ctx.closePath(); ctx.fill();
+    }
+    if (T >= 1) { // tasma ve künye
+      ctx.fillStyle = T >= 4 ? GOLD : '#d9534f'; ellipse(ctx, x + 10.5 * k, y - 21.5 * k - bob, 1.8 * k, 4.8 * k, -0.35);
+      ctx.fillStyle = T >= 4 ? GOLD_HI : '#ffd56b'; circle(ctx, x + 12 * k, y - 16.8 * k - bob, 1.5 * k);
+    }
     leg(x - 6 * k, 3.7, body); leg(x + 10 * k, 5.3, body);
+    if (T >= 4) sparkles(ctx, x + 4 * k, y - 18 * k, k, t, 5, 40 * k, 26 * k);
+  }
+  // Tekir: kır tekir kedi; Karabaş gibi yanında tıpış tıpış koşar
+  function drawCat(ctx, x, y, k, ph, t, tier) {
+    const bob = Math.abs(Math.sin(ph)) * 1.4 * k, fur = '#b9a58d', dark = '#6d5c4b', T = tier || 0;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const leg = (lx, off, col) => { const a = Math.sin(ph + off) * 0.7; line(ctx, [lx, y - 9 * k - bob, lx + Math.sin(a) * 7 * k, y - 1 * k - Math.max(0, Math.cos(ph + off)) * 2 * k], 2.6 * k, col); };
+    leg(x - 7 * k, 0.5, dark); leg(x + 5 * k, 2.1, dark);
+    ctx.strokeStyle = fur; ctx.lineWidth = 2.6 * k; // havaya kalkık kuyruk
+    ctx.beginPath(); ctx.moveTo(x - 9 * k, y - 13 * k - bob); ctx.quadraticCurveTo(x - 17 * k, y - 16 * k - bob, x - 15 * k + Math.sin(t * 5) * 2 * k, y - 26 * k - bob); ctx.stroke();
+    ctx.fillStyle = fur; ellipse(ctx, x, y - 12.5 * k - bob, 10.5 * k, 5.2 * k);
+    ctx.strokeStyle = dark; ctx.lineWidth = 1.2 * k; ctx.beginPath(); // tekir çizgileri
+    for (const sx of [-4, 0, 4]) { ctx.moveTo(x + sx * k, y - 17 * k - bob); ctx.lineTo(x + (sx - 1.5) * k, y - 13 * k - bob); }
+    ctx.stroke();
+    if (T >= 3) { ctx.fillStyle = '#7fb3d9'; rrect(ctx, x - 6 * k, y - 19.5 * k - bob, 9 * k, 6 * k, 2 * k); ctx.fill(); }
+    catHead(ctx, x + 11 * k, y - 19 * k - bob, k, t, T);
+    leg(x - 4 * k, 3.7, fur); leg(x + 8 * k, 5.3, fur);
+    if (T >= 4) sparkles(ctx, x + 2 * k, y - 15 * k, k, t, 5, 36 * k, 22 * k);
+  }
+  function catHead(ctx, x, y, k, t, tier) {
+    const fur = '#b9a58d', dark = '#6d5c4b', T = tier || 0;
+    ctx.fillStyle = fur; ctx.beginPath(); ctx.moveTo(x - 4.5 * k, y - 2 * k); ctx.lineTo(x - 3.5 * k, y - 8.5 * k); ctx.lineTo(x - 0.5 * k, y - 4 * k); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + 1 * k, y - 4 * k); ctx.lineTo(x + 4 * k, y - 8.5 * k); ctx.lineTo(x + 5 * k, y - 2 * k); ctx.fill();
+    ellipse(ctx, x, y, 5.6 * k, 4.8 * k);
+    ctx.strokeStyle = dark; ctx.lineWidth = 0.9 * k; ctx.beginPath(); ctx.moveTo(x - 1 * k, y - 4.5 * k); ctx.lineTo(x - 0.5 * k, y - 2 * k); ctx.moveTo(x + 1.5 * k, y - 4.5 * k); ctx.lineTo(x + 1.5 * k, y - 2 * k); ctx.stroke();
+    ctx.fillStyle = '#3d6b3a'; circle(ctx, x + 1 * k, y - 0.4 * k, 1.1 * k); circle(ctx, x + 4 * k, y - 0.4 * k, 1.1 * k);
+    ctx.fillStyle = '#e8838e'; circle(ctx, x + 4.6 * k, y + 1.8 * k, 0.8 * k);
+    if (T >= 2) { ctx.fillStyle = T >= 4 ? GOLD : P.hat; ctx.beginPath(); ctx.moveTo(x - 4 * k, y + 3.6 * k); ctx.lineTo(x + 4 * k, y + 3.6 * k); ctx.lineTo(x, y + 8.5 * k); ctx.closePath(); ctx.fill(); }
+    if (T >= 1) { ctx.fillStyle = T >= 4 ? GOLD : '#d9534f'; rrect(ctx, x - 4 * k, y + 3 * k, 8 * k, 1.8 * k, 0.9 * k); ctx.fill(); ctx.fillStyle = '#ffd56b'; circle(ctx, x, y + 5 * k, 1.2 * k); }
+  }
+  // Kanat: beyaz martı; uçan araçlar dahil her araçta yolcunun yanında süzülür
+  function drawGull(ctx, x, y, k, t, tier) {
+    const T = tier || 0, flap = Math.sin(t * 7), wy = flap * 6 * k;
+    if (T >= 4) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 22 * k, hex('#ffd56b'), 0.35); ctx.globalCompositeOperation = 'source-over'; }
+    ctx.fillStyle = '#c9d0db'; ctx.beginPath(); ctx.moveTo(x - 2 * k, y - 1 * k); ctx.quadraticCurveTo(x - 10 * k, y - 6 * k + wy, x - 20 * k, y - 4 * k + wy * 1.4); ctx.quadraticCurveTo(x - 10 * k, y + 1 * k, x - 2 * k, y + 1 * k); ctx.fill(); // arka kanat
+    ctx.fillStyle = '#ffffff'; ellipse(ctx, x, y, 9 * k, 4 * k);
+    ctx.beginPath(); ctx.moveTo(x - 8 * k, y - 1 * k); ctx.lineTo(x - 14 * k, y - 4 * k); ctx.lineTo(x - 13 * k, y + 2 * k); ctx.closePath(); ctx.fill(); // kuyruk
+    circle(ctx, x + 8 * k, y - 2.5 * k, 3.6 * k);
+    ctx.fillStyle = '#f2b33d'; ctx.beginPath(); ctx.moveTo(x + 11 * k, y - 3 * k); ctx.lineTo(x + 16 * k, y - 2 * k); ctx.lineTo(x + 11 * k, y - 1 * k); ctx.fill();
+    ctx.fillStyle = '#1d1716'; circle(ctx, x + 9.4 * k, y - 3.4 * k, 0.9 * k);
+    if (T >= 3) { ctx.fillStyle = '#6d4c35'; rrect(ctx, x + 5.5 * k, y - 6.2 * k, 6 * k, 2 * k, 1 * k); ctx.fill(); ctx.fillStyle = '#9fd6ef'; circle(ctx, x + 9.6 * k, y - 5.2 * k, 1.3 * k); } // pilot gözlüğü
+    if (T >= 2) { const w = Math.sin(t * 9) * 1.5 * k; ctx.strokeStyle = T >= 4 ? GOLD : P.hat; ctx.lineWidth = 1.8 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x + 6 * k, y); ctx.quadraticCurveTo(x, y + 3 * k + w, x - 6 * k, y + 2 * k - w); ctx.stroke(); }
+    if (T >= 1) { ctx.fillStyle = T >= 4 ? GOLD : '#d9534f'; rrect(ctx, x + 5 * k, y - 1 * k, 4 * k, 2 * k, 1 * k); ctx.fill(); }
+    ctx.fillStyle = '#e4e9f0'; ctx.beginPath(); ctx.moveTo(x - 1 * k, y - 1 * k); ctx.quadraticCurveTo(x - 6 * k, y - 10 * k - wy, x - 16 * k, y - 12 * k - wy * 1.6); ctx.quadraticCurveTo(x - 8 * k, y - 2 * k, x + 2 * k, y); ctx.fill(); // ön kanat
+    if (T >= 4) sparkles(ctx, x - 14 * k, y, k, t, 4, 24 * k, 14 * k);
+  }
+  // Araç penceresinden ya da balon sepetinden başını uzatan yol arkadaşı
+  function petHead(ctx, kind, x, y, k, t, tier) { if (kind === 'cat') catHead(ctx, x, y, k, t, tier); else dogHead(ctx, x, y, k, t, tier); }
+  // Araçta pencereden ya da sepetten başını uzatan Karabaş (tier: drawDog ile aynı)
+  function dogHead(ctx, x, y, k, t, tier) {
+    const body = '#ecdcb6', dark = '#3b2d27', flap = Math.sin(t * 12) * 0.25;
+    ctx.fillStyle = dark; ellipse(ctx, x - 3 * k, y - 4 * k, 2.2 * k, 4 * k, 0.6 + flap); // kulak rüzgârda
+    ctx.fillStyle = body; ellipse(ctx, x, y, 5.6 * k, 4.8 * k);
+    ctx.fillStyle = dark; ellipse(ctx, x + 5 * k, y + 1.2 * k, 3.2 * k, 2.4 * k);
+    ctx.fillStyle = '#1d1716'; circle(ctx, x + 8 * k, y + 0.6 * k, 1.1 * k); circle(ctx, x + 2 * k, y - 1.6 * k, 0.9 * k);
+    if (Math.sin(t * 3) > 0) { ctx.fillStyle = '#e8838e'; ellipse(ctx, x + 5.6 * k, y + 4.2 * k, 1.3 * k, 2 * k); }
+    if ((tier || 0) >= 1) { ctx.fillStyle = tier >= 4 ? GOLD : tier >= 2 ? P.hat : '#d9534f'; rrect(ctx, x - 4 * k, y + 3.6 * k, 8 * k, 2.2 * k, 1 * k); ctx.fill(); }
   }
 
   // Kaykay: ön ayak tahtada, arka ayak yere basıp iter
@@ -651,6 +724,7 @@
     ctx.fillStyle = lit ? '#3d4a6b' : P.glass; ctx.beginPath();
     ctx.moveTo(x + 14 * k, by - 49 * k); ctx.lineTo(x + 30 * k, by - 49 * k); ctx.quadraticCurveTo(x + 40 * k, by - 48 * k, x + 42 * k, by - 35 * k); ctx.lineTo(x + 14 * k, by - 35 * k); ctx.closePath(); ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(x + 14 * k, by - 50 * k, 30 * k, 15 * k); ctx.clip(); head(ctx, x + 24 * k, by - 38 * k, k * 0.9); ctx.restore();
+    if (st.pal) { ctx.save(); ctx.beginPath(); ctx.rect(x - 40 * k, by - 49 * k, 12 * k, 12 * k); ctx.clip(); petHead(ctx, st.palKind, x - 36 * k, by - 41 * k, k * 0.8, st.t, st.pal - 1); ctx.restore(); }
     if (lit) { ctx.fillStyle = 'rgba(255,214,140,0.35)'; ctx.fillRect(x - 40 * k, by - 49 * k, 44 * k, 12 * k); }
     ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(x + 8 * k, by - 30 * k); ctx.lineTo(x + 8 * k, by - 6 * k); ctx.stroke();
     ctx.fillStyle = '#fff3c4'; circle(ctx, x + 44 * k, by - 18 * k, 3 * k);
@@ -723,6 +797,7 @@
     ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 10 * k, 14 * k, hex('#ffb060'), 0.7); ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = '#ffd56b'; ctx.beginPath(); ctx.moveTo(-2.5 * k, 14 * k); ctx.quadraticCurveTo(0, (14 - fl * 2) * k, 2.5 * k, 14 * k); ctx.fill();
     head(ctx, -3 * k, 16 * k, k * 0.85);
+    if (st.pal) petHead(ctx, st.palKind, 5 * k, 18 * k, k * 0.7, st.t, st.pal - 1); // sepetin kenarından Karabaş
     ctx.fillStyle = '#b98a55'; rrect(ctx, -10 * k, 19 * k, 20 * k, 13 * k, 2.5 * k); ctx.fill();
     ctx.strokeStyle = '#8a6440'; ctx.lineWidth = 1 * k;
     ctx.beginPath(); for (let i = 1; i < 4; i++) { ctx.moveTo(-10 * k, 19 * k + i * 3.2 * k); ctx.lineTo(10 * k, 19 * k + i * 3.2 * k); } ctx.stroke();
@@ -1445,7 +1520,9 @@
       this.drawParts(ctx, false);
 
       // yolcu
-      const st0 = { phase: this.phase, wheel: this.wheel, t: this.t, night, tier: this.vehTier || 0 };
+      // pal: Karabaş araçta yolculuk ediyorsa görünüm aşaması + 1 (0 = yok)
+      const rider = this.companion === 'dog' || this.companion === 'cat';
+      const st0 = { phase: this.phase, wheel: this.wheel, t: this.t, night, tier: this.vehTier || 0, pal: rider ? (this.palTier || 0) + 1 : 0, palKind: this.companion };
       const ry = this.riderY() - this.stepKick * 2.5 * k;
       ctx.save();
       // gölge
@@ -1458,14 +1535,22 @@
         ctx.fillStyle = `rgba(30,30,50,${(0.18 - 0.1 * f).toFixed(3)})`;
         ellipse(ctx, this.travelerX + 6 * k, this.groundY() + 1, (40 + 18 * f) * k, (4 + 2 * f) * k);
       }
-      // Yol arkadaşı yalnızca yerde, yavaş araçlarda yanında koşar
-      const dogBack = this.companion && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[this.vehicle];
+      // Karabaş ve Tekir yerde, yavaş araçlarda yanında koşar (hızlı araçlarda pencereden bakar)
+      const dogBack = (this.companion === 'dog' || this.companion === 'cat') && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[this.vehicle];
       if (dogBack && this.flyT() === 0) {
         const dx = this.travelerX - dogBack * k, gy = this.groundY() + 4 * k;
         ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, dx, gy + 1, 15 * k, 2.6 * k);
-        drawDog(ctx, dx, gy, k * 0.95, this.dogPhase, this.t);
+        if (this.companion === 'cat') drawCat(ctx, dx, gy, k * 0.95, this.dogPhase, this.t, this.palTier || 0);
+        else drawDog(ctx, dx, gy, k * 0.95, this.dogPhase, this.t, this.palTier || 0);
       }
       drawVehicle(ctx, this.vehicle, this.travelerX, ry, k, st0);
+      // Kanat (martı) her araçta yanında süzülür: yerde yolcunun üstünde, uçarken aracın yanında
+      if (this.companion === 'bird') {
+        const fly = FLYING[this.vehicle] && this.flyT() > 0.5;
+        const bx = this.travelerX + (fly ? -74 : -26) * k + Math.sin(this.t * 0.7) * 6 * k;
+        const by = (fly ? ry - 34 * k : ry - 96 * k) + Math.sin(this.t * 1.6) * 5 * k;
+        drawGull(ctx, bx, by, k * 1.1, this.t, this.palTier || 0);
+      }
       ctx.restore();
 
       // ön plan

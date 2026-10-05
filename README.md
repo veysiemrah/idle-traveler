@@ -77,6 +77,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Gerçekçi mesafeler**: v1.11'de bütün mesafeler 1/10'a indi (yürüyüşte adım başına birkaç santimetre, atla birkaç on km/sa).
   Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
   aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
+- **Geçici etkiler**: Kelebek, gökkuşağı ve kayan yıldız etkileri sahnenin solunda kalan süreleriyle durur; son 10 saniyede
+  yumuşakça nabız atar.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
 - **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 60 saniye boyunca
   *Yıldız Tozu* etkisiyle hız ×2, kredi ×1,5 olur. Yağmurlu gecelerde yıldız kaymaz.
@@ -88,8 +90,14 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
-- **Yol Arkadaşı**: Güçlendirmeler'den bir kez alınan Karabaş, yürürken, paten ya da kaykayla, bisiklette ve at sırtında
-  yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
+- **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
+  sonraki her seviye +%5 ekler (10. seviyede +%55). Seviye 2, 4, 7 ve 10'da görünümü değişir: tasma ve künye, boyunluk, sırtta
+  heybe, altın süsler ve parıltı. Üç yol arkadaşı var; kartından seçilir:
+  - **Karabaş** (çoban köpeği, 1. seviye): yürürken, patende, kaykayda, bisiklette ve at sırtında yanında koşar; arabada,
+    karavanda ve trende camdan, balonda sepetin kenarından bakar.
+  - **Kanat** (martı, 3. seviye): her araçta yanında süzülür; uçan araçlarda aracın yanında, yerde yolcunun üstünde uçar.
+  - **Tekir** (kedi, 5. seviye): Karabaş gibi yanında koşar ve araçlarda camdan bakar.
+  Yol arkadaşı eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
