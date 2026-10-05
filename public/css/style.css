@@ -179,6 +179,9 @@ button { font: inherit; color: inherit; }
 .fx-wish b { color: #cfe0ff; text-shadow: 0 0 8px rgba(185, 200, 255, 0.7); }
 .fx-rainbow b { background: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
+/* Süresi biten etki son 10 saniyede yumuşakça nabız atar */
+.fx.ending { animation: fxPulse 1.2s ease-in-out infinite; }
+@keyframes fxPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
 .stage { container-type: inline-size; }
 /* Bildirimler gökyüzünde durur; yolu ve aracı asla örtmez */
@@ -360,6 +363,13 @@ button { font: inherit; color: inherit; }
 .buy:not(.home-btn) > span, .buy:not(.home-btn) > b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Güçlendirme açıklaması seviye 0'da kısa, sonra uzun: iki satırlık yer baştan ayrılır */
 .card.buff .tag { line-height: 1.4; min-height: 2.8em; }
+/* Yol arkadaşı seçimi: Karabaş, Kanat, Tekir */
+.pals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
+.pal-btn { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 7px 8px; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--well); cursor: pointer; min-width: 0; }
+.pal-btn b { font-size: 13px; }
+.pal-btn small { font-size: 11px; color: var(--muted); line-height: 1.3; }
+.pal-btn.on { border-color: rgba(111, 211, 193, 0.7); background: linear-gradient(180deg, rgba(111, 211, 193, 0.12), transparent 80%), var(--ink-2); }
+.pal-btn:disabled { cursor: not-allowed; opacity: .55; }
 .up small, .card small { display: block; color: var(--muted); font-size: 11.5px; }
 .upline { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .upname { font-weight: 600; font-size: 13.5px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

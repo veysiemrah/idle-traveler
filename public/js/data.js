@@ -48,8 +48,8 @@
     { id: 'dream',    base: 400,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
     { id: 'camp',     base: 600,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
     { id: 'butterfly', base: 900, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
-    // Yol arkadaşı Karabaş: tek seferlik, eve dönüşte de kalır
-    { id: 'pal',      base: 2500, growth: 1,   max: 1,   vals: l => ({ p: fmtPct(10 * l) }),                    step: () => ({}) },
+    // Yol arkadaşı Karabaş: 10 seviye, eve dönüşte de kalır; 2, 4, 7 ve 10. seviyede görünümü gelişir
+    { id: 'pal',      base: 2500, growth: 3.2, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
   ];
   BUFFS.forEach(b => Object.defineProperties(b, {
     name: { get: () => T(`buff.${b.id}.name`) },
@@ -295,6 +295,12 @@
     // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–4)
     looks: [10, 25, 50, 100],
     lookTier(lvl) { return Econ.looks.filter(t => (lvl || 0) >= t).length; },
+    // Yol arkadaşı: ilk seviye +%10 kredi, sonraki her seviye +%5; görünüm 2, 4, 7 ve 10. seviyede değişir
+    palBonus(lvl) { return lvl > 0 ? 0.1 + 0.05 * (lvl - 1) : 0; },
+    palLooks: [2, 4, 7, 10],
+    palTier(lvl) { return Econ.palLooks.filter(t => (lvl || 0) >= t).length; },
+    // Seçilebilir yol arkadaşları ve açıldıkları Yol Arkadaşı seviyesi
+    pals: [{ id: 'dog', need: 1 }, { id: 'bird', need: 3 }, { id: 'cat', need: 5 }],
     badgeMult(state) { return 1 + badgeBonus(state); },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {
@@ -325,7 +331,7 @@
       return {
         idle: idle * d * bi,
         click: click * d * (1 + 0.2 * b.stride),
-        cpm: CREDITS_PER_M * (1 + 0.25 * b.postcard) * (1 + 0.1 * (b.pal || 0)) * Econ.badgeMult(state),
+        cpm: CREDITS_PER_M * (1 + 0.25 * b.postcard) * (1 + Econ.palBonus(b.pal)) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
     },
