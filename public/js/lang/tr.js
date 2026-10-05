@@ -54,9 +54,9 @@ IT.addLang('tr', {
     'gift.harvest.name': 'Bereket', 'gift.harvest.text': 'kredi ×2',
     'gift.zeal.name': 'Coşku', 'gift.zeal.text': 'tıklama ×5',
     'gift.postcard.name': 'Kayıp Kartpostal', 'gift.postcard.text': 'anında kredi',
-    'gift.rainbow.name': 'Gökkuşağı', 'gift.rainbow.text': 'kredi ×1,5',
+    'gift.rainbow.name': 'Gökkuşağı', 'gift.rainbow.text': 'hız ×10',
     'fx.speed': 'hız ×{m}', 'fx.credit': 'kredi ×{m}', 'fx.click': 'tıklama ×{m}',
-    'gift.wish.name': 'Yıldız Tozu', 'gift.wish.text': 'hız ×2, kredi ×1,5',
+    'gift.wish.name': 'Yıldız Tozu', 'gift.wish.text': 'kredi ×10',
 
     // Bölgeler (sırayla)
     'region.0': 'Sabah Köyü', 'region.1': 'Lavanta Tarlaları', 'region.2': 'Çam Ormanı', 'region.3': 'Altın Buğday Ovası',

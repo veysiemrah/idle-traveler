@@ -49,9 +49,9 @@ IT.addLang('en', {
     'gift.harvest.name': 'Bounty', 'gift.harvest.text': 'credits ×2',
     'gift.zeal.name': 'Zeal', 'gift.zeal.text': 'clicks ×5',
     'gift.postcard.name': 'Lost Postcard', 'gift.postcard.text': 'instant credits',
-    'gift.rainbow.name': 'Rainbow', 'gift.rainbow.text': 'credits ×1.5',
+    'gift.rainbow.name': 'Rainbow', 'gift.rainbow.text': 'speed ×10',
     'fx.speed': 'speed ×{m}', 'fx.credit': 'credits ×{m}', 'fx.click': 'clicks ×{m}',
-    'gift.wish.name': 'Stardust', 'gift.wish.text': 'speed ×2, credits ×1.5',
+    'gift.wish.name': 'Stardust', 'gift.wish.text': 'credits ×10',
 
     'region.0': 'Morning Village', 'region.1': 'Lavender Fields', 'region.2': 'Pine Forest', 'region.3': 'Golden Wheat Plain',
     'region.4': 'Aegean Coast Road', 'region.5': 'Red Canyon', 'region.6': 'Cherry Blossom Valley', 'region.7': 'Autumn Grove',

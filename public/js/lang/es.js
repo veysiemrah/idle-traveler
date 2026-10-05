@@ -49,9 +49,9 @@ IT.addLang('es', {
     'gift.harvest.name': 'Abundancia', 'gift.harvest.text': 'créditos ×2',
     'gift.zeal.name': 'Entusiasmo', 'gift.zeal.text': 'clics ×5',
     'gift.postcard.name': 'Postal Perdida', 'gift.postcard.text': 'créditos al instante',
-    'gift.rainbow.name': 'Arcoíris', 'gift.rainbow.text': 'créditos ×1,5',
+    'gift.rainbow.name': 'Arcoíris', 'gift.rainbow.text': 'velocidad ×10',
     'fx.speed': 'velocidad ×{m}', 'fx.credit': 'créditos ×{m}', 'fx.click': 'clics ×{m}',
-    'gift.wish.name': 'Polvo de estrellas', 'gift.wish.text': 'velocidad ×2, créditos ×1,5',
+    'gift.wish.name': 'Polvo de estrellas', 'gift.wish.text': 'créditos ×10',
 
     'region.0': 'Pueblo del Amanecer', 'region.1': 'Campos de Lavanda', 'region.2': 'Pinar', 'region.3': 'Llanura de Trigo Dorado',
     'region.4': 'Carretera de la costa del Egeo', 'region.5': 'Cañón Rojo', 'region.6': 'Valle de los Cerezos en Flor', 'region.7': 'Arboleda Otoñal',

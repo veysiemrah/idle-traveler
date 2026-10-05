@@ -10,8 +10,8 @@
     { id: 'harvest',  dur: 45, credit: 2, w: 3 },
     { id: 'zeal',     dur: 25, click: 5, w: 2 },
     { id: 'postcard', instant: true, w: 2 },
-    { id: 'rainbow',  dur: 200, credit: 1.5, w: 0 }, // hava olayıyla gelir
-    { id: 'wish',     dur: 300, speed: 2, credit: 1.5, w: 0 }, // gece kayan yıldızla gelir
+    { id: 'rainbow',  dur: 20, speed: 10, w: 0 },  // hava olayıyla gelir: kısa ama güçlü
+    { id: 'wish',     dur: 20, credit: 10, w: 0 }, // gece kayan yıldızla gelir: kısa ama güçlü
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -323,7 +323,7 @@
     S.wishes++;
     const g = GIFT.wish, dur = addEffect(g, g.dur).dur;
     Sound.wish();
-    toast(t('toast.wish', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
+    toast(t('toast.wish', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
     scene.addFloat(t('float.wish'), { color: '#cfe0ff', big: true });
     checkBadges();
   }
@@ -383,11 +383,11 @@
       if (weather === 'rain' && (weatherT <= 0 || !canRain)) {
         // Gökkuşağı yalnızca gündüz ve yerdeyken çıkar
         if (canRain && (scene.nightAmt || 0) < 0.5) {
-          weather = 'rainbow'; weatherT = 60; // gökkuşağı gökte bir dakika kalır, etkisi daha uzun sürer
+          weather = 'rainbow'; weatherT = 40; // gökkuşağı gökte 40 sn kalır, etkisi 20 sn sürer
           scene.setWeather(0, 1);
           addEffect(GIFT.rainbow, GIFT.rainbow.dur);
           S.rainbows++;
-          toast(t('toast.rainbow', { dur: fmtDuration(GIFT.rainbow.dur), text: GIFT.rainbow.text }), 'gold');
+          toast(t('toast.rainbow', { dur: fmtDuration(GIFT.rainbow.dur), text: effText(GIFT.rainbow, 1) }), 'gold');
           Sound.region();
           checkBadges();
         } else { weather = 'clear'; scene.setWeather(0, 0); }
