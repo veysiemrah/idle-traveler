@@ -38,7 +38,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 ## Oyun
 
-- **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur.
+- **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
+  sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
@@ -72,6 +73,9 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
+- **Yolcunun kıyafeti**: Rozet topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 rozet), Orman (6), Lavanta (10),
+  Gün Batımı (15), Gece Yolcusu (20) ve Altın Yolcu (25). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
+  yolcuya, araçların vurgu renklerine, garaj simgelerine ve kartpostallara yansır.
 - **Rozetler**: Adım, kelebek, kayan yıldız, günlük seri, bölge, mesafe, garaj, yükseltme, eve dönüş ve kartpostal hedefleriyle 29 rozet. Her rozet kalıcı olarak +%3 kredi verir.
   Yol Defteri'nde görünür. Yol Defteri tutulan dilekleri ve çekilen kartpostalları da sayar.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
@@ -106,9 +110,9 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `public/css/style.css` | Arayüz stilleri, açık/koyu tema token'ları |
 | `public/js/i18n.js` | Yerelleştirme çekirdeği: dil seçimi, çeviri (`IT.t`), çoğul biçimler, birim sistemi |
 | `public/js/lang/*.js` | Dil sözlükleri: `tr`, `en`, `de`, `es`, `fr` |
-| `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
+| `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, kıyafetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
 | `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
-| `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları |
+| `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları. Sekme gizlenince susar |
 | `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, eve dönüş, gökyüzü ayarı, arayüz |
 | `wrangler.jsonc` | Cloudflare Workers ayarı: statik varlık klasörü ve özel alan adı |
 

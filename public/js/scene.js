@@ -43,6 +43,11 @@
     pack: '#f0b445', hat: '#2f9e8f', hatDark: '#237c70', shoe: '#3a2c2a', cream: '#fbf4e6', steel: '#5d6475', dark: '#2a2f3d',
     teal: '#2f9e8f', glass: '#a9d8ec',
   };
+  // Seçilen kıyafeti palete uygular (yolcu, araç vurguları, garaj simgeleri ve kartpostal birlikte değişir)
+  IT.setOutfit = id => {
+    const o = (IT.OUTFIT && IT.OUTFIT[id]) || IT.OUTFIT.classic;
+    for (const k of ['jacket', 'jacketDark', 'hat', 'hatDark', 'pack']) P[k] = o[k];
+  };
 
   /* ---------- Biyom paleti ---------- */
   function biomePal(id) {
@@ -841,8 +846,10 @@
     addFloat(text, opts) {
       opts = opts || {};
       const jitter = (Math.random() - 0.5) * 50 * this.k;
-      this.floats.push({ text, x: this.travelerX + jitter + 10 * this.k, y: this.riderY() - (opts.big ? 96 : 80) * this.k, life: 0, max: opts.big ? 1.8 : 1.15, color: opts.color || '#ffffff', big: !!opts.big });
+      const f = { text, x: this.travelerX + jitter + 10 * this.k, y: this.riderY() - (opts.big ? 96 : 80) * this.k, life: 0, max: opts.big ? 1.8 : 1.15, color: opts.color || '#ffffff', big: !!opts.big };
+      this.floats.push(f);
       if (this.floats.length > 24) this.floats.shift();
+      return f;
     }
     spawnGift(duration) {
       this.gift = { x: this.W + 40, y: this.H * 0.3, t: 0, dur: duration || 14, caught: false };
