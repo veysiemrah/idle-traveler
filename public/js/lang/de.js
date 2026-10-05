@@ -114,6 +114,7 @@ IT.addLang('de', {
     'ui.strongest': 'Stärkstes', 'ui.strongestTip': 'Dieses Fahrzeug bestimmt dein Tempo', 'ui.notYet': 'Noch nicht gekauft.', 'ui.nextLevel': 'Nächste Stufe: {x}',
     'ui.done': 'Abgeschlossen', 'ui.perLevel': '+{p} Tempo pro Stufe', 'ui.doubling': '+{p} Tempo pro Stufe · Tempo ×2 ab Stufe {t}',
     'ui.toDay': 'Zum Tag wechseln', 'ui.toNight': 'Zur Nacht wechseln', 'ui.soundOff': 'Ton aus', 'ui.soundOn': 'Ton an',
+    'ui.toLight': 'Helles Design', 'ui.toDark': 'Dunkles Design',
     'ui.home': 'Heimkehren', 'ui.confirmHome': 'Bist du sicher? Tippe zum Bestätigen noch einmal',
     'ui.reset': 'Reise zurücksetzen', 'ui.confirmReset': 'Bist du sicher? Der ganze Fortschritt geht verloren. Tippe zum Bestätigen noch einmal',
     'ui.credits': '+{c} Credits', 'ui.fx': '<b>{name}</b> {text} · {dur}',

@@ -105,6 +105,7 @@ IT.addLang('en', {
     'ui.strongest': 'Strongest', 'ui.strongestTip': 'This vehicle sets your speed', 'ui.notYet': 'Not bought yet.', 'ui.nextLevel': 'Next level: {x}',
     'ui.done': 'Complete', 'ui.perLevel': '+{p} speed per level', 'ui.doubling': '+{p} speed per level · speed ×2 at Lv. {t}',
     'ui.toDay': 'Switch to day', 'ui.toNight': 'Switch to night', 'ui.soundOff': 'Mute', 'ui.soundOn': 'Unmute',
+    'ui.toLight': 'Switch to light theme', 'ui.toDark': 'Switch to dark theme',
     'ui.home': 'Go home', 'ui.confirmHome': 'Are you sure? Tap again to confirm',
     'ui.reset': 'Reset journey', 'ui.confirmReset': 'Are you sure? All progress will be lost. Tap again to confirm',
     'ui.credits': '+{c} credits', 'ui.fx': '<b>{name}</b> {text} · {dur}',

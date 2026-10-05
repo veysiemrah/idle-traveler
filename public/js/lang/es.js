@@ -105,6 +105,7 @@ IT.addLang('es', {
     'ui.strongest': 'El más fuerte', 'ui.strongestTip': 'Este vehículo marca tu velocidad', 'ui.notYet': 'Aún no comprado.', 'ui.nextLevel': 'Siguiente nivel: {x}',
     'ui.done': 'Completado', 'ui.perLevel': '+{p} de velocidad por nivel', 'ui.doubling': '+{p} de velocidad por nivel · velocidad ×2 en Nv. {t}',
     'ui.toDay': 'Cambiar a día', 'ui.toNight': 'Cambiar a noche', 'ui.soundOff': 'Silenciar', 'ui.soundOn': 'Activar sonido',
+    'ui.toLight': 'Cambiar a tema claro', 'ui.toDark': 'Cambiar a tema oscuro',
     'ui.home': 'Volver a casa', 'ui.confirmHome': '¿Seguro? Toca otra vez para confirmar',
     'ui.reset': 'Reiniciar viaje', 'ui.confirmReset': '¿Seguro? Perderás todo el progreso. Toca otra vez para confirmar',
     'ui.credits': '+{c} créditos', 'ui.fx': '<b>{name}</b> {text} · {dur}',

@@ -45,7 +45,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic' }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto' }, intro: false,
     };
   }
   function load() {
@@ -96,6 +96,7 @@
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
     if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
+    if (!['auto', 'light', 'dark'].includes(s.settings.page)) s.settings.page = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro; s.homeReady = !!s.homeReady;
     const day = isObj(d.day) ? d.day : {};
@@ -430,7 +431,9 @@
     },
     sky(id) {
       if (!SKIES.includes(id) || S.settings.sky === id) return;
-      S.settings.sky = id; applySky(); save();
+      S.settings.sky = id;
+      if (id === 'cycle') S.settings.page = 'auto'; // döngü, sayfa teması tarayıcıyı izleyerek başlar
+      applySky(); save();
       uiDirty.journal = true;
     },
     lang(id) {
@@ -502,7 +505,7 @@
     // Gün döngüsünde akşam ve sabah kendiliğinden gelir
     if (scene.cycle) {
       const n = (scene.nightAmt || 0) > 0.5;
-      if (cycNight !== null && n !== cycNight) { toast(t(n ? 'toast.dusk' : 'toast.dawn'), 'teal'); syncSkyBtn(); }
+      if (cycNight !== null && n !== cycNight) toast(t(n ? 'toast.dusk' : 'toast.dawn'), 'teal');
       cycNight = n;
     } else cycNight = null;
     checkProgress();
@@ -748,17 +751,19 @@
   let skyOwned = false;
   const metaColors = [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m, m.content]);
   function applySky() {
-    const el = document.documentElement, t = { day: 'light', night: 'dark' }[S.settings.sky];
+    // Gün döngüsünde sayfanın açık/koyu teması ayrı tutulur (başlıktaki tema düğmesi yalnızca onu değiştirir)
+    const sky = S.settings.sky, el = document.documentElement;
+    const t = sky === 'cycle' ? { light: 'light', dark: 'dark' }[S.settings.page] : { day: 'light', night: 'dark' }[sky];
     if (t) { el.setAttribute('data-theme', t); skyOwned = true; } else if (skyOwned) { el.removeAttribute('data-theme'); skyOwned = false; }
     for (const [m, c] of metaColors) m.content = t ? (t === 'dark' ? '#1e2140' : '#eef0f8') : c;
     if (scene) { scene.setCycle(S.settings.sky === 'cycle'); syncSkyBtn(); }
   }
-  // Sahne şu an gece mi (gün döngüsünde sahnenin kendi saati, yoksa tema)
-  const sceneNight = () => scene.cycle ? (scene.nightAmt || 0) > 0.5 : scene.mode === 'dark';
+  // Tema düğmesi: normalde sahneyi gündüz/geceye çevirir; gün döngüsünde döngüye dokunmadan
+  // yalnızca sayfanın açık/koyu temasını değiştirir. Simge her zaman sayfa temasını gösterir.
   function syncSkyBtn() {
-    const night = sceneNight();
+    const night = scene.mode === 'dark', cyc = S.settings.sky === 'cycle';
     const btn = $('#btnSky');
-    btn.title = night ? t('ui.toDay') : t('ui.toNight');
+    btn.title = cyc ? (night ? t('ui.toLight') : t('ui.toDark')) : (night ? t('ui.toDay') : t('ui.toNight'));
     btn.setAttribute('aria-label', btn.title);
     // SVG öğelerinde .hidden özelliği yok; öznitelik doğrudan değiştirilir
     btn.querySelector('.ico-sun').toggleAttribute('hidden', night);
@@ -1016,9 +1021,9 @@
       const m = themeMode();
       if (m === scene.mode) return;
       scene.setMode(m);
+      syncSkyBtn();
       // Gün döngüsünde sahne temayı izlemez; tema yalnızca döngü kapanınca dönülecek yer olarak saklanır
       if (scene.cycle) return;
-      syncSkyBtn();
       toast(t(m === 'dark' ? 'toast.dusk' : 'toast.dawn'), 'teal');
     };
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme); }
@@ -1103,7 +1108,8 @@
     });
     $('#btnSky').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
-      S.settings.sky = sceneNight() ? 'day' : 'night';
+      if (S.settings.sky === 'cycle') S.settings.page = scene.mode === 'dark' ? 'light' : 'dark';
+      else S.settings.sky = scene.mode === 'dark' ? 'day' : 'night';
       applySky(); save(); uiDirty.journal = true;
     });
     window.addEventListener('resize', () => { scene.resize(); });

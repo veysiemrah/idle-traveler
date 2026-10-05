@@ -115,6 +115,7 @@ IT.addLang('tr', {
     'ui.strongest': 'En güçlü', 'ui.strongestTip': 'Hızını bu araç belirliyor', 'ui.notYet': 'Henüz alınmadı.', 'ui.nextLevel': 'Sonraki seviye: {x}',
     'ui.done': 'Tamamlandı', 'ui.perLevel': 'Her seviye +{p} hız', 'ui.doubling': 'Her seviye +{p} hız · Sv. {t} olunca hız ×2',
     'ui.toDay': 'Gündüze geç', 'ui.toNight': 'Geceye geç', 'ui.soundOff': 'Sesi kapat', 'ui.soundOn': 'Sesi aç',
+    'ui.toLight': 'Açık temaya geç', 'ui.toDark': 'Koyu temaya geç',
     'ui.home': 'Eve dön', 'ui.confirmHome': 'Emin misin? Onaylamak için tekrar dokun',
     'ui.reset': 'Yolculuğu sıfırla', 'ui.confirmReset': 'Emin misin? Tüm ilerleme silinir. Onaylamak için tekrar dokun',
     'ui.credits': '+{c} kredi', 'ui.fx': '<b>{name}</b> {text} · {dur}',

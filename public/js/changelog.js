@@ -9,11 +9,16 @@
 
   IT.CHANGELOG = [
     { v: '1.12', date: '2026-10-05', items: {
-      tr: ['Ayarlar başlık çubuğuna taşındı: dişli düğmesiyle dil, birimler, ses, gökyüzü ve sıfırlama tek dokunuşta açılır.'],
-      en: ['Settings moved to the header: the gear button opens language, units, sound, sky and reset in one tap.'],
-      de: ['Die Einstellungen sind jetzt in der Kopfleiste: Das Zahnrad öffnet Sprache, Einheiten, Ton, Himmel und Zurücksetzen mit einem Tipp.'],
-      es: ['Los ajustes pasan a la barra superior: el engranaje abre idioma, unidades, sonido, cielo y reinicio con un toque.'],
-      fr: ['Les réglages sont dans l\'en-tête : la roue dentée ouvre langue, unités, son, ciel et réinitialisation en un geste.'],
+      tr: ['Ayarlar başlık çubuğuna taşındı: dişli düğmesiyle dil, birimler, ses, gökyüzü ve sıfırlama tek dokunuşta açılır.',
+        'Gün Döngüsü açıkken başlıktaki tema düğmesi döngüyü bozmaz, yalnızca sayfanın açık/koyu temasını değiştirir.'],
+      en: ['Settings moved to the header: the gear button opens language, units, sound, sky and reset in one tap.',
+        'With the day cycle on, the theme button in the header leaves the cycle alone and only switches the page between light and dark.'],
+      de: ['Die Einstellungen sind jetzt in der Kopfleiste: Das Zahnrad öffnet Sprache, Einheiten, Ton, Himmel und Zurücksetzen mit einem Tipp.',
+        'Bei aktivem Tageslauf ändert der Design-Knopf oben nur noch hell/dunkel der Seite, der Tageslauf läuft weiter.'],
+      es: ['Los ajustes pasan a la barra superior: el engranaje abre idioma, unidades, sonido, cielo y reinicio con un toque.',
+        'Con el ciclo del día activo, el botón de tema de arriba solo cambia la página entre claro y oscuro, sin tocar el ciclo.'],
+      fr: ['Les réglages sont dans l\'en-tête : la roue dentée ouvre langue, unités, son, ciel et réinitialisation en un geste.',
+        'Avec le cycle du jour actif, le bouton de thème en haut ne change que le thème clair/sombre de la page, sans toucher au cycle.'],
     } },
     { v: '1.11', date: '2026-10-05', items: {
       tr: ['Gerçekçi mesafeler: kat edilen yol 1/10\'a indi, metre başına kredi 10 katına çıktı. Tempo aynı; araçlar, bölgeler ve eve dönüş eskisi kadar sürede gelir.',

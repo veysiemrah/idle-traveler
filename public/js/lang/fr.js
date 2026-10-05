@@ -107,6 +107,7 @@ IT.addLang('fr', {
     'ui.strongest': 'Le plus puissant', 'ui.strongestTip': 'Ce véhicule fixe ta vitesse', 'ui.notYet': 'Pas encore acheté.', 'ui.nextLevel': 'Niveau suivant : {x}',
     'ui.done': 'Terminé', 'ui.perLevel': '+{p} de vitesse par niveau', 'ui.doubling': '+{p} de vitesse par niveau · vitesse ×2 au Niv. {t}',
     'ui.toDay': 'Passer au jour', 'ui.toNight': 'Passer à la nuit', 'ui.soundOff': 'Couper le son', 'ui.soundOn': 'Remettre le son',
+    'ui.toLight': 'Passer au thème clair', 'ui.toDark': 'Passer au thème sombre',
     'ui.home': 'Rentrer à la maison', 'ui.confirmHome': 'Vraiment ? Touche encore pour confirmer',
     'ui.reset': 'Recommencer le voyage', 'ui.confirmReset': 'Vraiment ? Toute ta progression sera perdue. Touche encore pour confirmer',
     'ui.credits': '+{c} crédits', 'ui.fx': '<b>{name}</b> {text} · {dur}',
