@@ -51,6 +51,14 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
+- **Fiyat dengesi**: Yeni bir araç almak, elindeki aracı yükseltmekten her zaman daha pahalıdır. Yükseltmeler aracın
+  liste fiyatının %1,8'inden başlar ve her seviyede 1,55 katına çıkar.
+  - **Takas indirimi**: Bir önceki aracın her yükseltme seviyesi sıradaki aracı %5 ucuzlatır, Sv. 10'da yarı fiyata iner
+    (en çok %50). Oyuncu önce elindekini geliştirip sonra yenisine geçmeye teşvik edilir.
+  - **Taban fiyat**: Yeni araç, garajdaki (kendinden önceki) araçların sıradaki yükseltmesinin en az 1,5 katıdır.
+    Fiyatlar öyle ayarlı ki taban, takas indirimi dolduktan sonra (Sv. 11 civarı) devreye girer.
+  - Sıradaki aracın kartı fiyatın nereden geldiğini gösterir: indirim oranı ile üstü çizili liste fiyatı ya da tabanı
+    belirleyen yükseltme.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
   eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı

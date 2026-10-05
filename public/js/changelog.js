@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.18';
+  IT.VERSION = '1.19';
 
   IT.CHANGELOG = [
+    { v: '1.19', date: '2026-10-05', items: {
+      tr: ['Yeni fiyat dengesi: yeni bir araç almak, elindeki aracı yükseltmekten her zaman daha pahalı. Araç fiyatları iki katına çıktı, yükseltmeler ise belirgin biçimde ucuzladı.',
+        'Takas indirimi: bir önceki aracı her yükselttiğinde sıradaki araç %5 ucuzlar; Sv. 10\'da yarı fiyata iner. Önce elindekini geliştir, sonra yenisine geç.',
+        'Taban fiyat: yeni araç, garajındaki bir aracın sıradaki yükseltmesinin en az 1,5 katıdır. Garaj kartı fiyatın nereden geldiğini gösterir.'],
+      en: ['New price balance: buying a new vehicle always costs more than upgrading the one you have. Vehicle prices doubled, while upgrades got noticeably cheaper.',
+        'Trade-in discount: every upgrade on the previous vehicle makes the next one 5% cheaper, down to half price at Lv. 10. Grow what you have first, then move on.',
+        'Price floor: a new vehicle costs at least 1.5× the next upgrade of any vehicle in your garage. The garage card shows where the price comes from.'],
+      de: ['Neues Preisgefüge: Ein neues Fahrzeug zu kaufen kostet immer mehr, als das vorhandene zu verbessern. Fahrzeugpreise haben sich verdoppelt, Upgrades sind deutlich günstiger.',
+        'Inzahlungnahme-Rabatt: Jedes Upgrade am vorherigen Fahrzeug macht das nächste 5 % günstiger, bis zum halben Preis auf Stufe 10. Erst ausbauen, dann umsteigen.',
+        'Mindestpreis: Ein neues Fahrzeug kostet mindestens das 1,5-Fache des nächsten Upgrades eines Fahrzeugs in deiner Garage. Die Garagenkarte zeigt, woher der Preis kommt.'],
+      es: ['Nuevo equilibrio de precios: comprar un vehículo nuevo siempre cuesta más que mejorar el que tienes. Los vehículos cuestan el doble y las mejoras son bastante más baratas.',
+        'Descuento por entrega: cada mejora del vehículo anterior abarata el siguiente un 5 %, hasta la mitad de precio en Nv. 10. Primero mejora lo que tienes y luego cambia.',
+        'Precio mínimo: un vehículo nuevo cuesta al menos 1,5 veces la próxima mejora de cualquier vehículo de tu garaje. La tarjeta del garaje muestra de dónde sale el precio.'],
+      fr: ['Nouvel équilibre des prix : acheter un nouveau véhicule coûte toujours plus cher qu\'améliorer celui que tu as. Les véhicules coûtent deux fois plus, les améliorations nettement moins.',
+        'Remise de reprise : chaque amélioration du véhicule précédent rend le suivant 5 % moins cher, jusqu\'à moitié prix au Niv. 10. Fais d\'abord grandir ce que tu as, puis change.',
+        'Prix plancher : un nouveau véhicule coûte au moins 1,5 fois la prochaine amélioration d\'un véhicule de ton garage. La carte du garage montre d\'où vient le prix.'],
+    } },
     { v: '1.18', date: '2026-10-05', items: {
       tr: ['Hazine haritası: altın kelebeklerden ve kayan yıldızlardan harita parçaları düşer. Dört parça tamamlanınca yol kenarında parlayan bir sandık belirir; dokun, hazineyi al.',
         'Yeni rozet ailesi: Hazine Avcısı. Yol Defteri haritanın açılan parçalarını gösterir.'],

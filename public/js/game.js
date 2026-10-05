@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, TIERS, BADGE_TIERS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, TIERS, BADGE_TIERS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
   const GIFTS = [
@@ -465,7 +465,7 @@
   const actions = {
     buyVeh(id) {
       const v = VEH[id];
-      if (S.owned[id] || !spend(v.cost)) return;
+      if (S.owned[id] || !spend(Econ.vehCost(S, v))) return;
       S.owned[id] = true; S.levels[id] = 0;
       S.bestGarage = Math.max(S.bestGarage, VEHICLES.filter(x => S.owned[x.id]).length);
       uiDirty.garage = true;
@@ -936,13 +936,26 @@
         </div>
         ${owned
           ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-          : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
+          : `${priceLine(v)}<div class="up">${costBtn('buyVeh', v.id, Econ.vehCost(S, v), t('ui.buy'))}</div><div class="progress"><i data-prog="${Econ.vehCost(S, v)}"></i></div>`}
         </article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
       <div class="body"><h3>???</h3><p class="tag">${t('garage.mystery', { n: hidden })}</p></div></article>`;
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
+  }
+  // Sıradaki aracın kartında fiyatın açıklaması: önceki aracı yükselttikçe takas indirimi büyür;
+  // ama yeni araç hiçbir zaman garajdaki bir yükseltmeden ucuz olmaz (taban fiyat)
+  function priceLine(v) {
+    const p = Econ.vehPrice(S, v), ti = p.trade;
+    if (p.floor) {
+      const f = p.floor;
+      return `<p class="trade floor">${t('garage.floor', { veh: f.by.name, lvl: t('ui.lvl', { n: f.lvl }), up: fmtNum(f.up), k: fmtSmall(Econ.floorK) })}</p>`;
+    }
+    if (!ti.prev) return '';
+    const vars = { prev: ti.prev.name, lvl: t('ui.lvl', { n: ti.lvl }), p: fmtPct(ti.pct * 100), step: fmtPct(Econ.tradeStep * 100), max: fmtPct(Econ.tradeMax * 100), was: fmtNum(v.cost) };
+    const key = ti.pct >= Econ.tradeMax ? 'garage.tradeMax' : ti.pct > 0 ? 'garage.trade' : 'garage.trade0';
+    return `<p class="trade">${t(key, vars)}</p>`;
   }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);

@@ -9,24 +9,25 @@
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   // (v1.11'de bütün mesafeler 1/10'a indi; metre başına kredi CREDITS_PER_M ile 10 katına çıktığı için tempo aynı kaldı)
+  // (v1.19'da araç fiyatları 2 katına çıktı, yükseltmeler fiyatın %1,8'inden başlıyor: yeni araç, yükseltmeden hep pahalı)
   const VEHICLES = [
     { id: 'walk',   cost: 0,       idle: 0.035,  click: 0.04,   road: 'path',    alt: 0 },
-    { id: 'skates', cost: 150,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
-    { id: 'board',  cost: 900,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
-    { id: 'bike',   cost: 5000,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
-    { id: 'horse',  cost: 3.2e4,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
-    { id: 'moto',   cost: 2.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
-    { id: 'car',    cost: 8.0e6,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
-    { id: 'van',    cost: 4.0e7,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
-    { id: 'train',  cost: 2.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
-    { id: 'balloon', cost: 9.0e8, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
-    { id: 'plane',  cost: 4.0e9,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
-    { id: 'jet',    cost: 2.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
-    { id: 'rocket', cost: 1.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
-    { id: 'sail',   cost: 2.5e12,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
+    { id: 'skates', cost: 300,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
+    { id: 'board',  cost: 1800,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
+    { id: 'bike',   cost: 1.0e4,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
+    { id: 'horse',  cost: 6.4e4,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
+    { id: 'moto',   cost: 4.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
+    { id: 'car',    cost: 1.6e7,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
+    { id: 'van',    cost: 8.0e7,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
+    { id: 'train',  cost: 4.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
+    { id: 'balloon', cost: 1.8e9, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
+    { id: 'plane',  cost: 8.0e9,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
+    { id: 'jet',    cost: 4.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
+    { id: 'rocket', cost: 2.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
+    { id: 'sail',   cost: 5.0e12,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
-    v.index = i; v.upBase = i === 0 ? 8 : Math.round(v.cost * 0.05);
+    v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.018);
     // Metinler seçili dilden okunur
     Object.defineProperties(v, {
       name: { get: () => T(`veh.${v.id}.name`) },
@@ -288,6 +289,30 @@
       return m;
     },
     upgradeCost(v, lvl) { return Math.ceil(v.upBase * Math.pow(1.55, lvl)); },
+    // Takas indirimi: bir önceki aracın her yükseltme seviyesi yeni aracı %5 ucuzlatır; Sv. 10'da yarı fiyat (en çok %50).
+    // Oyuncuyu yeni araca koşmadan önce elindekini geliştirmeye teşvik eder.
+    tradeStep: 0.05, tradeMax: 0.5,
+    tradeIn(state, v) {
+      const prev = VEHICLES[v.index - 1];
+      if (!prev || !state.owned || !state.owned[prev.id]) return { pct: 0, prev: null, lvl: 0 };
+      const lvl = (state.levels && state.levels[prev.id]) || 0;
+      return { pct: Math.min(Econ.tradeMax, Econ.tradeStep * lvl), prev, lvl };
+    },
+    // Taban fiyat: yeni bir araç, garajdaki (kendinden önceki) araçların sıradaki yükseltmesinin en az 1,5 katıdır.
+    // Fiyatlar öyle ayarlı ki taban ancak takas indirimi dolduktan sonra (Sv. 11 civarı) devreye girer.
+    floorK: 1.5,
+    vehPrice(state, v) {
+      const ti = Econ.tradeIn(state, v), list = Math.ceil(v.cost * (1 - ti.pct));
+      let by = null, up = 0;
+      for (const o of VEHICLES) {
+        if (o.index >= v.index || !state.owned || !state.owned[o.id]) continue;
+        const c = Econ.upgradeCost(o, (state.levels && state.levels[o.id]) || 0);
+        if (c > up) { up = c; by = o; }
+      }
+      const floor = Math.ceil(Econ.floorK * up);
+      return floor > list ? { cost: floor, trade: ti, floor: { by, up, lvl: state.levels[by.id] || 0 } } : { cost: list, trade: ti, floor: null };
+    },
+    vehCost(state, v) { return Econ.vehPrice(state, v).cost; },
     // n seviyenin toplam maliyeti; n = 'max' ise bütçenin yettiği kadar (en az 1 seviye gösterilir)
     upgradeQuote(v, lvl, n, budget) {
       let cost = 0, k = 0;
