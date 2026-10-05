@@ -94,7 +94,9 @@ npx wrangler dev   # http://localhost:8787
 - **Gezginler sahnede**: Şu an yolda olan diğer oyuncular sahnede, yolun arka şeridinde yarı saydam yolculuk eder.
   Senden öndekiler sağda, gerideki solda durur (geniş ekranda en çok 3 önde ve 2 geride, telefonda 1+1). Her biri kendi
   aracı, kıyafeti, aracının görünüm aşaması ve yol arkadaşıyla çizilir. İsim etiketi kimin ne kadar önde ya da geride
-  olduğunu gösterir. Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
+  olduğunu gösterir (birkaç metre yakınsa "yanında"). Etiketler gece örtüsünün üstünde çizilir ve karanlıkta lacivert tona
+  geçer; yan yana gelen etiketler birbirine değmez, biri yumuşakça yukarı kalkıp ince bir çizgiyle gezgine bağlanır.
+  Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
   yolculuğunda olduğunu söyler. Ayarlar'daki "Diğer gezginler sahnede" seçeneğiyle gizlenebilir.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
   eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve

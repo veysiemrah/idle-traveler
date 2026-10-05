@@ -1202,7 +1202,7 @@
         seen.add(o.pub);
         let g = this.ghosts.get(o.pub);
         // yeni gelen gezgin kendi tarafından süzülerek belirir
-        if (!g) { g = { x: x + (o.ahead ? 70 : -70) * this.k, alpha: 0, phase: Math.random() * TAU, seed: Math.random() * TAU, wave: 0 }; this.ghosts.set(o.pub, g); }
+        if (!g) { g = { x: x + (o.ahead ? 70 : -70) * this.k, alpha: 0, phase: Math.random() * TAU, seed: Math.random() * TAU, wave: 0, lift: 0 }; this.ghosts.set(o.pub, g); }
         g.o = o; g.tx = x; g.gone = false;
       }
       for (const [pub, g] of this.ghosts) {
@@ -1224,6 +1224,7 @@
       return { x, y, s, top: y - top * k * s };
     }
     drawGhosts(ctx, night) {
+      this.tags = [];
       if (!this.ghosts.size) return;
       const k = this.k;
       for (const g of this.ghosts.values()) {
@@ -1241,26 +1242,50 @@
         withOutfit(o.outfit, () => drawVehicle(ctx, o.veh, p.x, p.y, ks, st));
         if (o.pal === 'bird') drawGull(ctx, p.x - 20 * ks, p.top - 20 * ks + Math.sin(this.t * 1.6 + g.seed) * 4 * k, ks, this.t, 0);
         ctx.restore();
-        this.drawTag(ctx, p.x, p.top - 6 * k, o, g.alpha);
+        // etiket gece örtüsünün üstünde çizilir (karanlıkta da okunsun)
+        this.tags.push([p.x, p.top - 6 * k, o, g.alpha, g]);
       }
     }
-    // İsim etiketi: ad ve senden ne kadar önde/geride olduğu
-    drawTag(ctx, x, y, o, a) {
+    // Etiketler soldan sağa yerleşir; üst üste binen etiket yumuşakça yukarı kalkar ve ince bir çizgiyle gezgine bağlanır
+    drawTags(ctx, night) {
+      const k = Math.max(this.k, 0.85), h = 30 * k, gap = 4 * k, placed = [];
+      for (const [x, y, o, a, g] of (this.tags || []).slice().sort((p, q) => p[0] - q[0])) {
+        const w = this.tagWidth(ctx, o), bx = clamp(x - w / 2, 4, this.W - w - 4);
+        let top = y - h;
+        for (let i = 0; i < 3; i++) {
+          const hit = placed.find(r => bx < r.x + r.w + gap && bx + w + gap > r.x && top < r.y + r.h + gap && top + h + gap > r.y);
+          if (!hit) break;
+          top = hit.y - h - gap;
+        }
+        g.lift += ((y - h - top) - g.lift) * 0.18;
+        placed.push({ x: bx, y: top, w, h });
+        this.drawTag(ctx, x, y, o, a, night, bx, w, g.lift);
+      }
+    }
+    tagWidth(ctx, o) {
       const k = Math.max(this.k, 0.85);
-      ctx.save();
-      ctx.globalAlpha = a * 0.92;
       ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
       const w1 = ctx.measureText(o.name).width;
       ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
-      const w2 = ctx.measureText(o.sub).width;
-      const w = Math.max(w1, w2) + 14 * k, h = 30 * k, bx = clamp(x - w / 2, 4, this.W - w - 4);
-      ctx.fillStyle = 'rgba(255,255,255,0.86)'; rrect(ctx, bx, y - h, w, h, 9 * k); ctx.fill();
+      return Math.max(w1, ctx.measureText(o.sub).width) + 14 * k;
+    }
+    // İsim etiketi: ad ve senden ne kadar önde/geride olduğu
+    // Gündüz beyaz, gece lacivert bir etiket; renkler gecenin derinliğine göre yumuşakça geçer
+    // y: okun gösterdiği nokta; lift: komşu etikete değmemek için kalkma payı
+    drawTag(ctx, x, y, o, a, night, bx, w, lift) {
+      const k = Math.max(this.k, 0.85), n = clamp(night || 0, 0, 1), h = 30 * k;
+      const bg = css(mixc(hex('#ffffff'), hex('#262a48'), n), 0.86);
+      ctx.save();
+      ctx.globalAlpha = a * 0.92;
+      if (lift > 1) { ctx.strokeStyle = bg; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - lift); ctx.stroke(); }
+      y -= lift;
+      ctx.fillStyle = bg; rrect(ctx, bx, y - h, w, h, 9 * k); ctx.fill();
       // küçük ok gezgini gösterir
       ctx.beginPath(); ctx.moveTo(x - 4 * k, y); ctx.lineTo(x + 4 * k, y); ctx.lineTo(x, y + 4 * k); ctx.closePath(); ctx.fill();
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#272b45'; ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
+      ctx.fillStyle = css(mixc(hex('#272b45'), hex('#eef0fb'), n)); ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
       ctx.fillText(o.name, bx + w / 2, y - h + 10.5 * k);
-      ctx.fillStyle = o.ahead ? '#10806e' : '#6a6f8c'; ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
+      ctx.fillStyle = css(o.ahead ? mixc(hex('#10806e'), hex('#7fe0cd'), n) : mixc(hex('#6a6f8c'), hex('#aab0cc'), n)); ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
       ctx.fillText(o.sub, bx + w / 2, y - h + 21.5 * k);
       ctx.restore();
     }
@@ -1718,6 +1743,7 @@
         ctx.globalCompositeOperation = 'source-over';
       }
 
+      this.drawTags(ctx, night);
       this.drawParts(ctx, true);
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.gift) this.drawButterfly(ctx, this.gift);

@@ -1058,7 +1058,8 @@
       .map(p => ({ p, diff: p.dist - S.distance }))
       .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))
       .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
-        ahead: diff > 0, diff, sub: (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff)) }));
+        // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz
+        ahead: diff > 0, diff, sub: Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff)) }));
   }
   // Yolcular: son 24 saatte oynayan gezginler, bu yolculukta gittikleri yola göre sıralı
   function renderTravelers() {

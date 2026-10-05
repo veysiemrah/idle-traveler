@@ -99,6 +99,7 @@ IT.addLang('en', {
     'j.others': "Other travelers on the road",
     'others.ahead': "<b>{name}</b> waves back! On trip {n}, {d} ahead of you.",
     'others.behind': "<b>{name}</b> waves back! On trip {n}, {d} behind you.",
+    'others.near': "beside you",
     'tr.pick': "Pick a name",
 
     'ui.perSec': '+{c} / s', 'ui.lvl': 'Lv. {n}', 'ui.buy': 'Buy', 'ui.get': 'Get', 'ui.upgrade': 'Upgrade', 'ui.upgradeN': 'Upgrade ×{n}',
