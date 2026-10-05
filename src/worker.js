@@ -1,11 +1,13 @@
 /* Idle Traveler — Worker: statik site + "Yolcular" API'si (D1).
    /api/* dışındaki her istek public/ klasöründeki statik dosyalara gider.
 
-   POST /api/hello   { id, key, name, dist, trip, veh, route } → kaydı günceller, yolcu listesini döner
+   POST /api/hello   { id, key, name, dist, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
    GET  /api/players                                           → yalnızca yolcu listesi */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk'];
+const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold'];
+const PALS = ['', 'dog', 'bird', 'cat'];
 const ONLINE_MS = 3 * 60e3;      // son 3 dakikada haber veren yolcu "yolda" sayılır
 const LIST_MS = 24 * 3600e3;     // listede son 24 saatte oynayanlar görünür
 const LIST_MAX = 50;
@@ -32,20 +34,26 @@ async function sha256(text) {
 }
 
 // Yolcu listesi: son 24 saatte oynayanlar, yola göre sıralı. me: isteği yapanın satırı (ilk 50'de değilse sırasıyla eklenir)
+// pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
+const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
+const COLS = 'id, name, dist, trip, veh, tier, outfit, pal, seen';
 async function listPlayers(db, id, now) {
   const since = now - LIST_MS, onlineSince = now - ONLINE_MS;
   const [rows, counts] = await db.batch([
-    db.prepare('SELECT name, dist, trip, veh, seen, id = ?1 AS me FROM players WHERE seen > ?2 ORDER BY dist DESC LIMIT ?3').bind(id || '', since, LIST_MAX),
+    db.prepare(`SELECT ${COLS} FROM players WHERE seen > ?1 ORDER BY dist DESC LIMIT ?2`).bind(since, LIST_MAX),
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?2) AS online FROM players WHERE seen > ?1').bind(since, onlineSince),
   ]);
-  const map = r => ({ name: r.name, dist: r.dist, trip: r.trip, veh: r.veh, online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: !!r.me });
-  const players = rows.results.map((r, i) => Object.assign(map(r), { rank: i + 1 }));
+  const map = async r => ({
+    pub: await pubOf(r.id), name: r.name, dist: r.dist, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
+    online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
+  });
+  const players = await Promise.all(rows.results.map(async (r, i) => Object.assign(await map(r), { rank: i + 1 })));
   let me = players.find(p => p.me) || null;
   if (!me && id) {
-    const r = await db.prepare('SELECT name, dist, trip, veh, seen, 1 AS me FROM players WHERE id = ?1 AND seen > ?2').bind(id, since).first();
+    const r = await db.prepare(`SELECT ${COLS} FROM players WHERE id = ?1 AND seen > ?2`).bind(id, since).first();
     if (r) {
       const above = await db.prepare('SELECT COUNT(*) AS n FROM players WHERE seen > ?1 AND dist > ?2').bind(since, r.dist).first();
-      me = Object.assign(map(r), { rank: (above ? above.n : 0) + 1 });
+      me = Object.assign(await map(r), { rank: (above ? above.n : 0) + 1 });
     }
   }
   const c = counts.results[0] || {};
@@ -66,11 +74,15 @@ async function hello(request, env) {
   if (!Number.isInteger(trip) || trip < 1 || trip > 1e5 + 1) return json({ error: 'bad-trip' }, 400);
   const veh = VEHICLES.includes(b.veh) ? b.veh : 'walk';
   const route = ROUTES.includes(b.route) ? b.route : 'anatolia';
+  const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 4 ? b.tier : 0;
+  const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
+  const pal = PALS.includes(b.pal) ? b.pal : '';
   const now = Date.now(), hash = await sha256(key);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
-  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)
-    ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen
-    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS).run();
+  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12)
+    ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
+      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal
+    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key FROM players WHERE id = ?1').bind(id).first();
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);

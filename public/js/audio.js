@@ -100,6 +100,8 @@
       if (crit) [0, 0.07, 0.14].forEach((w, i) => this.tone(PENTA[i + 3] * 2, 0.06, 0.6, 'sine', this.sfx, true, w));
     },
     buy() { if (!this.ctx) return; this.tone(659.25, 0.08, 0.5, 'triangle', this.sfx, true); this.tone(987.77, 0.07, 0.7, 'sine', this.sfx, true, 0.08); },
+    // Bir gezgine el sallayınca: iki yumuşak nota
+    wave() { if (!this.ctx) return; [4, 6].forEach((n, i) => this.tone(PENTA[n] * 2, 0.045, 0.6, 'sine', this.sfx, true, i * 0.12)); },
     deny() { if (!this.ctx) return; this.tone(220, 0.05, 0.18, 'triangle'); },
     gift() { if (!this.ctx) return; [0, 2, 4, 5, 6].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.06, 0.9, 'sine', this.sfx, true, i * 0.06)); },
     // kayan yıldız: yukarıdan aşağı inen ince, parıltılı bir dizi

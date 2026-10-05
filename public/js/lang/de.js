@@ -95,7 +95,7 @@ IT.addLang('de', {
     'name.btn': "Losgehen",
     'name.save': "Speichern",
     'toast.named': "In der Liste der Reisenden heißt du jetzt <b>{name}</b>.",
-    'tr.lead': "Reisende der letzten 24 Stunden, sortiert nach der Strecke auf ihrer aktuellen Reise.",
+    'tr.lead': "Reisende der letzten 24 Stunden, sortiert nach der Strecke auf ihrer aktuellen Reise. Wer gerade unterwegs ist, reist auch im Bild neben dir; tippe jemanden an, um zu winken.",
     'tr.online': "Gerade unterwegs",
     'tr.total': "Letzte 24 Stunden",
     'tr.you': "du",
@@ -105,6 +105,9 @@ IT.addLang('de', {
     'tr.error': "Andere Reisende sind gerade nicht erreichbar. Deine Reise läuft normal weiter; die Liste aktualisiert sich, sobald die Verbindung zurück ist.",
     'tr.empty': "Noch niemand unterwegs. Mach den Anfang!",
     'tr.noName': "Wähle einen Namen, um in der Liste zu erscheinen.",
+    'j.others': "Andere Reisende im Bild",
+    'others.ahead': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} vor dir.",
+    'others.behind': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} hinter dir.",
     'tr.pick': "Namen wählen",
 
     // Anzeige und Allgemeines
