@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.12';
+  IT.VERSION = '1.13';
 
   IT.CHANGELOG = [
+    { v: '1.13', date: '2026-10-05', items: {
+      tr: ['Kademeli rozetler: 15 rozet ailesinin her biri Plastik, Ahşap, Metal, Bronz, Gümüş, Altın, Platin ve Elmas kademelerinden geçer. Her kademe kalıcı kredi bonusu verir.',
+        'Rozetler artık ömür boyu kazanılır; eve dönünce garaj, bölge ve yükseltme rozetleri kaybolmaz. Eski rozetler karşılık gelen kademeye çevrildi.',
+        'Kıyafetler rozet kademeleriyle açılır.'],
+      en: ['Tiered badges: each of 15 badge families climbs through Plastic, Wood, Metal, Bronze, Silver, Gold, Platinum and Diamond. Every tier gives a permanent credit bonus.',
+        'Badges are now earned for life; garage, region and upgrade badges stay after homecoming. Old badges were converted to matching tiers.',
+        'Outfits unlock with badge tiers.'],
+      de: ['Abzeichen in Stufen: Jede der 15 Abzeichen-Familien steigt über Plastik, Holz, Metall, Bronze, Silber, Gold, Platin und Diamant. Jede Stufe gibt dauerhaft Credits.',
+        'Abzeichen gelten jetzt fürs ganze Spiel; Garage-, Regions- und Upgrade-Abzeichen bleiben nach der Heimkehr. Alte Abzeichen wurden in passende Stufen umgewandelt.',
+        'Outfits werden mit Abzeichen-Stufen freigeschaltet.'],
+      es: ['Insignias por niveles: cada una de las 15 familias sube por Plástico, Madera, Metal, Bronce, Plata, Oro, Platino y Diamante. Cada nivel da un bono de créditos permanente.',
+        'Las insignias ahora son para siempre; las de garaje, regiones y mejoras se conservan al volver a casa. Las antiguas se convirtieron al nivel equivalente.',
+        'La ropa se desbloquea con niveles de insignias.'],
+      fr: ['Badges à paliers : chacune des 15 familles passe par Plastique, Bois, Métal, Bronze, Argent, Or, Platine et Diamant. Chaque palier donne un bonus de crédits permanent.',
+        'Les badges sont désormais acquis pour toujours ; ceux du garage, des régions et des améliorations restent après le retour. Les anciens badges ont été convertis.',
+        'Les tenues se débloquent avec les paliers de badges.'],
+    } },
     { v: '1.12', date: '2026-10-05', items: {
       tr: ['Ayarlar başlık çubuğuna taşındı: dişli düğmesiyle dil, birimler, ses, gökyüzü ve sıfırlama tek dokunuşta açılır.',
         'Gün Döngüsü açıkken başlıktaki tema düğmesi döngüyü bozmaz, yalnızca sayfanın açık/koyu temasını değiştirir.'],

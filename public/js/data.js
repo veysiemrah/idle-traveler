@@ -188,56 +188,61 @@
   ];
   { let n = 0; MILESTONES.forEach(m => { const k = m.key || n++; Object.defineProperty(m, 'name', { get: () => T(`ms.${k}`) }); }); }
 
-  /* ---------- Rozetler: her biri kalıcı +%3 kredi ---------- */
-  const maxLevel = s => Math.max(0, ...Object.values(s.levels || {}));
-  const ownedCount = s => VEHICLES.filter(v => s.owned[v.id]).length;
-  const BADGES = [
-    { id: 'steps100',  n: 100, test: s => s.clicks >= 100 },
-    { id: 'steps1k',   n: 1000, test: s => s.clicks >= 1000 },
-    { id: 'steps10k',  n: 10000, test: s => s.clicks >= 10000 },
-    { id: 'rhythm',    test: (s, rt) => rt && rt.combo >= 20 },
-    { id: 'lucky',     test: s => s.crits >= 1 },
-    { id: 'lucky100',  n: 100, test: s => s.crits >= 100 },
-    { id: 'fly1',      test: s => s.gifts >= 1 },
-    { id: 'fly25',     n: 25, test: s => s.gifts >= 25 },
-    { id: 'rainbow',   test: s => s.rainbows >= 1 },
-    { id: 'night',     n: 10, test: s => s.nightTime >= 600 },
-    { id: 'reg5',      n: 5, test: s => s.regionIdx >= 4 },
-    { id: 'reg13',     test: s => s.regionIdx >= REGIONS.length - 1 },
-    { id: 'reg25',     n: 25, test: s => s.regionIdx >= 24 },
-    { id: 'marathon',  test: s => s.distance >= 42195 },
-    { id: 'world',     test: s => s.distance >= 4.0075e7 },
-    { id: 'moon',      test: s => s.distance >= 3.844e8 },
-    { id: 'sun',       test: s => s.distance >= 1.496e11 },
-    { id: 'garage3',   n: 3, test: s => ownedCount(s) >= 3 },
-    { id: 'garage6',   n: 6, test: s => ownedCount(s) >= 6 },
-    { id: 'garage9',   test: s => ownedCount(s) >= VEHICLES.length },
-    { id: 'tuned25',   n: 25, test: s => maxLevel(s) >= 25 },
-    { id: 'tuned100',  n: 100, test: s => maxLevel(s) >= 100 },
-    { id: 'home1',     test: s => s.trips >= 1 },
-    { id: 'home5',     n: 5, test: s => s.trips >= 5 },
-    { id: 'photo1',    test: s => s.photos >= 1 },
-    { id: 'wish1',     test: s => s.wishes >= 1 },
-    { id: 'wish10',    n: 10, test: s => s.wishes >= 10 },
-    { id: 'streak7',   n: 7, test: s => !!s.day && s.day.best >= 7 },
-    { id: 'mem100',    n: 100, test: s => s.memories >= 100 },
+  /* ---------- Rozetler: her ailenin 8 kademesi (plastikten elmasa) ---------- */
+  // Her kademe kalıcı kredi bonusu verir; değerli kademeler daha çok. Bir ailenin bütün kademeleri: +%10.
+  // Yeni kademe eklemek için TIERS'e bir satır ve her ailenin at listesine bir eşik ekle.
+  const TIERS = [
+    { id: 'plastic', bonus: 0.005, c1: '#f4f7fb', c2: '#9fb6cf', ink: '#33465c' },
+    { id: 'wood',    bonus: 0.005, c1: '#e8bd86', c2: '#93592c', ink: '#3f230d' },
+    { id: 'metal',   bonus: 0.01,  c1: '#e3e7ec', c2: '#6f7883', ink: '#262b31' },
+    { id: 'bronze',  bonus: 0.01,  c1: '#f6c597', c2: '#a35d27', ink: '#45210a' },
+    { id: 'silver',  bonus: 0.015, c1: '#ffffff', c2: '#a9b3c1', ink: '#363d4a' },
+    { id: 'gold',    bonus: 0.015, c1: '#fff1c2', c2: '#d99a2b', ink: '#6a4510' },
+    { id: 'platinum', bonus: 0.02, c1: '#fbfaff', c2: '#9b97cf', ink: '#2c2a52' },
+    { id: 'diamond', bonus: 0.02,  c1: '#f2feff', c2: '#6cc9e4', ink: '#174d5e' },
   ];
-  BADGES.forEach(b => Object.defineProperties(b, {
-    name: { get: () => T(`badge.${b.id}.name`) },
-    desc: { get: () => T(`badge.${b.id}.desc`, { n: b.n !== undefined ? fmtNum(b.n) : '' }) },
-  }));
-  const BADGE_BONUS = 0.03;
+  TIERS.forEach(x => Object.defineProperty(x, 'name', { get: () => T(`tier.${x.id}`) }));
+  // at: her kademenin eşiği; stat: oyuncunun ömür boyu değeri; fmt: açıklamadaki biçim
+  const lifeDist = s => Math.max((s.lifeDist || 0) + (s.distance || 0), s.legacyDist || 0);
+  const BADGES = [
+    { id: 'steps',     at: [50, 250, 1000, 5000, 20000, 50000, 100000, 250000], stat: s => s.clicks },
+    { id: 'rhythm',    at: [10, 20, 30, 50, 75, 100, 150, 250],               stat: s => s.bestCombo },
+    { id: 'lucky',     at: [1, 10, 50, 150, 400, 1000, 2500, 6000],            stat: s => s.crits },
+    { id: 'butterfly', at: [1, 5, 15, 40, 100, 250, 500, 1000],                stat: s => s.gifts },
+    { id: 'rainbow',   at: [1, 3, 8, 20, 50, 100, 200, 400],                  stat: s => s.rainbows },
+    { id: 'night',     at: [5, 10, 30, 60, 180, 600, 1440, 4320],              stat: s => (s.nightTime || 0) / 60 },
+    { id: 'region',    at: [3, 5, 8, 11, 15, 21, 31, 45],                    stat: s => Math.max(s.bestRegion || 0, s.regionIdx || 0) + 1 },
+    { id: 'dist',      at: [5000, 42195, 1e6, 4.0075e7, 3.844e8, 1.496e11, 4.5e12, 9.4607e15], stat: lifeDist, fmt: 'dist' },
+    { id: 'garage',    at: [2, 4, 6, 8, 10, 12, 13, 14],                     stat: s => Math.max(s.bestGarage || 0, VEHICLES.filter(v => s.owned && s.owned[v.id]).length) },
+    { id: 'tuned',     at: [10, 25, 50, 100, 150, 200, 300, 500],             stat: s => Math.max(s.bestLevel || 0, ...Object.values(s.levels || {})) },
+    { id: 'home',      at: [1, 2, 3, 5, 8, 12, 20, 30],                      stat: s => s.trips },
+    { id: 'memory',    at: [10, 30, 100, 300, 1000, 3000, 10000, 30000],        stat: s => s.memories },
+    { id: 'photo',     at: [1, 3, 10, 25, 50, 100, 250, 500],                 stat: s => s.photos },
+    { id: 'wish',      at: [1, 3, 10, 25, 50, 100, 200, 400],                 stat: s => s.wishes },
+    { id: 'streak',    at: [2, 3, 5, 7, 14, 30, 60, 100],                     stat: s => s.day ? s.day.best : 0 },
+  ];
+  BADGES.forEach(b => {
+    Object.defineProperty(b, 'name', { get: () => T(`badge.${b.id}.name`) });
+    // kademe k'nin (0'dan) hedefi
+    b.desc = k => { const n = b.at[Math.min(k, b.at.length - 1)]; return T(`badge.${b.id}.desc`, { n, v: b.fmt === 'dist' ? fmtDist(n) : fmtNum(n) }); };
+    // durumun hak ettiği kademe sayısı (0..7)
+    b.tierFor = s => { const v = +b.stat(s) || 0; let k = 0; while (k < b.at.length && v >= b.at[k]) k++; return k; };
+  });
+  const BADGE_TIERS = BADGES.length * TIERS.length;
+  // Kazanılmış kademe sayısı ve toplam kredi bonusu
+  const badgeCount = state => BADGES.reduce((a, b) => a + ((state.badges || {})[b.id] || 0), 0);
+  const badgeBonus = state => BADGES.reduce((a, b) => { const k = (state.badges || {})[b.id] || 0; for (let i = 0; i < k; i++) a += TIERS[i].bonus; return a; }, 0);
 
   /* ---------- Yolcunun kıyafetleri: rozet topladıkça açılır ---------- */
-  // need: gereken rozet sayısı. Ceket rengi araçların vurgu renklerinde de kullanılır.
+  // need: gereken rozet kademesi sayısı. Ceket rengi araçların vurgu renklerinde de kullanılır.
   const OUTFITS = [
     { id: 'classic',  need: 0,  jacket: '#e7694e', jacketDark: '#c9553d', hat: '#2f9e8f', hatDark: '#237c70', pack: '#f0b445' },
     { id: 'sky',      need: 3,  jacket: '#4f8fd6', jacketDark: '#3b73b4', hat: '#f0b445', hatDark: '#c99330', pack: '#e7694e' },
-    { id: 'forest',   need: 6,  jacket: '#4c9a5f', jacketDark: '#3a7a4a', hat: '#c9553d', hatDark: '#a3402d', pack: '#e9d3a1' },
-    { id: 'lavender', need: 10, jacket: '#9a7fe0', jacketDark: '#7b62bf', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#6fd3c1' },
-    { id: 'sunset',   need: 15, jacket: '#f2a03d', jacketDark: '#cf8228', hat: '#7b4fa8', hatDark: '#5f3b85', pack: '#2f9e8f' },
-    { id: 'night',    need: 20, jacket: '#3d4380', jacketDark: '#2b2f5e', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#cfe0ff' },
-    { id: 'gold',     need: 25, jacket: '#e8b93c', jacketDark: '#c4962a', hat: '#fbf4e6', hatDark: '#d9cfbb', pack: '#c9553d' },
+    { id: 'forest',   need: 8,  jacket: '#4c9a5f', jacketDark: '#3a7a4a', hat: '#c9553d', hatDark: '#a3402d', pack: '#e9d3a1' },
+    { id: 'lavender', need: 15, jacket: '#9a7fe0', jacketDark: '#7b62bf', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#6fd3c1' },
+    { id: 'sunset',   need: 25, jacket: '#f2a03d', jacketDark: '#cf8228', hat: '#7b4fa8', hatDark: '#5f3b85', pack: '#2f9e8f' },
+    { id: 'night',    need: 40, jacket: '#3d4380', jacketDark: '#2b2f5e', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#cfe0ff' },
+    { id: 'gold',     need: 60, jacket: '#e8b93c', jacketDark: '#c4962a', hat: '#fbf4e6', hatDark: '#d9cfbb', pack: '#c9553d' },
   ];
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
   const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
@@ -287,7 +292,7 @@
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.01 * lvl; },
     luckMult: 5, // şanslı adım kaç kat uzun
-    badgeMult(state) { return 1 + BADGE_BONUS * Object.keys(state.badges || {}).length; },
+    badgeMult(state) { return 1 + badgeBonus(state); },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {
       let best = null, bestIdle = -1;
@@ -400,7 +405,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -84,11 +84,15 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
-- **Yolcunun kıyafeti**: Rozet topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 rozet), Orman (6), Lavanta (10),
-  Gün Batımı (15), Gece Yolcusu (20) ve Altın Yolcu (25). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
+- **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
+  Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
   yolcuya, araçların vurgu renklerine, garaj simgelerine ve kartpostallara yansır.
-- **Rozetler**: Adım, kelebek, kayan yıldız, günlük seri, bölge, mesafe, garaj, yükseltme, eve dönüş ve kartpostal hedefleriyle 29 rozet. Her rozet kalıcı olarak +%3 kredi verir.
-  Yol Defteri'nde görünür. Yol Defteri tutulan dilekleri ve çekilen kartpostalları da sayar.
+- **Kademeli rozetler**: 15 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
+  eve dönüş, hatıra, kartpostal, kayan yıldız ve günlük seri. Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz, Gümüş,
+  Altın, Platin, Elmas (toplam 120 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
+  tamamı +%10). Rozetler ömür boyu kazanılır ve eve dönüşte kaybolmaz. Yol Defteri her ailenin kademesini, kademe noktalarını
+  ve bir sonraki hedefi gösterir. Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
+  dizisine bir eşik eklemek yeter.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı

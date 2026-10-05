@@ -435,20 +435,28 @@ button { font: inherit; color: inherit; }
 .s-coast { --c: #6cc5ec; } .s-canyon { --c: #ff9a72; } .s-sakura { --c: #ffb3c8; } .s-autumn { --c: #f0a24a; }
 .s-desert { --c: #f3c98c; } .s-snow { --c: #dbe7f5; } .s-aurora { --c: #8affd0; } .s-tea { --c: #74d38a; } .s-cappadocia { --c: #f1c49a; }
 .s-tulip { --c: #ff8fa8; } .s-olive { --c: #b9c98a; }
-/* Rozetler */
-.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+/* Rozetler: aile başına bir kart, madalya o anki kademenin renginde (plastik → elmas) */
+.badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .badge {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 8px; align-items: center;
-  background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 8px 10px; min-width: 0;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "m b" "m e" "p p" "s s";
+  column-gap: 9px; row-gap: 2px; align-items: center;
+  background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 9px 10px; min-width: 0;
 }
 .badge .medal {
-  grid-row: span 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 14px; font-weight: 800; background: var(--well); color: var(--muted);
+  grid-area: m; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 15px; font-weight: 800; background: var(--well); color: var(--muted);
 }
-.badge b { font: 700 13.5px/1.15 var(--font-display); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
-.badge small { font-size: 11px; color: var(--muted); line-height: 1.25; }
-.badge.on { border-color: rgba(255, 213, 107, 0.45); }
-.badge.on .medal { background: radial-gradient(circle at 35% 30%, #fff1c2, var(--gold) 60%, #d99a2b); color: #6a4510; }
+.badge b { grid-area: b; font: 700 13.5px/1.15 var(--font-display); min-width: 0; overflow-wrap: anywhere; color: var(--muted); }
+.badge em { grid-area: e; font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soft-text); }
+.badge .pips { grid-area: p; display: flex; gap: 3px; margin-top: 6px; }
+.badge .pips i { flex: 1; height: 5px; border-radius: 99px; background: var(--well); }
+.badge .pips i.on { background: linear-gradient(90deg, var(--c1), var(--c2)); }
+.badge small { grid-area: s; font-size: 11px; color: var(--muted); line-height: 1.3; margin-top: 4px; }
+.badge.on { border-color: color-mix(in srgb, var(--c2) 55%, transparent); }
+.badge.on .medal {
+  background: radial-gradient(circle at 35% 30%, var(--c1), var(--c2) 75%); color: var(--ink);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
 .badge.on b { color: var(--paper); }
 .mslist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .mslist li { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
