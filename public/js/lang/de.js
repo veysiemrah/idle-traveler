@@ -109,6 +109,18 @@ IT.addLang('de', {
     'others.ahead': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} vor dir.",
     'others.behind': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} hinter dir.",
     'others.near': "neben dir",
+    'chat.btn': "Mitreisenden etwas zurufen",
+    'chat.title': "Zurufen",
+    'chat.fail': "Deine Nachricht kam gerade nicht an; versuch es gleich noch einmal.",
+    'msg.hi': "Hallo!",
+    'msg.view': "Was für eine Aussicht!",
+    'msg.go': "Weiter geht’s!",
+    'msg.wait': "Warte auf mich!",
+    'msg.race': "Wettrennen?",
+    'msg.great': "Du machst das super!",
+    'msg.thanks': "Danke!",
+    'msg.rest': "Pausenzeit.",
+    'msg.bye': "Gute Reise!",
     'tr.pick': "Namen wählen",
 
     // Anzeige und Allgemeines

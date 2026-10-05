@@ -376,9 +376,10 @@
     const top = y - 58 * k, bot = y - 9 * k;
     const lit = st.night > 0.35;
     const winCol = lit ? '#ffe7a8' : '#b8dcee';
-    // vagonlar (sola doğru); 3. aşamada dördüncü vagon eklenir
+    // vagonlar (sola doğru); 3. aşamada dördüncü vagon eklenir. st.cars: vagon sayısını sabitler (sahnedeki diğer gezginlerin kısa treni)
     const T = st.tier || 0, band = T >= 2 ? GOLD : P.teal;
-    for (let c = 0; c < (T >= 3 ? 4 : 3); c++) {
+    const cars = st.cars !== undefined ? st.cars : T >= 3 ? 4 : 3;
+    for (let c = 0; c < cars; c++) {
       const x1 = x - 52 * k - (c + 1) * 96 * k, x2 = x1 + 92 * k;
       ctx.fillStyle = '#e9e1d2'; rrect(ctx, x1, top + 4 * k, x2 - x1, bot - top - 4 * k, 7 * k); ctx.fill();
       ctx.fillStyle = band; ctx.fillRect(x1, bot - 16 * k, x2 - x1, 7 * k);
@@ -846,6 +847,22 @@
   const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true };
   // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
   const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3 };
+  // Araçların çizim sınırları (k = 1, çizim noktasına göre; görünüm aşamalarının en genişi): [sol, sağ] ve üst yükseklik.
+  // Değerler araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
+  const VEH_EXT = { walk: [-23, 15], skates: [-23, 21], board: [-26, 25], bike: [-42, 37], horse: [-35, 41], moto: [-44, 43], car: [-46, 45],
+    van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72] };
+  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80 };
+  // Karabaş ve Tekir'in yavaş araçlarda koştuğu yer (aracın gerisinde)
+  const PAL_BACK = { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 };
+  const GHOST_SCALE = 0.8;
+  const MSG_LIFE = 8; // konuşma balonu saniye
+  function vehExtent(veh, tier, pal, short) {
+    let [l, r] = VEH_EXT[veh] || [-30, 30];
+    if (veh === 'train') l = short ? -148 : tier >= 3 ? -436 : -340;
+    const back = (pal === 'dog' || pal === 'cat') && PAL_BACK[veh];
+    if (back) l = Math.min(l, -(back + 16));
+    return [l, r];
+  }
   function drawVehicle(ctx, id, x, y, k, st) {
     switch (id) {
       case 'walk': return drawWalker(ctx, x, y, k, st, false);
@@ -1000,6 +1017,8 @@
       this.gift = null; this.star = null; this.chest = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
+      // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
+      this.msgs = new Map(); this.myMsg = null;
       this.stars = Array.from({ length: 170 }, () => ({ x: Math.random(), y: Math.random() * 0.75, r: Math.random() * 1.3 + 0.3, p: Math.random() * TAU }));
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
       this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
@@ -1186,15 +1205,33 @@
       return false;
     }
     /* --- Diğer gezginler --- */
-    // list: yakınlığa göre sıralı { pub, name, sub, veh, tier, outfit, pal, ahead }
+    // list: önceliğe göre sıralı (az önce konuşanlar, sonra en yakınlar) { pub, name, sub, veh, tier, outfit, pal, ahead }
     setOthers(list) { this.others = list || []; }
+    // Gezginler aracının gerçek genişliğine göre dizilir: kendi aracından (vagonlar, köpek dahil) başlayıp aralarında boşluk
+    // bırakarak öne ve geriye doğru. Yerde ve gökyüzünde iki ayrı sıra vardır; sığmayan gezgin gösterilmez (yumuşakça çekilir).
     ghostSlots() {
-      const k = this.k, W = this.W, tx = this.travelerX;
+      const k = this.k, W = this.W, tx = this.travelerX, gap = 26 * k, sc = GHOST_SCALE;
       const nA = W < 640 ? 1 : W < 1000 ? 2 : 3, nB = W < 640 ? 1 : 2;
+      const layer = v => (FLYING[v] ? 1 : 0), own = layer(this.vehicle);
+      const [ol, or] = vehExtent(this.vehicle, this.vehTier || 0, this.companion, false);
+      const ahead = [0, 1].map(L => (L === own ? tx + or * k + gap : tx + 30 * k));
+      const behind = [0, 1].map(L => (L === own ? tx + ol * k - gap : tx - 30 * k));
       const out = [];
-      this.others.filter(o => o.ahead).slice(0, nA).forEach((o, i) => out.push([o, tx + (150 + 130 * i) * k]));
-      this.others.filter(o => !o.ahead).slice(0, nB).forEach((o, i) => out.push([o, tx - (128 + 112 * i) * k]));
-      return out.filter(([, x]) => x > 34 * k && x < W - 34 * k);
+      let na = 0, nb = 0;
+      for (const o of this.others) {
+        if (o.ahead ? na >= nA : nb >= nB) continue;
+        const L = layer(o.veh), [l, r] = vehExtent(o.veh, o.tier || 0, o.pal, true).map(v => v * k * sc);
+        if (o.ahead) {
+          const x = ahead[L] - l;
+          if (x + r > W - 8) continue;
+          ahead[L] = x + r + gap; out.push([o, x]); na++;
+        } else {
+          const x = behind[L] - r;
+          if (x + l < 8) continue;
+          behind[L] = x + l - gap; out.push([o, x]); nb++;
+        }
+      }
+      return out;
     }
     updateGhosts(dt) {
       const seen = new Set();
@@ -1216,12 +1253,11 @@
     }
     // Gezginin çizim noktası ve etiketin yüksekliği
     ghostPos(g) {
-      const k = this.k, o = g.o, s = 0.8;
+      const k = this.k, o = g.o, s = GHOST_SCALE;
       const x = g.x + Math.sin(this.t * 0.45 + g.seed) * 8 * k;
       const hop = g.wave > 0 ? Math.abs(Math.sin(g.wave * 9)) * 7 * k : 0;
       const y = FLYING[o.veh] ? this.H * FLY_Y[o.veh] - 34 * k + Math.sin(this.t * 0.8 + g.seed) * 4 * k : this.groundY() - 9 * k - hop;
-      const top = { walk: 66, skates: 68, board: 70, bike: 68, horse: 92, moto: 62, car: 54, van: 66, train: 62, balloon: 112, plane: 34, jet: 30, rocket: 36, sail: 88 }[o.veh] || 64;
-      return { x, y, s, top: y - top * k * s };
+      return { x, y, s, top: y - (VEH_TOP[o.veh] || 80) * k * s };
     }
     drawGhosts(ctx, night) {
       this.tags = [];
@@ -1233,12 +1269,13 @@
         // uzaktaki gezgin: biraz saydam ve küçük
         ctx.globalAlpha = g.alpha * 0.72;
         if (!FLYING[o.veh]) { ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, p.x, p.y + 1, 22 * ks, 3 * ks); }
-        const back = (o.pal === 'dog' || o.pal === 'cat') && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[o.veh];
+        const back = (o.pal === 'dog' || o.pal === 'cat') && PAL_BACK[o.veh];
         if (back) {
           if (o.pal === 'cat') drawCat(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
           else drawDog(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
         }
-        const st = { phase: g.phase, wheel: this.wheel, t: this.t + g.seed, night, tier: o.tier || 0, pal: 0, palKind: null };
+        // tren kısa çizilir (lokomotif ve bir vagon): beş kişi trende olsa da yol kalabalıklaşmaz
+        const st = { phase: g.phase, wheel: this.wheel, t: this.t + g.seed, night, tier: o.tier || 0, pal: 0, palKind: null, cars: o.veh === 'train' ? 1 : undefined };
         withOutfit(o.outfit, () => drawVehicle(ctx, o.veh, p.x, p.y, ks, st));
         if (o.pal === 'bird') drawGull(ctx, p.x - 20 * ks, p.top - 20 * ks + Math.sin(this.t * 1.6 + g.seed) * 4 * k, ks, this.t, 0);
         ctx.restore();
@@ -1287,6 +1324,46 @@
       ctx.fillText(o.name, bx + w / 2, y - h + 10.5 * k);
       ctx.fillStyle = css(o.ahead ? mixc(hex('#10806e'), hex('#7fe0cd'), n) : mixc(hex('#6a6f8c'), hex('#aab0cc'), n)); ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
       ctx.fillText(o.sub, bx + w / 2, y - h + 21.5 * k);
+      ctx.restore();
+    }
+    /* --- Konuşma balonları --- */
+    say(pub, text) { this.msgs.set(pub, { text, t: 0 }); }
+    sayMine(text) { this.myMsg = { text, t: 0 }; }
+    drawBubbles(ctx) {
+      const k = this.k;
+      if (this.myMsg) {
+        const top = this.riderY() - (VEH_TOP[this.vehicle] || 80) * k - this.stepKick * 2.5 * k;
+        this.drawBubble(ctx, this.travelerX, top - 10 * k, this.myMsg);
+      }
+      for (const g of this.ghosts.values()) {
+        const m = this.msgs.get(g.o.pub);
+        if (!m || g.alpha < 0.3) continue;
+        const p = this.ghostPos(g), kk = Math.max(k, 0.85);
+        // isim etiketinin üstünde (etiket yukarı kalktıysa o da kalkar)
+        this.drawBubble(ctx, p.x, p.top - 6 * k - 30 * kk - (g.lift || 0) - 8 * k, m, g.alpha);
+      }
+    }
+    // Balon küçük bir sıçrayışla açılır, hafifçe yükselir ve sonunda solar; kuyruğu konuşanı gösterir
+    drawBubble(ctx, x, y, m, alpha) {
+      const k = Math.max(this.k, 0.85), t = m.t;
+      const pop = t < 0.3 ? 1 + 2.7 * Math.pow(t / 0.3 - 1, 3) + 1.7 * Math.pow(t / 0.3 - 1, 2) : 1; // easeOutBack
+      const a = (alpha === undefined ? 1 : alpha) * clamp(t / 0.15, 0, 1) * clamp((MSG_LIFE - t) / 0.7, 0, 1);
+      if (a <= 0) return;
+      ctx.save();
+      ctx.font = `700 ${Math.round(13 * k)}px "Figtree", system-ui, sans-serif`;
+      const w = ctx.measureText(m.text).width + 22 * k, h = 28 * k;
+      const by = y - Math.min(t, 1.2) * 4 * k;
+      const bx = clamp(x - w / 2, 6, this.W - w - 6);
+      ctx.translate(x, by); ctx.scale(pop, pop); ctx.translate(-x, -by);
+      ctx.globalAlpha = a;
+      ctx.shadowColor = 'rgba(20,20,50,0.25)'; ctx.shadowBlur = 10 * k; ctx.shadowOffsetY = 3 * k;
+      ctx.fillStyle = '#ffffff';
+      rrect(ctx, bx, by - h, w, h, 14 * k); ctx.fill();
+      ctx.shadowColor = 'transparent';
+      const tx = clamp(x, bx + 14 * k, bx + w - 14 * k);
+      ctx.beginPath(); ctx.moveTo(tx - 6 * k, by - 1); ctx.lineTo(tx + 6 * k, by - 1); ctx.lineTo(x, by + 8 * k); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#272b45'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(m.text, bx + w / 2, by - h / 2 + 0.5 * k);
       ctx.restore();
     }
     // Bir gezgine dokununca el sallar; dokunulan gezginin verisini döner
@@ -1415,6 +1492,8 @@
       }
       this.parts = this.parts.filter(p => p.life < p.max && p.x > -60 && p.y < this.H + 40);
       this.updateGhosts(dt);
+      for (const [pub, m] of this.msgs) { m.t += dt; if (m.t > MSG_LIFE) this.msgs.delete(pub); }
+      if (this.myMsg) { this.myMsg.t += dt; if (this.myMsg.t > MSG_LIFE) this.myMsg = null; }
       for (const f of this.floats) f.life += dt;
       this.floats = this.floats.filter(f => f.life < f.max);
       // kelebek
@@ -1744,6 +1823,7 @@
       }
 
       this.drawTags(ctx, night);
+      this.drawBubbles(ctx);
       this.drawParts(ctx, true);
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.gift) this.drawButterfly(ctx, this.gift);

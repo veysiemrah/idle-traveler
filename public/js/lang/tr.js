@@ -110,6 +110,18 @@ IT.addLang('tr', {
     'others.ahead': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} önde.",
     'others.behind': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} geride.",
     'others.near': "yanında",
+    'chat.btn': "Yoldaşlara seslen",
+    'chat.title': "Yoldaşlara seslen",
+    'chat.fail': "Mesajın şu an yola ulaşamadı; birazdan yeniden dene.",
+    'msg.hi': "Merhaba!",
+    'msg.view': "Ne güzel manzara!",
+    'msg.go': "Haydi, yola devam!",
+    'msg.wait': "Bekle beni!",
+    'msg.race': "Yarışalım mı?",
+    'msg.great': "Harika gidiyorsun!",
+    'msg.thanks': "Teşekkürler!",
+    'msg.rest': "Mola zamanı.",
+    'msg.bye': "İyi yolculuklar!",
     'tr.pick': "Ad seç",
 
     // HUD ve genel

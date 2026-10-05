@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.23';
+  IT.VERSION = '1.24';
 
   IT.CHANGELOG = [
+    { v: '1.24', date: '2026-10-05', items: {
+      tr: ['Yoldaşlara seslen: sahnenin köşesindeki konuşma düğmesiyle diğer gezginlere hazır bir mesaj gönder; sözlerin başının üstünde balon olup herkesin yolunda belirir.',
+        'Biri sana seslenirse duyarsın. Kim bilir, belki bir yarışa davet edilirsin.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Call out to fellow travelers: use the speech button in the corner of the scene to send a ready-made message; your words appear in a bubble above your head on everyone\'s road.',
+        'If someone calls out to you, you\'ll hear it. Who knows, maybe you\'ll be challenged to a race.',
+        'A few small touches along the road.'],
+      de: ['Ruf deinen Mitreisenden etwas zu: Mit der Sprechblase in der Ecke der Szene schickst du eine fertige Nachricht; deine Worte erscheinen als Blase über deinem Kopf – auf dem Weg aller anderen.',
+        'Ruft dir jemand etwas zu, hörst du es. Wer weiß, vielleicht fordert dich jemand zum Wettrennen heraus.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Saluda a otros viajeros: con el botón de diálogo en la esquina de la escena envía un mensaje listo; tus palabras aparecen en un bocadillo sobre tu cabeza en el camino de todos.',
+        'Si alguien te saluda, lo oirás. Quién sabe, quizá te reten a una carrera.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Fais signe aux autres voyageurs : avec la bulle dans le coin de la scène, envoie un message tout prêt ; tes mots apparaissent dans une bulle au-dessus de ta tête, sur la route de tous.',
+        'Si quelqu\'un te fait signe, tu l\'entendras. Qui sait, peut-être qu\'on te lancera un défi de course.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.23', date: '2026-10-05', items: {
       tr: ['Daha sakin bir yolculuk: oyunun temposu yarıya indi. Araç ve güçlendirme fiyatları iki katına çıktı, araç yükseltmeleri aynı kaldı.',
         'Elindeki aracı iyice geliştirmenin tam zamanı.',
