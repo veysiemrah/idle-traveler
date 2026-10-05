@@ -7,6 +7,7 @@ Kredilerle yeni araçlar, araç yükseltmeleri ve kalıcı güçlendirmeler alı
 ## Oynamak
 
 Derleme adımı yok. Site dosyaları `public/` klasöründe; `public/index.html` dosyasını tarayıcıda açman yeterli.
+Yolcular listesi Worker'a ihtiyaç duyar; onsuz oyun aynen çalışır, liste yalnızca "ulaşılamıyor" der.
 İstersen basit bir sunucuyla da açabilirsin:
 
 ```bash
@@ -16,7 +17,7 @@ python3 -m http.server 8000 -d public
 
 ## Yayın: Cloudflare Workers → idle-traveler.vebaban.com
 
-Site Cloudflare'de, statik varlık sunan bir Worker olarak barınır (`wrangler.jsonc`).
+Site Cloudflare'de, statik varlık sunan bir Worker olarak barınır (`wrangler.jsonc`). Aynı Worker Yolcular API'sini de karşılar.
 GitHub yalnızca repoyu tutar. Actions, Pages ya da secret kullanılmaz.
 `main` dalına her push'ta Cloudflare Workers Builds repoyu çeker, `npx wrangler deploy` çalıştırır ve siteyi günceller.
 
@@ -36,6 +37,30 @@ Tek seferlik kurulum (Cloudflare panelinde):
 
 Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrangler deploy --dry-run`.
 
+### Yolcular API'si (Worker + D1)
+
+`src/worker.js` statik dosyaları `public/` klasöründen sunar, yalnızca `/api/*` isteklerini kendisi karşılar. Veriler
+`idle-traveler` adlı D1 veritabanındaki `players` tablosunda durur. Şema `migrations/` klasöründedir.
+
+| İstek | Ne yapar |
+| --- | --- |
+| `POST /api/hello` | `{ id, key, name, dist, trip, veh, route }`: kaydı ekler ya da günceller, yolcu listesini döner |
+| `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ name, dist, trip, veh, online, ago, rank, me }], me }` |
+
+- `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
+  özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
+- Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen kayıtlar ara sıra silinir.
+- Ad sunucuda da aynı kuralla temizlenir ve denetlenir.
+
+Yerelde API ile denemek için:
+
+```bash
+npx wrangler d1 migrations apply idle-traveler --local
+npx wrangler dev   # http://localhost:8787
+```
+
+Şemaya yeni tablo eklenince canlı veritabanına uygulamak için `npx wrangler d1 migrations apply idle-traveler --remote`.
+
 ## Oyun
 
 - **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile ayarlar (dişli), kartpostal,
@@ -51,14 +76,17 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
-- **Fiyat dengesi**: Yeni bir araç almak, elindeki aracı yükseltmekten her zaman daha pahalıdır. Yükseltmeler aracın
-  liste fiyatının %1,8'inden başlar ve her seviyede 1,55 katına çıkar.
-  - **Takas indirimi**: Bir önceki aracın her yükseltme seviyesi sıradaki aracı %5 ucuzlatır, Sv. 10'da yarı fiyata iner
-    (en çok %50). Oyuncu önce elindekini geliştirip sonra yenisine geçmeye teşvik edilir.
-  - **Taban fiyat**: Yeni araç, garajdaki (kendinden önceki) araçların sıradaki yükseltmesinin en az 1,5 katıdır.
-    Fiyatlar öyle ayarlı ki taban, takas indirimi dolduktan sonra (Sv. 11 civarı) devreye girer.
-  - Sıradaki aracın kartı fiyatın nereden geldiğini gösterir: indirim oranı ile üstü çizili liste fiyatı ya da tabanı
-    belirleyen yükseltme.
+- **Fiyat dengesi**: Araçların satın alma ve yükseltme fiyatları sabittir; bir aracı yükseltmek başka bir aracın fiyatını
+  değiştirmez. Yükseltmeler aracın fiyatının %1,8'inden başlar ve her seviyede 1,55 katına çıkar. Sıradaki araç,
+  elindekini Sv. 10'a getirmenin toplam maliyetinden pahalıdır (çoğu araçta 1,7–2,5 katı). Bu yüzden aracı yükseltmeden yenisine para
+  biriktirmek kârsızdır. Simülasyonda motora 32 dakikada ulaşan oyuncu, yükseltme yapmadan biriktirince 229 dakikada ulaşır.
+  Sıradaki aracın kartındaki ipucu önce elindeki aracı Sv. 10'a getirmeyi önerir, o seviyeye gelince yeni araç zamanını haber verir.
+- **Yolcular (çok oyunculu)**: Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
+  Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
+  son 24 saatte oynayan gezginleri bu yolculukta gittikleri yola göre sıralar. Her satırda ad, bindiği araç,
+  kaçıncı yolculukta olduğu, mesafesi ve şu an yolda olup olmadığı görünür. Sekmedeki sayı şu an yolda olanlardır
+  (son 3 dakikada haber verenler). Oyun her 30 saniyede bir kaydını günceller. Sunucuya ulaşılamazsa oyun aynen sürer,
+  liste "ulaşılamıyor" der ve kendiliğinden yeniden dener.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
   eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
@@ -177,8 +205,11 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, kıyafetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
 | `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
 | `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları. Sekme gizlenince susar |
-| `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, eve dönüş, gökyüzü ayarı, arayüz |
-| `wrangler.jsonc` | Cloudflare Workers ayarı: statik varlık klasörü ve özel alan adı |
+| `public/js/online.js` | Yolcular: gezgin kimliği, ad kuralı, sunucuyla 30 saniyede bir haberleşme (`IT.Online`) |
+| `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, eve dönüş, gökyüzü ayarı, ad penceresi, arayüz |
+| `src/worker.js` | Cloudflare Worker: statik siteyi sunar, `/api/hello` ve `/api/players` uçlarıyla Yolcular listesini D1'de tutar |
+| `migrations/` | D1 veritabanı şeması (`players` tablosu) |
+| `wrangler.jsonc` | Cloudflare Workers ayarı: Worker kodu, statik varlık klasörü, D1 bağlantısı ve özel alan adı |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
 

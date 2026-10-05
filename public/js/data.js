@@ -9,7 +9,7 @@
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   // (v1.11'de bütün mesafeler 1/10'a indi; metre başına kredi CREDITS_PER_M ile 10 katına çıktığı için tempo aynı kaldı)
-  // (v1.19'da araç fiyatları 2 katına çıktı, yükseltmeler fiyatın %1,8'inden başlıyor: yeni araç, yükseltmeden hep pahalı)
+  // (v1.19'da araç fiyatları 2 katına çıktı, yükseltmeler fiyatın %1,8'inden başlıyor: aracı Sv. 10'a getirmeden yenisini almak kârsız)
   const VEHICLES = [
     { id: 'walk',   cost: 0,       idle: 0.035,  click: 0.04,   road: 'path',    alt: 0 },
     { id: 'skates', cost: 300,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
@@ -289,30 +289,9 @@
       return m;
     },
     upgradeCost(v, lvl) { return Math.ceil(v.upBase * Math.pow(1.55, lvl)); },
-    // Takas indirimi: bir önceki aracın her yükseltme seviyesi yeni aracı %5 ucuzlatır; Sv. 10'da yarı fiyat (en çok %50).
-    // Oyuncuyu yeni araca koşmadan önce elindekini geliştirmeye teşvik eder.
-    tradeStep: 0.05, tradeMax: 0.5,
-    tradeIn(state, v) {
-      const prev = VEHICLES[v.index - 1];
-      if (!prev || !state.owned || !state.owned[prev.id]) return { pct: 0, prev: null, lvl: 0 };
-      const lvl = (state.levels && state.levels[prev.id]) || 0;
-      return { pct: Math.min(Econ.tradeMax, Econ.tradeStep * lvl), prev, lvl };
-    },
-    // Taban fiyat: yeni bir araç, garajdaki (kendinden önceki) araçların sıradaki yükseltmesinin en az 1,5 katıdır.
-    // Fiyatlar öyle ayarlı ki taban ancak takas indirimi dolduktan sonra (Sv. 11 civarı) devreye girer.
-    floorK: 1.5,
-    vehPrice(state, v) {
-      const ti = Econ.tradeIn(state, v), list = Math.ceil(v.cost * (1 - ti.pct));
-      let by = null, up = 0;
-      for (const o of VEHICLES) {
-        if (o.index >= v.index || !state.owned || !state.owned[o.id]) continue;
-        const c = Econ.upgradeCost(o, (state.levels && state.levels[o.id]) || 0);
-        if (c > up) { up = c; by = o; }
-      }
-      const floor = Math.ceil(Econ.floorK * up);
-      return floor > list ? { cost: floor, trade: ti, floor: { by, up, lvl: state.levels[by.id] || 0 } } : { cost: list, trade: ti, floor: null };
-    },
-    vehCost(state, v) { return Econ.vehPrice(state, v).cost; },
+    // Araçların satın alma ve yükseltme fiyatları sabittir. Sıradaki araç, elindekinin Sv. 10 civarına kadar yükseltilmesinden
+    // çok daha pahalıdır: önce yükseltmek hep daha çok hız kazandırır, araca erken biriktirmek oyuncuyu yavaşlatır.
+    tipLevel: 10,
     // n seviyenin toplam maliyeti; n = 'max' ise bütçenin yettiği kadar (en az 1 seviye gösterilir)
     upgradeQuote(v, lvl, n, budget) {
       let cost = 0, k = 0;

@@ -5,9 +5,31 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.19';
+  IT.VERSION = '1.20';
 
   IT.CHANGELOG = [
+    { v: '1.20', date: '2026-10-05', items: {
+      tr: ['Yolcular: artık yolda yalnız değilsin! Oyuna başlarken adın sorulur; yeni Yolcular sekmesinde son 24 saatte oynayan gezginlerin adını, kaçıncı yolculukta olduklarını, bu yolculukta ne kadar yol gittiklerini ve şu an yolda olup olmadıklarını görürsün.',
+        'Adını istediğin zaman Ayarlar\'dan değiştirebilirsin.',
+        'Fiyatlar sabit: takas indirimi ve taban fiyat kaldırıldı, bir aracı yükseltmek artık başka bir aracın fiyatını değiştirmez. Yeni araç, elindekini Sv. 10\'a getirmekten çok daha pahalı; önce yükseltmek her zaman daha çok hız kazandırır.',
+        'Sıradaki aracın kartındaki ipucu, elindeki aracı ne zaman bırakman gerektiğini söyler.'],
+      en: ['Travelers: you\'re no longer alone on the road! The game asks your name when you start, and the new Travelers tab shows everyone who played in the last 24 hours: their name, which trip they\'re on, how far they\'ve gone on it and whether they\'re on the road right now.',
+        'You can change your name any time in Settings.',
+        'Fixed prices: the trade-in discount and price floor are gone, so upgrading one vehicle no longer changes another\'s price. A new vehicle costs far more than bringing yours to Lv. 10, so upgrading first always gets you further.',
+        'A tip on the next vehicle\'s card tells you when it\'s time to move on.'],
+      de: ['Reisende: Du bist nicht mehr allein unterwegs! Zu Beginn fragt das Spiel nach deinem Namen, und der neue Tab Reisende zeigt alle, die in den letzten 24 Stunden gespielt haben: Name, die wievielte Reise, die Strecke darauf und ob sie gerade unterwegs sind.',
+        'Deinen Namen kannst du jederzeit in den Einstellungen ändern.',
+        'Feste Preise: Inzahlungnahme-Rabatt und Mindestpreis entfallen, ein Upgrade ändert nie den Preis eines anderen Fahrzeugs. Ein neues Fahrzeug kostet weit mehr, als deines auf Stufe 10 zu bringen; erst verbessern bringt immer mehr.',
+        'Ein Tipp auf der Karte des nächsten Fahrzeugs sagt dir, wann es Zeit zum Umsteigen ist.'],
+      es: ['Viajeros: ¡ya no viajas solo! Al empezar, el juego te pide tu nombre, y la nueva pestaña Viajeros muestra a quienes jugaron en las últimas 24 horas: su nombre, en qué viaje van, cuánto llevan recorrido y si están en camino ahora mismo.',
+        'Puedes cambiar tu nombre cuando quieras en Ajustes.',
+        'Precios fijos: se acabaron el descuento por entrega y el precio mínimo; mejorar un vehículo ya no cambia el precio de otro. Un vehículo nuevo cuesta mucho más que llevar el tuyo a Nv. 10, así que mejorar primero siempre te lleva más lejos.',
+        'Un consejo en la tarjeta del siguiente vehículo te dice cuándo es momento de cambiar.'],
+      fr: ['Voyageurs : tu n\'es plus seul sur la route ! Le jeu te demande ton nom au départ, et le nouvel onglet Voyageurs montre ceux qui ont joué ces dernières 24 heures : leur nom, leur numéro de voyage, la distance parcourue et s\'ils sont sur la route en ce moment.',
+        'Tu peux changer ton nom à tout moment dans les Réglages.',
+        'Prix fixes : fini la remise de reprise et le prix plancher, améliorer un véhicule ne change plus le prix d\'un autre. Un nouveau véhicule coûte bien plus que d\'amener le tien au Niv. 10 : améliorer d\'abord te mène toujours plus loin.',
+        'Une astuce sur la carte du prochain véhicule te dit quand il est temps de changer.'],
+    } },
     { v: '1.19', date: '2026-10-05', items: {
       tr: ['Yeni fiyat dengesi: yeni bir araç almak, elindeki aracı yükseltmekten her zaman daha pahalı. Araç fiyatları iki katına çıktı, yükseltmeler ise belirgin biçimde ucuzladı.',
         'Takas indirimi: bir önceki aracı her yükselttiğinde sıradaki araç %5 ucuzlar; Sv. 10\'da yarı fiyata iner. Önce elindekini geliştir, sonra yenisine geç.',

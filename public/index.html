@@ -98,11 +98,15 @@
       <button class="tab" role="tab" data-act="tab" data-id="garage" aria-selected="true" data-i18n="tab.garage">Garaj</button>
       <button class="tab" role="tab" data-act="tab" data-id="buffs" aria-selected="false" data-i18n="tab.buffs">Güçlendirmeler</button>
       <button class="tab" role="tab" data-act="tab" data-id="journal" aria-selected="false" data-i18n="tab.journal">Yol Defteri</button>
+      <button class="tab tab-tr" role="tab" data-act="tab" data-id="travelers" aria-selected="false" title="Yolcular" aria-label="Yolcular" data-i18n-title="tab.travelers" data-i18n-aria="tab.travelers">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c0-3.4 2.7-5.9 6-5.9s6 2.5 6 5.9z"/><circle cx="16.9" cy="9" r="2.6"/><path d="M15.7 13.7c3 .2 5.3 2.4 5.3 5.8h-4.4c0-2.2-.3-4.1-.9-5.8z"/></svg><b class="tab-count" id="trCount"></b>
+      </button>
     </nav>
     <div class="panes">
       <section class="tabpane" id="pane-garage" role="tabpanel"></section>
       <section class="tabpane" id="pane-buffs" role="tabpanel" hidden></section>
       <section class="tabpane" id="pane-journal" role="tabpanel" hidden></section>
+      <section class="tabpane" id="pane-travelers" role="tabpanel" hidden></section>
     </div>
   </aside>
 </div>
@@ -123,6 +127,7 @@
 <script src="js/lang/fr.js"></script>
 <script src="js/changelog.js"></script>
 <script src="js/data.js"></script>
+<script src="js/online.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/scene.js"></script>
 <script src="js/game.js"></script>
