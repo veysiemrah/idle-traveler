@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.22';
+  IT.VERSION = '1.23';
 
   IT.CHANGELOG = [
+    { v: '1.23', date: '2026-10-05', items: {
+      tr: ['Daha sakin bir yolculuk: oyunun temposu yarıya indi. Araç ve güçlendirme fiyatları iki katına çıktı, araç yükseltmeleri aynı kaldı.',
+        'Böylece elindeki aracı yükseltmek her zamankinden değerli; yeni araca geçmeden önce onu iyice geliştir.'],
+      en: ['A calmer journey: the game\'s pace is now half as fast. Vehicle and boost prices doubled, while vehicle upgrades cost the same.',
+        'Upgrading the vehicle you have is worth more than ever, so grow it well before moving on.'],
+      de: ['Eine ruhigere Reise: Das Spieltempo ist jetzt halb so schnell. Fahrzeug- und Verstärkungspreise haben sich verdoppelt, Fahrzeug-Upgrades kosten gleich viel.',
+        'Dein aktuelles Fahrzeug zu verbessern lohnt sich mehr denn je – bau es gut aus, bevor du umsteigst.'],
+      es: ['Un viaje más tranquilo: el ritmo del juego es ahora la mitad. Los vehículos y los potenciadores de la pestaña Mejoras cuestan el doble; mejorar un vehículo cuesta lo mismo.',
+        'Mejorar tu vehículo actual vale más que nunca: hazlo crecer bien antes de cambiar.'],
+      fr: ['Un voyage plus paisible : le rythme du jeu est désormais deux fois plus lent. Les véhicules et les bonus coûtent le double, les améliorations de véhicule restent au même prix.',
+        'Améliorer ton véhicule actuel vaut plus que jamais : fais-le bien grandir avant de changer.'],
+    } },
     { v: '1.22', date: '2026-10-05', items: {
       tr: ['Kanat\'ın iki kanadı artık birlikte çırpıyor: biri inerken öbürünün kalktığı tuhaf uçuş düzeldi.'],
       en: ['Kanat the gull now flaps both wings together: the odd flight where one went up as the other came down is fixed.'],
