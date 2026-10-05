@@ -101,6 +101,7 @@ IT.addLang('tr', {
     // Sayfadaki sabit metinler
     'html.stageLabel': 'Yolculuk sahnesi. Adım atmak için dokun ya da Boşluk tuşuna bas.',
     'html.here': 'Şu an buradasın', 'html.dayNight': 'Gündüz / gece', 'html.sound': 'Ses',
+    'html.news': 'Yenilikler',
     'html.newRegion': 'Yeni bölge keşfedildi', 'html.hint': 'Adım atmak için dokun', 'html.hint2': 'ya da Boşluk tuşuna bas',
     'html.rhythm': 'Ritim', 'html.rhythmTip': 'Hızlı ve ritmik tıklamalar adımlarını uzatır', 'html.nextStop': 'Sıradaki durak',
     'html.wallet': 'Yol kredisi', 'html.shop': 'Mağaza', 'html.ok': 'Tamam',
@@ -133,6 +134,7 @@ IT.addLang('tr', {
     'toast.giftEffect': '<b>Altın kelebek: {name}</b> · {dur} boyunca {text}',
     'toast.wish': '<b>Kayan yıldız! Dilek tuttun: {name}</b> · {dur} boyunca {text}',
     'toast.outfit': '<b>Yeni kıyafet açıldı: {name}</b> · Yol Defteri\'nden giyebilirsin',
+    'toast.newVersion': '<b>Yeni sürüm: v{v}</b> · neler değişti? Üstteki Yenilikler düğmesine bak',
     'toast.daily': '<b>Günün hediyesi: {c} kredi</b> · {n}. gün üst üste',
     'toast.daily1': '<b>Günün hediyesi: {c} kredi</b> · yarın yine gel, hediye büyür',
     'toast.rain': 'Bir bahar yağmuru başladı. Damlalar yolu serinletiyor.',
@@ -198,6 +200,7 @@ IT.addLang('tr', {
     'j.offline': 'Çevrimdışı yolculuk', 'j.offlineDesc': 'Oyun kapalıyken otomatik hızın <b>{p}</b> kadarıyla ilerlersin. Sınır: <b>{h}</b>.',
     'j.settings': 'Ayarlar', 'j.sfx': 'Ses efektleri', 'j.music': 'Ortam sesi', 'j.on': 'Açık', 'j.off': 'Kapalı',
     'j.outfit': 'Yolcunun kıyafeti', 'j.outfitSub': 'rozet topladıkça yeni renkler açılır', 'j.wearing': 'Üzerinde',
+    'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Yenilikler', 'news.btn': 'Yola devam', 'news.new': 'Yeni',
     'j.sky': 'Gökyüzü', 'sky.auto': 'Otomatik', 'sky.day': 'Gündüz', 'sky.night': 'Gece',
     'j.lang': 'Dil', 'j.langAuto': 'Otomatik ({name})', 'j.units': 'Birimler', 'units.auto': 'Otomatik', 'units.metric': 'Kilometre', 'units.imperial': 'Mil',
     'j.saved': 'İlerleme bu tarayıcıda otomatik kaydedilir.',

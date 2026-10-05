@@ -94,6 +94,7 @@ IT.addLang('fr', {
 
     'html.stageLabel': 'Scène du voyage. Touche pour faire un pas, ou appuie sur Espace.',
     'html.here': 'Tu es ici', 'html.dayNight': 'Jour / nuit', 'html.sound': 'Son',
+    'html.news': 'Nouveautés',
     'html.newRegion': 'Nouvelle région découverte', 'html.hint': 'Touche pour faire un pas', 'html.hint2': 'ou appuie sur Espace',
     'html.rhythm': 'Rythme', 'html.rhythmTip': 'Des clics rapides et réguliers allongent tes pas', 'html.nextStop': 'Prochain arrêt',
     'html.wallet': 'Crédits de route', 'html.shop': 'Boutique', 'html.ok': 'OK',
@@ -126,6 +127,7 @@ IT.addLang('fr', {
     'toast.giftEffect': '<b>Papillon doré : {name}</b> · {text} pendant {dur}',
     'toast.wish': '<b>Étoile filante ! Tu as fait un vœu : {name}</b> · {text} pendant {dur}',
     'toast.outfit': '<b>Nouvelle tenue : {name}</b> · à porter depuis le Carnet',
+    'toast.newVersion': '<b>Nouvelle version : v{v}</b> · découvre les changements dans Nouveautés, en haut',
     'toast.daily': '<b>Cadeau du jour : {c} crédits</b> · jour {n} d\'affilée',
     'toast.daily1': '<b>Cadeau du jour : {c} crédits</b> · reviens demain, il sera plus grand',
     'toast.rain': 'Une averse de printemps commence. Les gouttes rafraîchissent la route.',
@@ -192,6 +194,7 @@ IT.addLang('fr', {
     'j.offline': 'Voyage hors ligne', 'j.offlineDesc': 'Quand le jeu est fermé, tu voyages à <b>{p}</b> de ta vitesse auto. Limite : <b>{h}</b>.',
     'j.settings': 'Réglages', 'j.sfx': 'Effets sonores', 'j.music': "Sons d'ambiance", 'j.on': 'Activé', 'j.off': 'Désactivé',
     'j.outfit': 'Tenue du voyageur', 'j.outfitSub': 'de nouvelles couleurs à chaque badge', 'j.wearing': 'Portée',
+    'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Nouveautés', 'news.btn': 'Reprendre la route', 'news.new': 'Nouveau',
     'j.sky': 'Ciel', 'sky.auto': 'Auto', 'sky.day': 'Jour', 'sky.night': 'Nuit',
     'j.lang': 'Langue', 'j.langAuto': 'Automatique ({name})', 'j.units': 'Unités', 'units.auto': 'Auto', 'units.metric': 'Kilomètres', 'units.imperial': 'Miles',
     'j.saved': 'Ta progression est enregistrée automatiquement dans ce navigateur.',
