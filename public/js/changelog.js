@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.13';
+  IT.VERSION = '1.14';
 
   IT.CHANGELOG = [
+    { v: '1.14', date: '2026-10-05', items: {
+      tr: ['Araçlar yükseldikçe değişir: seviye 10, 25, 50 ve 100\'de her araç yeni bir parça kazanır. Yürüyüş sopası, atkı, flama, sörf tahtası, dördüncü vagon, uçağın arkasında pankart… 100. seviyede altın süsler ve parıltı.',
+        'Garajdaki simgeler aracın o anki görünümünü gösterir; yükseltme satırı bir sonraki yeni görünümün seviyesini söyler.'],
+      en: ['Vehicles change as you upgrade them: at levels 10, 25, 50 and 100 each one gains a new part. A walking stick, a scarf, a pennant, a surfboard, a fourth carriage, a banner behind the plane… golden trims and sparkle at level 100.',
+        'Garage icons show each vehicle\'s current look; the upgrade line tells you when the next new look arrives.'],
+      de: ['Fahrzeuge verändern sich mit jedem Upgrade: Auf Stufe 10, 25, 50 und 100 bekommt jedes ein neues Teil. Wanderstock, Schal, Wimpel, Surfbrett, ein vierter Waggon, ein Banner hinter dem Flugzeug … auf Stufe 100 goldener Zierrat und Glitzer.',
+        'Die Garagen-Symbole zeigen das aktuelle Aussehen; die Upgrade-Zeile verrät, wann das nächste neue Aussehen kommt.'],
+      es: ['Los vehículos cambian al mejorarlos: en los niveles 10, 25, 50 y 100 cada uno gana una pieza nueva. Bastón, bufanda, banderín, tabla de surf, un cuarto vagón, una pancarta tras el avión… adornos dorados y destellos en el nivel 100.',
+        'Los iconos del garaje muestran el aspecto actual; la línea de mejora indica cuándo llega el siguiente aspecto.'],
+      fr: ['Les véhicules changent quand tu les améliores : aux niveaux 10, 25, 50 et 100, chacun gagne une nouvelle pièce. Bâton de marche, écharpe, fanion, planche de surf, quatrième wagon, banderole derrière l\'avion… dorures et étincelles au niveau 100.',
+        'Les icônes du garage montrent l\'apparence actuelle ; la ligne d\'amélioration indique quand arrive le prochain look.'],
+    } },
     { v: '1.13', date: '2026-10-05', items: {
       tr: ['Kademeli rozetler: 15 rozet ailesinin her biri Plastik, Ahşap, Metal, Bronz, Gümüş, Altın, Platin ve Elmas kademelerinden geçer. Her kademe kalıcı kredi bonusu verir.',
         'Rozetler artık ömür boyu kazanılır; eve dönünce garaj, bölge ve yükseltme rozetleri kaybolmaz. Eski rozetler karşılık gelen kademeye çevrildi.',

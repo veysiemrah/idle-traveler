@@ -50,6 +50,14 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
+- **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
+  eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve
+  şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
+  eyer örtüsü, yeleye örülü kurdele ve heybe; motosiklette rüzgâr camı, şerit ve çanta kutusu; arabada yarış şeridi, altın jant
+  ve sörf tahtası; karavanda çiçek desenleri, arkada bisiklet, güneş paneli ve ışık zinciri; trende bayrak, altın şerit ve
+  dördüncü vagon; balonda flamalar, renkli zarf ve kum torbaları; uçakta kuyruk şeridi, kanatçık ve pankart; jette burun ucu,
+  kanat şeridi ve art yakıcı; rokette şeritler, yan iticiler ve anten; güneş yelkeninde yıldız arması, yanardöner kenar ve
+  ikinci yelken. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
   Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
