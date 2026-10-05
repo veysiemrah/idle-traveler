@@ -42,7 +42,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures',
-    'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
+    'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -65,6 +65,8 @@
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
       settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto' }, intro: false,
+      // Yolcular listesindeki kimlik: id herkese kapalı, key yalnızca bu tarayıcıda (sunucu özetini saklar)
+      player: { id: IT.newId(), key: IT.newKey(), name: '' },
     };
   }
   function load() {
@@ -140,6 +142,8 @@
     s.day = { last: /^\d{4}-\d{2}-\d{2}$/.test(day.last) ? day.last : '', streak: count(day.streak, 1e5), best: count(day.best, 1e5) };
     s.day.best = Math.max(s.day.best, s.day.streak);
     if (typeof s.seenVer !== 'string' || !/^\d+(\.\d+)*$/.test(s.seenVer)) s.seenVer = '';
+    const pl = isObj(d.player) ? d.player : {};
+    s.player = IT.validId(pl.id) && IT.validKey(pl.key) ? { id: pl.id, key: pl.key, name: IT.cleanName(pl.name) || '' } : defaultState().player;
     return s;
   }
   function save() {
@@ -173,7 +177,7 @@
   let chestIn = 6; // harita tamamsa sandığın gelmesine kalan süre
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
-  let uiDirty = { garage: true, buffs: true, journal: true };
+  let uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   let uiTimer = 0, saveTimer = 0;
   let lastFrame = performance.now();
 
@@ -238,7 +242,7 @@
   function applyRoute() {
     IT.setRoute(S.route);
     if (scene) { scene.setBiome(IT.regionAt(S.regionIdx).biome, true); scene.relabel(); }
-    uiDirty = { garage: true, buffs: true, journal: true };
+    uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
   function routePicker() {
     const open = routesOpenFor(S.trips);
@@ -451,7 +455,7 @@
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
     combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.chest = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
-    uiDirty = { garage: true, buffs: true, journal: true };
+    uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
   function disarm(el, label) {
     setTimeout(() => { if (el.isConnected) { el.dataset.armed = ''; el.textContent = label; el.classList.remove('armed'); } }, 4000);
@@ -465,7 +469,7 @@
   const actions = {
     buyVeh(id) {
       const v = VEH[id];
-      if (S.owned[id] || !spend(Econ.vehCost(S, v))) return;
+      if (S.owned[id] || !spend(v.cost)) return;
       S.owned[id] = true; S.levels[id] = 0;
       S.bestGarage = Math.max(S.bestGarage, VEHICLES.filter(x => S.owned[x.id]).length);
       uiDirty.garage = true;
@@ -529,6 +533,15 @@
       S.palPick = id; save(); uiDirty.buffs = true;
       scene.burst(scene.travelerX - 30 * scene.k, scene.riderY() - 30 * scene.k, 14, ['#ffd56b', '#ffffff', '#ecdcb6']);
     },
+    nameDice() { nameDraft = randomName(); },
+    nameAsk() { showName(); },
+    rename() {
+      const inp = $('#setName'), name = inp && IT.cleanName(inp.value);
+      if (!name) { Sound.deny(); toast(t('name.bad')); return; }
+      if (name === S.player.name) return;
+      S.player.name = name; save(); IT.Online.now(); uiDirty.travelers = true;
+      toast(t('toast.named', { name: esc(name) }), 'teal');
+    },
     tab(id) {
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === id)));
       document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.id !== 'pane-' + id; });
@@ -588,7 +601,7 @@
         return;
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
-      newTrip(['settings', 'intro']);
+      newTrip(['settings', 'intro', 'player']);
       applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
       save();
@@ -749,8 +762,9 @@
   // render: { html, btn } döndürür; dil değişince pencere yeni dilde yeniden çizilir. after: çizimden sonra (olay bağlama)
   // dismiss: pencere dışına basınca ya da Esc ile kapanabilir (Yenilikler, Ayarlar, Kartpostal)
   let modalDismiss = false;
-  function openModal(render, onClose, after, dismiss) {
-    if (!$('#modal').hidden) { modalQueue.push([render, onClose, after, dismiss]); return; }
+  // guard: false dönerse pencere kapanmaz (ör. geçersiz ad)
+  function openModal(render, onClose, after, dismiss, guard) {
+    if (!$('#modal').hidden) { modalQueue.push([render, onClose, after, dismiss, guard]); return; }
     modalDismiss = !!dismiss;
     const b = $('#modalBtn');
     modalRender = () => {
@@ -762,6 +776,7 @@
     $('#modal').hidden = false;
     b.focus({ preventScroll: true });
     b.onclick = () => {
+      if (guard && !guard()) return;
       $('#modal').hidden = true; modalRender = null; modalDismiss = false; Sound.unlock();
       if (onClose) onClose();
       if (modalQueue.length) openModal(...modalQueue.shift());
@@ -809,6 +824,38 @@
     // Yeni oyuncu eski sürüm notlarını "yeni" olarak görmesin
     openModal(() => ({ html: introHtml(), btn: t('intro.btn') }), () => { S.intro = true; S.seenVer = IT.VERSION; syncNews(); save(); });
   }
+
+  /* ---------- Gezgin adı ---------- */
+  // Oyuna başlarken (ve adı olmayan eski oyunculara) bir kez sorulur; Ayarlar'dan değiştirilebilir
+  let nameDraft = '';
+  function showName() {
+    nameDraft = S.player.name;
+    let bad = false;
+    openModal(() => ({ btn: t('name.btn'), html: `
+      <p class="eyebrow">${t('name.eyebrow')}</p>
+      <h2>${t('name.title')}</h2>
+      <p class="lead">${t('name.lead')}</p>
+      <div class="name-row">
+        <input id="nameInput" class="name-input" type="text" maxlength="20" autocomplete="nickname" spellcheck="false"
+          aria-label="${t('name.label')}" placeholder="${esc(t('name.placeholder'))}" value="${esc(nameDraft)}">
+        <button class="chip ride" type="button" data-act="nameDice">${t('name.dice')}</button>
+      </div>
+      <p class="small ${bad ? 'name-bad' : 'muted'}" id="nameMsg">${t(bad ? 'name.bad' : 'name.rule')}</p>` }),
+    () => { S.player.name = IT.cleanName(nameDraft); save(); IT.Online.now(); uiDirty.travelers = true; toast(t('toast.named', { name: esc(S.player.name) }), 'teal'); },
+    () => {
+      const inp = $('#nameInput');
+      inp.addEventListener('input', () => { nameDraft = inp.value; });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#modalBtn').click(); } });
+      // Telefonlarda klavye kendiliğinden açılıp sahneyi örtmesin: yalnızca fareli cihazlarda odaklan
+      if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) inp.focus({ preventScroll: true });
+    }, false,
+    () => {
+      if (IT.cleanName(nameDraft)) return true;
+      bad = true; modalRender(); $('#nameInput').focus(); Sound.deny(); return false;
+    });
+  }
+  // Rastgele, sonradan değiştirilebilir bir ad: "Gezgin 4821"
+  const randomName = () => t('name.random', { n: 1000 + Math.floor(Math.random() * 9000) });
 
   /* ---------- Sürüm ve yenilikler ---------- */
   const hasNews = () => IT.verCmp(IT.VERSION, S.seenVer) > 0;
@@ -859,7 +906,7 @@
   }
   function onLanguage() {
     applyStatic();
-    uiDirty = { garage: true, buffs: true, journal: true };
+    uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
     $('#effects').replaceChildren(); // yeni dilde yeniden kurulur
     syncSoundBtn(); syncSkyBtn();
     if (!$('#modal').hidden && modalRender) modalRender();
@@ -936,7 +983,7 @@
         </div>
         ${owned
           ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-          : `<div class="up">${costBtn('buyVeh', v.id, Econ.vehCost(S, v), t('ui.buy'))}</div><div class="progress"><i data-prog="${Econ.vehCost(S, v)}"></i></div>${priceLine(v)}`}
+          : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>${tipLine(v)}`}
         </article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
@@ -944,19 +991,12 @@
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
   }
-  // Sıradaki aracın kartında fiyatın açıklaması: önceki aracı yükselttikçe takas indirimi büyür;
-  // ama yeni araç hiçbir zaman garajdaki bir yükseltmeden ucuz olmaz (taban fiyat).
-  // Satır düğmenin altında durur: metni uzayıp kısalınca Satın al düğmesi yerinden kaymaz.
-  function priceLine(v) {
-    const p = Econ.vehPrice(S, v), ti = p.trade;
-    if (p.floor) {
-      const f = p.floor;
-      return `<p class="trade floor">${t('garage.floor', { veh: f.by.name, lvl: t('ui.lvl', { n: f.lvl }), up: fmtNum(f.up), k: fmtSmall(Econ.floorK) })}</p>`;
-    }
-    if (!ti.prev) return '';
-    const vars = { prev: ti.prev.name, lvl: t('ui.lvl', { n: ti.lvl }), p: fmtPct(ti.pct * 100), step: fmtPct(Econ.tradeStep * 100), max: fmtPct(Econ.tradeMax * 100), was: fmtNum(v.cost) };
-    const key = ti.pct >= Econ.tradeMax ? 'garage.tradeMax' : ti.pct > 0 ? 'garage.trade' : 'garage.trade0';
-    return `<p class="trade">${t(key, vars)}</p>`;
+  // Sıradaki aracın kartında ipucu: önce elindeki aracı Sv. 10'a getir (fiyatlar sabittir, yalnızca yol gösterir)
+  function tipLine(v) {
+    const prev = VEHICLES[v.index - 1];
+    if (!prev || !S.owned[prev.id]) return '';
+    const lvl = S.levels[prev.id] || 0, ready = lvl >= Econ.tipLevel;
+    return `<p class="trade${ready ? ' ready' : ''}">${t(ready ? 'garage.tipReady' : 'garage.tip', { prev: prev.name, lvl: t('ui.lvl', { n: Econ.tipLevel }) })}</p>`;
   }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
@@ -1009,6 +1049,41 @@
       </div></article>`;
   }
 
+  // Yolcular: son 24 saatte oynayan gezginler, bu yolculukta gittikleri yola göre sıralı
+  function renderTravelers() {
+    const pane = $('#pane-travelers'), O = IT.Online, d = O.data;
+    const rtf = new Intl.RelativeTimeFormat(IT.locale(), { numeric: 'auto', style: 'short' });
+    const ago = ms => { const m = Math.floor(ms / 60e3); return m < 60 ? rtf.format(-Math.max(1, m), 'minute') : rtf.format(-Math.floor(m / 60), 'hour'); };
+    const row = p => {
+      // Kendi satırın sunucuyu beklemeden güncel değerleri gösterir
+      const me = p.me, veh = VEH[me ? S.active : p.veh] || VEH.walk, trip = me ? S.trips + 1 : p.trip;
+      return `<li class="tr-row${me ? ' me' : ''}">
+        <span class="tr-rank">${fmtNum(p.rank)}</span>
+        <canvas class="tr-icon" data-icon="${veh.id}" width="72" height="56" aria-hidden="true"></canvas>
+        <div class="tr-main">
+          <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
+          <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
+        </div>
+        <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? S.distance : p.dist)}</b>
+      </li>`;
+    };
+    let body;
+    if (!d) body = `<p class="tr-note">${t(O.status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
+    else {
+      const list = d.players.map(row).join('');
+      const meOut = d.me && !d.players.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(d.me)}` : '';
+      body = `${O.status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
+        ${list || meOut ? `<ol class="tr-list">${list}${meOut}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
+    }
+    pane.innerHTML = `<div class="garage-top"><p class="tag">${t('tr.lead')}</p></div>
+      <dl class="garage-sum">
+        <div><dt>${t('tr.online')}</dt><dd>${d ? fmtNum(d.online) : '–'}</dd></div>
+        <div><dt>${t('tr.total')}</dt><dd>${d ? fmtNum(d.total) : '–'}</dd></div>
+      </dl>
+      ${S.player.name ? '' : `<div class="card tr-ask"><p class="tag">${t('tr.noName')}</p><button class="buy" data-act="nameAsk"><span>${t('tr.pick')}</span></button></div>`}
+      ${body}`;
+    pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, 0));
+  }
   function renderJournal() {
     const pane = $('#pane-journal');
     const stamps = [];
@@ -1075,6 +1150,9 @@
       <p class="eyebrow">Idle Traveler</p>
       <h2>${t('j.settings')}</h2>
       <div class="settings">
+        <div class="toggle name-set"><label for="setName">${t('name.label')}</label><div class="name-row">
+          <input id="setName" class="name-input" type="text" maxlength="20" autocomplete="nickname" spellcheck="false" value="${esc(S.player.name)}" placeholder="${esc(t('name.placeholder'))}">
+          <button class="chip ride" type="button" data-act="rename">${t('name.save')}</button></div></div>
         <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
         <div class="toggle sky"><span>${t('j.units')}</span><div class="seg" role="group" aria-label="${t('j.units')}">${UNITS.map(k =>
           `<button class="seg-btn" data-act="units" data-id="${k}" aria-pressed="${S.settings.units === k}">${t('units.' + k)}</button>`).join('')}</div></div>
@@ -1096,6 +1174,11 @@
     if (uiDirty.garage) { renderGarage(); uiDirty.garage = false; }
     if (uiDirty.buffs) { renderBuffs(); uiDirty.buffs = false; }
     if (uiDirty.journal) { renderJournal(); uiDirty.journal = false; }
+    if (uiDirty.travelers) { renderTravelers(); uiDirty.travelers = false; }
+    // Kendi satırında mesafe canlı akar; sekmedeki sayı "şu an yolda" olanlardır
+    setText('#trMeDist', fmtDist(S.distance));
+    const od = IT.Online.data;
+    setText('#trCount', IT.Online.status === 'ok' && od ? fmtNum(od.online) : '');
     const cur = current();
     const region = IT.regionAt(S.regionIdx);
     setText('#hudRegion', region.name);
@@ -1294,22 +1377,29 @@
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { save(); Sound.pause(); } else { lastFrame = performance.now(); Sound.resume(); }
+      if (document.hidden) { save(); Sound.pause(); } else { lastFrame = performance.now(); Sound.resume(); if (Date.now() - IT.Online.at > 20e3) IT.Online.now(); }
     });
     window.addEventListener('pagehide', save);
     window.addEventListener('beforeunload', save);
 
     let tab = 'garage';
     try { tab = localStorage.getItem('idle-traveler-tab') || 'garage'; } catch (e) { /* yok say */ }
-    actions.tab(['garage', 'buffs', 'journal'].includes(tab) ? tab : 'garage');
+    actions.tab(['garage', 'buffs', 'journal', 'travelers'].includes(tab) ? tab : 'garage');
 
     // İlk açılış ya da çevrimdışı dönüş
     if (!S.intro) showIntro();
-    else resume((Date.now() - S.lastSeen) / 1000);
+    // Adı olmayan oyuncuya (yeni ya da eski) bir kez sorulur; çevrimdışı özeti bundan sonra gelir
+    if (!S.player.name) showName();
+    if (S.intro) resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
     checkDaily();
     syncNews();
     if (S.intro && hasNews()) toast(t('toast.newVersion', { v: IT.VERSION }), 'teal');
+
+    // Yolcular: bu tarayıcının kaydını 30 saniyede bir günceller, listeyi getirir
+    IT.Online.onUpdate = () => { uiDirty.travelers = true; };
+    IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
+    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, trip: S.trips + 1, veh: S.active, route: S.route } : null);
 
     const hot = window.claude && window.claude.hot;
     if (hot && hot.snapshot) { try { hot.snapshot(() => { save(); return { save: S }; }); } catch (e) { /* yok say */ } }

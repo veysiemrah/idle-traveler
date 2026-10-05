@@ -1,11 +1,18 @@
-// Cloudflare Workers ayarı: yalnızca statik site (Worker kodu yok).
+// Cloudflare Workers ayarı: statik site (public/) + Yolcular API'si (src/worker.js, D1).
 // GitHub'a push → Cloudflare Workers Builds `npx wrangler deploy` çalıştırır → idle-traveler.vebaban.com güncellenir.
+// Veritabanı şeması: migrations/ (yeni tablo eklerken `wrangler d1 migrations apply idle-traveler --remote`).
 {
   "name": "idle-traveler",
+  "main": "src/worker.js",
   "compatibility_date": "2026-10-04",
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
   },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "idle-traveler", "database_id": "677c8c73-2d0e-41b6-9ea7-0549a5cc8986", "migrations_dir": "migrations" }
+  ],
   "routes": [
     { "pattern": "idle-traveler.vebaban.com", "custom_domain": true }
   ]

@@ -310,16 +310,22 @@ button { font: inherit; color: inherit; }
 .coin.big { width: 38px; height: 38px; margin: 0; }
 
 .tabs {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  display: flex; gap: 4px;
   margin: 0 16px; padding: 4px; border-radius: 14px; background: var(--well);
 }
+/* Yolcular sekmesi: simge ve şu an yolda olan gezgin sayısı */
+.tab-tr { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 9px; overflow: visible; }
+.tab-tr svg { width: 19px; height: 19px; fill: currentColor; flex: none; }
+.tab-count { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 0; }
+.tab-count:empty { display: none; }
 .tab {
-  position: relative; border: 0; background: transparent; cursor: pointer;
+  position: relative; border: 0; background: transparent; cursor: pointer; flex: 1 1 auto; min-width: 0;
   padding: 8px 6px; border-radius: 10px; font-weight: 600; font-size: 13.5px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .tab[aria-selected="true"] { background: var(--ink-3); color: var(--paper); }
 .tab.dot::after {
-  content: ""; position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%;
+  content: ""; position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%;
   background: var(--apricot); box-shadow: 0 0 0 3px rgba(255, 176, 103, 0.18);
 }
 .panes { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 24px; overscroll-behavior: contain; }
@@ -367,9 +373,9 @@ button { font: inherit; color: inherit; }
 .card > .trade { font-size: 12px; color: var(--soft-text); background: rgba(111, 211, 193, 0.1); border: 1px dashed rgba(111, 211, 193, 0.45); border-radius: var(--r-sm); padding: 6px 9px; margin-top: 2px; }
 .card > .trade b { color: var(--teal); }
 .card > .trade s { color: var(--muted); }
-/* Taban fiyat devredeyse kutu sıcak renge döner: "daha fazla yükseltme fiyatı artırır" uyarısı */
-.card > .trade.floor { background: rgba(255, 196, 92, 0.12); border-color: rgba(230, 160, 50, 0.55); }
-.card > .trade.floor b { color: var(--apricot-text); }
+/* Önceki araç hazırsa ipucu sıcak renge döner: yeni araca geçme zamanı */
+.card > .trade.ready { background: rgba(255, 196, 92, 0.12); border-color: rgba(230, 160, 50, 0.55); }
+.card > .trade.ready b { color: var(--apricot-text); }
 .card > .up, .card > .progress { grid-column: 1 / -1; }
 .card > .up { margin-top: -2px; padding-top: 10px; border-top: 1px solid var(--line-soft); }
 .card > .progress { margin-top: -6px; }
@@ -546,6 +552,39 @@ button { font: inherit; color: inherit; }
 .pc-actions { display: flex; gap: 10px; justify-content: center; }
 .pc-btn { text-decoration: none; align-items: center; min-width: 120px; padding: 10px 16px; }
 .danger { color: var(--rose); }
+/* Gezgin adı: ad penceresi ve ayarlar */
+.name-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.name-input {
+  flex: 1; min-width: 0; font: 600 16px var(--font-body); color: var(--paper); background: var(--ink-3);
+  border: 1px solid var(--line-soft); border-radius: 10px; padding: 9px 12px;
+}
+.name-input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.name-bad { color: var(--rose); }
+.toggle.name-set { cursor: default; flex-direction: column; align-items: stretch; gap: 6px; }
+.toggle.name-set:hover { background: var(--ink-2); }
+.toggle.name-set .name-input { font-size: 15px; padding: 6px 10px; }
+/* Yolcular listesi */
+.tr-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tr-row {
+  display: grid; grid-template-columns: 26px 46px minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 6px 10px 6px 6px;
+}
+.tr-row.me { border-color: rgba(111, 211, 193, 0.55); background: linear-gradient(90deg, rgba(111, 211, 193, 0.12), transparent 70%), var(--ink-2); }
+.tr-rank { text-align: center; font: 800 15px var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tr-row:nth-child(1) .tr-rank { color: var(--gold); }
+.tr-icon { width: 46px; height: 36px; }
+.tr-main { min-width: 0; }
+.tr-name { margin: 0; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tr-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.tr-name .chip { padding: 1px 7px; font-size: 11px; }
+.tr-sub { margin: 1px 0 0; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tr-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); opacity: 0.5; margin-right: 5px; vertical-align: 1px; }
+.tr-dot.on { background: var(--teal); opacity: 1; box-shadow: 0 0 0 3px rgba(111, 211, 193, 0.2); }
+.tr-dist { font-size: 13.5px; color: var(--teal); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tr-gap { text-align: center; color: var(--muted); line-height: 1; }
+.tr-note { margin: 0; font-size: 13px; color: var(--muted); background: var(--well); border-radius: var(--r-sm); padding: 10px 12px; }
+.card.tr-ask { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+.card.tr-ask .tag { margin: 0; }
 .danger.armed { background: rgba(255, 143, 143, 0.14); border-color: rgba(255, 143, 143, 0.5); }
 
 /* ---------- Pencere ---------- */
@@ -617,7 +656,8 @@ button { font: inherit; color: inherit; }
   .ms-prog { display: none; }
   .ver-label { display: none; }
   .top-tools { gap: 6px; }
-  .tab { font-size: 12.5px; }
+  .tab { font-size: 12.5px; padding: 8px 4px; }
+  .tab-tr { padding: 8px 7px; }
   /* dar ekranda durak adı etiketsiz, tam görünür */
   .ms-top .lbl { display: none; }
 }
@@ -625,6 +665,11 @@ button { font: inherit; color: inherit; }
   .brand-name { display: none; }
 }
 @media (max-width: 360px) {
+  /* dört sekme 320 pikselde de sığsın */
+  .tabs { margin: 0 10px; gap: 2px; padding: 3px; }
+  .tab { font-size: 11.5px; padding: 7px 3px; letter-spacing: -0.1px; }
+  .tab-tr { padding: 7px 5px; gap: 3px; }
+  .tab-tr svg { width: 17px; height: 17px; }
   .rhythm { grid-template-columns: auto; grid-template-areas: "v" "b"; }
   .rhythm .lbl { display: none; }
   .rhythm b { text-align: left; }
