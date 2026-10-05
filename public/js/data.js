@@ -138,15 +138,35 @@
     { biome: 'olive',      at: 1.8e9 },
   ];
   REGIONS.forEach((r, i) => Object.defineProperty(r, 'name', { get: () => T(`region.${i}`) }));
+
+  /* ---------- Seyahat rotaları ----------
+     Her eve dönüş yeni bir rota açar. Rotalar aynı mesafe eşiklerini kullanır (tempo değişmez) ama bölgeleri
+     farklı sırayla gezer; her rotanın küçük bir ayrıcalığı var. Bölge adı bölgenin biyomundan gelir. */
+  const NAME_OF = Object.fromEntries(REGIONS.map((r, i) => [r.biome, i]));
+  const ROUTES = [
+    { id: 'anatolia', perk: null,        biomes: REGIONS.map(r => r.biome) },
+    { id: 'coast',    perk: 'rain',      biomes: ['meadow', 'coast', 'olive', 'tulip', 'lavender', 'sakura', 'wheat', 'tea', 'canyon', 'cappadocia', 'autumn', 'pine', 'desert', 'snow', 'aurora'] },
+    { id: 'north',    perk: 'stars',     biomes: ['meadow', 'pine', 'autumn', 'tea', 'snow', 'aurora', 'lavender', 'wheat', 'coast', 'olive', 'tulip', 'sakura', 'canyon', 'cappadocia', 'desert'] },
+    { id: 'bloom',    perk: 'butterfly', biomes: ['meadow', 'lavender', 'tulip', 'sakura', 'tea', 'olive', 'wheat', 'autumn', 'coast', 'pine', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'silk',     perk: 'gold',      biomes: ['meadow', 'wheat', 'cappadocia', 'canyon', 'desert', 'olive', 'coast', 'tea', 'sakura', 'lavender', 'tulip', 'autumn', 'pine', 'snow', 'aurora'] },
+  ];
+  ROUTES.forEach(rt => {
+    Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
+    rt.regions = rt.biomes.map((biome, i) => { const r = { biome, at: REGIONS[i].at }; Object.defineProperty(r, 'name', { get: () => T(`region.${NAME_OF[biome]}`) }); return r; });
+  });
+  const ROUTE = Object.fromEntries(ROUTES.map(r => [r.id, r]));
+  let route = ROUTES[0];
+  function setRoute(id) { route = ROUTE[id] || ROUTES[0]; }
   const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   // Liste bitince bölgeler ikinci tura girer; her yeni bölge öncekinin bu kadar katı uzakta.
   // (4 kat, son araçtan sonra hız artışı yetişemediği için yolu fiilen durduruyordu.)
   const LOOP_GROWTH = 3;
   function regionAt(i) {
-    if (i < REGIONS.length) return REGIONS[i];
-    const loop = REGIONS.length - 1;
-    const k = i - REGIONS.length;
-    const base = REGIONS[(k % loop) + 1];
+    const list = route.regions;
+    if (i < list.length) return list[i];
+    const loop = list.length - 1;
+    const k = i - list.length;
+    const base = list[(k % loop) + 1];
     const lap = Math.floor(k / loop) + 2;
     return { get name() { return `${base.name} ${ROMAN[lap] || lap}`; }, biome: base.biome, at: REGIONS[REGIONS.length - 1].at * Math.pow(LOOP_GROWTH, k + 1) };
   }
@@ -414,7 +434,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

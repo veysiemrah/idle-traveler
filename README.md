@@ -90,6 +90,15 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
+- **Seyahat rotaları**: Her eve dönüş yeni bir rota açar. Rotalar aynı mesafe eşiklerini kullanır, yani tempo değişmez,
+  ama bölgeleri farklı sırayla gezer ve her birinin bir ayrıcalığı vardır:
+  - **Anadolu Yolu**: ilk yolculuğun rotası, bölgeler tanıdık sırayla.
+  - **Kıyı Yolu** (1. eve dönüş): Ege kıyısı ve zeytinliklerle başlar; yağmur ve gökkuşağı iki kat sık.
+  - **Kuzey Yolu** (2.): çam ormanı, karlı geçit ve kuzey ışıkları erkenden; kayan yıldızlar iki kat sık.
+  - **Çiçek Yolu** (3.): lavanta, lale ve kiraz çiçekleri; altın kelebekler daha sık.
+  - **İpek Yolu** (4.): buğday ovası, peri bacaları, kanyon ve çöl; kelebek etkileri %50 uzun, anında kredi iki katı.
+  Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
+  değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
   sonraki her seviye +%5 ekler (10. seviyede +%55). Seviye 2, 4, 7 ve 10'da görünümü değişir: tasma ve künye, boyunluk, sırtta
   heybe, altın süsler ve parıltı. Üç yol arkadaşı var; kartından seçilir:
