@@ -78,14 +78,16 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
   aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
 - **Geçici etkiler**: Kelebek, gökkuşağı ve kayan yıldız etkileri sahnenin solunda kalan süreleriyle durur; son 10 saniyede
-  yumuşakça nabız atar.
+  yumuşakça nabız atar. Bir kelebek etkisinin 5 dakikadan fazla süresi kalmışken aynı kelebek yeniden yakalanırsa süre değil
+  çarpan artar: her kat temel artışı bir kez daha ekler (Rüzgâr Hortumu hız ×3 → ×5 → ×7, Bereket kredi ×2 → ×3 → ×4),
+  en çok 10 kat. Kalan süre 5 dakikanın altındaysa yakalanan kelebek süreyi uzatır.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
-- **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 60 saniye boyunca
+- **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 5 dakika boyunca
   *Yıldız Tozu* etkisiyle hız ×2, kredi ×1,5 olur. Yağmurlu gecelerde yıldız kaymaz.
 - **Günün hediyesi**: Her yeni günün ilk ziyaretinde kredi hediyesi gelir (yaklaşık 2 dakikalık gelir). Üst üste gelinen her gün
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
-- **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
+- **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 3 dakika 20 saniye boyunca kredi ×1,5 olur.
 - **Eve Dönüş ve Hatıralar**: Yolculuk 50.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda

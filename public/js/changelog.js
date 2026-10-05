@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.16';
+  IT.VERSION = '1.17';
 
   IT.CHANGELOG = [
+    { v: '1.17', date: '2026-10-05', items: {
+      tr: ['Kelebek etkisinin süresi 5 dakikayı aşmışken aynı kelebek yeniden gelirse süre değil çarpan artar: Rüzgâr Hortumu ×3 → ×5 → ×7 (en çok 10 kat).',
+        'Gökkuşağı ve kayan yıldız etkileri 5 kat uzun: gökkuşağı 3 dk 20 sn, Yıldız Tozu 5 dk.'],
+      en: ['If a butterfly boost already has more than 5 minutes left, catching the same butterfly raises its multiplier instead of its time: Whirlwind ×3 → ×5 → ×7 (up to 10 stacks).',
+        'Rainbow and shooting star boosts last five times longer: rainbow 3 min 20 s, Stardust 5 min.'],
+      de: ['Hat ein Schmetterlingseffekt schon mehr als 5 Minuten übrig, erhöht ein weiterer gleicher Schmetterling den Multiplikator statt der Zeit: ×3 → ×5 → ×7 (bis zu 10 Stufen).',
+        'Regenbogen- und Sternschnuppen-Effekte halten fünfmal so lange: Regenbogen 3 Min 20 s, Sternenstaub 5 Min.'],
+      es: ['Si un efecto de mariposa ya tiene más de 5 minutos, atrapar la misma mariposa sube su multiplicador en vez del tiempo: ×3 → ×5 → ×7 (hasta 10 niveles).',
+        'Los efectos del arcoíris y de la estrella fugaz duran cinco veces más: arcoíris 3 min 20 s, Polvo de estrellas 5 min.'],
+      fr: ['Si un effet de papillon a déjà plus de 5 minutes, attraper le même papillon augmente son multiplicateur au lieu de sa durée : ×3 → ×5 → ×7 (jusqu\'à 10 paliers).',
+        'Les effets arc-en-ciel et étoile filante durent cinq fois plus longtemps : arc-en-ciel 3 min 20 s, Poussière d\'étoiles 5 min.'],
+    } },
     { v: '1.16', date: '2026-10-05', items: {
       tr: ['Seyahat rotaları: her eve dönüş yeni bir rota açar. Anadolu Yolu, Kıyı Yolu, Kuzey Yolu, Çiçek Yolu ve İpek Yolu bölgeleri farklı sırayla gezer.',
         'Her rotanın bir ayrıcalığı var: daha sık yağmur ve gökkuşağı, iki kat kayan yıldız, daha çok kelebek ya da daha bereketli kelebek hediyeleri. Rotanı köyden çıkmadan seçebilirsin.'],

@@ -52,6 +52,7 @@ IT.addLang('fr', {
     'gift.zeal.name': 'Entrain', 'gift.zeal.text': 'clics ×5',
     'gift.postcard.name': 'Carte postale perdue', 'gift.postcard.text': 'crédits immédiats',
     'gift.rainbow.name': 'Arc-en-ciel', 'gift.rainbow.text': 'crédits ×1,5',
+    'fx.speed': 'vitesse ×{m}', 'fx.credit': 'crédits ×{m}', 'fx.click': 'clics ×{m}',
     'gift.wish.name': 'Poussière d\'étoiles', 'gift.wish.text': 'vitesse ×2, crédits ×1,5',
 
     'region.0': 'Village du matin', 'region.1': 'Champs de lavande', 'region.2': 'Forêt de pins', 'region.3': 'Plaine de blé doré',
@@ -102,6 +103,7 @@ IT.addLang('fr', {
     'toast.badge': '<b>Badge en {tierLow} : {name}</b> · +{p} crédits pour toujours',
     'toast.giftInstant': '<b>Papillon doré : {name}</b> · +{c} crédits',
     'toast.giftEffect': '<b>Papillon doré : {name}</b> · {text} pendant {dur}',
+    'toast.giftStack': '<b>Papillon doré : {name}</b> · effet renforcé, désormais {text}',
     'toast.wish': '<b>Étoile filante ! Tu as fait un vœu : {name}</b> · {text} pendant {dur}',
     'toast.outfit': '<b>Nouvelle tenue : {name}</b> · à porter depuis le Carnet',
     'toast.newVersion': '<b>Nouvelle version : v{v}</b> · découvre les changements dans Nouveautés, en haut',

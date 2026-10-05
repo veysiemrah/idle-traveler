@@ -50,6 +50,7 @@ IT.addLang('en', {
     'gift.zeal.name': 'Zeal', 'gift.zeal.text': 'clicks ×5',
     'gift.postcard.name': 'Lost Postcard', 'gift.postcard.text': 'instant credits',
     'gift.rainbow.name': 'Rainbow', 'gift.rainbow.text': 'credits ×1.5',
+    'fx.speed': 'speed ×{m}', 'fx.credit': 'credits ×{m}', 'fx.click': 'clicks ×{m}',
     'gift.wish.name': 'Stardust', 'gift.wish.text': 'speed ×2, credits ×1.5',
 
     'region.0': 'Morning Village', 'region.1': 'Lavender Fields', 'region.2': 'Pine Forest', 'region.3': 'Golden Wheat Plain',
@@ -100,6 +101,7 @@ IT.addLang('en', {
     'toast.badge': '<b>{tier} badge: {name}</b> · +{p} credits for good',
     'toast.giftInstant': '<b>Golden butterfly: {name}</b> · +{c} credits',
     'toast.giftEffect': '<b>Golden butterfly: {name}</b> · {text} for {dur}',
+    'toast.giftStack': '<b>Golden butterfly: {name}</b> · boost stacked, now {text}',
     'toast.wish': '<b>Shooting star! You made a wish: {name}</b> · {text} for {dur}',
     'toast.outfit': '<b>New outfit unlocked: {name}</b> · wear it from the Journal',
     'toast.newVersion': '<b>New version: v{v}</b> · see what changed under What\'s new at the top',

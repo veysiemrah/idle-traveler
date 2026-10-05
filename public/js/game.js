@@ -10,14 +10,25 @@
     { id: 'harvest',  dur: 45, credit: 2, w: 3 },
     { id: 'zeal',     dur: 25, click: 5, w: 2 },
     { id: 'postcard', instant: true, w: 2 },
-    { id: 'rainbow',  dur: 40, credit: 1.5, w: 0 }, // hava olayıyla gelir
-    { id: 'wish',     dur: 60, speed: 2, credit: 1.5, w: 0 }, // gece kayan yıldızla gelir
+    { id: 'rainbow',  dur: 200, credit: 1.5, w: 0 }, // hava olayıyla gelir
+    { id: 'wish',     dur: 300, speed: 2, credit: 1.5, w: 0 }, // gece kayan yıldızla gelir
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
     text: { get: () => t(`gift.${g.id}.text`) },
   }));
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
+  // Kelebek etkisi 5 dakikadan uzun sürerken aynı kelebek yeniden gelirse süre değil çarpan artar (en çok 10 kat)
+  const STACK_AFTER = 300, STACK_MAX = 10;
+  // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
+  const effMult = (g, stack) => {
+    const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
+    return { speed: f(g.speed), credit: f(g.credit), click: f(g.click) };
+  };
+  const effText = (g, stack) => {
+    const m = effMult(g, stack), nfx = new Intl.NumberFormat(IT.locale(), { maximumFractionDigits: 1 });
+    return ['speed', 'credit', 'click'].filter(k => g[k]).map(k => t('fx.' + k, { m: nfx.format(m[k]) })).join(', ');
+  };
   const BULKS = [1, 10, 'max'];
   // Gökyüzü: tarayıcı temasını izle ya da gündüz/gece sabitle
   // cycle: gün döngüsü, sahne sayfa temasından bağımsız olarak bölgenin mevsimine göre gündüz/gece yaşar
@@ -110,7 +121,7 @@
     } else for (const b of BADGES) s.badges[b.id] = count(old[b.id], TIERS.length);
     // Etki süresi, kelebek güçlendirmesiyle ulaşılabilecek en uzun süreyi aşamaz
     const maxFx = Date.now() + 3600e3;
-    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx) })) : [];
+    s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx), stack: Math.max(1, count(e.stack, STACK_MAX)) })) : [];
     s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
     s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
@@ -139,10 +150,8 @@
   function tempMult() {
     const now = Date.now(), m = { speed: 1, credit: 1, click: 1 };
     for (const e of S.effects) if (e.until > now) {
-      const g = GIFT[e.id];
-      if (g.speed) m.speed *= g.speed;
-      if (g.credit) m.credit *= g.credit;
-      if (g.click) m.click *= g.click;
+      const em = effMult(GIFT[e.id], e.stack);
+      m.speed *= em.speed; m.credit *= em.credit; m.click *= em.click;
     }
     return m;
   }
@@ -301,8 +310,9 @@
       toast(t('toast.giftInstant', { name: g.name, c: fmtNum(bonus) }), 'gold');
       scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffd56b', big: true });
     } else {
-      const dur = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly) * (perk() === 'gold' ? 1.5 : 1));
-      toast(t('toast.giftEffect', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
+      const r = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly) * (perk() === 'gold' ? 1.5 : 1), true);
+      if (r.stacked) toast(t('toast.giftStack', { name: g.name, text: effText(g, r.stack) }), 'gold');
+      else toast(t('toast.giftEffect', { name: g.name, dur: fmtDuration(r.dur), text: effText(g, r.stack) }), 'gold');
       scene.addFloat(t('float.gift', { name: g.name }), { color: '#ffd56b', big: true });
     }
     checkBadges();
@@ -311,16 +321,21 @@
   function catchStar() {
     Sound.unlock();
     S.wishes++;
-    const g = GIFT.wish, dur = addEffect(g, g.dur);
+    const g = GIFT.wish, dur = addEffect(g, g.dur).dur;
     Sound.wish();
     toast(t('toast.wish', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
     scene.addFloat(t('float.wish'), { color: '#cfe0ff', big: true });
     checkBadges();
   }
-  function addEffect(g, dur) {
-    const ex = S.effects.find(e => e.id === g.id && e.until > Date.now());
-    if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: Date.now() + dur * 1000, dur });
-    return dur;
+  // stackable: kalan süre STACK_AFTER saniyeyi aşıyorsa süre yerine çarpan bir kat artar
+  function addEffect(g, dur, stackable) {
+    const now = Date.now(), ex = S.effects.find(e => e.id === g.id && e.until > now);
+    if (ex && stackable && (ex.until - now) / 1000 > STACK_AFTER && (ex.stack || 1) < STACK_MAX) {
+      ex.stack = (ex.stack || 1) + 1;
+      return { dur, stacked: true, stack: ex.stack };
+    }
+    if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: now + dur * 1000, dur, stack: 1 });
+    return { dur, stacked: false, stack: ex ? ex.stack || 1 : 1 };
   }
 
   /* ---------- Günün hediyesi ---------- */
@@ -368,7 +383,7 @@
       if (weather === 'rain' && (weatherT <= 0 || !canRain)) {
         // Gökkuşağı yalnızca gündüz ve yerdeyken çıkar
         if (canRain && (scene.nightAmt || 0) < 0.5) {
-          weather = 'rainbow'; weatherT = GIFT.rainbow.dur;
+          weather = 'rainbow'; weatherT = 60; // gökkuşağı gökte bir dakika kalır, etkisi daha uzun sürer
           scene.setWeather(0, 1);
           addEffect(GIFT.rainbow, GIFT.rainbow.dur);
           S.rainbows++;
@@ -1069,7 +1084,7 @@
       let el = fxBox.querySelector(`[data-fx="${e.id}"]`);
       if (!el) { el = document.createElement('span'); el.className = `fx fx-${e.id}`; el.dataset.fx = e.id; fxBox.appendChild(el); }
       const left = Math.ceil((e.until - now) / 1000);
-      const html = t('ui.fx', { name: GIFT[e.id].name, text: GIFT[e.id].text, dur: fmtDuration(left) });
+      const html = t('ui.fx', { name: GIFT[e.id].name, text: effText(GIFT[e.id], e.stack), dur: fmtDuration(left) });
       if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
       el.classList.toggle('ending', left <= 10);
     }

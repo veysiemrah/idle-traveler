@@ -50,6 +50,7 @@ IT.addLang('es', {
     'gift.zeal.name': 'Entusiasmo', 'gift.zeal.text': 'clics ×5',
     'gift.postcard.name': 'Postal Perdida', 'gift.postcard.text': 'créditos al instante',
     'gift.rainbow.name': 'Arcoíris', 'gift.rainbow.text': 'créditos ×1,5',
+    'fx.speed': 'velocidad ×{m}', 'fx.credit': 'créditos ×{m}', 'fx.click': 'clics ×{m}',
     'gift.wish.name': 'Polvo de estrellas', 'gift.wish.text': 'velocidad ×2, créditos ×1,5',
 
     'region.0': 'Pueblo del Amanecer', 'region.1': 'Campos de Lavanda', 'region.2': 'Pinar', 'region.3': 'Llanura de Trigo Dorado',
@@ -100,6 +101,7 @@ IT.addLang('es', {
     'toast.badge': '<b>Insignia de {tierLow}: {name}</b> · +{p} créditos para siempre',
     'toast.giftInstant': '<b>Mariposa dorada: {name}</b> · +{c} créditos',
     'toast.giftEffect': '<b>Mariposa dorada: {name}</b> · {text} durante {dur}',
+    'toast.giftStack': '<b>Mariposa dorada: {name}</b> · efecto reforzado, ahora {text}',
     'toast.wish': '<b>¡Estrella fugaz! Pediste un deseo: {name}</b> · {text} durante {dur}',
     'toast.outfit': '<b>Nueva ropa desbloqueada: {name}</b> · póntela desde el Diario',
     'toast.newVersion': '<b>Nueva versión: v{v}</b> · mira qué cambió en Novedades, arriba',

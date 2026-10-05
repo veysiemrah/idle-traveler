@@ -55,6 +55,7 @@ IT.addLang('tr', {
     'gift.zeal.name': 'Coşku', 'gift.zeal.text': 'tıklama ×5',
     'gift.postcard.name': 'Kayıp Kartpostal', 'gift.postcard.text': 'anında kredi',
     'gift.rainbow.name': 'Gökkuşağı', 'gift.rainbow.text': 'kredi ×1,5',
+    'fx.speed': 'hız ×{m}', 'fx.credit': 'kredi ×{m}', 'fx.click': 'tıklama ×{m}',
     'gift.wish.name': 'Yıldız Tozu', 'gift.wish.text': 'hız ×2, kredi ×1,5',
 
     // Bölgeler (sırayla)
@@ -110,6 +111,7 @@ IT.addLang('tr', {
     'toast.badge': '<b>{tier} rozet: {name}</b> · kalıcı +{p} kredi',
     'toast.giftInstant': '<b>Altın kelebek: {name}</b> · +{c} kredi',
     'toast.giftEffect': '<b>Altın kelebek: {name}</b> · {dur} boyunca {text}',
+    'toast.giftStack': '<b>Altın kelebek: {name}</b> · etki güçlendi, artık {text}',
     'toast.wish': '<b>Kayan yıldız! Dilek tuttun: {name}</b> · {dur} boyunca {text}',
     'toast.outfit': '<b>Yeni kıyafet açıldı: {name}</b> · Yol Defteri\'nden giyebilirsin',
     'toast.newVersion': '<b>Yeni sürüm: v{v}</b> · neler değişti? Üstteki Yenilikler düğmesine bak',
