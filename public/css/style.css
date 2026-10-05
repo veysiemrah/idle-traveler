@@ -27,6 +27,8 @@
   --stamp-mix: 0%;
   --stamp-tone: #232849;
   --panel-glow: rgba(255, 176, 103, 0.10);
+  --wish-ink: #cfe0ff; --wish-glow: rgba(185, 200, 255, 0.7);
+  --rainbow-ink: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa);
   --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --r-lg: 18px; --r-md: 12px; --r-sm: 8px;
@@ -42,6 +44,8 @@
     --line-soft: rgba(35, 40, 73, 0.08); --well: rgba(35, 40, 73, 0.06); --track: rgba(35, 40, 73, 0.12);
     --soft-text: #3d4266; --icon-bg: linear-gradient(180deg, #8ec2e8, #ffe7c4 88%);
     --stamp-mix: 45%; --panel-glow: rgba(255, 176, 103, 0.16);
+    --wish-ink: #2f4fa8; --wish-glow: rgba(120, 150, 230, 0.25);
+    --rainbow-ink: linear-gradient(90deg, #d93f3f, #d9711f, #a8860a, #23883c, #2a6fb8, #6f4ccc);
     color-scheme: light;
   }
 }
@@ -54,6 +58,8 @@
   --line-soft: rgba(35, 40, 73, 0.08); --well: rgba(35, 40, 73, 0.06); --track: rgba(35, 40, 73, 0.12);
   --soft-text: #3d4266; --icon-bg: linear-gradient(180deg, #8ec2e8, #ffe7c4 88%);
   --stamp-mix: 45%; --panel-glow: rgba(255, 176, 103, 0.16);
+    --wish-ink: #2f4fa8; --wish-glow: rgba(120, 150, 230, 0.25);
+    --rainbow-ink: linear-gradient(90deg, #d93f3f, #d9711f, #a8860a, #23883c, #2a6fb8, #6f4ccc);
   color-scheme: light;
 }
 
@@ -176,8 +182,9 @@ button { font: inherit; color: inherit; }
 .fx b { color: var(--gold); font-weight: 700; }
 .fx-rainbow { border-color: rgba(140, 233, 154, 0.75); }
 .fx-wish { border-color: rgba(185, 200, 255, 0.8); }
-.fx-wish b { color: #cfe0ff; text-shadow: 0 0 8px rgba(185, 200, 255, 0.7); }
-.fx-rainbow b { background: linear-gradient(90deg, #ff6b6b, #ffa94d, #e0c341, #4fbf65, #4aa3e8, #9775fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* Yıldız Tozu: koyu zeminde açık, açık zeminde koyu mavi (beyaz cam üstünde de okunur) */
+.fx-wish b { color: var(--wish-ink); text-shadow: 0 0 8px var(--wish-glow); }
+.fx-rainbow b { background: var(--rainbow-ink); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
 /* Süresi biten etki son 10 saniyede yumuşakça nabız atar */
 .fx.ending { animation: fxPulse 1.2s ease-in-out infinite; }

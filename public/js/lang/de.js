@@ -53,8 +53,9 @@ IT.addLang('de', {
     'gift.harvest.name': 'Fülle', 'gift.harvest.text': 'Credits ×2',
     'gift.zeal.name': 'Eifer', 'gift.zeal.text': 'Klicks ×5',
     'gift.postcard.name': 'Verlorene Postkarte', 'gift.postcard.text': 'sofort Credits',
-    'gift.rainbow.name': 'Regenbogen', 'gift.rainbow.text': 'Credits ×1,5',
-    'gift.wish.name': 'Sternenstaub', 'gift.wish.text': 'Tempo ×2, Credits ×1,5',
+    'gift.rainbow.name': 'Regenbogen', 'gift.rainbow.text': 'Tempo ×10',
+    'fx.speed': 'Tempo ×{m}', 'fx.credit': 'Credits ×{m}', 'fx.click': 'Klicks ×{m}',
+    'gift.wish.name': 'Sternenstaub', 'gift.wish.text': 'Credits ×10',
 
     // Regionen (in Reihenfolge)
     'region.0': 'Morgendorf', 'region.1': 'Lavendelfelder', 'region.2': 'Kiefernwald', 'region.3': 'Goldene Weizenebene',
@@ -112,6 +113,7 @@ IT.addLang('de', {
     'toast.badge': '<b>{tier}-Abzeichen: {name}</b> · dauerhaft +{p} Credits',
     'toast.giftInstant': '<b>Goldener Schmetterling: {name}</b> · +{c} Credits',
     'toast.giftEffect': '<b>Goldener Schmetterling: {name}</b> · {text} für {dur}',
+    'toast.giftStack': '<b>Goldener Schmetterling: {name}</b> · Effekt verstärkt, jetzt {text}',
     'toast.wish': '<b>Sternschnuppe! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}',
     'toast.outfit': '<b>Neues Outfit: {name}</b> · im Reisetagebuch anziehen',
     'toast.newVersion': '<b>Neue Version: v{v}</b> · was neu ist, steht oben unter Neuigkeiten',
