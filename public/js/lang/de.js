@@ -108,6 +108,7 @@ IT.addLang('de', {
     'j.others': "Andere Reisende im Bild",
     'others.ahead': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} vor dir.",
     'others.behind': "<b>{name}</b> winkt zurück! Auf der {n}. Reise, {d} hinter dir.",
+    'others.near': "neben dir",
     'tr.pick': "Namen wählen",
 
     // Anzeige und Allgemeines

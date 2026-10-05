@@ -109,6 +109,7 @@ IT.addLang('tr', {
     'j.others': "Diğer gezginler sahnede",
     'others.ahead': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} önde.",
     'others.behind': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} geride.",
+    'others.near': "yanında",
     'tr.pick': "Ad seç",
 
     // HUD ve genel

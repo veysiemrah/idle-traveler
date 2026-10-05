@@ -5,15 +5,32 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.22';
+  IT.VERSION = '1.23';
 
   IT.CHANGELOG = [
+    { v: '1.23', date: '2026-10-05', items: {
+      tr: ['Daha sakin bir yolculuk: oyunun temposu yarıya indi. Araç ve güçlendirme fiyatları iki katına çıktı, araç yükseltmeleri aynı kaldı.',
+        'Elindeki aracı iyice geliştirmenin tam zamanı.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A calmer journey: the game\'s pace is now half as fast. Vehicle and boost prices doubled, while vehicle upgrades cost the same.',
+        'A perfect time to really grow the vehicle you have.',
+        'A few small touches along the road.'],
+      de: ['Eine ruhigere Reise: Das Spieltempo ist jetzt halb so schnell. Fahrzeug- und Verstärkungspreise haben sich verdoppelt, Fahrzeug-Upgrades kosten gleich viel.',
+        'Genau der richtige Moment, dein aktuelles Fahrzeug richtig auszubauen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Un viaje más tranquilo: el ritmo del juego es ahora la mitad. Los vehículos y los potenciadores de la pestaña Mejoras cuestan el doble; mejorar un vehículo cuesta lo mismo.',
+        'El momento perfecto para hacer crecer de verdad tu vehículo actual.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Un voyage plus paisible : le rythme du jeu est désormais deux fois plus lent. Les véhicules et les bonus coûtent le double, les améliorations de véhicule restent au même prix.',
+        'Le moment idéal pour bien faire grandir ton véhicule actuel.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.22', date: '2026-10-05', items: {
-      tr: ['Kanat\'ın iki kanadı artık birlikte çırpıyor: biri inerken öbürünün kalktığı tuhaf uçuş düzeldi.'],
-      en: ['Kanat the gull now flaps both wings together: the odd flight where one went up as the other came down is fixed.'],
-      de: ['Die Möwe Kanat schlägt jetzt beide Flügel gemeinsam: Der seltsame Flug, bei dem einer hoch- und der andere herunterging, ist behoben.'],
-      es: ['La gaviota Kanat ahora bate las dos alas a la vez: se corrigió el vuelo raro en el que una subía mientras la otra bajaba.'],
-      fr: ['La mouette Kanat bat maintenant des deux ailes ensemble : le vol étrange où l\'une montait pendant que l\'autre descendait est corrigé.'],
+      tr: ['Yol arkadaşlarına küçük bir rötuş.'],
+      en: ['A small touch for your companions.'],
+      de: ['Ein kleiner Feinschliff für deine Begleiter.'],
+      es: ['Un pequeño retoque para tus compañeros.'],
+      fr: ['Une petite retouche pour tes compagnons.'],
     } },
     { v: '1.21', date: '2026-10-05', items: {
       tr: ['Gezginler sahnede: şu an yolda olan diğer oyuncular artık yanında yolculuk ediyor. Senden öndekiler sağda, gerideki solda; her biri kendi aracı, kıyafeti, aracının görünümü ve yol arkadaşıyla.',

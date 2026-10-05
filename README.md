@@ -78,9 +78,12 @@ npx wrangler dev   # http://localhost:8787
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
   Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
 - **Fiyat dengesi**: Araçların satın alma ve yükseltme fiyatları sabittir; bir aracı yükseltmek başka bir aracın fiyatını
-  değiştirmez. Yükseltmeler aracın fiyatının %1,8'inden başlar ve her seviyede 1,55 katına çıkar. Sıradaki araç,
-  elindekini Sv. 10'a getirmenin toplam maliyetinden pahalıdır (çoğu araçta 1,7–2,5 katı). Bu yüzden aracı yükseltmeden yenisine para
-  biriktirmek kârsızdır. Simülasyonda motora 32 dakikada ulaşan oyuncu, yükseltme yapmadan biriktirince 229 dakikada ulaşır.
+  değiştirmez. Yükseltmeler aracın fiyatının %0,9'undan başlar ve her seviyede 1,55 katına çıkar. Sıradaki araç,
+  elindekini Sv. 10'a getirmenin toplam maliyetinden çok pahalıdır (çoğu araçta 3,5–5 katı). Bu yüzden aracı yükseltmeden yenisine para
+  biriktirmek kârsızdır. Simülasyonda motora 48 dakikada ulaşan oyuncu, yükseltme yapmadan biriktirince 446 dakikada ulaşır.
+- **Tempo**: v1.23'te oyunun temposu yarıya indi; araç ve güçlendirme fiyatları iki katına çıktı, yükseltmeler aynı kaldı.
+  Açgözlü bir oyuncu (saniyede bir dokunuş) motora yaklaşık 54 dakikada, arabaya 4,5 saatte ulaşır; 12 saatte yaklaşık
+  80 bin km yol gider (önceden 32 dk, 2,4 saat, 168 bin km).
   Sıradaki aracın kartındaki ipucu önce elindeki aracı Sv. 10'a getirmeyi önerir, o seviyeye gelince yeni araç zamanını haber verir.
 - **Yolcular (çok oyunculu)**: Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
@@ -91,7 +94,9 @@ npx wrangler dev   # http://localhost:8787
 - **Gezginler sahnede**: Şu an yolda olan diğer oyuncular sahnede, yolun arka şeridinde yarı saydam yolculuk eder.
   Senden öndekiler sağda, gerideki solda durur (geniş ekranda en çok 3 önde ve 2 geride, telefonda 1+1). Her biri kendi
   aracı, kıyafeti, aracının görünüm aşaması ve yol arkadaşıyla çizilir. İsim etiketi kimin ne kadar önde ya da geride
-  olduğunu gösterir. Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
+  olduğunu gösterir (birkaç metre yakınsa "yanında"). Etiketler gece örtüsünün üstünde çizilir ve karanlıkta lacivert tona
+  geçer; yan yana gelen etiketler birbirine değmez, biri yumuşakça yukarı kalkıp ince bir çizgiyle gezgine bağlanır.
+  Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
   yolculuğunda olduğunu söyler. Ayarlar'daki "Diğer gezginler sahnede" seçeneğiyle gizlenebilir.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
   eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve

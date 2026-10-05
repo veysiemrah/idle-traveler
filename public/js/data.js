@@ -10,24 +10,25 @@
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   // (v1.11'de bütün mesafeler 1/10'a indi; metre başına kredi CREDITS_PER_M ile 10 katına çıktığı için tempo aynı kaldı)
   // (v1.19'da araç fiyatları 2 katına çıktı, yükseltmeler fiyatın %1,8'inden başlıyor: aracı Sv. 10'a getirmeden yenisini almak kârsız)
+  // (v1.23'te tempo yarıya indi: araç ve güçlendirme fiyatları yine 2 katına çıktı, yükseltmeler aynı kaldı (fiyatın %0,9'u))
   const VEHICLES = [
     { id: 'walk',   cost: 0,       idle: 0.035,  click: 0.04,   road: 'path',    alt: 0 },
-    { id: 'skates', cost: 300,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
-    { id: 'board',  cost: 1800,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
-    { id: 'bike',   cost: 1.0e4,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
-    { id: 'horse',  cost: 6.4e4,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
-    { id: 'moto',   cost: 4.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
-    { id: 'car',    cost: 1.6e7,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
-    { id: 'van',    cost: 8.0e7,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
-    { id: 'train',  cost: 4.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
-    { id: 'balloon', cost: 1.8e9, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
-    { id: 'plane',  cost: 8.0e9,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
-    { id: 'jet',    cost: 4.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
-    { id: 'rocket', cost: 2.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
-    { id: 'sail',   cost: 5.0e12,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
+    { id: 'skates', cost: 600,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
+    { id: 'board',  cost: 3600,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
+    { id: 'bike',   cost: 2.0e4,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
+    { id: 'horse',  cost: 1.28e5,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
+    { id: 'moto',   cost: 8.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
+    { id: 'car',    cost: 3.2e7,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
+    { id: 'van',    cost: 1.6e8,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
+    { id: 'train',  cost: 8.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
+    { id: 'balloon', cost: 3.6e9, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
+    { id: 'plane',  cost: 1.6e10,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
+    { id: 'jet',    cost: 8.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
+    { id: 'rocket', cost: 4.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
+    { id: 'sail',   cost: 1.0e13,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
-    v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.018);
+    v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.009);
     // Metinler seçili dilden okunur
     Object.defineProperties(v, {
       name: { get: () => T(`veh.${v.id}.name`) },
@@ -41,16 +42,16 @@
   /* ---------- Kalıcı güçlendirmeler ---------- */
   // vals: açıklamadaki yer tutucuların değerleri (seviyeye göre), step: bir sonraki seviyenin getirdiği
   const BUFFS = [
-    { id: 'stride',   base: 20,   growth: 2.2,           vals: l => ({ p: fmtPct(20 * l) }),                    step: () => ({ p: fmtPct(20) }) },
-    { id: 'breeze',   base: 35,   growth: 2.2,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
-    { id: 'postcard', base: 120,  growth: 2.6,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
-    { id: 'rhythm',   base: 150,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
-    { id: 'luck',     base: 250,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
-    { id: 'dream',    base: 400,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
-    { id: 'camp',     base: 600,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
-    { id: 'butterfly', base: 900, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
+    { id: 'stride',   base: 40,   growth: 2.2,           vals: l => ({ p: fmtPct(20 * l) }),                    step: () => ({ p: fmtPct(20) }) },
+    { id: 'breeze',   base: 70,   growth: 2.2,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
+    { id: 'postcard', base: 240,  growth: 2.6,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
+    { id: 'rhythm',   base: 300,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
+    { id: 'luck',     base: 500,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
+    { id: 'dream',    base: 800,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
+    { id: 'camp',     base: 1200,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
+    { id: 'butterfly', base: 1800, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
     // Yol arkadaşı Karabaş: 10 seviye, eve dönüşte de kalır; 2, 4, 7 ve 10. seviyede görünümü gelişir
-    { id: 'pal',      base: 2500, growth: 3.2, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
+    { id: 'pal',      base: 5000, growth: 3.2, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
   ];
   BUFFS.forEach(b => Object.defineProperties(b, {
     name: { get: () => T(`buff.${b.id}.name`) },

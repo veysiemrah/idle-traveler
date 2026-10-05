@@ -101,6 +101,7 @@ IT.addLang('fr', {
     'j.others': "Autres voyageurs sur la route",
     'others.ahead': "<b>{name}</b> te fait signe ! Voyage {n}, {d} devant toi.",
     'others.behind': "<b>{name}</b> te fait signe ! Voyage {n}, {d} derrière toi.",
+    'others.near': "à côté de toi",
     'tr.pick': "Choisir un nom",
 
     'ui.perSec': '+{c} / s', 'ui.lvl': 'Niv. {n}', 'ui.buy': 'Acheter', 'ui.get': 'Obtenir', 'ui.upgrade': 'Améliorer', 'ui.upgradeN': 'Améliorer ×{n}',

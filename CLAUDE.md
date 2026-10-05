@@ -19,6 +19,17 @@ Yenilik seçerken şu ilkeleri gözet (hepsini tek seferde uygulamak gerekmez, t
 - Araç yükseltmeleri araç üzerinde görsel değişiklik yapsın (seviye arttıkça araç görünür biçimde gelişsin).
 - Eve dönüşle başlayan her yeni yolculuk yeni bir seyahat rotası açsın.
 
+Her değişiklikte tasarımın harika hissettirmesi için ayrıntıları önemse:
+- Görseller açık/koyu temada, gece ve gündüzde, telefonda (320 piksele kadar) ve geniş ekranda düzgün görünsün; ekran görüntüsüyle kontrol et.
+- Hareketler yumuşak olsun (belirme, kaybolma, geçişler); hiçbir şey birden zıplamasın, kaymasın ya da üst üste binmesin.
+- Metinler beş dilde doğal ve tutarlı olsun; uzun ad ve çeviriler taşmasın.
+- Boş, yükleniyor ve hata durumları da özenli görünsün; dokunulan her şey ses, ışık ya da küçük bir hareketle karşılık versin.
+
 Her adımın sonunda neyin değiştiğini kısaca özetle. `README.md` dosyasını da yeni özelliklere göre güncelle.
 Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin
 başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.
+
+Sürüm notlarını yazarken:
+- Hata düzeltmelerini açıkça yazma ("X bozuktu, düzeldi" gibi). Gerekirse yalnızca "küçük rötuşlar" gibi genel bir satırla geç.
+- Merak uyandırması gereken yenilikleri (gizli ödüller, sürprizler, açılan görünümler, yeni yol arkadaşları gibi) ayrıntısıyla
+  anlatma; ne olduğunu ve nasıl açıldığını söylemeden yalnızca ipucu ver ve oyuncunun kendisi keşfetmesine bırak.
