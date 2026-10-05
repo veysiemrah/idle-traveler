@@ -211,6 +211,62 @@ button { font: inherit; color: inherit; }
   transition: opacity .5s, transform .5s;
 }
 .toast b { font-weight: 700; }
+/* Hazır mesajlar: sahnenin sağ altında, durak çubuğunun üstünde yuvarlak bir düğme ve açılan mesaj seçici */
+.chat-btn {
+  position: absolute; right: 16px; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 62px); z-index: 3;
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--paper);
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 22px rgba(20, 20, 50, 0.22); transition: transform .18s cubic-bezier(.2, .9, .3, 1.4), background .2s;
+}
+.chat-btn:hover { transform: scale(1.07); }
+.chat-btn:active { transform: scale(0.93); }
+.chat-btn[aria-expanded="true"] { background: var(--teal); color: #fff; }
+.chat-btn svg { width: 24px; height: 24px; fill: currentColor; }
+.chat-btn svg circle { fill: var(--ink); }
+.chat-btn[aria-expanded="true"] svg circle { fill: var(--teal); }
+/* bekleme halkası: mesajdan sonra 5 sn boyunca düğmenin çevresinde azalır */
+@property --cool { syntax: '<number>'; inherits: false; initial-value: 0; }
+.chat-cool {
+  position: absolute; inset: -4px; border-radius: 50%; pointer-events: none; --cool: 0;
+  background: conic-gradient(var(--teal) calc(var(--cool) * 1turn), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+}
+.chat-btn.cool .chat-cool { animation: chatCool 5s linear forwards; }
+.chat-btn.cool svg { opacity: 0.55; }
+@keyframes chatCool { from { --cool: 1; } to { --cool: 0; } }
+.chat-pop {
+  position: absolute; right: 16px; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 118px); z-index: 4;
+  width: min(330px, calc(100% - 32px)); padding: 10px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
+  background: var(--toast); border: 1px solid var(--glass-line); border-radius: 18px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 14px 34px rgba(20, 20, 50, 0.3);
+  transform-origin: bottom right; animation: chatIn .22s cubic-bezier(.2, .9, .3, 1.25);
+  /* kısa sahnelerde (alçak telefon ekranı) yukarı taşmasın */
+  max-height: calc(100% - max(14px, env(safe-area-inset-bottom, 0px)) - 130px); overflow-y: auto; overscroll-behavior: contain;
+}
+.chat-pop[hidden] { display: none; }
+@keyframes chatIn { from { opacity: 0; transform: translateY(8px) scale(0.92); } }
+.chat-title { grid-column: 1 / -1; margin: 0 2px 2px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.chat-pop .msg {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 58px; padding: 7px 4px;
+  border-radius: 12px; border: 1px solid var(--glass-line); background: var(--glass); color: var(--paper);
+  font: 600 12px/1.15 var(--font-body); text-align: center; cursor: pointer; transition: transform .12s, background .15s;
+}
+.chat-pop .msg:hover { background: var(--ink-3); }
+.chat-pop .msg:active { transform: scale(0.95); }
+.chat-pop .msg .e { font-size: 20px; line-height: 1; }
+@media (prefers-reduced-motion: reduce) { .chat-pop { animation: none; } .chat-btn { transition: none; } }
+@media (max-width: 400px) {
+  .chat-pop { padding: 8px; gap: 5px; }
+  .chat-pop .msg { min-height: 0; padding: 5px 2px; gap: 1px; font-size: 11px; line-height: 1.1; }
+  .chat-title { display: none; }
+  .chat-pop .msg .e { font-size: 17px; }
+}
+/* Yolcular listesinde son mesaj */
+.tr-say { color: var(--paper); font-style: italic; }
 .toast.gold b { color: var(--gold); }
 .toast.teal b { color: var(--teal); }
 .toast.out { opacity: 0; transform: translateY(-8px); }

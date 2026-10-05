@@ -100,6 +100,8 @@
       if (crit) [0, 0.07, 0.14].forEach((w, i) => this.tone(PENTA[i + 3] * 2, 0.06, 0.6, 'sine', this.sfx, true, w));
     },
     buy() { if (!this.ctx) return; this.tone(659.25, 0.08, 0.5, 'triangle', this.sfx, true); this.tone(987.77, 0.07, 0.7, 'sine', this.sfx, true, 0.08); },
+    // Konuşma balonu: kısa, yumuşak bir "pıt"
+    chat() { if (!this.ctx) return; this.tone(PENTA[4] * 2, 0.05, 0.22, 'sine', this.sfx, false); this.tone(PENTA[6] * 2, 0.04, 0.3, 'sine', this.sfx, true, 0.07); },
     // Bir gezgine el sallayınca: iki yumuşak nota
     wave() { if (!this.ctx) return; [4, 6].forEach((n, i) => this.tone(PENTA[n] * 2, 0.045, 0.6, 'sine', this.sfx, true, i * 0.12)); },
     deny() { if (!this.ctx) return; this.tone(220, 0.05, 0.18, 'triangle'); },

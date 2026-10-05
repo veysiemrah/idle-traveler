@@ -1054,13 +1054,89 @@
   function othersOnStage() {
     const d = IT.Online.data;
     if (!S.settings.others || IT.Online.status !== 'ok' || !d) return [];
+    // az önce konuşan gezgin önce gelir: balonu sahnede görünsün
+    const talking = p => { const m = lastMsg.get(p.pub); return m && Date.now() - m.at < 9e3 ? 0 : 1; };
     return d.players.filter(p => p.online && !p.me && p.pub)
-      .map(p => ({ p, diff: p.dist - S.distance }))
-      .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))
+      .map(p => ({ p, diff: p.dist - S.distance, talk: talking(p) }))
+      .sort((a, b) => a.talk - b.talk || Math.abs(a.diff) - Math.abs(b.diff))
       .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
         // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz
         ahead: diff > 0, diff, sub: Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff)) }));
   }
+  /* ---------- Hazır mesajlar ---------- */
+  // Mesaj seçici açıkken sahneye dokunmak onu kapatır; o dokunuş adım sayılmaz
+  let chatClosedAt = 0;
+  const chatJustClosed = () => performance.now() - chatClosedAt < 250;
+  const MSG_EMOJI = { hi: '👋', view: '🌄', go: '🚀', wait: '✋', race: '🏁', great: '⭐', thanks: '💛', rest: '☕', bye: '🌙' };
+  const msgText = id => `${MSG_EMOJI[id]} ${t('msg.' + id)}`;
+  const lastMsg = new Map(); // pub → { msg, at }: son bir dakikanın mesajları
+  // Bir gezginin son bir dakikada söylediği mesaj (yerelde gelen ya da sunucunun listesindeki)
+  function said(p) {
+    const m = lastMsg.get(p.pub);
+    if (m && m.msg !== 'wave' && Date.now() - m.at < 60e3) return m.msg;
+    return p.msg && p.msg !== 'wave' && MSG_EMOJI[p.msg] ? p.msg : '';
+  }
+  let chatCoolUntil = 0;
+  function chatOpen(open) {
+    const pop = $('#chatPop'), btn = $('#btnChat');
+    if (open === undefined) open = pop.hidden;
+    if (open) pop.setAttribute('aria-label', t('chat.title'));
+    if (open) pop.innerHTML = `<p class="chat-title" aria-hidden="true">${t('chat.title')}</p>${IT.MSGS.map(id =>
+      `<button class="msg" type="button" role="menuitem" data-msg="${id}"><span class="e" aria-hidden="true">${MSG_EMOJI[id]}</span><span>${t('msg.' + id)}</span></button>`).join('')}`;
+    if (!open && !pop.hidden) chatClosedAt = performance.now();
+    pop.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+  }
+  async function sayMsg(id) {
+    chatOpen(false);
+    if (!S.player.name) { showName(); return; }
+    if (Date.now() < chatCoolUntil) { Sound.deny(); return; }
+    chatCoolUntil = Date.now() + 5000;
+    const btn = $('#btnChat');
+    btn.classList.remove('cool'); void btn.offsetWidth; btn.classList.add('cool');
+    setTimeout(() => btn.classList.remove('cool'), 5000);
+    // kendi balonun hemen görünür; diğer gezginler birkaç saniye içinde görür
+    scene.sayMine(msgText(id)); Sound.chat();
+    const r = await IT.Online.say(id, S.player.id, S.player.key);
+    if (r === 'ok') { const me = IT.Online.myPub(); if (me) lastMsg.set(me, { msg: id, at: Date.now() }); uiDirty.travelers = true; }
+    else if (r !== 'too-soon') toast(t('chat.fail'));
+  }
+  // Bir gezgine el salla: 👋 senin başında belirir ve o gezgine iletilir (onun ekranında senin başında görünür)
+  let waveCoolUntil = 0;
+  function waveAt(g) {
+    Sound.unlock(); Sound.wave();
+    scene.sayMine('👋', 3.5);
+    const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
+    toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
+    if (!S.player.name || Date.now() < waveCoolUntil) return;
+    waveCoolUntil = Date.now() + 4000;
+    IT.Online.say('wave', S.player.id, S.player.key, g.pub);
+  }
+  // Başka bir gezginden mesaj geldi: başının üstünde balon (gezgin sahnede değilse ya da gizliyse kısa bir bildirim)
+  let lastListAsk = 0;
+  function onMessage(m) {
+    const mine = IT.Online.myPub();
+    if (m.pub === mine) return;
+    const d = IT.Online.data, p = d && d.players.find(x => x.pub === m.pub);
+    lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
+    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir
+    if (m.msg === 'wave') {
+      scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
+      if (m.to && m.to === mine) {
+        Sound.wave();
+        if (p) toast(t(S.settings.others ? 'others.wavedYou' : 'others.wavedYou0', { name: esc(p.name) }), 'teal');
+      }
+      if (!p && Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); }
+      return;
+    }
+    const text = msgText(m.msg);
+    scene.say(m.pub, text);
+    if (!p) { if (Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); } }
+    else if (!S.settings.others) toast(`<b>${esc(p.name)}</b> ${esc(text)}`, 'teal');
+    Sound.chat();
+    uiDirty.travelers = true;
+  }
+
   // Yolcular: son 24 saatte oynayan gezginler, bu yolculukta gittikleri yola göre sıralı
   function renderTravelers() {
     const pane = $('#pane-travelers'), O = IT.Online, d = O.data;
@@ -1074,7 +1150,7 @@
         <canvas class="tr-icon" data-icon="${veh.id}" width="72" height="56" aria-hidden="true"></canvas>
         <div class="tr-main">
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
-          <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
+          <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
         </div>
         <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? S.distance : p.dist)}</b>
       </li>`;
@@ -1314,18 +1390,15 @@
     const stage = $('#stage');
     stage.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button > 0) return;
-      if (e.target.closest('button, a')) return;
+      if (e.target.closest('button, a, .chat-pop')) return;
+      if (chatJustClosed()) return;
       const r = scene.canvas.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       const g = scene.hitGhost(x, y);
-      if (g) {
-        Sound.unlock(); Sound.wave();
-        toast(t(g.ahead ? 'others.ahead' : 'others.behind', { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-        return;
-      }
+      if (g) { waveAt(g); return; }
       const before = S.distance;
       step();
       clickBuffer += S.distance - before;
@@ -1418,6 +1491,18 @@
 
     // Yolcular: bu tarayıcının kaydını 30 saniyede bir günceller, listeyi getirir
     IT.Online.onUpdate = () => { uiDirty.travelers = true; };
+    IT.Online.onMessage = onMessage;
+    $('#btnChat').addEventListener('click', e => {
+      Sound.unlock();
+      if (e.detail > 0) e.currentTarget.blur();
+      chatOpen();
+      // klavyeyle açıldıysa ilk mesaja odaklan
+      if (e.detail === 0 && !$('#chatPop').hidden) { const f = $('#chatPop .msg'); if (f) f.focus(); }
+    });
+    $('#chatPop').addEventListener('click', e => { const b = e.target.closest('[data-msg]'); if (b) { Sound.unlock(); sayMsg(b.dataset.msg); } });
+    // dışarıya dokununca ya da Esc ile kapanır
+    document.addEventListener('pointerdown', e => { if (!$('#chatPop').hidden && !e.target.closest('#chatPop, #btnChat')) chatOpen(false); }, true);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#chatPop').hidden) { chatOpen(false); $('#btnChat').focus(); } });
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
     IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, trip: S.trips + 1, veh: S.active, route: S.route,
       tier: Econ.lookTier(S.levels[S.active]), outfit: S.settings.outfit, pal: S.buffs.pal > 0 ? S.palPick : '' } : null);

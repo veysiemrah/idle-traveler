@@ -2,12 +2,19 @@
    /api/* dışındaki her istek public/ klasöründeki statik dosyalara gider.
 
    POST /api/hello   { id, key, name, dist, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
-   GET  /api/players                                           → yalnızca yolcu listesi */
+   GET  /api/players                                           → yalnızca yolcu listesi
+   POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
+   GET  /api/feed                                              → son 20 saniyenin mesajları */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold'];
 const PALS = ['', 'dog', 'bird', 'cat'];
+// Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
+// 'wave': bir gezgine el sallamak (yalnızca o gezgine bildirilir, diğerleri balonu görür)
+const MSGS = ['hi', 'view', 'go', 'wait', 'race', 'great', 'thanks', 'rest', 'bye', 'wave'];
+const FEED_MS = 20e3;            // mesajlar 20 saniye boyunca akışta kalır
+const SAY_GAP_MS = 4e3;          // aynı yolcu en sık 4 saniyede bir mesaj gönderir
 const ONLINE_MS = 3 * 60e3;      // son 3 dakikada haber veren yolcu "yolda" sayılır
 const LIST_MS = 24 * 3600e3;     // listede son 24 saatte oynayanlar görünür
 const LIST_MAX = 50;
@@ -36,7 +43,14 @@ async function sha256(text) {
 // Yolcu listesi: son 24 saatte oynayanlar, yola göre sıralı. me: isteği yapanın satırı (ilk 50'de değilse sırasıyla eklenir)
 // pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
 const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
-const COLS = 'id, name, dist, trip, veh, tier, outfit, pal, seen';
+const COLS = 'id, name, dist, trip, veh, tier, outfit, pal, seen, msg, msgAt';
+const validId = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
+const validKey = v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
+// Son mesajlar: { pub, msg, at } (at sunucu saatidir; istemci now ile kendi saatine çevirir)
+async function feed(db, now) {
+  const r = await db.prepare('SELECT id, msg, msgAt, msgTo FROM players WHERE msgAt > ?1 ORDER BY msgAt DESC LIMIT 30').bind(now - FEED_MS).all();
+  return Promise.all(r.results.map(async x => ({ pub: await pubOf(x.id), msg: x.msg, at: x.msgAt, to: x.msgTo || '' })));
+}
 async function listPlayers(db, id, now) {
   const since = now - LIST_MS, onlineSince = now - ONLINE_MS;
   const [rows, counts] = await db.batch([
@@ -46,6 +60,7 @@ async function listPlayers(db, id, now) {
   const map = async r => ({
     pub: await pubOf(r.id), name: r.name, dist: r.dist, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
     online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
+    msg: r.msgAt > now - 60e3 ? r.msg : '', msgAgo: Math.max(0, now - r.msgAt),
   });
   const players = await Promise.all(rows.results.map(async (r, i) => Object.assign(await map(r), { rank: i + 1 })));
   let me = players.find(p => p.me) || null;
@@ -57,15 +72,15 @@ async function listPlayers(db, id, now) {
     }
   }
   const c = counts.results[0] || {};
-  return { now, online: c.online || 0, total: c.total || 0, players, me };
+  return { now, online: c.online || 0, total: c.total || 0, players, me, feed: await feed(db, now) };
 }
 
 async function hello(request, env) {
   let b;
   try { b = await request.json(); } catch (e) { return json({ error: 'bad-json' }, 400); }
   if (!b || typeof b !== 'object') return json({ error: 'bad-body' }, 400);
-  const id = typeof b.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(b.id) ? b.id : null;
-  const key = typeof b.key === 'string' && /^[0-9a-f]{64}$/.test(b.key) ? b.key : null;
+  const id = validId(b.id) ? b.id : null;
+  const key = validKey(b.key) ? b.key : null;
   const name = cleanName(b.name);
   const dist = Number(b.dist), trip = Number(b.trip);
   if (!id || !key) return json({ error: 'bad-id' }, 400);
@@ -92,6 +107,26 @@ async function hello(request, env) {
   return json(await listPlayers(env.DB, id, now));
 }
 
+// Hazır mesaj: yalnızca yolda olan (son 3 dakikada haber vermiş) ve anahtarı tutan yolcu gönderebilir
+async function say(request, env) {
+  let b;
+  try { b = await request.json(); } catch (e) { return json({ error: 'bad-json' }, 400); }
+  if (!b || !validId(b.id) || !validKey(b.key)) return json({ error: 'bad-id' }, 400);
+  if (!MSGS.includes(b.msg)) return json({ error: 'bad-msg' }, 400);
+  const to = b.msg === 'wave' && typeof b.to === 'string' && /^[0-9a-f]{12}$/.test(b.to) ? b.to : '';
+  if (b.msg === 'wave' && !to) return json({ error: 'bad-to' }, 400);
+  const now = Date.now(), hash = await sha256(b.key);
+  const res = await env.DB.prepare('UPDATE players SET msg = ?3, msgAt = ?4, msgTo = ?7 WHERE id = ?1 AND key = ?2 AND msgAt < ?4 - ?5 AND seen > ?4 - ?6')
+    .bind(b.id, hash, b.msg, now, SAY_GAP_MS, ONLINE_MS, to).run();
+  if (!res.meta.changes) {
+    const row = await env.DB.prepare('SELECT key, seen FROM players WHERE id = ?1').bind(b.id).first();
+    if (!row) return json({ error: 'unknown' }, 404);
+    if (row.key !== hash) return json({ error: 'not-yours' }, 403);
+    return json({ error: row.seen > now - ONLINE_MS ? 'too-soon' : 'offline' }, 429);
+  }
+  return json({ ok: true, now, feed: await feed(env.DB, now) });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -99,6 +134,8 @@ export default {
     try {
       if (url.pathname === '/api/hello' && request.method === 'POST') return await hello(request, env);
       if (url.pathname === '/api/players' && request.method === 'GET') return json(await listPlayers(env.DB, null, Date.now()));
+      if (url.pathname === '/api/say' && request.method === 'POST') return await say(request, env);
+      if (url.pathname === '/api/feed' && request.method === 'GET') { const now = Date.now(); return json({ now, feed: await feed(env.DB, now) }); }
       return json({ error: 'not-found' }, 404);
     } catch (e) {
       return json({ error: 'server' }, 500);
