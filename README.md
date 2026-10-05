@@ -88,6 +88,10 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Günün hediyesi**: Her yeni günün ilk ziyaretinde kredi hediyesi gelir (yaklaşık 2 dakikalık gelir). Üst üste gelinen her gün
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
+- **Hazine haritası**: Yakalanan her altın kelebek %20, her kayan yıldız %50 olasılıkla bir harita parçası düşürür. Dört parça
+  tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
+  yeniden gelir). Sandık yaklaşık 10 dakikalık gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
+  açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
 - **Eve Dönüş ve Hatıralar**: Yolculuk 50.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
@@ -115,9 +119,9 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
   yolcuya, araçların vurgu renklerine, garaj simgelerine ve kartpostallara yansır.
-- **Kademeli rozetler**: 15 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
-  eve dönüş, hatıra, kartpostal, kayan yıldız ve günlük seri. Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz, Gümüş,
-  Altın, Platin, Elmas (toplam 120 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
+- **Kademeli rozetler**: 16 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
+  eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri ve hazine. Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
+  Gümüş, Altın, Platin, Elmas (toplam 128 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
   tamamı +%10). Rozetler ömür boyu kazanılır ve eve dönüşte kaybolmaz. Yol Defteri her ailenin kademesini, kademe noktalarını
   ve bir sonraki hedefi gösterir. Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
   dizisine bir eşik eklemek yeter.

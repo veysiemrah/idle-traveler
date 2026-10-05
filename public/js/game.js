@@ -20,6 +20,8 @@
   const GIFT = Object.fromEntries(GIFTS.map(g => [g.id, g]));
   // Kelebek etkisi 5 dakikadan uzun sürerken aynı kelebek yeniden gelirse süre değil çarpan artar (en çok 10 kat)
   const STACK_AFTER = 300, STACK_MAX = 10;
+  // Hazine haritası: kelebekten %20, kayan yıldızdan %50 olasılıkla parça düşer; dört parça bir sandık açar
+  const MAP_PIECES = 4, MAP_DROP = { gift: 0.2, star: 0.5 };
   // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
   const effMult = (g, stack) => {
     const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
@@ -39,7 +41,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -57,6 +59,7 @@
       bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
       palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir)
       route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
+      mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -105,6 +108,7 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
+    s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6);
     // rota açık değilse (bozuk kayıt) ilk rotaya dönülür
     const ri = IT.ROUTES.findIndex(r => r.id === s.route);
     if (ri < 0 || ri >= routesOpenFor(s.trips)) s.route = 'anatolia';
@@ -166,6 +170,7 @@
   let giftIn = 25;
   // Kayan yıldız: yalnızca gece gökyüzünde
   let starIn = 20 + Math.random() * 25;
+  let chestIn = 6; // harita tamamsa sandığın gelmesine kalan süre
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
   let uiDirty = { garage: true, buffs: true, journal: true };
@@ -299,6 +304,7 @@
   function catchGift() {
     Sound.unlock();
     S.gifts++;
+    dropMapPiece('gift');
     const pool = GIFTS.filter(x => x.w > 0);
     const total = pool.reduce((a, x) => a + x.w, 0);
     let r = Math.random() * total, g = pool[0];
@@ -321,11 +327,28 @@
   function catchStar() {
     Sound.unlock();
     S.wishes++;
+    dropMapPiece('star');
     const g = GIFT.wish, dur = addEffect(g, g.dur).dur;
     Sound.wish();
     toast(t('toast.wish', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
     scene.addFloat(t('float.wish'), { color: '#cfe0ff', big: true });
     checkBadges();
+  }
+  function dropMapPiece(src) {
+    if (S.mapPieces >= MAP_PIECES || Math.random() >= MAP_DROP[src]) return;
+    S.mapPieces++; uiDirty.journal = true;
+    if (S.mapPieces < MAP_PIECES) toast(t('toast.mapPiece', { n: S.mapPieces, m: MAP_PIECES }), 'gold');
+    else { toast(t('toast.mapDone'), 'gold'); chestIn = 4; }
+  }
+  // Sandık: harita tamamken yol kenarında belirir; kaçırılırsa bir süre sonra yeniden gelir
+  function catchChest() {
+    Sound.unlock(); Sound.region();
+    const bonus = Math.max(500, incomeRate() * 600) * (perk() === 'gold' ? 2 : 1);
+    grant(bonus);
+    S.mapPieces = 0; S.treasures++; uiDirty.journal = true;
+    toast(t('toast.treasure', { c: fmtNum(bonus) }), 'gold');
+    scene.addFloat(t('float.treasure'), { color: '#ffd56b', big: true });
+    checkBadges(); save();
   }
   // stackable: kalan süre STACK_AFTER saniyeyi aşıyorsa süre yerine çarpan bir kat artar
   function addEffect(g, dur, stackable) {
@@ -426,7 +449,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null;
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.chest = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true };
   }
@@ -612,6 +635,11 @@
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
       giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
+    }
+    // hazine sandığı: harita tamamken gelir; kaçırılırsa 45 sn sonra yeniden
+    if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest) {
+      chestIn -= dt;
+      if (chestIn <= 0) { scene.spawnChest(); chestIn = 45; }
     }
     // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
     if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.6 && weather !== 'rain') starIn -= dt;
@@ -1005,6 +1033,11 @@
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
+      <h3 class="sec">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
+      <div class="tmap">
+        <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
+        <p class="tag small">${S.mapPieces >= MAP_PIECES ? t('j.mapReady') : t('j.mapHint')}</p>
+      </div>
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
@@ -1175,6 +1208,7 @@
       const x = e.clientX - r.left, y = e.clientY - r.top;
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
+      if (scene.hitChest(x, y)) { catchChest(); return; }
       const before = S.distance;
       step();
       clickBuffer += S.distance - before;
