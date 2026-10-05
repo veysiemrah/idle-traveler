@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.21';
+  IT.VERSION = '1.22';
 
   IT.CHANGELOG = [
+    { v: '1.22', date: '2026-10-05', items: {
+      tr: ['Kanat\'ın iki kanadı artık birlikte çırpıyor: biri inerken öbürünün kalktığı tuhaf uçuş düzeldi.'],
+      en: ['Kanat the gull now flaps both wings together: the odd flight where one went up as the other came down is fixed.'],
+      de: ['Die Möwe Kanat schlägt jetzt beide Flügel gemeinsam: Der seltsame Flug, bei dem einer hoch- und der andere herunterging, ist behoben.'],
+      es: ['La gaviota Kanat ahora bate las dos alas a la vez: se corrigió el vuelo raro en el que una subía mientras la otra bajaba.'],
+      fr: ['La mouette Kanat bat maintenant des deux ailes ensemble : le vol étrange où l\'une montait pendant que l\'autre descendait est corrigé.'],
+    } },
     { v: '1.21', date: '2026-10-05', items: {
       tr: ['Gezginler sahnede: şu an yolda olan diğer oyuncular artık yanında yolculuk ediyor. Senden öndekiler sağda, gerideki solda; her biri kendi aracı, kıyafeti, aracının görünümü ve yol arkadaşıyla.',
         'İsim etiketleri kimin ne kadar önde ya da geride olduğunu gösterir. Bir gezgine dokun: el sallar ve kaçıncı yolculuğunda olduğunu söyler.',

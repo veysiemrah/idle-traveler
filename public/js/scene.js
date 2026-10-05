@@ -590,7 +590,8 @@
   function drawGull(ctx, x, y, k, t, tier) {
     const T = tier || 0, flap = Math.sin(t * 7), wy = flap * 6 * k;
     if (T >= 4) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 22 * k, hex('#ffd56b'), 0.35); ctx.globalCompositeOperation = 'source-over'; }
-    ctx.fillStyle = '#c9d0db'; ctx.beginPath(); ctx.moveTo(x - 2 * k, y - 1 * k); ctx.quadraticCurveTo(x - 10 * k, y - 6 * k + wy, x - 20 * k, y - 4 * k + wy * 1.4); ctx.quadraticCurveTo(x - 10 * k, y + 1 * k, x - 2 * k, y + 1 * k); ctx.fill(); // arka kanat
+    // arka kanat: ön kanatla aynı anda çırpar (biraz geride ve gölgede kaldığı için daha koyu)
+    ctx.fillStyle = '#c9d0db'; ctx.beginPath(); ctx.moveTo(x - 3 * k, y - 1 * k); ctx.quadraticCurveTo(x - 9 * k, y - 7 * k - wy * 0.9, x - 20 * k, y - 7 * k - wy * 1.7); ctx.quadraticCurveTo(x - 11 * k, y - 1 * k, x - 1 * k, y); ctx.fill();
     ctx.fillStyle = '#ffffff'; ellipse(ctx, x, y, 9 * k, 4 * k);
     ctx.beginPath(); ctx.moveTo(x - 8 * k, y - 1 * k); ctx.lineTo(x - 14 * k, y - 4 * k); ctx.lineTo(x - 13 * k, y + 2 * k); ctx.closePath(); ctx.fill(); // kuyruk
     circle(ctx, x + 8 * k, y - 2.5 * k, 3.6 * k);
@@ -599,7 +600,7 @@
     if (T >= 3) { ctx.fillStyle = '#6d4c35'; rrect(ctx, x + 5.5 * k, y - 6.2 * k, 6 * k, 2 * k, 1 * k); ctx.fill(); ctx.fillStyle = '#9fd6ef'; circle(ctx, x + 9.6 * k, y - 5.2 * k, 1.3 * k); } // pilot gözlüğü
     if (T >= 2) { const w = Math.sin(t * 9) * 1.5 * k; ctx.strokeStyle = T >= 4 ? GOLD : P.hat; ctx.lineWidth = 1.8 * k; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x + 6 * k, y); ctx.quadraticCurveTo(x, y + 3 * k + w, x - 6 * k, y + 2 * k - w); ctx.stroke(); }
     if (T >= 1) { ctx.fillStyle = T >= 4 ? GOLD : '#d9534f'; rrect(ctx, x + 5 * k, y - 1 * k, 4 * k, 2 * k, 1 * k); ctx.fill(); }
-    ctx.fillStyle = '#e4e9f0'; ctx.beginPath(); ctx.moveTo(x - 1 * k, y - 1 * k); ctx.quadraticCurveTo(x - 6 * k, y - 10 * k - wy, x - 16 * k, y - 12 * k - wy * 1.6); ctx.quadraticCurveTo(x - 8 * k, y - 2 * k, x + 2 * k, y); ctx.fill(); // ön kanat
+    ctx.fillStyle = '#e4e9f0'; ctx.beginPath(); ctx.moveTo(x - 1 * k, y - 1 * k); ctx.quadraticCurveTo(x - 6 * k, y - 9 * k - wy, x - 16 * k, y - 10 * k - wy * 1.9); ctx.quadraticCurveTo(x - 8 * k, y - 2 * k, x + 2 * k, y); ctx.fill(); // ön kanat
     if (T >= 4) sparkles(ctx, x - 14 * k, y, k, t, 4, 24 * k, 14 * k);
   }
   // Araç penceresinden ya da balon sepetinden başını uzatan yol arkadaşı
