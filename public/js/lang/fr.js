@@ -92,6 +92,8 @@ IT.addLang('fr', {
     'garage.rule': 'Ton véhicule le plus puissant fixe ta vitesse.', 'garage.sumLead': 'Véhicule le plus puissant', 'garage.sumConvoy': 'Des autres véhicules',
     'garage.convoy0': 'Tes autres véhicules ajoutent {p} de leur vitesse.',
     'garage.cosmetic': "Le véhicule que tu montes ne change que l'apparence.",
+    'garage.trade0': 'Remise de reprise : chaque amélioration de {prev} rend ce véhicule −{step} moins cher (jusqu\'à −{max}).', 'garage.trade': 'Remise de reprise : {prev} {lvl} → <b>−{p}</b> <s>{was}</s> · −{step} de plus par niveau (jusqu\'à −{max}).', 'garage.tradeMax': 'Remise de reprise au maximum : <b>−{p}</b> <s>{was}</s>',
+    'garage.floor': 'Prix plancher : un nouveau véhicule coûte toujours plus qu\u2019une amélioration. La prochaine amélioration de {veh} {lvl} coûte <b>{up}</b>, donc ce véhicule coûte {k} fois ce montant. D\u2019autres améliorations font aussi monter le prix.',
     'garage.mystery': {
       one: "Un autre véhicule attend derrière la porte du garage. Tu le verras en achetant le prochain.",
       other: "{n} autres véhicules attendent derrière la porte du garage. Tu les verras en achetant le prochain.",

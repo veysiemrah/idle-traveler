@@ -90,6 +90,8 @@ IT.addLang('en', {
     'garage.rule': 'Your strongest vehicle sets your speed.', 'garage.sumLead': 'Strongest vehicle', 'garage.sumConvoy': 'From other vehicles',
     'garage.convoy0': 'Your other vehicles add {p} of their speed.',
     'garage.cosmetic': 'Which one you ride only changes the look.',
+    'garage.trade0': 'Trade-in discount: every upgrade on {prev} makes this vehicle −{step} cheaper (up to −{max}).', 'garage.trade': 'Trade-in discount: {prev} {lvl} → <b>−{p}</b> <s>{was}</s> · −{step} more per level (up to −{max}).', 'garage.tradeMax': 'Trade-in discount maxed out: <b>−{p}</b> <s>{was}</s>',
+    'garage.floor': 'Price floor: a new vehicle always costs more than an upgrade. The next upgrade for {veh} {lvl} is <b>{up}</b>, so this vehicle costs {k}× that. More upgrades raise the price too.',
     'garage.mystery': {
       one: 'One more vehicle waits behind the garage door. You will see it once you buy the next one.',
       other: '{n} more vehicles wait behind the garage door. You will see them once you buy the next one.',

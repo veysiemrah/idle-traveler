@@ -102,6 +102,8 @@ IT.addLang('tr', {
     'garage.rule': 'Hızını garajdaki en güçlü araç belirler.', 'garage.sumLead': 'En güçlü araç', 'garage.sumConvoy': 'Diğer araçlardan',
     'garage.convoy0': 'Diğer araçlar hızlarının {p} kadarını katar.',
     'garage.cosmetic': 'Hangi araca bindiğin yalnızca görünümü değiştirir.',
+    'garage.trade0': 'Takas indirimi: {prev} için yaptığın her yükseltme bu aracı −{step} ucuzlatır (en çok −{max}).', 'garage.trade': 'Takas indirimi: {prev} {lvl} → <b>−{p}</b> <s>{was}</s> · her yeni seviye −{step} daha (en çok −{max}).', 'garage.tradeMax': 'Takas indirimi en yüksek düzeyde: <b>−{p}</b> <s>{was}</s>',
+    'garage.floor': 'Taban fiyat: yeni araç, yükseltmeden hep pahalıdır. {veh} {lvl} için sıradaki yükseltme <b>{up}</b>, bu aracın fiyatı onun {k} katı. Daha çok yükseltirsen fiyat da artar.',
     'garage.mystery': 'Garaj kapısının ardında {n} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.',
 
     // Bildirimler

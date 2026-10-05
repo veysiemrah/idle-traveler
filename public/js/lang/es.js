@@ -90,6 +90,8 @@ IT.addLang('es', {
     'garage.rule': 'Tu vehículo más fuerte marca tu velocidad.', 'garage.sumLead': 'Vehículo más fuerte', 'garage.sumConvoy': 'De otros vehículos',
     'garage.convoy0': 'Tus otros vehículos suman el {p} de su velocidad.',
     'garage.cosmetic': 'El vehículo que montas solo cambia el aspecto.',
+    'garage.trade0': 'Descuento por cambio: cada mejora de {prev} abarata este vehículo un −{step} (hasta −{max}).', 'garage.trade': 'Descuento por cambio: {prev} {lvl} → <b>−{p}</b> <s>{was}</s> · −{step} más por nivel (hasta −{max}).', 'garage.tradeMax': 'Descuento por cambio al máximo: <b>−{p}</b> <s>{was}</s>',
+    'garage.floor': 'Precio mínimo: un vehículo nuevo siempre cuesta más que una mejora. La próxima mejora de {veh} {lvl} cuesta <b>{up}</b>, así que este vehículo cuesta {k} veces eso. Más mejoras también suben el precio.',
     'garage.mystery': {
       one: 'Tras la puerta del garaje espera un vehículo más. Lo verás cuando compres el siguiente.',
       other: 'Tras la puerta del garaje esperan {n} vehículos más. Los verás cuando compres el siguiente.',

@@ -101,6 +101,8 @@ IT.addLang('de', {
     'garage.rule': 'Dein stärkstes Fahrzeug bestimmt dein Tempo.', 'garage.sumLead': 'Stärkstes Fahrzeug', 'garage.sumConvoy': 'Von anderen Fahrzeugen',
     'garage.convoy0': 'Deine anderen Fahrzeuge geben {p} ihres Tempos dazu.',
     'garage.cosmetic': 'Womit du fährst, ändert nur das Aussehen.',
+    'garage.trade0': 'Inzahlungnahme-Rabatt: Jedes Upgrade für {prev} macht dieses Fahrzeug −{step} billiger (bis −{max}).', 'garage.trade': 'Inzahlungnahme-Rabatt: {prev} {lvl} → <b>−{p}</b> <s>{was}</s> · −{step} mehr pro Stufe (bis −{max}).', 'garage.tradeMax': 'Inzahlungnahme-Rabatt ausgeschöpft: <b>−{p}</b> <s>{was}</s>',
+    'garage.floor': 'Mindestpreis: Ein neues Fahrzeug kostet immer mehr als ein Upgrade. Das nächste Upgrade für {veh} {lvl} kostet <b>{up}</b>, dieses Fahrzeug also das {k}-Fache. Weitere Upgrades erhöhen den Preis.',
     'garage.mystery': {
       one: 'Hinter dem Garagentor wartet noch ein Fahrzeug. Du siehst es, sobald du das nächste kaufst.',
       other: 'Hinter dem Garagentor warten noch {n} Fahrzeuge. Du siehst sie, sobald du das nächste kaufst.',
