@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
   const GIFTS = [
@@ -44,7 +44,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto' }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic' }, intro: false,
     };
   }
   function load() {
@@ -88,6 +88,7 @@
     if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
+    if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro; s.homeReady = !!s.homeReady;
     const day = isObj(d.day) ? d.day : {};
@@ -120,7 +121,7 @@
   }
 
   /* ---------- Çalışma zamanı değişkenleri ---------- */
-  let combo = 0, lastClick = 0;
+  let combo = 0, lastClick = 0, stepFloat = null;
   let rateEma = 0, creditEma = 0;
   let giftIn = 25;
   // Kayan yıldız: yalnızca gece gökyüzünde
@@ -185,8 +186,12 @@
     return { regions: found, milestones: ms };
   }
 
+  const nBadges = () => Object.keys(S.badges).length;
+  const outfitOpen = o => nBadges() >= o.need;
+  // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
+  function applyOutfit() { const o = OUTFIT[S.settings.outfit]; IT.setOutfit(o && outfitOpen(o) ? o.id : 'classic'); }
   function checkBadges(silent) {
-    const got = [];
+    const got = [], before = nBadges();
     for (const b of BADGES) {
       if (S.badges[b.id] || !b.test(S, { combo })) continue;
       S.badges[b.id] = Date.now();
@@ -195,6 +200,8 @@
     if (got.length) {
       uiDirty.journal = true;
       if (!silent) for (const b of got) { toast(t('toast.badge', { name: esc(b.name), p: fmtPct(BADGE_BONUS * 100) }), 'gold'); Sound.milestone(); }
+      const opened = OUTFITS.filter(o => o.need > before && o.need <= nBadges());
+      if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
     }
     return got;
   }
@@ -211,7 +218,15 @@
     S.clicks++;
     if (crit) S.crits++;
     scene.onStep(crit);
-    scene.addFloat(crit ? t('float.lucky', { d: fmtGain(d) }) : `+${fmtGain(d)}`, crit ? { color: '#ffd56b', big: true } : null);
+    // Hızlı art arda adımlar üst üste binmesin: hâlâ taze olan yazıya eklenir, toplam büyür
+    const sf = stepFloat;
+    if (!crit && sf && sf.life < 0.5 && scene.floats.includes(sf)) {
+      sf.sum += d; sf.text = `+${fmtGain(sf.sum)}`; sf.life = 0.18; // tam görünür kalır
+    } else if (crit) {
+      scene.addFloat(t('float.lucky', { d: fmtGain(d) }), { color: '#ffd56b', big: true });
+    } else {
+      stepFloat = scene.addFloat(`+${fmtGain(d)}`); stepFloat.sum = d;
+    }
     Sound.step(S.active, crit);
     if (S.clicks === 6) $('#hint').classList.add('gone');
     checkProgress();
@@ -415,6 +430,13 @@
       S.settings.lang = id; IT.setLang(id); save();
       toast(t('toast.lang'), 'teal');
     },
+    outfit(id) {
+      const o = OUTFIT[id];
+      if (!o || !outfitOpen(o) || S.settings.outfit === id) return;
+      S.settings.outfit = id; applyOutfit(); save();
+      uiDirty.garage = uiDirty.journal = true;
+      scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 16, [o.jacket, o.hat, o.pack, '#ffffff']);
+    },
     units(id) {
       if (!UNITS.includes(id)) return;
       S.settings.units = id; IT.setUnits(id); save();
@@ -447,6 +469,7 @@
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro']);
+      applyOutfit();
       $('#hint').classList.remove('gone');
       save();
       toast(t('toast.reset'), 'teal');
@@ -827,6 +850,13 @@
       <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : `<li class="muted">${t('j.msNone')}</li>`}</ul>
       <h3 class="sec">${t('j.offline')}</h3>
       <p class="tag">${t('j.offlineDesc', { p: fmtPct(Econ.offlineRate(S.buffs.dream) * 100), h: fmtHours(Econ.offlineCapHours(S.buffs.camp)) })}</p>
+      <h3 class="sec">${t('j.outfit')} <small>${t('j.outfitSub')}</small></h3>
+      <ul class="outfits">${OUTFITS.map(o => {
+        const open = outfitOpen(o), on = open && (S.settings.outfit === o.id || (!outfitOpen(OUTFIT[S.settings.outfit]) && o.id === 'classic'));
+        return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
+          style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
+          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+      }).join('')}</ul>
       <h3 class="sec">${t('j.settings')}</h3>
       <div class="settings">
         <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
@@ -918,7 +948,7 @@
     IT.setUnits(S.settings.units); IT.setLang(S.settings.lang);
     applyStatic();
     scene = new IT.Scene($('#scene'));
-    applySky();
+    applySky(); applyOutfit();
     // Sahne tarayıcı temasını izler: açık tema gündüz, koyu tema gece
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     const themeMode = () => {
@@ -1002,7 +1032,9 @@
     });
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) save(); else lastFrame = performance.now(); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { save(); Sound.pause(); } else { lastFrame = performance.now(); Sound.resume(); }
+    });
     window.addEventListener('pagehide', save);
     window.addEventListener('beforeunload', save);
 

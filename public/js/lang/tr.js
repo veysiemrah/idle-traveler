@@ -108,6 +108,7 @@ IT.addLang('tr', {
 
     // HUD ve genel
     'ui.perSec': '+{c} / sn', 'ui.lvl': 'Sv. {n}', 'ui.buy': 'Satın al', 'ui.get': 'Al', 'ui.upgrade': 'Yükselt', 'ui.upgradeN': 'Yükselt ×{n}',
+    'ui.outfitLock': '{n} rozet',
     'ui.max': 'Maks', 'ui.bulkLabel': 'Yükseltme miktarı', 'ui.riding': 'Yolda', 'ui.ride': 'Bin', 'ui.auto': 'Otomatik', 'ui.perClick': 'Tık başına',
     'ui.strongest': 'En güçlü', 'ui.strongestTip': 'Hızını bu araç belirliyor', 'ui.notYet': 'Henüz alınmadı.', 'ui.nextLevel': 'Sonraki seviye: {x}',
     'ui.done': 'Tamamlandı', 'ui.perLevel': 'Her seviye +{p} hız', 'ui.doubling': 'Her seviye +{p} hız · Sv. {t} olunca hız ×2',
@@ -131,6 +132,7 @@ IT.addLang('tr', {
     'toast.giftInstant': '<b>Altın kelebek: {name}</b> · +{c} kredi',
     'toast.giftEffect': '<b>Altın kelebek: {name}</b> · {dur} boyunca {text}',
     'toast.wish': '<b>Kayan yıldız! Dilek tuttun: {name}</b> · {dur} boyunca {text}',
+    'toast.outfit': '<b>Yeni kıyafet açıldı: {name}</b> · Yol Defteri\'nden giyebilirsin',
     'toast.daily': '<b>Günün hediyesi: {c} kredi</b> · {n}. gün üst üste',
     'toast.daily1': '<b>Günün hediyesi: {c} kredi</b> · yarın yine gel, hediye büyür',
     'toast.rain': 'Bir bahar yağmuru başladı. Damlalar yolu serinletiyor.',
@@ -195,6 +197,7 @@ IT.addLang('tr', {
     'j.ms': 'Geçilen duraklar', 'j.msNone': 'Henüz bir durak geçilmedi. İlk yüz metre çok yakın.',
     'j.offline': 'Çevrimdışı yolculuk', 'j.offlineDesc': 'Oyun kapalıyken otomatik hızın <b>{p}</b> kadarıyla ilerlersin. Sınır: <b>{h}</b>.',
     'j.settings': 'Ayarlar', 'j.sfx': 'Ses efektleri', 'j.music': 'Ortam sesi', 'j.on': 'Açık', 'j.off': 'Kapalı',
+    'j.outfit': 'Yolcunun kıyafeti', 'j.outfitSub': 'rozet topladıkça yeni renkler açılır', 'j.wearing': 'Üzerinde',
     'j.sky': 'Gökyüzü', 'sky.auto': 'Otomatik', 'sky.day': 'Gündüz', 'sky.night': 'Gece',
     'j.lang': 'Dil', 'j.langAuto': 'Otomatik ({name})', 'j.units': 'Birimler', 'units.auto': 'Otomatik', 'units.metric': 'Kilometre', 'units.imperial': 'Mil',
     'j.saved': 'İlerleme bu tarayıcıda otomatik kaydedilir.',
@@ -210,6 +213,7 @@ IT.addLang('tr', {
     "badge.wish10.desc": "{n} kayan yıldız yakala.",
     "badge.streak7.name": "Yedi Gün Yolda",
     "badge.streak7.desc": "{n} gün üst üste yola çık.",
+    'outfit.classic': 'Klasik', 'outfit.sky': 'Gök Mavisi', 'outfit.forest': 'Orman', 'outfit.lavender': 'Lavanta', 'outfit.sunset': 'Gün Batımı', 'outfit.night': 'Gece Yolcusu', 'outfit.gold': 'Altın Yolcu',
     "html.photo": "Kartpostal çek",
     "pc.eyebrow": "Yoldan bir kartpostal",
     "pc.title": "Bu anı sakla",

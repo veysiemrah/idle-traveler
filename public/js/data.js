@@ -211,6 +211,20 @@
   }));
   const BADGE_BONUS = 0.03;
 
+  /* ---------- Yolcunun kıyafetleri: rozet topladıkça açılır ---------- */
+  // need: gereken rozet sayısı. Ceket rengi araçların vurgu renklerinde de kullanılır.
+  const OUTFITS = [
+    { id: 'classic',  need: 0,  jacket: '#e7694e', jacketDark: '#c9553d', hat: '#2f9e8f', hatDark: '#237c70', pack: '#f0b445' },
+    { id: 'sky',      need: 3,  jacket: '#4f8fd6', jacketDark: '#3b73b4', hat: '#f0b445', hatDark: '#c99330', pack: '#e7694e' },
+    { id: 'forest',   need: 6,  jacket: '#4c9a5f', jacketDark: '#3a7a4a', hat: '#c9553d', hatDark: '#a3402d', pack: '#e9d3a1' },
+    { id: 'lavender', need: 10, jacket: '#9a7fe0', jacketDark: '#7b62bf', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#6fd3c1' },
+    { id: 'sunset',   need: 15, jacket: '#f2a03d', jacketDark: '#cf8228', hat: '#7b4fa8', hatDark: '#5f3b85', pack: '#2f9e8f' },
+    { id: 'night',    need: 20, jacket: '#3d4380', jacketDark: '#2b2f5e', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#cfe0ff' },
+    { id: 'gold',     need: 25, jacket: '#e8b93c', jacketDark: '#c4962a', hat: '#fbf4e6', hatDark: '#d9cfbb', pack: '#c9553d' },
+  ];
+  OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
+  const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
+
   /* ---------- Eve dönüş ve hatıralar ---------- */
   // Uzun bir yolculuğun sonunda eve dönülür: araçlar, yükseltmeler, güçlendirmeler ve kredi sıfırlanır.
   // Yolculuğun uzunluğuna göre hatıra kazanılır; her hatıra sonraki yolculuklarda kalıcı hız verir.
@@ -363,7 +377,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, CONVOY, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

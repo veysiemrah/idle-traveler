@@ -419,6 +419,25 @@ button { font: inherit; color: inherit; }
 .badge.on b { color: var(--paper); }
 .mslist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .mslist li { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+/* Yolcunun kıyafetleri */
+.outfits { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.outfit {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 8px;
+  border-radius: var(--r-md); border: 1px solid var(--line-soft); background: var(--ink-2); color: var(--paper); cursor: pointer;
+}
+.outfit .sw {
+  width: 38px; height: 38px; border-radius: 50%; position: relative;
+  background: linear-gradient(180deg, var(--h) 0 42%, var(--j) 42% 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.outfit .sw::after { content: ''; position: absolute; right: -3px; bottom: 1px; width: 13px; height: 13px; border-radius: 4px; background: var(--p); box-shadow: 0 0 0 2px var(--ink-2); }
+.outfit b { font-size: 12.5px; font-weight: 700; text-align: center; }
+.outfit small { font-size: 11px; color: var(--muted); }
+.outfit.on { border-color: rgba(111, 211, 193, 0.7); background: linear-gradient(180deg, rgba(111, 211, 193, 0.1), transparent 70%), var(--ink-2); }
+.outfit.on small { color: var(--teal); font-weight: 700; }
+.outfit:disabled { cursor: not-allowed; }
+.outfit:disabled .sw { filter: grayscale(1) brightness(.75); opacity: .45; }
+.outfit:hover:not(:disabled):not(.on) { background: var(--ink-3); }
 .mslist b { color: var(--muted); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
@@ -495,9 +514,13 @@ button { font: inherit; color: inherit; }
   .dist { font-size: 28px; margin-top: 3px; }
   .hud-row { font-size: 12.5px; margin-top: 3px; }
   .effects { top: 132px; }
-  .trail { grid-template-columns: minmax(0, 1fr); gap: 6px; padding-bottom: 10px; }
+  .trail { grid-template-columns: auto minmax(0, 1fr); gap: 6px; padding-bottom: 10px; }
   .trail > div { padding: 6px 10px; }
-  .rhythm { display: none; }
+  /* Ritim telefonda da görünür: küçük kutu, üstte etiket ve çarpan, altta çubuk */
+  .rhythm { grid-template-columns: auto auto; grid-template-areas: "l v" "b b"; gap: 6px 8px; align-items: baseline; }
+  .rhythm .lbl { grid-area: l; }
+  .rhythm b { grid-area: v; text-align: right; font-size: 12.5px; }
+  .rhythm .bar { grid-area: b; width: 100%; min-width: 64px; align-self: end; }
   .hint { top: 44%; padding: 8px 16px; }
   .hint span { font-size: 15px; }
   .toast { font-size: 13px; padding: 7px 12px; }
@@ -505,6 +528,13 @@ button { font: inherit; color: inherit; }
 @media (max-width: 420px) {
   .ms-prog { display: none; }
   .tab { font-size: 12.5px; }
+  /* dar ekranda durak adı etiketsiz, tam görünür */
+  .ms-top .lbl { display: none; }
+}
+@media (max-width: 360px) {
+  .rhythm { grid-template-columns: auto; grid-template-areas: "v" "b"; }
+  .rhythm .lbl { display: none; }
+  .rhythm b { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {

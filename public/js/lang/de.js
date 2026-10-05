@@ -107,6 +107,7 @@ IT.addLang('de', {
 
     // Anzeige und Allgemeines
     'ui.perSec': '+{c} / s', 'ui.lvl': 'Stufe {n}', 'ui.buy': 'Kaufen', 'ui.get': 'Holen', 'ui.upgrade': 'Verbessern', 'ui.upgradeN': 'Verbessern ×{n}',
+    'ui.outfitLock': { one: '{n} Abzeichen', other: '{n} Abzeichen' },
     'ui.max': 'Max.', 'ui.bulkLabel': 'Upgrade-Menge', 'ui.riding': 'Unterwegs', 'ui.ride': 'Losfahren', 'ui.auto': 'Auto', 'ui.perClick': 'Pro Klick',
     'ui.strongest': 'Stärkstes', 'ui.strongestTip': 'Dieses Fahrzeug bestimmt dein Tempo', 'ui.notYet': 'Noch nicht gekauft.', 'ui.nextLevel': 'Nächste Stufe: {x}',
     'ui.done': 'Abgeschlossen', 'ui.perLevel': '+{p} Tempo pro Stufe', 'ui.doubling': '+{p} Tempo pro Stufe · Tempo ×2 ab Stufe {t}',
@@ -133,6 +134,7 @@ IT.addLang('de', {
     'toast.giftInstant': '<b>Goldener Schmetterling: {name}</b> · +{c} Credits',
     'toast.giftEffect': '<b>Goldener Schmetterling: {name}</b> · {text} für {dur}',
     'toast.wish': '<b>Sternschnuppe! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}',
+    'toast.outfit': '<b>Neues Outfit: {name}</b> · im Reisetagebuch anziehen',
     'toast.daily': '<b>Geschenk des Tages: {c} Credits</b> · Tag {n} in Folge',
     'toast.daily1': '<b>Geschenk des Tages: {c} Credits</b> · komm morgen wieder, dann wird es größer',
     'toast.rain': 'Ein Frühlingsregen hat begonnen. Die Tropfen kühlen die Straße.',
@@ -202,6 +204,7 @@ IT.addLang('de', {
     'j.ms': 'Passierte Stationen', 'j.msNone': 'Noch keine Station passiert. Die ersten hundert Meter sind nah.',
     'j.offline': 'Offline-Reise', 'j.offlineDesc': 'Während das Spiel geschlossen ist, reist du mit <b>{p}</b> deines Auto-Tempos. Grenze: <b>{h}</b>.',
     'j.settings': 'Einstellungen', 'j.sfx': 'Soundeffekte', 'j.music': 'Umgebungsklang', 'j.on': 'An', 'j.off': 'Aus',
+    'j.outfit': 'Outfit', 'j.outfitSub': 'neue Farben mit jedem gesammelten Abzeichen', 'j.wearing': 'Angezogen',
     'j.sky': 'Himmel', 'sky.auto': 'Automatisch', 'sky.day': 'Tag', 'sky.night': 'Nacht',
     'j.lang': 'Sprache', 'j.langAuto': 'Automatisch ({name})', 'j.units': 'Einheiten', 'units.auto': 'Automatisch', 'units.metric': 'Kilometer', 'units.imperial': 'Meilen',
     'j.saved': 'Dein Fortschritt wird automatisch in diesem Browser gespeichert.',
@@ -217,6 +220,7 @@ IT.addLang('de', {
     "badge.wish10.desc": "Fang {n} Sternschnuppen.",
     "badge.streak7.name": "Eine Woche unterwegs",
     "badge.streak7.desc": "Sei {n} Tage in Folge unterwegs.",
+    'outfit.classic': 'Klassisch', 'outfit.sky': 'Himmelblau', 'outfit.forest': 'Wald', 'outfit.lavender': 'Lavendel', 'outfit.sunset': 'Abendrot', 'outfit.night': 'Nachtschwärmer', 'outfit.gold': 'Goldener Reisender',
     "html.photo": "Postkarte machen",
     "pc.eyebrow": "Eine Postkarte von unterwegs",
     "pc.title": "Halte diesen Moment fest",

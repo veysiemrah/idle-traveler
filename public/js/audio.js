@@ -25,6 +25,9 @@
       this.noiseBuf = this.makeNoise(2);
       this.startWind();
     },
+    // Sekme gizlenince rüzgâr ve yağmur susar, geri gelince kaldığı yerden sürer
+    pause() { if (this.ctx && this.ctx.state === 'running') this.ctx.suspend(); },
+    resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
     setSfx(on) { this.sfxOn = on; if (this.sfx) this.sfx.gain.setTargetAtTime(on ? 1 : 0, this.ctx.currentTime, 0.05); },
     setMusic(on) { this.musicOn = on; if (this.music) this.music.gain.setTargetAtTime(on ? 1 : 0, this.ctx.currentTime, 0.4); },
 
@@ -67,6 +70,8 @@
     },
     tone(freq, vol, dur, type, dest, echo, when) {
       if (!this.ctx) return;
+      // Efektler kapalıyken yankıları da (müzik kanalından geçtikleri için) çalınmasın
+      if ((!dest || dest === this.sfx) && !this.sfxOn) return;
       const c = this.ctx, t = c.currentTime + (when || 0);
       const o = c.createOscillator(), g = c.createGain();
       o.type = type || 'sine'; o.frequency.value = freq;
@@ -76,6 +81,7 @@
       o.start(t); o.stop(t + dur + 0.05);
     },
     noise(vol, dur, freq, q, dest) {
+      if (!this.ctx || ((!dest || dest === this.sfx) && !this.sfxOn)) return;
       const c = this.ctx, t = c.currentTime;
       const s = c.createBufferSource(); s.buffer = this.noiseBuf;
       const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
