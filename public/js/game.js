@@ -936,7 +936,7 @@
         </div>
         ${owned
           ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-          : `${priceLine(v)}<div class="up">${costBtn('buyVeh', v.id, Econ.vehCost(S, v), t('ui.buy'))}</div><div class="progress"><i data-prog="${Econ.vehCost(S, v)}"></i></div>`}
+          : `<div class="up">${costBtn('buyVeh', v.id, Econ.vehCost(S, v), t('ui.buy'))}</div><div class="progress"><i data-prog="${Econ.vehCost(S, v)}"></i></div>${priceLine(v)}`}
         </article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
@@ -945,7 +945,8 @@
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
   }
   // Sıradaki aracın kartında fiyatın açıklaması: önceki aracı yükselttikçe takas indirimi büyür;
-  // ama yeni araç hiçbir zaman garajdaki bir yükseltmeden ucuz olmaz (taban fiyat)
+  // ama yeni araç hiçbir zaman garajdaki bir yükseltmeden ucuz olmaz (taban fiyat).
+  // Satır düğmenin altında durur: metni uzayıp kısalınca Satın al düğmesi yerinden kaymaz.
   function priceLine(v) {
     const p = Econ.vehPrice(S, v), ti = p.trade;
     if (p.floor) {

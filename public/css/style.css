@@ -364,7 +364,7 @@ button { font: inherit; color: inherit; }
 /* Araç kartında yükseltme satırı simgenin altında kartın tam genişliğini kullanır (dar telefonlarda da sığar) */
 .card > .up, .card > .progress, .card > .trade { grid-column: 1 / -1; }
 /* Takas indirimi satırı: önceki aracı yükseltmeye teşvik */
-.card > .trade { font-size: 12px; color: var(--soft-text); background: rgba(111, 211, 193, 0.1); border: 1px dashed rgba(111, 211, 193, 0.45); border-radius: var(--r-sm); padding: 6px 9px; margin-top: -2px; }
+.card > .trade { font-size: 12px; color: var(--soft-text); background: rgba(111, 211, 193, 0.1); border: 1px dashed rgba(111, 211, 193, 0.45); border-radius: var(--r-sm); padding: 6px 9px; margin-top: 2px; }
 .card > .trade b { color: var(--teal); }
 .card > .trade s { color: var(--muted); }
 /* Taban fiyat devredeyse kutu sıcak renge döner: "daha fazla yükseltme fiyatı artırır" uyarısı */
