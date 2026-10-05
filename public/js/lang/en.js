@@ -86,7 +86,7 @@ IT.addLang('en', {
     'name.btn': "Set off",
     'name.save': "Save",
     'toast.named': "You now appear on the Travelers list as <b>{name}</b>.",
-    'tr.lead': "Travelers on the road in the last 24 hours, ranked by how far they've gone on this trip.",
+    'tr.lead': "Travelers on the road in the last 24 hours, ranked by how far they've gone on this trip. Those on the road right now travel beside you in the scene too; tap one to wave.",
     'tr.online': "On the road now",
     'tr.total': "Last 24 hours",
     'tr.you': "you",
@@ -96,6 +96,9 @@ IT.addLang('en', {
     'tr.error': "Other travelers can't be reached right now. Your journey isn't affected; the list refreshes on its own once the connection is back.",
     'tr.empty': "Nobody on the road yet. Be the first traveler!",
     'tr.noName': "Pick a name to appear on the list.",
+    'j.others': "Other travelers on the road",
+    'others.ahead': "<b>{name}</b> waves back! On trip {n}, {d} ahead of you.",
+    'others.behind': "<b>{name}</b> waves back! On trip {n}, {d} behind you.",
     'tr.pick': "Pick a name",
 
     'ui.perSec': '+{c} / s', 'ui.lvl': 'Lv. {n}', 'ui.buy': 'Buy', 'ui.get': 'Get', 'ui.upgrade': 'Upgrade', 'ui.upgradeN': 'Upgrade ×{n}',

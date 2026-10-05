@@ -96,7 +96,7 @@ IT.addLang('tr', {
     'name.btn': "Yola çık",
     'name.save': "Kaydet",
     'toast.named': "Yolcular listesinde artık <b>{name}</b> adıyla görünüyorsun.",
-    'tr.lead': "Son 24 saatte yolda olan gezginler, bu yolculukta gittikleri yola göre sıralı.",
+    'tr.lead': "Son 24 saatte yolda olan gezginler, bu yolculukta gittikleri yola göre sıralı. Şu an yolda olanlar sahnede de yanında yolculuk eder; birine dokunup el sallayabilirsin.",
     'tr.online': "Şu an yolda",
     'tr.total': "Son 24 saatte",
     'tr.you': "sen",
@@ -106,6 +106,9 @@ IT.addLang('tr', {
     'tr.error': "Şu an diğer gezginlere ulaşılamıyor. Yolculuğun etkilenmez; bağlantı gelince liste kendiliğinden yenilenir.",
     'tr.empty': "Yolda henüz kimse yok. İlk gezgin sen ol!",
     'tr.noName': "Listede görünmek için kendine bir ad seç.",
+    'j.others': "Diğer gezginler sahnede",
+    'others.ahead': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} önde.",
+    'others.behind': "<b>{name}</b> el salladı! {n}. yolculuğunda, senden {d} geride.",
     'tr.pick': "Ad seç",
 
     // HUD ve genel

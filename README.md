@@ -44,11 +44,12 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 | İstek | Ne yapar |
 | --- | --- |
-| `POST /api/hello` | `{ id, key, name, dist, trip, veh, route }`: kaydı ekler ya da günceller, yolcu listesini döner |
-| `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ name, dist, trip, veh, online, ago, rank, me }], me }` |
+| `POST /api/hello` | `{ id, key, name, dist, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner |
+| `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ pub, name, dist, trip, veh, tier, outfit, pal, online, ago, rank, me }], me }` |
 
 - `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
   özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
+- `pub`, gizli kimlikten türetilen kısa ve kalıcı bir anahtardır; sahne aynı gezgini bununla tanır, kimliği açık etmez.
 - Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen kayıtlar ara sıra silinir.
 - Ad sunucuda da aynı kuralla temizlenir ve denetlenir.
 
@@ -87,6 +88,11 @@ npx wrangler dev   # http://localhost:8787
   kaçıncı yolculukta olduğu, mesafesi ve şu an yolda olup olmadığı görünür. Sekmedeki sayı şu an yolda olanlardır
   (son 3 dakikada haber verenler). Oyun her 30 saniyede bir kaydını günceller. Sunucuya ulaşılamazsa oyun aynen sürer,
   liste "ulaşılamıyor" der ve kendiliğinden yeniden dener.
+- **Gezginler sahnede**: Şu an yolda olan diğer oyuncular sahnede, yolun arka şeridinde yarı saydam yolculuk eder.
+  Senden öndekiler sağda, gerideki solda durur (geniş ekranda en çok 3 önde ve 2 geride, telefonda 1+1). Her biri kendi
+  aracı, kıyafeti, aracının görünüm aşaması ve yol arkadaşıyla çizilir. İsim etiketi kimin ne kadar önde ya da geride
+  olduğunu gösterir. Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
+  yolculuğunda olduğunu söyler. Ayarlar'daki "Diğer gezginler sahnede" seçeneğiyle gizlenebilir.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
   eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
@@ -203,7 +209,7 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `public/js/lang/*.js` | Dil sözlükleri: `tr`, `en`, `de`, `es`, `fr` |
 | `public/js/changelog.js` | Sürüm numarası (`IT.VERSION`) ve beş dilde sürüm notları (`IT.CHANGELOG`) |
 | `public/js/data.js` | Araçlar, güçlendirmeler, rozetler, kıyafetler, biyomlar, bölgeler, duraklar, ekonomi ve hatıra formülleri, sayı biçimleri |
-| `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar |
+| `public/js/scene.js` | Canvas sahnesi: paralaks katmanlar, gün/gece, biyom geçişleri, yağmur ve gökkuşağı, araç çizimleri, parçacıklar, diğer gezginler |
 | `public/js/audio.js` | Web Audio ile üretilen sesler (dosya yok): adım, satın alma, rüzgâr, yağmur, rüzgâr çanları. Sekme gizlenince susar |
 | `public/js/online.js` | Yolcular: gezgin kimliği, ad kuralı, sunucuyla 30 saniyede bir haberleşme (`IT.Online`) |
 | `public/js/game.js` | Oyun durumu, döngü, kayıt, çevrimdışı ilerleme, hava olayları, rozetler, eve dönüş, gökyüzü ayarı, ad penceresi, arayüz |

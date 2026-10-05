@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.20';
+  IT.VERSION = '1.21';
 
   IT.CHANGELOG = [
+    { v: '1.21', date: '2026-10-05', items: {
+      tr: ['Gezginler sahnede: şu an yolda olan diğer oyuncular artık yanında yolculuk ediyor. Senden öndekiler sağda, gerideki solda; her biri kendi aracı, kıyafeti, aracının görünümü ve yol arkadaşıyla.',
+        'İsim etiketleri kimin ne kadar önde ya da geride olduğunu gösterir. Bir gezgine dokun: el sallar ve kaçıncı yolculuğunda olduğunu söyler.',
+        'İstersen Ayarlar\'dan "Diğer gezginler sahnede" seçeneğiyle gizleyebilirsin.'],
+      en: ['Travelers in the scene: other players on the road right now travel beside you. Those ahead are on the right, those behind on the left, each with their own vehicle, outfit, vehicle look and companion.',
+        'Name tags show how far ahead or behind each one is. Tap a traveler: they wave and tell you which trip they\'re on.',
+        'You can hide them with "Other travelers on the road" in Settings.'],
+      de: ['Reisende im Bild: Andere, die gerade unterwegs sind, reisen jetzt neben dir. Wer vorn liegt, ist rechts, wer zurückliegt, links – jeweils mit eigenem Fahrzeug, Outfit, Fahrzeuglook und Begleiter.',
+        'Namensschilder zeigen, wie weit jemand vor oder hinter dir ist. Tippe jemanden an: Er oder sie winkt und verrät die wievielte Reise.',
+        'In den Einstellungen kannst du sie mit „Andere Reisende im Bild“ ausblenden.'],
+      es: ['Viajeros en la escena: otros jugadores que están en camino ahora viajan a tu lado. Los que van delante, a la derecha; los de atrás, a la izquierda, cada uno con su vehículo, atuendo, aspecto y compañero.',
+        'Las etiquetas muestran cuánto van por delante o por detrás. Toca a un viajero: te saluda y te dice en qué viaje va.',
+        'Puedes ocultarlos con «Otros viajeros en el camino» en Ajustes.'],
+      fr: ['Voyageurs dans la scène : les autres joueurs sur la route en ce moment voyagent à tes côtés. Ceux qui sont devant à droite, ceux derrière à gauche, chacun avec son véhicule, sa tenue, son look et son compagnon.',
+        'Les étiquettes montrent l\'avance ou le retard de chacun. Touche un voyageur : il te fait signe et dit à quel voyage il en est.',
+        'Tu peux les masquer avec « Autres voyageurs sur la route » dans les Réglages.'],
+    } },
     { v: '1.20', date: '2026-10-05', items: {
       tr: ['Yolcular: artık yolda yalnız değilsin! Oyuna başlarken adın sorulur; yeni Yolcular sekmesinde son 24 saatte oynayan gezginlerin adını, kaçıncı yolculukta olduklarını, bu yolculukta ne kadar yol gittiklerini ve şu an yolda olup olmadıklarını görürsün.',
         'Adını istediğin zaman Ayarlar\'dan değiştirebilirsin.',

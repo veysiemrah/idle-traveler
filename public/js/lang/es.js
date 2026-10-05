@@ -86,7 +86,7 @@ IT.addLang('es', {
     'name.btn': "En marcha",
     'name.save': "Guardar",
     'toast.named': "Ahora apareces en la lista de viajeros como <b>{name}</b>.",
-    'tr.lead': "Viajeros en el camino en las últimas 24 horas, ordenados por lo que han recorrido en este viaje.",
+    'tr.lead': "Viajeros en el camino en las últimas 24 horas, ordenados por lo que han recorrido en este viaje. Quienes están en camino ahora también viajan a tu lado en la escena; toca a alguien para saludar.",
     'tr.online': "En camino ahora",
     'tr.total': "Últimas 24 horas",
     'tr.you': "tú",
@@ -96,6 +96,9 @@ IT.addLang('es', {
     'tr.error': "Ahora mismo no se puede llegar a los demás viajeros. Tu viaje sigue igual; la lista se actualizará sola cuando vuelva la conexión.",
     'tr.empty': "Aún no hay nadie en el camino. ¡Sé el primero!",
     'tr.noName': "Elige un nombre para aparecer en la lista.",
+    'j.others': "Otros viajeros en el camino",
+    'others.ahead': "¡<b>{name}</b> te devuelve el saludo! Viaje {n}, {d} por delante de ti.",
+    'others.behind': "¡<b>{name}</b> te devuelve el saludo! Viaje {n}, {d} por detrás de ti.",
     'tr.pick': "Elegir nombre",
 
     'ui.perSec': '+{c} / s', 'ui.lvl': 'Nv. {n}', 'ui.buy': 'Comprar', 'ui.get': 'Conseguir', 'ui.upgrade': 'Mejorar', 'ui.upgradeN': 'Mejorar ×{n}',

@@ -49,6 +49,15 @@
     for (const k of ['jacket', 'jacketDark', 'hat', 'hatDark', 'pack']) P[k] = o[k];
   };
 
+  // Başka bir gezgini kendi kıyafetiyle çizmek için paleti geçici olarak değiştirir
+  const OUTFIT_KEYS = ['jacket', 'jacketDark', 'hat', 'hatDark', 'pack'];
+  function withOutfit(id, fn) {
+    const keep = {};
+    for (const k of OUTFIT_KEYS) keep[k] = P[k];
+    IT.setOutfit(id);
+    try { fn(); } finally { Object.assign(P, keep); }
+  }
+
   /* ---------- Biyom paleti ---------- */
   function biomePal(id) {
     const b = BIOMES[id];
@@ -988,6 +997,8 @@
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
       this.gift = null; this.star = null; this.chest = null;
+      // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
+      this.others = []; this.ghosts = new Map();
       this.stars = Array.from({ length: 170 }, () => ({ x: Math.random(), y: Math.random() * 0.75, r: Math.random() * 1.3 + 0.3, p: Math.random() * TAU }));
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
       this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
@@ -1173,6 +1184,99 @@
       }
       return false;
     }
+    /* --- Diğer gezginler --- */
+    // list: yakınlığa göre sıralı { pub, name, sub, veh, tier, outfit, pal, ahead }
+    setOthers(list) { this.others = list || []; }
+    ghostSlots() {
+      const k = this.k, W = this.W, tx = this.travelerX;
+      const nA = W < 640 ? 1 : W < 1000 ? 2 : 3, nB = W < 640 ? 1 : 2;
+      const out = [];
+      this.others.filter(o => o.ahead).slice(0, nA).forEach((o, i) => out.push([o, tx + (150 + 130 * i) * k]));
+      this.others.filter(o => !o.ahead).slice(0, nB).forEach((o, i) => out.push([o, tx - (128 + 112 * i) * k]));
+      return out.filter(([, x]) => x > 34 * k && x < W - 34 * k);
+    }
+    updateGhosts(dt) {
+      const seen = new Set();
+      for (const [o, x] of this.ghostSlots()) {
+        seen.add(o.pub);
+        let g = this.ghosts.get(o.pub);
+        // yeni gelen gezgin kendi tarafından süzülerek belirir
+        if (!g) { g = { x: x + (o.ahead ? 70 : -70) * this.k, alpha: 0, phase: Math.random() * TAU, seed: Math.random() * TAU, wave: 0 }; this.ghosts.set(o.pub, g); }
+        g.o = o; g.tx = x; g.gone = false;
+      }
+      for (const [pub, g] of this.ghosts) {
+        if (!seen.has(pub)) g.gone = true;
+        g.alpha = clamp(g.alpha + (g.gone ? -dt : dt) / 1.2, 0, 1);
+        if (g.gone && g.alpha <= 0) { this.ghosts.delete(pub); continue; }
+        g.x += (g.tx - g.x) * (1 - Math.exp(-dt * 1.4));
+        g.phase += dt * 6.5;
+        g.wave = Math.max(0, g.wave - dt);
+      }
+    }
+    // Gezginin çizim noktası ve etiketin yüksekliği
+    ghostPos(g) {
+      const k = this.k, o = g.o, s = 0.8;
+      const x = g.x + Math.sin(this.t * 0.45 + g.seed) * 8 * k;
+      const hop = g.wave > 0 ? Math.abs(Math.sin(g.wave * 9)) * 7 * k : 0;
+      const y = FLYING[o.veh] ? this.H * FLY_Y[o.veh] - 34 * k + Math.sin(this.t * 0.8 + g.seed) * 4 * k : this.groundY() - 9 * k - hop;
+      const top = { walk: 66, skates: 68, board: 70, bike: 68, horse: 92, moto: 62, car: 54, van: 66, train: 62, balloon: 112, plane: 34, jet: 30, rocket: 36, sail: 88 }[o.veh] || 64;
+      return { x, y, s, top: y - top * k * s };
+    }
+    drawGhosts(ctx, night) {
+      if (!this.ghosts.size) return;
+      const k = this.k;
+      for (const g of this.ghosts.values()) {
+        const o = g.o, p = this.ghostPos(g), ks = k * p.s;
+        ctx.save();
+        // uzaktaki gezgin: biraz saydam ve küçük
+        ctx.globalAlpha = g.alpha * 0.72;
+        if (!FLYING[o.veh]) { ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, p.x, p.y + 1, 22 * ks, 3 * ks); }
+        const back = (o.pal === 'dog' || o.pal === 'cat') && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[o.veh];
+        if (back) {
+          if (o.pal === 'cat') drawCat(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
+          else drawDog(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
+        }
+        const st = { phase: g.phase, wheel: this.wheel, t: this.t + g.seed, night, tier: o.tier || 0, pal: 0, palKind: null };
+        withOutfit(o.outfit, () => drawVehicle(ctx, o.veh, p.x, p.y, ks, st));
+        if (o.pal === 'bird') drawGull(ctx, p.x - 20 * ks, p.top - 20 * ks + Math.sin(this.t * 1.6 + g.seed) * 4 * k, ks, this.t, 0);
+        ctx.restore();
+        this.drawTag(ctx, p.x, p.top - 6 * k, o, g.alpha);
+      }
+    }
+    // İsim etiketi: ad ve senden ne kadar önde/geride olduğu
+    drawTag(ctx, x, y, o, a) {
+      const k = Math.max(this.k, 0.85);
+      ctx.save();
+      ctx.globalAlpha = a * 0.92;
+      ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
+      const w1 = ctx.measureText(o.name).width;
+      ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
+      const w2 = ctx.measureText(o.sub).width;
+      const w = Math.max(w1, w2) + 14 * k, h = 30 * k, bx = clamp(x - w / 2, 4, this.W - w - 4);
+      ctx.fillStyle = 'rgba(255,255,255,0.86)'; rrect(ctx, bx, y - h, w, h, 9 * k); ctx.fill();
+      // küçük ok gezgini gösterir
+      ctx.beginPath(); ctx.moveTo(x - 4 * k, y); ctx.lineTo(x + 4 * k, y); ctx.lineTo(x, y + 4 * k); ctx.closePath(); ctx.fill();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#272b45'; ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
+      ctx.fillText(o.name, bx + w / 2, y - h + 10.5 * k);
+      ctx.fillStyle = o.ahead ? '#10806e' : '#6a6f8c'; ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
+      ctx.fillText(o.sub, bx + w / 2, y - h + 21.5 * k);
+      ctx.restore();
+    }
+    // Bir gezgine dokununca el sallar; dokunulan gezginin verisini döner
+    hitGhost(px, py) {
+      const k = Math.max(this.k, 0.8);
+      for (const g of this.ghosts.values()) {
+        if (g.alpha < 0.4) continue;
+        const p = this.ghostPos(g);
+        if (Math.abs(px - p.x) < 34 * k && py > p.top - 34 * k && py < p.y + 8 * k) {
+          g.wave = 1.2;
+          this.floats.push({ text: '👋', x: p.x, y: p.top - 40 * this.k, life: 0, max: 1.4, color: '#ffffff', big: false });
+          return g.o;
+        }
+      }
+      return null;
+    }
     hitGift(px, py) {
       const g = this.gift;
       if (!g || g.caught) return false;
@@ -1284,6 +1388,7 @@
         }
       }
       this.parts = this.parts.filter(p => p.life < p.max && p.x > -60 && p.y < this.H + 40);
+      this.updateGhosts(dt);
       for (const f of this.floats) f.life += dt;
       this.floats = this.floats.filter(f => f.life < f.max);
       // kelebek
@@ -1540,6 +1645,9 @@
 
       // parçacıklar (arka)
       this.drawParts(ctx, false);
+
+      // diğer gezginler: arka şeritte, yolcunun gerisinde çizilir
+      this.drawGhosts(ctx, night);
 
       // yolcu
       // pal: Karabaş araçta yolculuk ediyorsa görünüm aşaması + 1 (0 = yok)

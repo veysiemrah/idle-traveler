@@ -64,7 +64,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto' }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto', others: true }, intro: false,
       // Yolcular listesindeki kimlik: id herkese kapalı, key yalnızca bu tarayıcıda (sunucu özetini saklar)
       player: { id: IT.newId(), key: IT.newKey(), name: '' },
     };
@@ -130,7 +130,7 @@
     s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx), stack: Math.max(1, count(e.stack, STACK_MAX)) })) : [];
     s.settings = Object.assign(defaultState().settings, isObj(d.settings) ? d.settings : {});
     if (!BULKS.includes(s.settings.bulk)) s.settings.bulk = 1;
-    s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false;
+    s.settings.sfx = s.settings.sfx !== false; s.settings.music = s.settings.music !== false; s.settings.others = s.settings.others !== false;
     if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
@@ -571,6 +571,7 @@
       if (!UNITS.includes(id)) return;
       S.settings.units = id; IT.setUnits(id); save();
     },
+    others() { S.settings.others = !S.settings.others; },
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
     home(_, el) {
@@ -1049,6 +1050,16 @@
       </div></article>`;
   }
 
+  // Sahnede görünen gezginler: şu an yolda olanlar, senden önde/geride olmalarına göre ve yakınlık sırasıyla
+  function othersOnStage() {
+    const d = IT.Online.data;
+    if (!S.settings.others || IT.Online.status !== 'ok' || !d) return [];
+    return d.players.filter(p => p.online && !p.me && p.pub)
+      .map(p => ({ p, diff: p.dist - S.distance }))
+      .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))
+      .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
+        ahead: diff > 0, diff, sub: (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff)) }));
+  }
   // Yolcular: son 24 saatte oynayan gezginler, bu yolculukta gittikleri yola göre sıralı
   function renderTravelers() {
     const pane = $('#pane-travelers'), O = IT.Online, d = O.data;
@@ -1156,6 +1167,7 @@
         <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
         <div class="toggle sky"><span>${t('j.units')}</span><div class="seg" role="group" aria-label="${t('j.units')}">${UNITS.map(k =>
           `<button class="seg-btn" data-act="units" data-id="${k}" aria-pressed="${S.settings.units === k}">${t('units.' + k)}</button>`).join('')}</div></div>
+        <button class="toggle" data-act="others" aria-pressed="${S.settings.others}">${t('j.others')} <b>${S.settings.others ? t('j.on') : t('j.off')}</b></button>
         <button class="toggle" data-act="sfx" aria-pressed="${S.settings.sfx}">${t('j.sfx')} <b>${S.settings.sfx ? t('j.on') : t('j.off')}</b></button>
         <button class="toggle" data-act="music" aria-pressed="${S.settings.music}">${t('j.music')} <b>${S.settings.music ? t('j.on') : t('j.off')}</b></button>
         <div class="toggle sky"><span>${t('j.sky')}</span><div class="seg" role="group" aria-label="${t('j.sky')}">${SKIES.map(k =>
@@ -1177,6 +1189,7 @@
     if (uiDirty.travelers) { renderTravelers(); uiDirty.travelers = false; }
     // Kendi satırında mesafe canlı akar; sekmedeki sayı "şu an yolda" olanlardır
     setText('#trMeDist', fmtDist(S.distance));
+    scene.setOthers(othersOnStage());
     const od = IT.Online.data;
     setText('#trCount', IT.Online.status === 'ok' && od ? fmtNum(od.online) : '');
     const cur = current();
@@ -1306,6 +1319,12 @@
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
+      const g = scene.hitGhost(x, y);
+      if (g) {
+        Sound.unlock(); Sound.wave();
+        toast(t(g.ahead ? 'others.ahead' : 'others.behind', { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
+        return;
+      }
       const before = S.distance;
       step();
       clickBuffer += S.distance - before;
@@ -1399,7 +1418,8 @@
     // Yolcular: bu tarayıcının kaydını 30 saniyede bir günceller, listeyi getirir
     IT.Online.onUpdate = () => { uiDirty.travelers = true; };
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
-    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, trip: S.trips + 1, veh: S.active, route: S.route } : null);
+    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, trip: S.trips + 1, veh: S.active, route: S.route,
+      tier: Econ.lookTier(S.levels[S.active]), outfit: S.settings.outfit, pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;
     if (hot && hot.snapshot) { try { hot.snapshot(() => { save(); return { save: S }; }); } catch (e) { /* yok say */ } }
