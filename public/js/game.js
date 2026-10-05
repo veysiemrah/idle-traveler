@@ -693,7 +693,7 @@
         const data = { files: [file], title: 'Idle Traveler', text: t('pc.shareText', { d: fmtDist(dist), region }) };
         if (navigator.canShare(data)) navigator.share(data).catch(() => {}); else sh.hidden = true;
       });
-    });
+    }, true);
   }
 
   /* ---------- Arayüz ---------- */
@@ -719,8 +719,11 @@
   // Pencereler sıraya girer: biri açıkken gelen yenisi öncekinin yerine geçmez
   const modalQueue = [];
   // render: { html, btn } döndürür; dil değişince pencere yeni dilde yeniden çizilir. after: çizimden sonra (olay bağlama)
-  function openModal(render, onClose, after) {
-    if (!$('#modal').hidden) { modalQueue.push([render, onClose, after]); return; }
+  // dismiss: pencere dışına basınca ya da Esc ile kapanabilir (Yenilikler, Ayarlar, Kartpostal)
+  let modalDismiss = false;
+  function openModal(render, onClose, after, dismiss) {
+    if (!$('#modal').hidden) { modalQueue.push([render, onClose, after, dismiss]); return; }
+    modalDismiss = !!dismiss;
     const b = $('#modalBtn');
     modalRender = () => {
       const r = render();
@@ -731,7 +734,7 @@
     $('#modal').hidden = false;
     b.focus({ preventScroll: true });
     b.onclick = () => {
-      $('#modal').hidden = true; modalRender = null; Sound.unlock();
+      $('#modal').hidden = true; modalRender = null; modalDismiss = false; Sound.unlock();
       if (onClose) onClose();
       if (modalQueue.length) openModal(...modalQueue.shift());
     };
@@ -800,7 +803,7 @@
           return `<li${fresh ? ' class="fresh"' : ''}><h3>v${c.v} <small>${df.format(new Date(c.date + 'T12:00:00'))}</small>${fresh ? `<span class="tagnew">${t('news.new')}</span>` : ''}</h3>
             <ul>${items(c).map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`;
         }).join('')}</ol>` };
-    });
+    }, null, null, true);
   }
   function introHtml() {
     return `
@@ -1039,7 +1042,7 @@
       <p class="tag muted small">${t('j.saved')}</p>`;
   }
   function showSettings() {
-    openModal(() => ({ html: settingsHtml(), btn: t('pc.close') }));
+    openModal(() => ({ html: settingsHtml(), btn: t('pc.close') }), null, null, true);
   }
 
   function refreshUI() {
@@ -1208,6 +1211,9 @@
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
     });
+    // Kapatılabilir pencereler: kartın dışına (karartılmış zemine) basınca ya da Esc ile kapanır
+    $('#modal').addEventListener('click', e => { if (e.target === e.currentTarget && modalDismiss) $('#modalBtn').click(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalDismiss && !$('#modal').hidden) $('#modalBtn').click(); });
     $('#btnSettings').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
       Sound.unlock(); showSettings();
