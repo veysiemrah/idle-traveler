@@ -112,6 +112,8 @@ IT.addLang('tr', {
     'others.waveNear': "El salladın: <b>{name}</b> · {n}. yolculuğunda, hemen yanında.",
     'others.wavedYou': "<b>{name}</b> sana el salladı! Dokunup karşılık verebilirsin.",
     'others.wavedYou0': "<b>{name}</b> sana el salladı!",
+    'ui.caravan': { one: "<b>🐫 Kervan</b> {n} gezgin · hız +{p}", other: "<b>🐫 Kervan</b> {n} gezgin · hız +{p}" },
+    'toast.caravan': "<b>Yolda yalnız değilsin!</b> Kervana katıldın; yakındaki gezginlerle yol daha hızlı akıyor.",
     'others.near': "yanında",
     'chat.btn': "Yoldaşlara seslen",
     'chat.title': "Yoldaşlara seslen",

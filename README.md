@@ -44,10 +44,10 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 | İstek | Ne yapar |
 | --- | --- |
-| `POST /api/hello` | `{ id, key, name, dist, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner |
+| `POST /api/hello` | `{ id, key, name, dist, spd, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner |
 | `POST /api/say` | `{ id, key, msg, to? }`: hazır mesaj ya da el sallama (`msg: 'wave'`, `to`: alıcının `pub`'ı) gönderir (yalnızca yoldaki, anahtarı tutan yolcu; en sık 4 sn'de bir), son mesajları döner |
 | `GET /api/feed` | Son 20 saniyenin mesajları: `{ now, feed: [{ pub, msg, at, to }] }` |
-| `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ pub, name, dist, trip, veh, tier, outfit, pal, online, ago, rank, me }], me }` |
+| `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ pub, name, dist, spd, trip, veh, tier, outfit, pal, online, ago, rank, me, msg, msgAgo }], me }` |
 
 - `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
   özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
@@ -106,6 +106,13 @@ npx wrangler dev   # http://localhost:8787
   bırakarak öne ve geriye doğru; yerde ve gökyüzünde iki ayrı sıra vardır, sığmayan gezgin gösterilmez. Diğer gezginlerin
   treni lokomotif ve tek vagonla çizilir, böylece beş kişi aynı anda trende olsa da yol kalabalıklaşmaz. Araç genişlikleri
   (`VEH_EXT`) ve yükseklikleri (`VEH_TOP`) araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
+- **Kervan**: Şu an yolda olan ve sana yakın (yolunun %3'ü, en az 2 km içinde) her gezgin hızını %10 artırır, en çok 3
+  gezgin (+%30). Sahnenin sol üstünde süresiz bir "🐫 Kervan" etkisi görünür; kervana ilk katılınca bildirim gelir (en sık
+  2 dakikada bir). Kervandan ayrılmak için pencerenin %25 dışına çıkmak gerekir, böylece sınırdaki gezgin yüzünden etki
+  yanıp sönmez. Yalnızca canlı oyunda geçerlidir, çevrimdışı ilerlemeye eklenmez. Sürüm notunda yalnızca ipucu verilir.
+- **Canlı mesafeler**: Her oyuncu bildirimde hızını da (`spd`, m/sn) gönderir. İki bildirim arasında diğer gezginlerin
+  mesafesi bu hızla tahmin edilir (en çok 3 dakika), böylece sahnedeki etiketler ve Yolcular listesi canlı akar; liste
+  açıkken iki saniyede bir tazelenir ve sıra tahmini mesafeye göre yeniden kurulur.
 - **Hazır mesajlar**: Sahnenin sağ altındaki konuşma düğmesi 9 hazır mesaj açar (👋 Merhaba!, 🌄 Ne güzel manzara!, 🚀 Haydi,
   yola devam!, ✋ Bekle beni!, 🏁 Yarışalım mı?, ⭐ Harika gidiyorsun!, 💛 Teşekkürler!, ☕ Mola zamanı., 🌙 İyi yolculuklar!).
   Seçilen mesaj yolcunun başının üstünde 8 saniyelik bir konuşma balonu olur; diğer oyuncuların sahnesinde de o gezginin

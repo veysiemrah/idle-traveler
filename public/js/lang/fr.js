@@ -104,6 +104,8 @@ IT.addLang('fr', {
     'others.waveNear': "Tu as fait signe à <b>{name}</b> · voyage {n}, juste à côté de toi.",
     'others.wavedYou': "<b>{name}</b> te fait signe ! Touche-le pour lui répondre.",
     'others.wavedYou0': "<b>{name}</b> te fait signe !",
+    'ui.caravan': { one: "<b>🐫 Caravane</b> {n} voyageur · vitesse +{p}", other: "<b>🐫 Caravane</b> {n} voyageurs · vitesse +{p}" },
+    'toast.caravan': "<b>Tu n’es pas seul sur la route !</b> Tu as rejoint une caravane ; avec des voyageurs à proximité, la route file plus vite.",
     'others.near': "à côté de toi",
     'chat.btn': "Faire signe aux autres voyageurs",
     'chat.title': "Faire signe",

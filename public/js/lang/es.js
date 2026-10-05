@@ -102,6 +102,8 @@ IT.addLang('es', {
     'others.waveNear': "Saludaste a <b>{name}</b> · viaje {n}, justo a tu lado.",
     'others.wavedYou': "¡<b>{name}</b> te saluda! Tócale para devolver el saludo.",
     'others.wavedYou0': "¡<b>{name}</b> te saluda!",
+    'ui.caravan': { one: "<b>🐫 Caravana</b> {n} viajero · velocidad +{p}", other: "<b>🐫 Caravana</b> {n} viajeros · velocidad +{p}" },
+    'toast.caravan': "<b>¡No viajas solo!</b> Te uniste a una caravana; con viajeros cerca el camino avanza más rápido.",
     'others.near': "a tu lado",
     'chat.btn': "Saludar a otros viajeros",
     'chat.title': "Saludar",

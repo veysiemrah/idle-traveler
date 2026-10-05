@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.24';
+  IT.VERSION = '1.25';
 
   IT.CHANGELOG = [
+    { v: '1.25', date: '2026-10-06', items: {
+      tr: ['Yolda yalnız değilsen yol daha kolay akar… Yakınında başka gezginler olduğunda neler olduğunu bir gör.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['The road flows easier when you\'re not alone… See what happens when other travelers are close by.',
+        'A few small touches along the road.'],
+      de: ['Der Weg fällt leichter, wenn du nicht allein bist … Schau, was passiert, wenn andere Reisende in deiner Nähe sind.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['El camino fluye mejor cuando no vas solo… Mira qué pasa cuando hay otros viajeros cerca.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La route file mieux quand tu n\'es pas seul… Vois ce qui se passe quand d\'autres voyageurs sont tout près.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.24', date: '2026-10-05', items: {
       tr: ['Yoldaşlara seslen: sahnenin köşesindeki konuşma düğmesiyle diğer gezginlere hazır bir mesaj gönder; sözlerin başının üstünde balon olup herkesin yolunda belirir.',
         'Yoldaki bir gezgine dokunursan el sallarsın, o da görür. Kim bilir, belki sana karşılık verir… ya da seni bir yarışa davet eder.',

@@ -111,6 +111,8 @@ IT.addLang('de', {
     'others.waveNear': "Du hast <b>{name}</b> zugewinkt · {n}. Reise, direkt neben dir.",
     'others.wavedYou': "<b>{name}</b> winkt dir zu! Tippe an, um zurückzuwinken.",
     'others.wavedYou0': "<b>{name}</b> winkt dir zu!",
+    'ui.caravan': { one: "<b>🐫 Karawane</b> {n} Reisende(r) · Tempo +{p}", other: "<b>🐫 Karawane</b> {n} Reisende · Tempo +{p}" },
+    'toast.caravan': "<b>Du bist nicht allein unterwegs!</b> Du hast dich einer Karawane angeschlossen; mit Reisenden in der Nähe geht es schneller voran.",
     'others.near': "neben dir",
     'chat.btn': "Mitreisenden etwas zurufen",
     'chat.title': "Zurufen",

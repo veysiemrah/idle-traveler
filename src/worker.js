@@ -1,7 +1,7 @@
 /* Idle Traveler — Worker: statik site + "Yolcular" API'si (D1).
    /api/* dışındaki her istek public/ klasöründeki statik dosyalara gider.
 
-   POST /api/hello   { id, key, name, dist, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
+   POST /api/hello   { id, key, name, dist, spd, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
    GET  /api/players                                           → yalnızca yolcu listesi
    POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
    GET  /api/feed                                              → son 20 saniyenin mesajları */
@@ -43,7 +43,7 @@ async function sha256(text) {
 // Yolcu listesi: son 24 saatte oynayanlar, yola göre sıralı. me: isteği yapanın satırı (ilk 50'de değilse sırasıyla eklenir)
 // pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
 const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
-const COLS = 'id, name, dist, trip, veh, tier, outfit, pal, seen, msg, msgAt';
+const COLS = 'id, name, dist, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt';
 const validId = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
 const validKey = v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
 // Son mesajlar: { pub, msg, at } (at sunucu saatidir; istemci now ile kendi saatine çevirir)
@@ -58,7 +58,7 @@ async function listPlayers(db, id, now) {
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?2) AS online FROM players WHERE seen > ?1').bind(since, onlineSince),
   ]);
   const map = async r => ({
-    pub: await pubOf(r.id), name: r.name, dist: r.dist, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
+    pub: await pubOf(r.id), name: r.name, dist: r.dist, spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
     online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
     msg: r.msgAt > now - 60e3 ? r.msg : '', msgAgo: Math.max(0, now - r.msgAt),
   });
@@ -92,12 +92,14 @@ async function hello(request, env) {
   const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 4 ? b.tier : 0;
   const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
   const pal = PALS.includes(b.pal) ? b.pal : '';
+  // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder
+  const spd = Number(b.spd), speed = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
   const now = Date.now(), hash = await sha256(key);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
-  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12)
+  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13)
     ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
-      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal
-    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal).run();
+      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd
+    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key FROM players WHERE id = ?1').bind(id).first();
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);
