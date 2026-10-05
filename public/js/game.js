@@ -45,6 +45,7 @@
       // Ömür boyu rekorlar: rozetler eve dönüşte kaybolmasın diye
       bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
       palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir)
+      route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -60,6 +61,9 @@
     } catch (e) { return null; }
   }
   const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
+  // Açık rota sayısı: ilk yolculukta bir, her eve dönüşte bir tane daha
+  const routesOpenFor = trips => Math.min(IT.ROUTES.length, (trips || 0) + 1);
+  const perk = () => IT.getRoute().perk;
   const count = (x, max) => { x = Math.floor(+x); return isFinite(x) && x > 0 ? Math.min(x, max === undefined ? Infinity : max) : 0; };
   // Bozuk ya da eski sürümden kalan kayıtları güvenli değerlere çeker
   function sanitize(d) {
@@ -90,6 +94,9 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
+    // rota açık değilse (bozuk kayıt) ilk rotaya dönülür
+    const ri = IT.ROUTES.findIndex(r => r.id === s.route);
+    if (ri < 0 || ri >= routesOpenFor(s.trips)) s.route = 'anatolia';
     if (typeof s.legacyDist !== 'number' || !isFinite(s.legacyDist) || s.legacyDist < 0) s.legacyDist = 0;
     // Rozetler v3'te kademeli: { aile: kazanılan kademe sayısı }. Kademeler bir kez kazanılınca düşmez.
     s.badges = {};
@@ -192,7 +199,7 @@
         showBanner(last.r.name, t('toast.region', { c: fmtNum(last.bonus), p: fmtPct(6) }));
         Sound.region();
       }
-      uiDirty.garage = uiDirty.journal = true;
+      uiDirty.garage = uiDirty.journal = uiDirty.buffs = true; // Eve Dönüş kartındaki rota seçimi köyden çıkınca kapanır
     }
     const ms = [];
     while (S.msIdx < MILESTONES.length && S.distance >= MILESTONES[S.msIdx].at) {
@@ -214,6 +221,19 @@
   const nBadges = () => IT.badgeCount(S);
   const outfitOpen = o => nBadges() >= o.need;
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
+  function applyRoute() {
+    IT.setRoute(S.route);
+    if (scene) { scene.setBiome(IT.regionAt(S.regionIdx).biome, true); scene.relabel(); }
+    uiDirty = { garage: true, buffs: true, journal: true };
+  }
+  function routePicker() {
+    const open = routesOpenFor(S.trips);
+    return `<div class="routes" role="group">${IT.ROUTES.map((r, i) => {
+      const on = S.route === r.id, ok = i < open;
+      return `<button class="route-btn${on ? ' on' : ''}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && S.regionIdx === 0 ? '' : 'disabled'}>
+        <b>${ok ? esc(r.name) : '???'}</b><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
+    }).join('')}</div>`;
+  }
   function applyOutfit() { const o = OUTFIT[S.settings.outfit]; IT.setOutfit(o && outfitOpen(o) ? o.id : 'classic'); }
   // Rekorları güncelle, hak edilen yeni kademeleri ver. Birden çok kademe birden geçilirse en yükseği duyurulur.
   function checkBadges(silent) {
@@ -276,12 +296,12 @@
     for (const x of pool) { r -= x.w; if (r <= 0) { g = x; break; } }
     Sound.gift();
     if (g.instant) {
-      const bonus = Math.max(40, incomeRate() * 60);
+      const bonus = Math.max(40, incomeRate() * 60) * (perk() === 'gold' ? 2 : 1);
       grant(bonus);
       toast(t('toast.giftInstant', { name: g.name, c: fmtNum(bonus) }), 'gold');
       scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffd56b', big: true });
     } else {
-      const dur = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly));
+      const dur = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly) * (perk() === 'gold' ? 1.5 : 1));
       toast(t('toast.giftEffect', { name: g.name, dur: fmtDuration(dur), text: g.text }), 'gold');
       scene.addFloat(t('float.gift', { name: g.name }), { color: '#ffd56b', big: true });
     }
@@ -336,7 +356,7 @@
     if (weather === 'clear') {
       weatherIn -= dt;
       if (weatherIn <= 0) {
-        weatherIn = 360 + Math.random() * 360;
+        weatherIn = (360 + Math.random() * 360) * (perk() === 'rain' ? 0.5 : 1);
         if (canRain) {
           weather = 'rain'; weatherT = 30 + Math.random() * 15;
           scene.setWeather(1, 0);
@@ -459,6 +479,12 @@
       }
       uiDirty.buffs = uiDirty.garage = uiDirty.journal = true;
     },
+    // Rota yalnızca köyden çıkmadan (ilk bölgedeyken) değiştirilebilir
+    route(id) {
+      const i = IT.ROUTES.findIndex(r => r.id === id);
+      if (i < 0 || i >= routesOpenFor(S.trips) || S.regionIdx > 0 || S.route === id) return;
+      S.route = id; applyRoute(); save();
+    },
     palPick(id) {
       const p = Econ.pals.find(x => x.id === id);
       if (!p || (S.buffs.pal || 0) < p.need || S.palPick === id) return;
@@ -508,6 +534,9 @@
       const trip = { dist: S.distance, regions: S.regionIdx + 1, gain, before: S.memories };
       S.memories += gain; S.trips++; S.lifeDist += S.distance;
       newTrip(KEEP);
+      // Yeni yolculuk yeni rotayla başlar: henüz gezilmemiş rota açılır (hepsi açıksa sırayla dönülür)
+      S.route = IT.ROUTES[S.trips % IT.ROUTES.length].id; trip.route = S.trips < IT.ROUTES.length;
+      applyRoute();
       save();
       Sound.region();
       showHome(trip);
@@ -522,7 +551,7 @@
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro']);
-      applyOutfit();
+      applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
       save();
       toast(t('toast.reset'), 'teal');
@@ -567,13 +596,13 @@
     if ($('#modal').hidden) giftIn -= dt;
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
-      giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly);
+      giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
     }
     // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
     if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.6 && weather !== 'rain') starIn -= dt;
     if (starIn <= 0) {
       if (!scene.star) scene.spawnStar();
-      starIn = 50 + Math.random() * 70;
+      starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
     }
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
@@ -725,6 +754,8 @@
         <div><span>${t('home.gain')}</span><b>+${fmtNum(trip.gain)}</b></div>
         <div><span>${t('home.bonus')}</span><b class="cr">${pct(trip.before)} → ${pct(S.memories)}</b></div>
       </div>
+      ${trip.route ? `<p class="lead">${t('home.newRoute', { name: esc(IT.getRoute().name), perk: esc(IT.getRoute().perkText) })}</p>` : ''}
+      ${routesOpenFor(S.trips) > 1 ? `<p class="small">${t('homecard.pick')}</p>${routePicker()}` : ''}
       <p class="small muted">${t('home.note')}</p>
     ` }));
   }
@@ -908,6 +939,9 @@
       <div class="body">
         <div class="row"><h3>${t('homecard.title')}</h3><span class="lvl">${S.trips ? t('homecard.trips', { n: S.trips }) : t('homecard.first')}</span></div>
         <p class="tag">${t('homecard.desc', { p: fmtPct(pct) })} ${now}</p>
+        <p class="tag">${t('homecard.route', { name: esc(IT.getRoute().name), perk: esc(IT.getRoute().perkText) })}
+          ${routesOpenFor(S.trips) < IT.ROUTES.length ? t('homecard.nextRoute') : ''}</p>
+        ${S.regionIdx === 0 && routesOpenFor(S.trips) > 1 ? `<p class="tag small">${t('homecard.pick')}</p>${routePicker()}` : ''}
         ${gain || S.homeReady
           ? `<p class="tag">${t('homecard.now', { gain: '<b class="mem" id="homeGain"></b>', next: '<span id="homeNext"></span>' })}</p>`
           : `<p class="tag">${t('homecard.locked', { d: fmtDist(HOME.min) })}</p><div class="progress"><i id="homeProg"></i></div>`}
@@ -953,7 +987,7 @@
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
-      <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })}</small></h3>
+      <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
       <ul class="badges">${badges}</ul>
@@ -1079,6 +1113,7 @@
   function start(hotSave) {
     S = (hotSave && sanitize(hotSave)) || load() || defaultState();
     checkBadges(true); // eski kayıtlardan gelen ya da sessizce hak edilen kademeler bildirimsiz verilir
+    IT.setRoute(S.route);
     IT.setUnits(S.settings.units); IT.setLang(S.settings.lang);
     applyStatic();
     scene = new IT.Scene($('#scene'));

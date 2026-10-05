@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.15';
+  IT.VERSION = '1.16';
 
   IT.CHANGELOG = [
+    { v: '1.16', date: '2026-10-05', items: {
+      tr: ['Seyahat rotaları: her eve dönüş yeni bir rota açar. Anadolu Yolu, Kıyı Yolu, Kuzey Yolu, Çiçek Yolu ve İpek Yolu bölgeleri farklı sırayla gezer.',
+        'Her rotanın bir ayrıcalığı var: daha sık yağmur ve gökkuşağı, iki kat kayan yıldız, daha çok kelebek ya da daha bereketli kelebek hediyeleri. Rotanı köyden çıkmadan seçebilirsin.'],
+      en: ['Travel routes: every homecoming opens a new one. The Anatolian Way, Coast Road, Northern Route, Blossom Trail and Silk Road visit the regions in a different order.',
+        'Each route has a perk: more rain and rainbows, twice the shooting stars, more butterflies or richer butterfly gifts. Pick your route before you leave the village.'],
+      de: ['Reiserouten: Jede Heimkehr öffnet eine neue. Anatolischer Weg, Küstenstraße, Nordroute, Blütenpfad und Seidenstraße besuchen die Regionen in anderer Reihenfolge.',
+        'Jede Route hat einen Vorteil: mehr Regen und Regenbögen, doppelt so viele Sternschnuppen, mehr Schmetterlinge oder reichere Schmetterlingsgeschenke. Wähle sie, bevor du das Dorf verlässt.'],
+      es: ['Rutas de viaje: cada regreso a casa abre una nueva. El Camino de Anatolia, la Ruta de la costa, la Ruta del norte, el Sendero de las flores y la Ruta de la seda recorren las regiones en otro orden.',
+        'Cada ruta tiene una ventaja: más lluvia y arcoíris, el doble de estrellas fugaces, más mariposas o regalos de mariposa más generosos. Elige tu ruta antes de salir del pueblo.'],
+      fr: ['Routes de voyage : chaque retour à la maison en ouvre une nouvelle. Le Chemin d\'Anatolie, la Route côtière, la Route du Nord, le Sentier des fleurs et la Route de la soie parcourent les régions dans un autre ordre.',
+        'Chaque route a un atout : plus de pluie et d\'arcs-en-ciel, deux fois plus d\'étoiles filantes, plus de papillons ou des cadeaux de papillon plus généreux. Choisis ta route avant de quitter le village.'],
+    } },
     { v: '1.15', date: '2026-10-05', items: {
       tr: ['Yol Arkadaşı artık gelişir: 10 seviye, her seviye daha çok kredi; 2, 4, 7 ve 10. seviyede tasma, boyunluk, heybe ve altın süsler.',
         'Yeni yol arkadaşları: 3. seviyede martı Kanat, 5. seviyede kedi Tekir. Kanat uçan araçlarda da yanında süzülür; Karabaş ve Tekir arabada, karavanda, trende ve balonda camdan bakar.',
