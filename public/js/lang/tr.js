@@ -202,6 +202,9 @@ IT.addLang('tr', {
     'j.outfit': 'Yolcunun kıyafeti', 'j.outfitSub': 'rozet topladıkça yeni renkler açılır', 'j.wearing': 'Üzerinde',
     'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Yenilikler', 'news.btn': 'Yola devam', 'news.new': 'Yeni',
     'j.sky': 'Gökyüzü', 'sky.auto': 'Otomatik', 'sky.day': 'Gündüz', 'sky.night': 'Gece',
+    'sky.cycle': 'Gün döngüsü',
+    'j.cycleInfo': '{season} · gündüz {d}, gece {n}',
+    'season.spring': 'İlkbahar', 'season.summer': 'Yaz', 'season.autumn': 'Sonbahar', 'season.winter': 'Kış',
     'j.lang': 'Dil', 'j.langAuto': 'Otomatik ({name})', 'j.units': 'Birimler', 'units.auto': 'Otomatik', 'units.metric': 'Kilometre', 'units.imperial': 'Mil',
     'j.saved': 'İlerleme bu tarayıcıda otomatik kaydedilir.',
     // Yol arkadaşı ve kartpostal

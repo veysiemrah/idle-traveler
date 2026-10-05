@@ -14,6 +14,11 @@ Kullanıcı "oyunu geliştir" dediğinde işleri şu sırayla yap:
    ekleneceğini seçmekte tamamen özgürsün; kullanıcıya sormadan karar verip uygula. Yenilikler oyunun
    rahatlatıcı tonuna ve mevcut yapısına uymalı.
 
+Yenilik seçerken şu ilkeleri gözet (hepsini tek seferde uygulamak gerekmez, turlara yay):
+- Her yenilik oyuncunun merakını çeksin, oyunu oynama isteği uyandırsın (gizem, sürpriz, bir sonraki hedefi merak ettirme).
+- Araç yükseltmeleri araç üzerinde görsel değişiklik yapsın (seviye arttıkça araç görünür biçimde gelişsin).
+- Eve dönüşle başlayan her yeni yolculuk yeni bir seyahat rotası açsın.
+
 Her adımın sonunda neyin değiştiğini kısaca özetle. `README.md` dosyasını da yeni özelliklere göre güncelle.
 Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin
 başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.

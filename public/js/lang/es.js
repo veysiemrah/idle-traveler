@@ -194,6 +194,9 @@ IT.addLang('es', {
     'j.outfit': 'Ropa del viajero', 'j.outfitSub': 'nuevos colores al reunir insignias', 'j.wearing': 'Puesta',
     'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Novedades', 'news.btn': 'Seguir el camino', 'news.new': 'Nuevo',
     'j.sky': 'Cielo', 'sky.auto': 'Automático', 'sky.day': 'Día', 'sky.night': 'Noche',
+    'sky.cycle': 'Ciclo del día',
+    'j.cycleInfo': '{season} · día {d}, noche {n}',
+    'season.spring': 'Primavera', 'season.summer': 'Verano', 'season.autumn': 'Otoño', 'season.winter': 'Invierno',
     'j.lang': 'Idioma', 'j.langAuto': 'Automático ({name})', 'j.units': 'Unidades', 'units.auto': 'Automático', 'units.metric': 'Kilómetros', 'units.imperial': 'Millas',
     'j.saved': 'El progreso se guarda automáticamente en este navegador.',
     // Yol arkadaşı ve kartpostal

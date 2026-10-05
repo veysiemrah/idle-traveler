@@ -194,6 +194,9 @@ IT.addLang('en', {
     'j.outfit': 'Traveller\'s outfit', 'j.outfitSub': 'new colours unlock as you collect badges', 'j.wearing': 'Wearing',
     'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'What\'s new', 'news.btn': 'Back to the road', 'news.new': 'New',
     'j.sky': 'Sky', 'sky.auto': 'Auto', 'sky.day': 'Day', 'sky.night': 'Night',
+    'sky.cycle': 'Day cycle',
+    'j.cycleInfo': '{season} · day {d}, night {n}',
+    'season.spring': 'Spring', 'season.summer': 'Summer', 'season.autumn': 'Autumn', 'season.winter': 'Winter',
     'j.lang': 'Language', 'j.langAuto': 'Auto ({name})', 'j.units': 'Units', 'units.auto': 'Auto', 'units.metric': 'Kilometres', 'units.imperial': 'Miles',
     'j.saved': 'Progress is saved automatically in this browser.',
     // Yol arkadaşı ve kartpostal

@@ -483,6 +483,7 @@ button { font: inherit; color: inherit; }
 .toggle b { color: var(--muted); }
 .toggle.sky { cursor: default; align-items: center; flex-wrap: wrap; }
 .toggle.sky:hover { background: var(--ink-2); }
+.sky-info { flex-basis: 100%; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .toggle[aria-pressed="true"] b { color: var(--teal); }
 .toggle:hover, .danger:hover { background: var(--ink-3); }
 .toggle.select { cursor: default; align-items: center; }

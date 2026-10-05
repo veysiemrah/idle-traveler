@@ -106,6 +106,18 @@
                   deco: 'flowers', flowers: ['#ffffff', '#f6d365', '#c9a4e8'], houses: true, particles: null, gulls: true },
   };
 
+  /* ---------- Gün döngüsü: her bölgenin mevsimi ---------- */
+  // day: günün aydınlık payı (yazın geceler kısa, kışın uzun). dusk: alacakaranlığın hızı
+  // (artı: çölde olduğu gibi hızlı gün batımı, eksi: kuzeyde olduğu gibi uzun, yavaş alacakaranlık).
+  const SEASON_DAY = { spring: 0.56, summer: 0.68, autumn: 0.44, winter: 0.32 };
+  const BIOME_SEASON = {
+    meadow: ['spring', 0], lavender: ['summer', 0], pine: ['spring', -0.15], wheat: ['summer', 0], coast: ['summer', 0.1],
+    canyon: ['summer', 0.35], sakura: ['spring', 0], autumn: ['autumn', -0.1], desert: ['summer', 0.45],
+    snow: ['winter', -0.4], aurora: ['winter', -0.6, 0.24], tea: ['summer', 0], cappadocia: ['autumn', 0.2],
+    tulip: ['spring', 0], olive: ['autumn', 0.1],
+  };
+  for (const [id, [season, dusk, day]] of Object.entries(BIOME_SEASON)) Object.assign(BIOMES[id], { season, dusk, day: day || SEASON_DAY[season] });
+
   /* ---------- Bölgeler: geometrik olarak uzayan eşikler ---------- */
   const REGIONS = [
     { biome: 'meadow',     at: 0 },

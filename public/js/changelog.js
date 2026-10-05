@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.9';
+  IT.VERSION = '1.10';
 
   IT.CHANGELOG = [
+    { v: '1.10', date: '2026-10-05', items: {
+      tr: ['Gün Döngüsü: Yol Defteri > Gökyüzü\'nden seç; sahne sayfa temasından bağımsız olarak kendi gündüzünü ve gecesini yaşar.',
+        'Her bölgenin bir mevsimi var: yazın geceler kısa, kışın uzun. Çölde güneş hızlı batar, kuzeyde alacakaranlık uzun sürer.',
+        'Gökyüzü ve ses düğmelerinin simgeleri artık doğru durumu gösteriyor.'],
+      en: ['Day cycle: pick it under Journal > Sky and the scene lives its own days and nights, independent of the page theme.',
+        'Every region has a season: short nights in summer, long ones in winter. The desert sun sets fast; northern twilight lingers.',
+        'The sky and sound buttons now show the right icon.'],
+      de: ['Tageslauf: Unter Reisetagebuch > Himmel wählen; die Szene erlebt ihre eigenen Tage und Nächte, unabhängig vom Seitendesign.',
+        'Jede Region hat eine Jahreszeit: kurze Nächte im Sommer, lange im Winter. In der Wüste geht die Sonne schnell unter, im Norden dauert die Dämmerung lange.',
+        'Die Himmel- und Tonknöpfe zeigen jetzt das richtige Symbol.'],
+      es: ['Ciclo del día: elígelo en Diario > Cielo y la escena vive sus propios días y noches, sin depender del tema de la página.',
+        'Cada región tiene su estación: noches cortas en verano y largas en invierno. En el desierto el sol se pone rápido; en el norte el crepúsculo se alarga.',
+        'Los botones de cielo y sonido ahora muestran el icono correcto.'],
+      fr: ['Cycle du jour : choisis-le dans Carnet > Ciel et la scène vit ses propres jours et nuits, indépendamment du thème de la page.',
+        'Chaque région a sa saison : nuits courtes en été, longues en hiver. Dans le désert le soleil se couche vite ; au nord le crépuscule s\'attarde.',
+        'Les boutons ciel et son affichent désormais la bonne icône.'],
+    } },
     { v: '1.9', date: '2026-10-05', items: {
       tr: ['Sayfanın üstünde yeni başlık çubuğu: kartpostal, tema ve ses düğmeleri artık burada.',
         'Yenilikler penceresi: her sürümde neyin değiştiğini buradan görebilirsin.'],
