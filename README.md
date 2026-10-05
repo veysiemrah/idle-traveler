@@ -38,8 +38,9 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 ## Oyun
 
-- **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile kartpostal, tema (gündüz/gece)
-  ve ses düğmeleri durur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
+- **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile ayarlar (dişli), kartpostal,
+  tema (gündüz/gece) ve ses düğmeleri durur. Ayarlar penceresinde dil, birimler, ses efektleri, ortam sesi, gökyüzü ve
+  yolculuğu sıfırlama bulunur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
 - **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
   Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
@@ -91,21 +92,21 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı
-  yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Yol Defteri > Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
+  yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
   tarayıcı temasından bağımsız olarak sabitlenebilir. Değişimde gün batımı ya da gün doğumuyla yumuşak bir geçiş olur.
-- **Gün Döngüsü**: Yol Defteri > Ayarlar > Gökyüzü'ndeki *Gün döngüsü* seçeneğiyle sahne, sayfa temasından bağımsız olarak
+- **Gün Döngüsü**: Ayarlar > Gökyüzü'ndeki *Gün döngüsü* seçeneğiyle sahne, sayfa temasından bağımsız olarak
   kendi gündüzünü ve gecesini yaşar; arayüz tarayıcı temasında kalır. Bir gün 10 dakika sürer. Gündüz ve gece payı bölgenin
   mevsimine göre değişir: yaz bölgelerinde (Lavanta, Buğday Ovası, Ege Sahili, Kanyon, Çöl, Çay Bahçeleri) geceler kısa,
   kış bölgelerinde (Karlı Geçit, Kuzey Işıkları) uzundur; ilkbahar ve sonbahar arada kalır. Alacakaranlığın hızı da bölgeye
   göre değişir: çölde ve kanyonda güneş hızlı batar, karlı kuzeyde alacakaranlık uzun sürer. Bölge değişince geçiş yumuşaktır.
-  Akşam ve sabah olduğunda kısa bir bildirim gelir; Yol Defteri o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
+  Akşam ve sabah olduğunda kısa bir bildirim gelir; Ayarlar penceresi o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
 İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
 
 ## Diller ve ülkeler
 
 Oyun Türkçe, İngilizce, Almanca, İspanyolca ve Fransızca oynanabilir. Dil tarayıcıdan otomatik seçilir;
-tanıtım penceresinden ya da Yol Defteri → Ayarlar'dan değiştirilebilir.
+tanıtım penceresinden ya da başlık çubuğundaki Ayarlar'dan değiştirilebilir.
 
 - **Sayılar** her dilin kendi biçimiyle gösterilir: `3,24 Mn`, `3.24 M`, `3,24 Mio.`; yüzdeler `%25`, `25%`, `25 %`.
 - **Birimler**: ABD ve Birleşik Krallık'ta mesafe mil, hız mph ile; diğer ülkelerde km ve km/sa (km/h) ile gösterilir.

@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.11';
+  IT.VERSION = '1.12';
 
   IT.CHANGELOG = [
+    { v: '1.12', date: '2026-10-05', items: {
+      tr: ['Ayarlar başlık çubuğuna taşındı: dişli düğmesiyle dil, birimler, ses, gökyüzü ve sıfırlama tek dokunuşta açılır.'],
+      en: ['Settings moved to the header: the gear button opens language, units, sound, sky and reset in one tap.'],
+      de: ['Die Einstellungen sind jetzt in der Kopfleiste: Das Zahnrad öffnet Sprache, Einheiten, Ton, Himmel und Zurücksetzen mit einem Tipp.'],
+      es: ['Los ajustes pasan a la barra superior: el engranaje abre idioma, unidades, sonido, cielo y reinicio con un toque.'],
+      fr: ['Les réglages sont dans l\'en-tête : la roue dentée ouvre langue, unités, son, ciel et réinitialisation en un geste.'],
+    } },
     { v: '1.11', date: '2026-10-05', items: {
       tr: ['Gerçekçi mesafeler: kat edilen yol 1/10\'a indi, metre başına kredi 10 katına çıktı. Tempo aynı; araçlar, bölgeler ve eve dönüş eskisi kadar sürede gelir.',
         'Yeni duraklar: Kapının önü, Bir stadyum turu ve Ultra maraton (100 km).',
@@ -26,19 +33,19 @@
         'Les petits pas s\'affichent en centimètres. Les anciennes sauvegardes sont converties automatiquement.'],
     } },
     { v: '1.10', date: '2026-10-05', items: {
-      tr: ['Gün Döngüsü: Yol Defteri > Gökyüzü\'nden seç; sahne sayfa temasından bağımsız olarak kendi gündüzünü ve gecesini yaşar.',
+      tr: ['Gün Döngüsü: Ayarlar > Gökyüzü\'nden seç; sahne sayfa temasından bağımsız olarak kendi gündüzünü ve gecesini yaşar.',
         'Her bölgenin bir mevsimi var: yazın geceler kısa, kışın uzun. Çölde güneş hızlı batar, kuzeyde alacakaranlık uzun sürer.',
         'Gökyüzü ve ses düğmelerinin simgeleri artık doğru durumu gösteriyor.'],
-      en: ['Day cycle: pick it under Journal > Sky and the scene lives its own days and nights, independent of the page theme.',
+      en: ['Day cycle: pick it under Settings > Sky and the scene lives its own days and nights, independent of the page theme.',
         'Every region has a season: short nights in summer, long ones in winter. The desert sun sets fast; northern twilight lingers.',
         'The sky and sound buttons now show the right icon.'],
-      de: ['Tageslauf: Unter Reisetagebuch > Himmel wählen; die Szene erlebt ihre eigenen Tage und Nächte, unabhängig vom Seitendesign.',
+      de: ['Tageslauf: Unter Einstellungen > Himmel wählen; die Szene erlebt ihre eigenen Tage und Nächte, unabhängig vom Seitendesign.',
         'Jede Region hat eine Jahreszeit: kurze Nächte im Sommer, lange im Winter. In der Wüste geht die Sonne schnell unter, im Norden dauert die Dämmerung lange.',
         'Die Himmel- und Tonknöpfe zeigen jetzt das richtige Symbol.'],
-      es: ['Ciclo del día: elígelo en Diario > Cielo y la escena vive sus propios días y noches, sin depender del tema de la página.',
+      es: ['Ciclo del día: elígelo en Ajustes > Cielo y la escena vive sus propios días y noches, sin depender del tema de la página.',
         'Cada región tiene su estación: noches cortas en verano y largas en invierno. En el desierto el sol se pone rápido; en el norte el crepúsculo se alarga.',
         'Los botones de cielo y sonido ahora muestran el icono correcto.'],
-      fr: ['Cycle du jour : choisis-le dans Carnet > Ciel et la scène vit ses propres jours et nuits, indépendamment du thème de la page.',
+      fr: ['Cycle du jour : choisis-le dans Réglages > Ciel et la scène vit ses propres jours et nuits, indépendamment du thème de la page.',
         'Chaque région a sa saison : nuits courtes en été, longues en hiver. Dans le désert le soleil se couche vite ; au nord le crépuscule s\'attarde.',
         'Les boutons ciel et son affichent désormais la bonne icône.'],
     } },

@@ -483,6 +483,7 @@ button { font: inherit; color: inherit; }
 .toggle b { color: var(--muted); }
 .toggle.sky { cursor: default; align-items: center; flex-wrap: wrap; }
 .toggle.sky:hover { background: var(--ink-2); }
+.settings .seg { flex-wrap: wrap; max-width: 100%; }
 .sky-info { flex-basis: 100%; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .toggle[aria-pressed="true"] b { color: var(--teal); }
 .toggle:hover, .danger:hover { background: var(--ink-3); }
@@ -573,8 +574,10 @@ button { font: inherit; color: inherit; }
   /* dar ekranda durak adı etiketsiz, tam görünür */
   .ms-top .lbl { display: none; }
 }
-@media (max-width: 360px) {
+@media (max-width: 400px) {
   .brand-name { display: none; }
+}
+@media (max-width: 360px) {
   .rhythm { grid-template-columns: auto; grid-template-areas: "v" "b"; }
   .rhythm .lbl { display: none; }
   .rhythm b { text-align: left; }

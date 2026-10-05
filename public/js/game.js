@@ -899,8 +899,14 @@
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
           <small>${open ? (on ? t('j.wearing') : '&nbsp;') : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
-      }).join('')}</ul>
-      <h3 class="sec">${t('j.settings')}</h3>
+      }).join('')}</ul>`;
+  }
+
+  /* ---------- Ayarlar (başlık çubuğundaki dişli düğmesi) ---------- */
+  function settingsHtml() {
+    return `
+      <p class="eyebrow">Idle Traveler</p>
+      <h2>${t('j.settings')}</h2>
       <div class="settings">
         <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
         <div class="toggle sky"><span>${t('j.units')}</span><div class="seg" role="group" aria-label="${t('j.units')}">${UNITS.map(k =>
@@ -914,6 +920,9 @@
         <button class="danger" data-act="reset">${t('ui.reset')}</button>
       </div>
       <p class="tag muted small">${t('j.saved')}</p>`;
+  }
+  function showSettings() {
+    openModal(() => ({ html: settingsHtml(), btn: t('pc.close') }));
   }
 
   function refreshUI() {
@@ -1068,6 +1077,21 @@
       S.settings.sfx = on; S.settings.music = on;
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
+    });
+    $('#btnSettings').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      Sound.unlock(); showSettings();
+    });
+    // Pencere içindeki ayar düğmeleri: eylemden sonra pencere yeni durumla yeniden çizilir
+    $('#modalBody').addEventListener('click', e => {
+      const el = e.target.closest('[data-act]');
+      if (!el || el.disabled || !actions[el.dataset.act]) return;
+      Sound.unlock();
+      const act = el.dataset.act, armed = el.dataset.armed === '1';
+      actions[act](el.dataset.id, el);
+      // Sıfırlama ilk dokunuşta onay ister: o anda yeniden çizilmez, yoksa onay yazısı kaybolur
+      if ((act !== 'reset' || armed) && modalRender) modalRender();
+      refreshUI();
     });
     $('#btnNews').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
