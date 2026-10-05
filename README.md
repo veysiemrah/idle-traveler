@@ -38,8 +38,9 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 ## Oyun
 
-- **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile kartpostal, tema (gündüz/gece)
-  ve ses düğmeleri durur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
+- **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile ayarlar (dişli), kartpostal,
+  tema (gündüz/gece) ve ses düğmeleri durur. Ayarlar penceresinde dil, birimler, ses efektleri, ortam sesi, gökyüzü ve
+  yolculuğu sıfırlama bulunur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
 - **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
   Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
@@ -63,7 +64,11 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   Kiraz Çiçeği Vadisi, Sonbahar Korusu, Vaha Yolu, Karlı Geçit, Kuzey Işıkları, Rize Çay Bahçeleri, Peri Bacaları,
   Lale Bahçeleri (yel değirmenleri), Zeytin Bahçeleri (deniz kıyısında zeytinlikler)… Liste bitince bölgeler ikinci tura girer;
   her yeni bölge öncekinden 3 kat uzaktadır. Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
-- **Duraklar**: Maraton, İstanbul – Ankara, Dünya turu, Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
+- **Duraklar**: Kapının önü (10 m), Bir stadyum turu, Maraton, Ultra maraton (100 km), İstanbul – Ankara, Dünya turu,
+  Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
+- **Gerçekçi mesafeler**: v1.11'de bütün mesafeler 1/10'a indi (yürüyüşte adım başına birkaç santimetre, atla birkaç on km/sa).
+  Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
+  aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
 - **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 60 saniye boyunca
   *Yıldız Tozu* etkisiyle hız ×2, kredi ×1,5 olur. Yağmurlu gecelerde yıldız kaymaz.
@@ -71,37 +76,43 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
-- **Eve Dönüş ve Hatıralar**: Yolculuk 500.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
+- **Eve Dönüş ve Hatıralar**: Yolculuk 50.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
-  hatıra kazanırsın (1 Mn km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
+  hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
 - **Yol Arkadaşı**: Güçlendirmeler'den bir kez alınan Karabaş, yürürken, paten ya da kaykayla, bisiklette ve at sırtında
   yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
-- **Yolcunun kıyafeti**: Rozet topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 rozet), Orman (6), Lavanta (10),
-  Gün Batımı (15), Gece Yolcusu (20) ve Altın Yolcu (25). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
+- **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
+  Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
   yolcuya, araçların vurgu renklerine, garaj simgelerine ve kartpostallara yansır.
-- **Rozetler**: Adım, kelebek, kayan yıldız, günlük seri, bölge, mesafe, garaj, yükseltme, eve dönüş ve kartpostal hedefleriyle 29 rozet. Her rozet kalıcı olarak +%3 kredi verir.
-  Yol Defteri'nde görünür. Yol Defteri tutulan dilekleri ve çekilen kartpostalları da sayar.
+- **Kademeli rozetler**: 15 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
+  eve dönüş, hatıra, kartpostal, kayan yıldız ve günlük seri. Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz, Gümüş,
+  Altın, Platin, Elmas (toplam 120 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
+  tamamı +%10). Rozetler ömür boyu kazanılır ve eve dönüşte kaybolmaz. Yol Defteri her ailenin kademesini, kademe noktalarını
+  ve bir sonraki hedefi gösterir. Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
+  dizisine bir eşik eklemek yeter.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı
-  yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Yol Defteri > Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
+  yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
   tarayıcı temasından bağımsız olarak sabitlenebilir. Değişimde gün batımı ya da gün doğumuyla yumuşak bir geçiş olur.
-- **Gün Döngüsü**: Yol Defteri > Ayarlar > Gökyüzü'ndeki *Gün döngüsü* seçeneğiyle sahne, sayfa temasından bağımsız olarak
+- **Gün Döngüsü**: Ayarlar > Gökyüzü'ndeki *Gün döngüsü* seçeneğiyle sahne, sayfa temasından bağımsız olarak
   kendi gündüzünü ve gecesini yaşar; arayüz tarayıcı temasında kalır. Bir gün 10 dakika sürer. Gündüz ve gece payı bölgenin
   mevsimine göre değişir: yaz bölgelerinde (Lavanta, Buğday Ovası, Ege Sahili, Kanyon, Çöl, Çay Bahçeleri) geceler kısa,
   kış bölgelerinde (Karlı Geçit, Kuzey Işıkları) uzundur; ilkbahar ve sonbahar arada kalır. Alacakaranlığın hızı da bölgeye
   göre değişir: çölde ve kanyonda güneş hızlı batar, karlı kuzeyde alacakaranlık uzun sürer. Bölge değişince geçiş yumuşaktır.
-  Akşam ve sabah olduğunda kısa bir bildirim gelir; Yol Defteri o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
+  Gün döngüsü açıkken başlıktaki tema düğmesi döngüyü kapatmaz; yalnızca sayfanın açık/koyu temasını değiştirir
+  (seçim kaydedilir, döngü yeniden seçilince sayfa yine tarayıcı temasını izlemeye başlar).
+  Akşam ve sabah olduğunda kısa bir bildirim gelir; Ayarlar penceresi o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
 İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
 
 ## Diller ve ülkeler
 
 Oyun Türkçe, İngilizce, Almanca, İspanyolca ve Fransızca oynanabilir. Dil tarayıcıdan otomatik seçilir;
-tanıtım penceresinden ya da Yol Defteri → Ayarlar'dan değiştirilebilir.
+tanıtım penceresinden ya da başlık çubuğundaki Ayarlar'dan değiştirilebilir.
 
 - **Sayılar** her dilin kendi biçimiyle gösterilir: `3,24 Mn`, `3.24 M`, `3,24 Mio.`; yüzdeler `%25`, `25%`, `25 %`.
 - **Birimler**: ABD ve Birleşik Krallık'ta mesafe mil, hız mph ile; diğer ülkelerde km ve km/sa (km/h) ile gösterilir.

@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const IT = window.IT;
-  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
+  const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, TIERS, BADGE_TIERS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
   const GIFTS = [
@@ -28,6 +28,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist',
     'badges', 'settings', 'intro', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -37,15 +38,17 @@
   /* ---------- Durum ---------- */
   function defaultState() {
     return {
-      v: 1, created: Date.now(), lastSeen: Date.now(),
+      v: 3, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
       day: { last: '', streak: 0, best: 0 }, seenVer: '',
+      // Ömür boyu rekorlar: rozetler eve dönüşte kaybolmasın diye
+      bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic' }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto' }, intro: false,
     };
   }
   function load() {
@@ -62,12 +65,18 @@
     if (!isObj(d)) return null;
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
+    // v1 → v2 (oyun v1.11): mesafeler 1/10'a indi. Kredi, araç ve bölge ilerlemesi aynı kalır.
+    const v1 = !(+d.v >= 2), v2 = !(+d.v >= 3);
+    if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
+    s.v = 3;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
     for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
-    s.msIdx = Math.min(count(s.msIdx, MILESTONES.length), MILESTONES.filter(m => m.at <= s.distance).length);
+    // Eski kayıtta durak listesi farklıydı (yeni duraklar eklendi): geçilmiş duraklar ödülsüz işaretlenir
+    const passed = MILESTONES.filter(m => m.at <= s.distance).length;
+    s.msIdx = v1 ? passed : Math.min(count(s.msIdx, MILESTONES.length), passed);
     const buffs = isObj(d.buffs) ? d.buffs : {};
     // Sınırsız güçlendirmelerde de makul bir tavan: bozuk kayıt sonsuz fiyat ve hız üretmesin
     s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max || 300)]));
@@ -78,8 +87,18 @@
       if (s.owned[v.id]) s.levels[v.id] = count(levels[v.id], 1000);
     }
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
+    for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
+    if (typeof s.legacyDist !== 'number' || !isFinite(s.legacyDist) || s.legacyDist < 0) s.legacyDist = 0;
+    // Rozetler v3'te kademeli: { aile: kazanılan kademe sayısı }. Kademeler bir kez kazanılınca düşmez.
     s.badges = {};
-    if (isObj(d.badges)) for (const b of BADGES) if (d.badges[b.id]) s.badges[b.id] = +d.badges[b.id] || Date.now();
+    const old = isObj(d.badges) ? d.badges : {};
+    if (v2) {
+      // Eski tek seferlik rozetler: eve dönüşte sıfırlanan değerlerin rekorlarına çevrilir, kademeler sonra hesaplanır
+      const LEGACY = { reg5: ['bestRegion', 4], reg13: ['bestRegion', 14], reg25: ['bestRegion', 24], garage3: ['bestGarage', 3], garage6: ['bestGarage', 6],
+        garage9: ['bestGarage', 14], tuned25: ['bestLevel', 25], tuned100: ['bestLevel', 100], rhythm: ['bestCombo', 20],
+        marathon: ['legacyDist', 42195], world: ['legacyDist', 4.0075e7], moon: ['legacyDist', 3.844e8], sun: ['legacyDist', 1.496e11] };
+      for (const [id, [k, v]] of Object.entries(LEGACY)) if (old[id]) s[k] = Math.max(s[k], v);
+    } else for (const b of BADGES) s.badges[b.id] = count(old[b.id], TIERS.length);
     // Etki süresi, kelebek güçlendirmesiyle ulaşılabilecek en uzun süreyi aşamaz
     const maxFx = Date.now() + 3600e3;
     s.effects = Array.isArray(s.effects) ? s.effects.filter(e => isObj(e) && GIFT[e.id] && isFinite(e.until)).map(e => ({ id: e.id, until: Math.min(e.until, maxFx) })) : [];
@@ -90,6 +109,7 @@
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
     if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
+    if (!['auto', 'light', 'dark'].includes(s.settings.page)) s.settings.page = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
     s.intro = !!s.intro; s.homeReady = !!s.homeReady;
     const day = isObj(d.day) ? d.day : {};
@@ -157,6 +177,7 @@
     const idx = IT.regionIndexFor(S.distance);
     while (S.regionIdx < idx) {
       S.regionIdx++;
+      S.bestRegion = Math.max(S.bestRegion, S.regionIdx);
       const r = IT.regionAt(S.regionIdx);
       const bonus = Math.max(20, incomeRate() * 20);
       grant(bonus);
@@ -188,20 +209,29 @@
     return { regions: found, milestones: ms };
   }
 
-  const nBadges = () => Object.keys(S.badges).length;
+  const nBadges = () => IT.badgeCount(S);
   const outfitOpen = o => nBadges() >= o.need;
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyOutfit() { const o = OUTFIT[S.settings.outfit]; IT.setOutfit(o && outfitOpen(o) ? o.id : 'classic'); }
+  // Rekorları güncelle, hak edilen yeni kademeleri ver. Birden çok kademe birden geçilirse en yükseği duyurulur.
   function checkBadges(silent) {
     const got = [], before = nBadges();
+    S.bestCombo = Math.max(S.bestCombo, Math.floor(combo));
     for (const b of BADGES) {
-      if (S.badges[b.id] || !b.test(S, { combo })) continue;
-      S.badges[b.id] = Date.now();
-      got.push(b);
+      const have = S.badges[b.id] || 0, k = b.tierFor(S);
+      if (k <= have) continue;
+      let bonus = 0; for (let i = have; i < k; i++) bonus += TIERS[i].bonus;
+      S.badges[b.id] = k;
+      const tier = TIERS[k - 1];
+      got.push({ b, k, bonus, get name() { return `${b.name} (${tier.name})`; } });
     }
     if (got.length) {
       uiDirty.journal = true;
-      if (!silent) for (const b of got) { toast(t('toast.badge', { name: esc(b.name), p: fmtPct(BADGE_BONUS * 100) }), 'gold'); Sound.milestone(); }
+      if (!silent) for (const g of got) {
+        const tier = TIERS[g.k - 1];
+        toast(t('toast.badge', { name: esc(g.b.name), tier: tier.name, tierLow: tier.name.toLocaleLowerCase(IT.locale()), p: fmtPct(g.bonus * 100) }), 'gold');
+        Sound.milestone();
+      }
       const opened = OUTFITS.filter(o => o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
     }
@@ -377,6 +407,7 @@
       const v = VEH[id];
       if (S.owned[id] || !spend(v.cost)) return;
       S.owned[id] = true; S.levels[id] = 0;
+      S.bestGarage = Math.max(S.bestGarage, VEHICLES.filter(x => S.owned[x.id]).length);
       uiDirty.garage = true;
       // Yeni araca hemen binilir (hız garajdaki en güçlü araca göre hesaplandığı için düşmez).
       // Sonradan eklenen ara bir araç, daha ileri bir araçtayken alınırsa yalnızca garaja katılır.
@@ -398,6 +429,7 @@
       const q = Econ.upgradeQuote(v, lvl, S.settings.bulk, S.credits);
       if (!spend(q.cost)) return;
       S.levels[id] = lvl + q.n;
+      S.bestLevel = Math.max(S.bestLevel, S.levels[id]);
       const crossed = DOUBLINGS.filter(t => t > lvl && t <= lvl + q.n).length;
       if (crossed) toast(t(crossed > 1 ? 'toast.doubledN' : 'toast.doubled', { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed }), 'teal');
       uiDirty.garage = true;
@@ -424,7 +456,9 @@
     },
     sky(id) {
       if (!SKIES.includes(id) || S.settings.sky === id) return;
-      S.settings.sky = id; applySky(); save();
+      S.settings.sky = id;
+      if (id === 'cycle') S.settings.page = 'auto'; // döngü, sayfa teması tarayıcıyı izleyerek başlar
+      applySky(); save();
       uiDirty.journal = true;
     },
     lang(id) {
@@ -496,7 +530,7 @@
     // Gün döngüsünde akşam ve sabah kendiliğinden gelir
     if (scene.cycle) {
       const n = (scene.nightAmt || 0) > 0.5;
-      if (cycNight !== null && n !== cycNight) { toast(t(n ? 'toast.dusk' : 'toast.dawn'), 'teal'); syncSkyBtn(); }
+      if (cycNight !== null && n !== cycNight) toast(t(n ? 'toast.dusk' : 'toast.dawn'), 'teal');
       cycNight = n;
     } else cycNight = null;
     checkProgress();
@@ -526,7 +560,7 @@
     }
 
     scene.companion = S.buffs.pal > 0;
-    scene.update(dt, Math.max(rateEma, cur.idle), scene.nightAmt || 0);
+    scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 
@@ -742,17 +776,19 @@
   let skyOwned = false;
   const metaColors = [...document.querySelectorAll('meta[name="theme-color"]')].map(m => [m, m.content]);
   function applySky() {
-    const el = document.documentElement, t = { day: 'light', night: 'dark' }[S.settings.sky];
+    // Gün döngüsünde sayfanın açık/koyu teması ayrı tutulur (başlıktaki tema düğmesi yalnızca onu değiştirir)
+    const sky = S.settings.sky, el = document.documentElement;
+    const t = sky === 'cycle' ? { light: 'light', dark: 'dark' }[S.settings.page] : { day: 'light', night: 'dark' }[sky];
     if (t) { el.setAttribute('data-theme', t); skyOwned = true; } else if (skyOwned) { el.removeAttribute('data-theme'); skyOwned = false; }
     for (const [m, c] of metaColors) m.content = t ? (t === 'dark' ? '#1e2140' : '#eef0f8') : c;
     if (scene) { scene.setCycle(S.settings.sky === 'cycle'); syncSkyBtn(); }
   }
-  // Sahne şu an gece mi (gün döngüsünde sahnenin kendi saati, yoksa tema)
-  const sceneNight = () => scene.cycle ? (scene.nightAmt || 0) > 0.5 : scene.mode === 'dark';
+  // Tema düğmesi: normalde sahneyi gündüz/geceye çevirir; gün döngüsünde döngüye dokunmadan
+  // yalnızca sayfanın açık/koyu temasını değiştirir. Simge her zaman sayfa temasını gösterir.
   function syncSkyBtn() {
-    const night = sceneNight();
+    const night = scene.mode === 'dark', cyc = S.settings.sky === 'cycle';
     const btn = $('#btnSky');
-    btn.title = night ? t('ui.toDay') : t('ui.toNight');
+    btn.title = cyc ? (night ? t('ui.toLight') : t('ui.toDark')) : (night ? t('ui.toDay') : t('ui.toNight'));
     btn.setAttribute('aria-label', btn.title);
     // SVG öğelerinde .hidden özelliği yok; öznitelik doğrudan değiştirilir
     btn.querySelector('.ico-sun').toggleAttribute('hidden', night);
@@ -857,10 +893,16 @@
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
-    const nBadges = Object.keys(S.badges).length;
+    const nBadges = IT.badgeCount(S);
+    // Her aile tek kart: madalya o anki kademenin renginde, altında 8 kademe noktası ve bir sonraki hedef
     const badges = BADGES.map(b => {
-      const on = !!S.badges[b.id];
-      return `<li class="badge${on ? ' on' : ''}" title="${esc(b.desc)}"><span class="medal" aria-hidden="true">${on ? '★' : '?'}</span><b>${on ? esc(b.name) : '???'}</b><small>${esc(b.desc)}</small></li>`;
+      const k = S.badges[b.id] || 0, tier = k ? TIERS[k - 1] : null;
+      const pips = TIERS.map((x, i) => `<i style="--c1:${x.c1};--c2:${x.c2}"${i < k ? ' class="on"' : ''} title="${esc(x.name)}"></i>`).join('');
+      const next = k < TIERS.length ? t('j.badgeNext', { tier: TIERS[k].name, desc: b.desc(k) }) : t('j.badgeDone');
+      return `<li class="badge${k ? ' on' : ''}" title="${esc(next)}"${tier ? ` style="--c1:${tier.c1};--c2:${tier.c2};--ink:${tier.ink}"` : ''}>
+        <span class="medal" aria-hidden="true">${k ? '★' : '?'}</span>
+        <b>${k ? esc(b.name) : '???'}</b>${k ? `<em>${esc(tier.name)}</em>` : ''}
+        <span class="pips" aria-hidden="true">${pips}</span><small>${esc(next)}</small></li>`;
     }).join('');
     pane.innerHTML = `
       <h3 class="sec">${t('j.trip')}</h3>
@@ -881,7 +923,7 @@
       </dl>
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
-      <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGES.length, p: fmtPct(nBadges * BADGE_BONUS * 100) })}</small></h3>
+      <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
       <ul class="badges">${badges}</ul>
       <h3 class="sec">${t('j.ms')}</h3>
       <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : `<li class="muted">${t('j.msNone')}</li>`}</ul>
@@ -893,8 +935,14 @@
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
           <small>${open ? (on ? t('j.wearing') : '&nbsp;') : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
-      }).join('')}</ul>
-      <h3 class="sec">${t('j.settings')}</h3>
+      }).join('')}</ul>`;
+  }
+
+  /* ---------- Ayarlar (başlık çubuğundaki dişli düğmesi) ---------- */
+  function settingsHtml() {
+    return `
+      <p class="eyebrow">Idle Traveler</p>
+      <h2>${t('j.settings')}</h2>
       <div class="settings">
         <label class="toggle select"><span>${t('j.lang')}</span>${langSelect('setLang')}</label>
         <div class="toggle sky"><span>${t('j.units')}</span><div class="seg" role="group" aria-label="${t('j.units')}">${UNITS.map(k =>
@@ -908,6 +956,9 @@
         <button class="danger" data-act="reset">${t('ui.reset')}</button>
       </div>
       <p class="tag muted small">${t('j.saved')}</p>`;
+  }
+  function showSettings() {
+    openModal(() => ({ html: settingsHtml(), btn: t('pc.close') }));
   }
 
   function refreshUI() {
@@ -984,6 +1035,7 @@
   /* ---------- Başlatma ---------- */
   function start(hotSave) {
     S = (hotSave && sanitize(hotSave)) || load() || defaultState();
+    checkBadges(true); // eski kayıtlardan gelen ya da sessizce hak edilen kademeler bildirimsiz verilir
     IT.setUnits(S.settings.units); IT.setLang(S.settings.lang);
     applyStatic();
     scene = new IT.Scene($('#scene'));
@@ -1001,9 +1053,9 @@
       const m = themeMode();
       if (m === scene.mode) return;
       scene.setMode(m);
+      syncSkyBtn();
       // Gün döngüsünde sahne temayı izlemez; tema yalnızca döngü kapanınca dönülecek yer olarak saklanır
       if (scene.cycle) return;
-      syncSkyBtn();
       toast(t(m === 'dark' ? 'toast.dusk' : 'toast.dawn'), 'teal');
     };
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', onTheme); else if (mq.addListener) mq.addListener(onTheme); }
@@ -1063,6 +1115,21 @@
       Sound.setSfx(on); Sound.setMusic(on);
       uiDirty.journal = true; syncSoundBtn();
     });
+    $('#btnSettings').addEventListener('click', e => {
+      if (e.detail > 0) e.currentTarget.blur();
+      Sound.unlock(); showSettings();
+    });
+    // Pencere içindeki ayar düğmeleri: eylemden sonra pencere yeni durumla yeniden çizilir
+    $('#modalBody').addEventListener('click', e => {
+      const el = e.target.closest('[data-act]');
+      if (!el || el.disabled || !actions[el.dataset.act]) return;
+      Sound.unlock();
+      const act = el.dataset.act, armed = el.dataset.armed === '1';
+      actions[act](el.dataset.id, el);
+      // Sıfırlama ilk dokunuşta onay ister: o anda yeniden çizilmez, yoksa onay yazısı kaybolur
+      if ((act !== 'reset' || armed) && modalRender) modalRender();
+      refreshUI();
+    });
     $('#btnNews').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
       Sound.unlock(); showNews();
@@ -1073,7 +1140,8 @@
     });
     $('#btnSky').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
-      S.settings.sky = sceneNight() ? 'day' : 'night';
+      if (S.settings.sky === 'cycle') S.settings.page = scene.mode === 'dark' ? 'light' : 'dark';
+      else S.settings.sky = scene.mode === 'dark' ? 'day' : 'night';
       applySky(); save(); uiDirty.journal = true;
     });
     window.addEventListener('resize', () => { scene.resize(); });
