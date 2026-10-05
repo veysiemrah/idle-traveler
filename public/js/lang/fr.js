@@ -5,7 +5,7 @@ IT.addLang('fr', {
   locale: 'fr-FR',
   // abréviations pour 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 (échelle longue)
   suffixes: ['M', 'Md', 'Bn', 'Bd', 'Tn', 'Td', 'Qn', 'Qd', 'Qt', 'Qtd'],
-  units: { m: 'm', km: 'km', au: 'UA', ly: 'années-lumière', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'j', h: 'h', min: 'min', s: 's' },
+  units: { cm: 'cm', in: 'po', m: 'm', km: 'km', au: 'UA', ly: 'années-lumière', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'j', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': "Un voyage idle tout en douceur sur une route pleine de paysages. Pars à pied et découvre où la route te mène.",
 
@@ -65,6 +65,7 @@ IT.addLang('fr', {
     'ms.13': "Deux fois et demie l'équateur", 'ms.14': 'Atteindre la Lune', 'ms.15': 'La Lune, aller-retour', 'ms.16': 'Mars au plus près',
     'ms.17': "Jusqu'au Soleil (1 UA)", 'ms.18': "L'orbite de Jupiter", 'ms.19': "L'orbite de Neptune", 'ms.20': 'Dans le sillage de Voyager 1',
     'ms.21': 'Une année-lumière', 'ms.22': 'Proxima du Centaure', 'ms.unknown': 'Étoiles inconnues',
+    'ms.door': 'Devant la porte', 'ms.track': 'Un tour de piste', 'ms.ultra': 'Un ultra-trail (100 km)',
 
     'badge.steps100.name': 'Premiers pas', 'badge.steps100.desc': 'Fais {n} pas.',
     'badge.steps1k.name': 'Infatigable', 'badge.steps1k.desc': 'Fais {n} pas.',

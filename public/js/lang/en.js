@@ -3,7 +3,7 @@ IT.addLang('en', {
   name: 'English',
   locale: 'en-GB',
   suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'],
-  units: { m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
+  units: { cm: 'cm', in: 'in', m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': 'A relaxing idle journey along a scenic road. Start on foot and find out where the road takes you.',
 
@@ -63,6 +63,7 @@ IT.addLang('en', {
     'ms.13': 'The equator two and a half times', 'ms.14': 'Reaching the Moon', 'ms.15': 'To the Moon and back', 'ms.16': 'Mars at its closest',
     'ms.17': 'All the way to the Sun (1 AU)', 'ms.18': "Jupiter's orbit", 'ms.19': "Neptune's orbit", 'ms.20': 'In the wake of Voyager 1',
     'ms.21': 'One light-year', 'ms.22': 'Proxima Centauri', 'ms.unknown': 'Unknown stars',
+    'ms.door': 'Out the front door', 'ms.track': 'One lap of the track', 'ms.ultra': 'An ultramarathon (100 km)',
 
     'badge.steps100.name': 'First Steps', 'badge.steps100.desc': 'Take {n} steps.',
     'badge.steps1k.name': 'Tireless', 'badge.steps1k.desc': 'Take {n} steps.',

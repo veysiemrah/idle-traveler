@@ -5,7 +5,7 @@ IT.addLang('tr', {
   locale: 'tr-TR',
   // 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 için kısaltmalar
   suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk', 'Sp', 'Ok', 'Nn', 'Ds'],
-  units: { m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
+  units: { cm: 'cm', in: 'inç', m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
   strings: {
     'meta.desc': 'Manzaralı bir yolda rahatlatıcı bir idle yolculuk oyunu. Yürüyerek başla; yolun seni nereye götüreceğini keşfet.',
 
@@ -70,6 +70,7 @@ IT.addLang('tr', {
     'ms.13': 'Ekvatoru iki buçuk kez', 'ms.14': "Ay'a varış", 'ms.15': "Ay'a gidiş dönüş", 'ms.16': "Mars'a en yakın an",
     'ms.17': "Güneş'e kadar (1 AB)", 'ms.18': "Jüpiter'in yörüngesi", 'ms.19': "Neptün'ün yörüngesi", 'ms.20': "Voyager 1'in izinde",
     'ms.21': 'Bir ışık yılı', 'ms.22': 'Proxima Centauri', 'ms.unknown': 'Bilinmeyen yıldızlar',
+    'ms.door': 'Kapının önü', 'ms.track': 'Bir stadyum turu', 'ms.ultra': 'Ultra maraton (100 km)',
 
     // Rozetler
     'badge.steps100.name': 'İlk Adımlar', 'badge.steps100.desc': '{n} adım at.',

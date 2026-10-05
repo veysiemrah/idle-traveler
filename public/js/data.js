@@ -8,21 +8,22 @@
 
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
+  // (v1.11'de bütün mesafeler 1/10'a indi; metre başına kredi CREDITS_PER_M ile 10 katına çıktığı için tempo aynı kaldı)
   const VEHICLES = [
-    { id: 'walk',   cost: 0,       idle: 0.35,  click: 0.4,   road: 'path',    alt: 0 },
-    { id: 'skates', cost: 150,     idle: 1.5,   click: 1.25,   road: 'path',    alt: 0 },
-    { id: 'board',  cost: 900,     idle: 3,     click: 2.2,   road: 'path',    alt: 0 },
-    { id: 'bike',   cost: 5000,    idle: 6,     click: 4,     road: 'path',    alt: 0 },
-    { id: 'horse',  cost: 3.2e4,   idle: 12,    click: 7.5,   road: 'path',    alt: 0 },
-    { id: 'moto',   cost: 2.0e5,   idle: 24,    click: 14,    road: 'asphalt', alt: 0 },
-    { id: 'car',    cost: 8.0e6,   idle: 95,    click: 50,   road: 'asphalt', alt: 0 },
-    { id: 'van',    cost: 4.0e7,   idle: 190,   click: 95,    road: 'asphalt', alt: 0 },
-    { id: 'train',  cost: 2.0e8,   idle: 380,   click: 190,   road: 'rail',    alt: 0 },
-    { id: 'balloon', cost: 9.0e8, idle: 870, click: 410,   road: 'asphalt', alt: 0.4 },
-    { id: 'plane',  cost: 4.0e9,   idle: 2000,  click: 900,  road: 'asphalt', alt: 0.55 },
-    { id: 'jet',    cost: 2.0e10, idle: 4500,  click: 1900,  road: 'asphalt', alt: 0.55 },
-    { id: 'rocket', cost: 1.0e11,  idle: 10000, click: 4000,  road: 'asphalt', alt: 1 },
-    { id: 'sail',   cost: 2.5e12,  idle: 50000, click: 20000, road: 'asphalt', alt: 1.15 },
+    { id: 'walk',   cost: 0,       idle: 0.035,  click: 0.04,   road: 'path',    alt: 0 },
+    { id: 'skates', cost: 150,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
+    { id: 'board',  cost: 900,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
+    { id: 'bike',   cost: 5000,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
+    { id: 'horse',  cost: 3.2e4,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
+    { id: 'moto',   cost: 2.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
+    { id: 'car',    cost: 8.0e6,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
+    { id: 'van',    cost: 4.0e7,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
+    { id: 'train',  cost: 2.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
+    { id: 'balloon', cost: 9.0e8, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
+    { id: 'plane',  cost: 4.0e9,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
+    { id: 'jet',    cost: 2.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
+    { id: 'rocket', cost: 1.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
+    { id: 'sail',   cost: 2.5e12,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
     v.index = i; v.upBase = i === 0 ? 8 : Math.round(v.cost * 0.05);
@@ -121,20 +122,20 @@
   /* ---------- Bölgeler: geometrik olarak uzayan eşikler ---------- */
   const REGIONS = [
     { biome: 'meadow',     at: 0 },
-    { biome: 'lavender',   at: 250 },
-    { biome: 'pine',       at: 1500 },
-    { biome: 'wheat',      at: 7000 },
-    { biome: 'coast',      at: 30000 },
-    { biome: 'canyon',     at: 120000 },
-    { biome: 'sakura',     at: 500000 },
-    { biome: 'autumn',     at: 2.0e6 },
-    { biome: 'desert',     at: 8.0e6 },
-    { biome: 'snow',       at: 3.2e7 },
-    { biome: 'aurora',     at: 1.3e8 },
-    { biome: 'tea',        at: 5.0e8 },
-    { biome: 'cappadocia', at: 2.0e9 },
-    { biome: 'tulip',      at: 6.0e9 },
-    { biome: 'olive',      at: 1.8e10 },
+    { biome: 'lavender',   at: 25 },
+    { biome: 'pine',       at: 150 },
+    { biome: 'wheat',      at: 700 },
+    { biome: 'coast',      at: 3000 },
+    { biome: 'canyon',     at: 12000 },
+    { biome: 'sakura',     at: 50000 },
+    { biome: 'autumn',     at: 200000 },
+    { biome: 'desert',     at: 800000 },
+    { biome: 'snow',       at: 3.2e6 },
+    { biome: 'aurora',     at: 1.3e7 },
+    { biome: 'tea',        at: 5e7 },
+    { biome: 'cappadocia', at: 2e8 },
+    { biome: 'tulip',      at: 6e8 },
+    { biome: 'olive',      at: 1.8e9 },
   ];
   REGIONS.forEach((r, i) => Object.defineProperty(r, 'name', { get: () => T(`region.${i}`) }));
   const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -156,12 +157,16 @@
   }
 
   /* ---------- Gerçek dünyadan mesafe durakları ---------- */
+  // key: çeviri anahtarı (ms.<key>). Sonradan eklenen duraklar sıra numarası yerine adla anılır.
   const MILESTONES = [
+    { at: 10, key: 'door' },
     { at: 100 },
+    { at: 400, key: 'track' },
     { at: 1000 },
     { at: 5000 },
     { at: 21097 },
     { at: 42195 },
+    { at: 1.0e5, key: 'ultra' },
     { at: 1.6e5 },
     { at: 4.5e5 },
     { at: 1.0e6 },
@@ -181,7 +186,7 @@
     { at: 9.46e15 },
     { at: 4.01e16 },
   ];
-  MILESTONES.forEach((m, i) => Object.defineProperty(m, 'name', { get: () => T(`ms.${i}`) }));
+  { let n = 0; MILESTONES.forEach(m => { const k = m.key || n++; Object.defineProperty(m, 'name', { get: () => T(`ms.${k}`) }); }); }
 
   /* ---------- Rozetler: her biri kalıcı +%3 kredi ---------- */
   const maxLevel = s => Math.max(0, ...Object.values(s.levels || {}));
@@ -240,12 +245,16 @@
   /* ---------- Eve dönüş ve hatıralar ---------- */
   // Uzun bir yolculuğun sonunda eve dönülür: araçlar, yükseltmeler, güçlendirmeler ve kredi sıfırlanır.
   // Yolculuğun uzunluğuna göre hatıra kazanılır; her hatıra sonraki yolculuklarda kalıcı hız verir.
-  const HOME = { min: 5.0e8, unit: 1.0e9, per: 10, exp: 1 / 3, bonus: 0.1 };
+  const HOME = { min: 5.0e7, unit: 1.0e8, per: 10, exp: 1 / 3, bonus: 0.1 };
 
   /* ---------- Ekonomi ---------- */
   // Yol tecrübesi: binilmeyen araçlar da hızlarının bu kadarını yolculuğa katar.
   // Böylece yeni araç almak hızı hiç düşürmez, eski araçlara yapılan yükseltmeler de boşa gitmez.
   const CONVOY = 0.5;
+  // Metre başına kredi. Mesafeler 1/10'a inince kredi kazanımı aynı kalsın diye 10.
+  const CREDITS_PER_M = 10;
+  // Sahnenin kayma hızı mesafe ölçeğinden bağımsız: eski görsel tempo korunur
+  const SPEED_VIS = 10;
   const Econ = {
     vehicleMult(lvl) {
       let m = 1 + 0.25 * lvl;
@@ -308,7 +317,7 @@
       return {
         idle: idle * d * bi,
         click: click * d * (1 + 0.2 * b.stride),
-        cpm: (1 + 0.25 * b.postcard) * (1 + 0.1 * (b.pal || 0)) * Econ.badgeMult(state),
+        cpm: CREDITS_PER_M * (1 + 0.25 * b.postcard) * (1 + 0.1 * (b.pal || 0)) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
     },
@@ -369,6 +378,8 @@
   }
   // Tıklama başına mesafe gibi küçük kazançlar
   function fmtGain(m) {
+    // bir metreden (yarddan) kısa adımlar santimetre ya da inç olarak
+    if (imperial() ? m < YD : m < 1) return imperial() ? nf(0).format(Math.max(1, Math.round(m / 0.0254))) + ' ' + unit('in') : nf(0).format(Math.max(1, Math.round(m * 100))) + ' ' + unit('cm');
     const u = imperial() ? m / YD : m, lim = imperial() ? MI / YD : 1000, k = imperial() ? 'yd' : 'm';
     if (u < 10) return nf(1).format(u) + ' ' + unit(k);
     if (u < lim) return nf(0).format(Math.floor(u)) + ' ' + unit(k);
@@ -389,7 +400,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, MILESTONES, BADGES, BADGE_BONUS, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.10';
+  IT.VERSION = '1.11';
 
   IT.CHANGELOG = [
+    { v: '1.11', date: '2026-10-05', items: {
+      tr: ['Gerçekçi mesafeler: kat edilen yol 1/10\'a indi, metre başına kredi 10 katına çıktı. Tempo aynı; araçlar, bölgeler ve eve dönüş eskisi kadar sürede gelir.',
+        'Yeni duraklar: Kapının önü, Bir stadyum turu ve Ultra maraton (100 km).',
+        'Kısa adımlar santimetre olarak gösterilir. Eski kayıtlar otomatik çevrilir.'],
+      en: ['Realistic distances: travel distance is now a tenth, credits per metre are ten times higher. Same pace: vehicles, regions and homecoming arrive just as soon.',
+        'New stops: Out the front door, One lap of the track and An ultramarathon (100 km).',
+        'Short steps show in centimetres (inches). Old saves convert automatically.'],
+      de: ['Realistische Entfernungen: Die Strecke ist jetzt ein Zehntel, Credits pro Meter sind zehnmal höher. Gleiches Tempo: Fahrzeuge, Regionen und Heimkehr kommen genauso schnell.',
+        'Neue Stationen: Vor der Haustür, Eine Stadionrunde und Ein Ultramarathon (100 km).',
+        'Kurze Schritte werden in Zentimetern angezeigt. Alte Spielstände werden automatisch umgerechnet.'],
+      es: ['Distancias realistas: el recorrido es ahora una décima parte y los créditos por metro, diez veces más. Mismo ritmo: vehículos, regiones y regreso llegan igual de pronto.',
+        'Nuevas paradas: Al salir de casa, Una vuelta a la pista y Un ultramaratón (100 km).',
+        'Los pasos cortos se muestran en centímetros. Las partidas antiguas se convierten solas.'],
+      fr: ['Distances réalistes : le trajet est désormais divisé par dix et les crédits par mètre multipliés par dix. Même rythme : véhicules, régions et retour arrivent aussi vite.',
+        'Nouvelles étapes : Devant la porte, Un tour de piste et Un ultra-trail (100 km).',
+        'Les petits pas s\'affichent en centimètres. Les anciennes sauvegardes sont converties automatiquement.'],
+    } },
     { v: '1.10', date: '2026-10-05', items: {
       tr: ['Gün Döngüsü: Yol Defteri > Gökyüzü\'nden seç; sahne sayfa temasından bağımsız olarak kendi gündüzünü ve gecesini yaşar.',
         'Her bölgenin bir mevsimi var: yazın geceler kısa, kışın uzun. Çölde güneş hızlı batar, kuzeyde alacakaranlık uzun sürer.',

@@ -4,7 +4,7 @@ IT.addLang('de', {
   locale: 'de-DE',
   // Abkürzungen für 1e6, 1e9, 1e12, 1e15, 1e18, 1e21 (lange Skala)
   suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.', 'Quadr.', 'Quadrd.', 'Quint.', 'Quintd.'],
-  units: { m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
+  units: { cm: 'cm', in: 'Zoll', m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
   strings: {
     'meta.desc': 'Eine entspannte Idle-Reise auf einer malerischen Straße. Starte zu Fuß und finde heraus, wohin dich der Weg führt.',
 
@@ -69,6 +69,7 @@ IT.addLang('de', {
     'ms.13': 'Zweieinhalbmal um den Äquator', 'ms.14': 'Bis zum Mond', 'ms.15': 'Zum Mond und zurück', 'ms.16': 'Mars in größter Nähe',
     'ms.17': 'Bis zur Sonne (1 AE)', 'ms.18': 'Die Umlaufbahn des Jupiter', 'ms.19': 'Die Umlaufbahn des Neptun', 'ms.20': 'Auf den Spuren von Voyager 1',
     'ms.21': 'Ein Lichtjahr', 'ms.22': 'Proxima Centauri', 'ms.unknown': 'Unbekannte Sterne',
+    'ms.door': 'Vor der Haustür', 'ms.track': 'Eine Stadionrunde', 'ms.ultra': 'Ein Ultramarathon (100 km)',
 
     // Abzeichen
     'badge.steps100.name': 'Erste Schritte', 'badge.steps100.desc': 'Mach {n} Schritte.',

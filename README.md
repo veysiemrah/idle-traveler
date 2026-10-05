@@ -63,7 +63,11 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   Kiraz Çiçeği Vadisi, Sonbahar Korusu, Vaha Yolu, Karlı Geçit, Kuzey Işıkları, Rize Çay Bahçeleri, Peri Bacaları,
   Lale Bahçeleri (yel değirmenleri), Zeytin Bahçeleri (deniz kıyısında zeytinlikler)… Liste bitince bölgeler ikinci tura girer;
   her yeni bölge öncekinden 3 kat uzaktadır. Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
-- **Duraklar**: Maraton, İstanbul – Ankara, Dünya turu, Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
+- **Duraklar**: Kapının önü (10 m), Bir stadyum turu, Maraton, Ultra maraton (100 km), İstanbul – Ankara, Dünya turu,
+  Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
+- **Gerçekçi mesafeler**: v1.11'de bütün mesafeler 1/10'a indi (yürüyüşte adım başına birkaç santimetre, atla birkaç on km/sa).
+  Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
+  aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
 - **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 60 saniye boyunca
   *Yıldız Tozu* etkisiyle hız ×2, kredi ×1,5 olur. Yağmurlu gecelerde yıldız kaymaz.
@@ -71,9 +75,9 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 40 saniye boyunca kredi ×1,5 olur.
-- **Eve Dönüş ve Hatıralar**: Yolculuk 500.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
+- **Eve Dönüş ve Hatıralar**: Yolculuk 50.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
-  hatıra kazanırsın (1 Mn km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
+  hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
 - **Yol Arkadaşı**: Güçlendirmeler'den bir kez alınan Karabaş, yürürken, paten ya da kaykayla, bisiklette ve at sırtında
   yanında koşar. Kalıcı +%10 kredi verir ve eve dönüşte de yolcuyla kalır.

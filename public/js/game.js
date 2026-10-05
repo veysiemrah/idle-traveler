@@ -37,7 +37,7 @@
   /* ---------- Durum ---------- */
   function defaultState() {
     return {
-      v: 1, created: Date.now(), lastSeen: Date.now(),
+      v: 2, created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
       day: { last: '', streak: 0, best: 0 }, seenVer: '',
@@ -62,12 +62,18 @@
     if (!isObj(d)) return null;
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
+    // v1 → v2 (oyun v1.11): mesafeler 1/10'a indi. Kredi, araç ve bölge ilerlemesi aynı kalır.
+    const v1 = !(+d.v >= 2);
+    if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
+    s.v = 2;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
     for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
-    s.msIdx = Math.min(count(s.msIdx, MILESTONES.length), MILESTONES.filter(m => m.at <= s.distance).length);
+    // Eski kayıtta durak listesi farklıydı (yeni duraklar eklendi): geçilmiş duraklar ödülsüz işaretlenir
+    const passed = MILESTONES.filter(m => m.at <= s.distance).length;
+    s.msIdx = v1 ? passed : Math.min(count(s.msIdx, MILESTONES.length), passed);
     const buffs = isObj(d.buffs) ? d.buffs : {};
     // Sınırsız güçlendirmelerde de makul bir tavan: bozuk kayıt sonsuz fiyat ve hız üretmesin
     s.buffs = Object.fromEntries(BUFFS.map(b => [b.id, count(buffs[b.id], b.max || 300)]));
@@ -526,7 +532,7 @@
     }
 
     scene.companion = S.buffs.pal > 0;
-    scene.update(dt, Math.max(rateEma, cur.idle), scene.nightAmt || 0);
+    scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 

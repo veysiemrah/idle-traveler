@@ -3,7 +3,7 @@ IT.addLang('es', {
   name: 'Español',
   locale: 'es-ES',
   suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T', 'C', 'mil C', 'Qn', 'mil Qn'],
-  units: { m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
+  units: { cm: 'cm', in: 'pulg.', m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
     'meta.desc': 'Un viaje idle y relajante por una carretera llena de paisajes. Empieza a pie y descubre adónde te lleva el camino.',
 
@@ -63,6 +63,7 @@ IT.addLang('es', {
     'ms.13': 'Dos veces y media el ecuador', 'ms.14': 'Llegar a la Luna', 'ms.15': 'Ida y vuelta a la Luna', 'ms.16': 'Marte en su punto más cercano',
     'ms.17': 'Hasta el Sol (1 UA)', 'ms.18': 'La órbita de Júpiter', 'ms.19': 'La órbita de Neptuno', 'ms.20': 'Tras la estela de la Voyager 1',
     'ms.21': 'Un año luz', 'ms.22': 'Próxima Centauri', 'ms.unknown': 'Estrellas desconocidas',
+    'ms.door': 'Al salir de casa', 'ms.track': 'Una vuelta a la pista', 'ms.ultra': 'Un ultramaratón (100 km)',
 
     'badge.steps100.name': 'Primeros Pasos', 'badge.steps100.desc': 'Da {n} pasos.',
     'badge.steps1k.name': 'Incansable', 'badge.steps1k.desc': 'Da {n} pasos.',
