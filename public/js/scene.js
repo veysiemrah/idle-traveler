@@ -695,6 +695,8 @@
       this.t = 0;
       this.tod = 0.49;           // günün saati (0..1): 0.25 gün doğumu, 0.5 öğle, 0.75 gün batımı
       this.mode = 'light'; this.drift = 0;
+      // Gün döngüsü: sahne sayfa temasından bağımsız olarak kendi gününü yaşar
+      this.cycle = false; this.cycTod = 0.49; this.dayFrac = 0.5; this.duskK = 0;
       this.anchor = this.anchorFrom = this.anchorTo = 0.49; this.anchorT = 1;
       this.scroll = Math.random() * 50000;
       this.vs = 30;              // görsel kayma hızı (px/sn)
@@ -754,8 +756,23 @@
       const center = mode === 'dark' ? 0.99 : 0.49;
       let target = Math.floor(this.anchor) + center;
       while (target < this.anchor + 0.05) target += 1;
-      if (instant) { this.anchor = this.anchorFrom = this.anchorTo = target; this.anchorT = 1; }
+      if (instant) { this.anchor = this.anchorFrom = this.anchorTo = target; this.anchorT = 1; this.tod = ((target % 1) + 1) % 1; }
       else { this.anchorFrom = this.anchor; this.anchorTo = target; this.anchorT = 0; }
+    }
+
+    // Gün döngüsünü aç/kapat. Kapanınca sahne o anki saatten temaya (gündüz ya da gece) yumuşakça döner.
+    setCycle(on) {
+      if (on === this.cycle) return;
+      this.cycle = on;
+      if (on) { this.cycTod = this.tod; return; }
+      this.anchor = this.anchorFrom = this.anchorTo = this.cycTod; this.anchorT = 1; this.drift = 0;
+      const m = this.mode; this.mode = null; this.setMode(m);
+    }
+    // Bir tam günün süresi (sn); gündüz ve gece payı bölgenin mevsimine göre değişir
+    get cyclePeriod() { return 600; }
+    dayLength(biome) {
+      const b = BIOMES[biome || this.biome];
+      return { day: b.day * this.cyclePeriod, night: (1 - b.day) * this.cyclePeriod, season: b.season };
     }
 
     // Dil ya da birim değişince yoldaki tabelaları yeni metinle yeniden yaz
@@ -907,7 +924,18 @@
         const e = this.anchorT < 0.5 ? 2 * this.anchorT * this.anchorT : 1 - Math.pow(-2 * this.anchorT + 2, 2) / 2;
         this.anchor = lerp(this.anchorFrom, this.anchorTo, e);
       }
-      this.tod = ((this.anchor + 0.12 * Math.sin(this.drift * TAU / 600)) % 1 + 1) % 1;
+      if (this.cycle) {
+        // Mevsime göre gündüz/gece payı ve alacakaranlık hızı; bölge değişince birkaç saniyede yumuşakça uyum sağlar
+        const b = BIOMES[this.biome];
+        this.dayFrac += (b.day - this.dayFrac) * Math.min(1, dt / 4);
+        this.duskK += (b.dusk - this.duskK) * Math.min(1, dt / 4);
+        const tod = ((this.cycTod % 1) + 1) % 1, isDay = tod >= 0.25 && tod < 0.75;
+        // yarım gün (0,5 tod) gündüzde dayFrac, gecede 1 - dayFrac kadar sürer; ufka yakınken hız duskK ile değişir
+        // 1/√(1−k²): hız çarpanı süreyi uzatmasın, yalnızca ufuk çevresine dağıtsın (gün yine cyclePeriod sürer)
+        const rate = 0.5 / ((isDay ? this.dayFrac : 1 - this.dayFrac) * this.cyclePeriod) / Math.sqrt(1 - this.duskK * this.duskK);
+        this.cycTod += dt * rate * (1 + this.duskK * Math.cos(4 * Math.PI * (tod - 0.25)));
+        this.tod = ((this.cycTod % 1) + 1) % 1;
+      } else this.tod = ((this.anchor + 0.12 * Math.sin(this.drift * TAU / 600)) % 1 + 1) % 1;
       this.blend = Math.min(1, this.blend + dt / 5);
       this.rain += clamp(this.rainTarget - this.rain, -dt / 4, dt / 4);
       this.rainbow += clamp(this.rainbowTarget - this.rainbow, -dt / 6, dt / 3);

@@ -196,6 +196,9 @@ IT.addLang('fr', {
     'j.outfit': 'Tenue du voyageur', 'j.outfitSub': 'de nouvelles couleurs à chaque badge', 'j.wearing': 'Portée',
     'news.eyebrow': 'Idle Traveler v{v}', 'news.title': 'Nouveautés', 'news.btn': 'Reprendre la route', 'news.new': 'Nouveau',
     'j.sky': 'Ciel', 'sky.auto': 'Auto', 'sky.day': 'Jour', 'sky.night': 'Nuit',
+    'sky.cycle': 'Cycle du jour',
+    'j.cycleInfo': '{season} · jour {d}, nuit {n}',
+    'season.spring': 'Printemps', 'season.summer': 'Été', 'season.autumn': 'Automne', 'season.winter': 'Hiver',
     'j.lang': 'Langue', 'j.langAuto': 'Automatique ({name})', 'j.units': 'Unités', 'units.auto': 'Auto', 'units.metric': 'Kilomètres', 'units.imperial': 'Miles',
     'j.saved': 'Ta progression est enregistrée automatiquement dans ce navigateur.',
     // Yol arkadaşı ve kartpostal

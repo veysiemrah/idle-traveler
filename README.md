@@ -89,6 +89,12 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı
   yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Yol Defteri > Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
   tarayıcı temasından bağımsız olarak sabitlenebilir. Değişimde gün batımı ya da gün doğumuyla yumuşak bir geçiş olur.
+- **Gün Döngüsü**: Yol Defteri > Ayarlar > Gökyüzü'ndeki *Gün döngüsü* seçeneğiyle sahne, sayfa temasından bağımsız olarak
+  kendi gündüzünü ve gecesini yaşar; arayüz tarayıcı temasında kalır. Bir gün 10 dakika sürer. Gündüz ve gece payı bölgenin
+  mevsimine göre değişir: yaz bölgelerinde (Lavanta, Buğday Ovası, Ege Sahili, Kanyon, Çöl, Çay Bahçeleri) geceler kısa,
+  kış bölgelerinde (Karlı Geçit, Kuzey Işıkları) uzundur; ilkbahar ve sonbahar arada kalır. Alacakaranlığın hızı da bölgeye
+  göre değişir: çölde ve kanyonda güneş hızlı batar, karlı kuzeyde alacakaranlık uzun sürer. Bölge değişince geçiş yumuşaktır.
+  Akşam ve sabah olduğunda kısa bir bildirim gelir; Yol Defteri o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
 İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
 
