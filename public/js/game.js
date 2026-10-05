@@ -431,7 +431,10 @@
       S.levels[id] = lvl + q.n;
       S.bestLevel = Math.max(S.bestLevel, S.levels[id]);
       const crossed = DOUBLINGS.filter(t => t > lvl && t <= lvl + q.n).length;
-      if (crossed) toast(t(crossed > 1 ? 'toast.doubledN' : 'toast.doubled', { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed }), 'teal');
+      const looked = Econ.lookTier(lvl + q.n) > Econ.lookTier(lvl);
+      if (crossed) toast(t(looked ? 'toast.doubledLook' : crossed > 1 ? 'toast.doubledN' : 'toast.doubled', { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed }), looked ? 'gold' : 'teal');
+      // Araç yeni bir görünüm kazandı: sahnedeyse parıltıyla göster
+      if (looked && S.active === id) { scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 30, ['#ffd56b', '#fff1c2', '#ffffff', '#6fd3c1']); Sound.region(); }
       uiDirty.garage = true;
       checkBadges();
     },
@@ -560,6 +563,7 @@
     }
 
     scene.companion = S.buffs.pal > 0;
+    scene.vehTier = Econ.lookTier(S.levels[S.active]);
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
@@ -832,7 +836,7 @@
       const active = S.active === v.id;
       const lvl = S.levels[v.id] || 0;
       html += `<article class="card veh${active ? ' active' : ''}${owned ? '' : ' locked'}">
-        <canvas class="icon" data-icon="${v.id}" width="72" height="56"></canvas>
+        <canvas class="icon" data-icon="${v.id}" data-tier="${owned ? Econ.lookTier(lvl) : 0}" width="72" height="56"></canvas>
         <div class="body">
           <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
@@ -846,7 +850,7 @@
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
       <div class="body"><h3>???</h3><p class="tag">${t('garage.mystery', { n: hidden })}</p></div></article>`;
     pane.innerHTML = html;
-    pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, c.dataset.locked === '1'));
+    pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
   }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
@@ -854,7 +858,9 @@
   }
   function nextDoubling(lvl) {
     const next = DOUBLINGS.find(x => x > lvl);
-    return next ? t('ui.doubling', { p: fmtPct(25), t: next }) : t('ui.perLevel', { p: fmtPct(25) });
+    if (!next) return t('ui.perLevel', { p: fmtPct(25) });
+    // görünüm değiştiren eşiklerde merak uyandıran ipucu
+    return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p: fmtPct(25), t: next });
   }
 
   function renderBuffs() {

@@ -292,6 +292,9 @@
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.01 * lvl; },
     luckMult: 5, // şanslı adım kaç kat uzun
+    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–4)
+    looks: [10, 25, 50, 100],
+    lookTier(lvl) { return Econ.looks.filter(t => (lvl || 0) >= t).length; },
     badgeMult(state) { return 1 + badgeBonus(state); },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {
