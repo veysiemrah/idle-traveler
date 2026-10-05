@@ -155,8 +155,30 @@
   let scene = null;
 
   /* ---------- Hesaplar ---------- */
+  /* ---------- Kervan ---------- */
+  // Şu an yolda olan ve sana yakın (yolunun %3'ü, en az 2 km içinde) her gezgin hızını %10 artırır; en çok 3 gezgin (+%30).
+  // Kervandan ayrılmak için pencerenin biraz dışına çıkmak gerekir: sınırdaki gezgin yüzünden etki yanıp sönmez.
+  const CARAVAN_MAX = 3, CARAVAN_STEP = 0.1;
+  let caravan = new Set(), caravanToastAt = 0;
+  function updateCaravan() {
+    const d = IT.Online.data, before = caravan.size, next = new Set();
+    if (IT.Online.status === 'ok' && d) {
+      const win = Math.max(2000, S.distance * 0.03);
+      for (const p of d.players) {
+        if (!p.online || p.me || !p.pub) continue;
+        const gap = Math.abs(IT.Online.liveDist(p) - S.distance);
+        if (gap <= win || (caravan.has(p.pub) && gap <= win * 1.25)) next.add(p.pub);
+      }
+    }
+    caravan = next;
+    if (!before && caravan.size && Date.now() - caravanToastAt > 120e3) {
+      caravanToastAt = Date.now();
+      toast(t('toast.caravan'), 'gold'); Sound.chat();
+    }
+  }
+  const caravanN = () => Math.min(CARAVAN_MAX, caravan.size);
   function tempMult() {
-    const now = Date.now(), m = { speed: 1, credit: 1, click: 1 };
+    const now = Date.now(), m = { speed: 1 + CARAVAN_STEP * caravanN(), credit: 1, click: 1 };
     for (const e of S.effects) if (e.until > now) {
       const em = effMult(GIFT[e.id], e.stack);
       m.speed *= em.speed; m.credit *= em.credit; m.click *= em.click;
@@ -766,6 +788,7 @@
   // guard: false dönerse pencere kapanmaz (ör. geçersiz ad)
   function openModal(render, onClose, after, dismiss, guard) {
     if (!$('#modal').hidden) { modalQueue.push([render, onClose, after, dismiss, guard]); return; }
+    if (!$('#chatPop').hidden) chatOpen(false);
     modalDismiss = !!dismiss;
     const b = $('#modalBtn');
     modalRender = () => {
@@ -1057,7 +1080,7 @@
     // az önce konuşan gezgin önce gelir: balonu sahnede görünsün
     const talking = p => { const m = lastMsg.get(p.pub); return m && Date.now() - m.at < 9e3 ? 0 : 1; };
     return d.players.filter(p => p.online && !p.me && p.pub)
-      .map(p => ({ p, diff: p.dist - S.distance, talk: talking(p) }))
+      .map(p => ({ p, diff: IT.Online.liveDist(p) - S.distance, talk: talking(p) }))
       .sort((a, b) => a.talk - b.talk || Math.abs(a.diff) - Math.abs(b.diff))
       .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
         // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz
@@ -1158,8 +1181,11 @@
     let body;
     if (!d) body = `<p class="tr-note">${t(O.status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
     else {
-      const list = d.players.map(row).join('');
-      const meOut = d.me && !d.players.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(d.me)}` : '';
+      // yoldakilerin mesafesi iki bildirim arasında da akar; sıra buna göre yeniden kurulur
+      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? S.distance : O.liveDist(p) })).sort((a, b) => b.dist - a.dist);
+      live.forEach((p, i) => { p.rank = i + 1; });
+      const list = live.map(row).join('');
+      const meOut = d.me && !live.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(d.me)}` : '';
       body = `${O.status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
         ${list || meOut ? `<ol class="tr-list">${list}${meOut}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
     }
@@ -1171,7 +1197,9 @@
       ${S.player.name ? '' : `<div class="card tr-ask"><p class="tag">${t('tr.noName')}</p><button class="buy" data-act="nameAsk"><span>${t('tr.pick')}</span></button></div>`}
       ${body}`;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, 0));
+    trRenderedAt = Date.now();
   }
+  let trRenderedAt = 0;
   function renderJournal() {
     const pane = $('#pane-journal');
     const stamps = [];
@@ -1263,6 +1291,8 @@
     if (uiDirty.garage) { renderGarage(); uiDirty.garage = false; }
     if (uiDirty.buffs) { renderBuffs(); uiDirty.buffs = false; }
     if (uiDirty.journal) { renderJournal(); uiDirty.journal = false; }
+    // Yolcular sekmesi açıkken mesafeler ve sıra iki saniyede bir tazelenir
+    if (!$('#pane-travelers').hidden && Date.now() - trRenderedAt > 2000) uiDirty.travelers = true;
     if (uiDirty.travelers) { renderTravelers(); uiDirty.travelers = false; }
     // Kendi satırında mesafe canlı akar; sekmedeki sayı "şu an yolda" olanlardır
     setText('#trMeDist', fmtDist(S.distance));
@@ -1310,6 +1340,15 @@
       const html = t('ui.fx', { name: GIFT[e.id].name, text: effText(GIFT[e.id], e.stack), dur: fmtDuration(left) });
       if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
       el.classList.toggle('ending', left <= 10);
+    }
+    // Kervan: süresiz, yakında gezgin oldukça durur
+    updateCaravan();
+    if (caravanN()) {
+      live.add('caravan');
+      let el = fxBox.querySelector('[data-fx="caravan"]');
+      if (!el) { el = document.createElement('span'); el.className = 'fx fx-caravan'; el.dataset.fx = 'caravan'; fxBox.appendChild(el); }
+      const html = t('ui.caravan', { n: caravanN(), p: fmtPct(CARAVAN_STEP * 100 * caravanN()) });
+      if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
     }
     for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx)) el.remove();
     // butonlar ('Maks' modunda miktar bütçeyle değişir)
@@ -1504,7 +1543,9 @@
     document.addEventListener('pointerdown', e => { if (!$('#chatPop').hidden && !e.target.closest('#chatPop, #btnChat')) chatOpen(false); }, true);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#chatPop').hidden) { chatOpen(false); $('#btnChat').focus(); } });
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
-    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, trip: S.trips + 1, veh: S.active, route: S.route,
+    // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
+    const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
+    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
       tier: Econ.lookTier(S.levels[S.active]), outfit: S.settings.outfit, pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;

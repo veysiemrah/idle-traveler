@@ -108,6 +108,12 @@
       this._next(ok ? BEAT_MS : RETRY_MS);
       if (this.onUpdate) this.onUpdate();
     },
+    // Yoldaki bir gezginin şu anki tahmini mesafesi: son bildirdiği mesafe + hızı × aradan geçen süre (en çok 3 dk)
+    liveDist(p) {
+      if (!p.online || !p.spd) return p.dist;
+      const sec = Math.min(180, (p.ago + (Date.now() - this.at)) / 1000);
+      return p.dist + p.spd * sec;
+    },
     // Sunucudan bu yana geçen süre de eklenmiş "en son görülme" (ms)
     ago(p) { return p.online ? 0 : p.ago + (Date.now() - this.at); },
   };

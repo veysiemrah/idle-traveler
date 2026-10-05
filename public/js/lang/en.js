@@ -102,6 +102,8 @@ IT.addLang('en', {
     'others.waveNear': "You waved at <b>{name}</b> · on trip {n}, right beside you.",
     'others.wavedYou': "<b>{name}</b> waved at you! Tap them to wave back.",
     'others.wavedYou0': "<b>{name}</b> waved at you!",
+    'ui.caravan': { one: "<b>🐫 Caravan</b> {n} traveler · speed +{p}", other: "<b>🐫 Caravan</b> {n} travelers · speed +{p}" },
+    'toast.caravan': "<b>You’re not alone on the road!</b> You joined a caravan; with travelers nearby the road flows faster.",
     'others.near': "beside you",
     'chat.btn': "Call out to fellow travelers",
     'chat.title': "Call out",
