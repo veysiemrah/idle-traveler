@@ -45,8 +45,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 | İstek | Ne yapar |
 | --- | --- |
 | `POST /api/hello` | `{ id, key, name, dist, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner |
-| `POST /api/say` | `{ id, key, msg }`: hazır mesaj gönderir (yalnızca yoldaki, anahtarı tutan yolcu; en sık 4 sn'de bir), son mesajları döner |
-| `GET /api/feed` | Son 20 saniyenin mesajları: `{ now, feed: [{ pub, msg, at }] }` |
+| `POST /api/say` | `{ id, key, msg, to? }`: hazır mesaj ya da el sallama (`msg: 'wave'`, `to`: alıcının `pub`'ı) gönderir (yalnızca yoldaki, anahtarı tutan yolcu; en sık 4 sn'de bir), son mesajları döner |
+| `GET /api/feed` | Son 20 saniyenin mesajları: `{ now, feed: [{ pub, msg, at, to }] }` |
 | `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ pub, name, dist, trip, veh, tier, outfit, pal, online, ago, rank, me }], me }` |
 
 - `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
@@ -98,8 +98,10 @@ npx wrangler dev   # http://localhost:8787
   aracı, kıyafeti, aracının görünüm aşaması ve yol arkadaşıyla çizilir. İsim etiketi kimin ne kadar önde ya da geride
   olduğunu gösterir (birkaç metre yakınsa "yanında"). Etiketler gece örtüsünün üstünde çizilir ve karanlıkta lacivert tona
   geçer; yan yana gelen etiketler birbirine değmez, biri yumuşakça yukarı kalkıp ince bir çizgiyle gezgine bağlanır.
-  Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca el sallar (👋) ve kaçıncı
-  yolculuğunda olduğunu söyler. Ayarlar'daki "Diğer gezginler sahnede" seçeneğiyle gizlenebilir.
+  Yeni gelen gezgin süzülerek belirir, ayrılan solar. Bir gezgine dokununca ona el sallarsın: 👋 kendi
+  başında belirir, bildirim onun kaçıncı yolculuğunda ve ne kadar önde ya da geride olduğunu söyler. El sallama o oyuncuya
+  iletilir: onun sahnesinde senin başında 👋 ve küçük bir sıçrayış görünür, "… sana el salladı! Dokunup karşılık
+  verebilirsin" bildirimi gelir; yoldaki diğer oyuncular yalnızca 👋 balonunu görür. Ayarlar'daki "Diğer gezginler sahnede" seçeneğiyle gizlenebilir.
   Gezginler aracının gerçek genişliğine göre dizilir: kendi aracından (vagonlar ve köpek dahil) başlayıp aralarında boşluk
   bırakarak öne ve geriye doğru; yerde ve gökyüzünde iki ayrı sıra vardır, sığmayan gezgin gösterilmez. Diğer gezginlerin
   treni lokomotif ve tek vagonla çizilir, böylece beş kişi aynı anda trende olsa da yol kalabalıklaşmaz. Araç genişlikleri

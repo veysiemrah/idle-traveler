@@ -3,7 +3,7 @@
 
    POST /api/hello   { id, key, name, dist, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
    GET  /api/players                                           → yalnızca yolcu listesi
-   POST /api/say     { id, key, msg }                          → hazır mesaj gönderir, son mesajları döner
+   POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail'];
@@ -11,7 +11,8 @@ const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold'];
 const PALS = ['', 'dog', 'bird', 'cat'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
-const MSGS = ['hi', 'view', 'go', 'wait', 'race', 'great', 'thanks', 'rest', 'bye'];
+// 'wave': bir gezgine el sallamak (yalnızca o gezgine bildirilir, diğerleri balonu görür)
+const MSGS = ['hi', 'view', 'go', 'wait', 'race', 'great', 'thanks', 'rest', 'bye', 'wave'];
 const FEED_MS = 20e3;            // mesajlar 20 saniye boyunca akışta kalır
 const SAY_GAP_MS = 4e3;          // aynı yolcu en sık 4 saniyede bir mesaj gönderir
 const ONLINE_MS = 3 * 60e3;      // son 3 dakikada haber veren yolcu "yolda" sayılır
@@ -47,8 +48,8 @@ const validId = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]
 const validKey = v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
 // Son mesajlar: { pub, msg, at } (at sunucu saatidir; istemci now ile kendi saatine çevirir)
 async function feed(db, now) {
-  const r = await db.prepare('SELECT id, msg, msgAt FROM players WHERE msgAt > ?1 ORDER BY msgAt DESC LIMIT 30').bind(now - FEED_MS).all();
-  return Promise.all(r.results.map(async x => ({ pub: await pubOf(x.id), msg: x.msg, at: x.msgAt })));
+  const r = await db.prepare('SELECT id, msg, msgAt, msgTo FROM players WHERE msgAt > ?1 ORDER BY msgAt DESC LIMIT 30').bind(now - FEED_MS).all();
+  return Promise.all(r.results.map(async x => ({ pub: await pubOf(x.id), msg: x.msg, at: x.msgAt, to: x.msgTo || '' })));
 }
 async function listPlayers(db, id, now) {
   const since = now - LIST_MS, onlineSince = now - ONLINE_MS;
@@ -112,9 +113,11 @@ async function say(request, env) {
   try { b = await request.json(); } catch (e) { return json({ error: 'bad-json' }, 400); }
   if (!b || !validId(b.id) || !validKey(b.key)) return json({ error: 'bad-id' }, 400);
   if (!MSGS.includes(b.msg)) return json({ error: 'bad-msg' }, 400);
+  const to = b.msg === 'wave' && typeof b.to === 'string' && /^[0-9a-f]{12}$/.test(b.to) ? b.to : '';
+  if (b.msg === 'wave' && !to) return json({ error: 'bad-to' }, 400);
   const now = Date.now(), hash = await sha256(b.key);
-  const res = await env.DB.prepare('UPDATE players SET msg = ?3, msgAt = ?4 WHERE id = ?1 AND key = ?2 AND msgAt < ?4 - ?5 AND seen > ?4 - ?6')
-    .bind(b.id, hash, b.msg, now, SAY_GAP_MS, ONLINE_MS).run();
+  const res = await env.DB.prepare('UPDATE players SET msg = ?3, msgAt = ?4, msgTo = ?7 WHERE id = ?1 AND key = ?2 AND msgAt < ?4 - ?5 AND seen > ?4 - ?6')
+    .bind(b.id, hash, b.msg, now, SAY_GAP_MS, ONLINE_MS, to).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key, seen FROM players WHERE id = ?1').bind(b.id).first();
     if (!row) return json({ error: 'unknown' }, 404);

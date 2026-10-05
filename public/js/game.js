@@ -1073,8 +1073,8 @@
   // Bir gezginin son bir dakikada söylediği mesaj (yerelde gelen ya da sunucunun listesindeki)
   function said(p) {
     const m = lastMsg.get(p.pub);
-    if (m && Date.now() - m.at < 60e3) return m.msg;
-    return p.msg && MSG_EMOJI[p.msg] ? p.msg : '';
+    if (m && m.msg !== 'wave' && Date.now() - m.at < 60e3) return m.msg;
+    return p.msg && p.msg !== 'wave' && MSG_EMOJI[p.msg] ? p.msg : '';
   }
   let chatCoolUntil = 0;
   function chatOpen(open) {
@@ -1101,12 +1101,34 @@
     if (r === 'ok') { const me = IT.Online.myPub(); if (me) lastMsg.set(me, { msg: id, at: Date.now() }); uiDirty.travelers = true; }
     else if (r !== 'too-soon') toast(t('chat.fail'));
   }
+  // Bir gezgine el salla: 👋 senin başında belirir ve o gezgine iletilir (onun ekranında senin başında görünür)
+  let waveCoolUntil = 0;
+  function waveAt(g) {
+    Sound.unlock(); Sound.wave();
+    scene.sayMine('👋', 3.5);
+    const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
+    toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
+    if (!S.player.name || Date.now() < waveCoolUntil) return;
+    waveCoolUntil = Date.now() + 4000;
+    IT.Online.say('wave', S.player.id, S.player.key, g.pub);
+  }
   // Başka bir gezginden mesaj geldi: başının üstünde balon (gezgin sahnede değilse ya da gizliyse kısa bir bildirim)
   let lastListAsk = 0;
   function onMessage(m) {
-    if (m.pub === IT.Online.myPub()) return;
+    const mine = IT.Online.myPub();
+    if (m.pub === mine) return;
     const d = IT.Online.data, p = d && d.players.find(x => x.pub === m.pub);
     lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
+    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir
+    if (m.msg === 'wave') {
+      scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
+      if (m.to && m.to === mine) {
+        Sound.wave();
+        if (p) toast(t(S.settings.others ? 'others.wavedYou' : 'others.wavedYou0', { name: esc(p.name) }), 'teal');
+      }
+      if (!p && Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); }
+      return;
+    }
     const text = msgText(m.msg);
     scene.say(m.pub, text);
     if (!p) { if (Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); } }
@@ -1376,11 +1398,7 @@
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       const g = scene.hitGhost(x, y);
-      if (g) {
-        Sound.unlock(); Sound.wave();
-        toast(t(g.ahead ? 'others.ahead' : 'others.behind', { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-        return;
-      }
+      if (g) { waveAt(g); return; }
       const before = S.distance;
       step();
       clickBuffer += S.distance - before;

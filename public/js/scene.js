@@ -1327,8 +1327,11 @@
       ctx.restore();
     }
     /* --- Konuşma balonları --- */
-    say(pub, text) { this.msgs.set(pub, { text, t: 0 }); }
-    sayMine(text) { this.myMsg = { text, t: 0 }; }
+    // life: balonun ömrü (el sallama kısa sürer)
+    say(pub, text, life) { this.msgs.set(pub, { text, t: 0, life: life || MSG_LIFE }); }
+    sayMine(text, life) { this.myMsg = { text, t: 0, life: life || MSG_LIFE }; }
+    // El sallayan gezgin sahnede küçük bir sıçrayış yapar
+    hop(pub) { const g = this.ghosts.get(pub); if (g) g.wave = 1.2; }
     drawBubbles(ctx) {
       const k = this.k;
       if (this.myMsg) {
@@ -1347,7 +1350,7 @@
     drawBubble(ctx, x, y, m, alpha) {
       const k = Math.max(this.k, 0.85), t = m.t;
       const pop = t < 0.3 ? 1 + 2.7 * Math.pow(t / 0.3 - 1, 3) + 1.7 * Math.pow(t / 0.3 - 1, 2) : 1; // easeOutBack
-      const a = (alpha === undefined ? 1 : alpha) * clamp(t / 0.15, 0, 1) * clamp((MSG_LIFE - t) / 0.7, 0, 1);
+      const a = (alpha === undefined ? 1 : alpha) * clamp(t / 0.15, 0, 1) * clamp((m.life - t) / 0.7, 0, 1);
       if (a <= 0) return;
       ctx.save();
       ctx.font = `700 ${Math.round(13 * k)}px "Figtree", system-ui, sans-serif`;
@@ -1366,15 +1369,13 @@
       ctx.fillText(m.text, bx + w / 2, by - h / 2 + 0.5 * k);
       ctx.restore();
     }
-    // Bir gezgine dokununca el sallar; dokunulan gezginin verisini döner
+    // Bir gezgine dokunulduysa onun verisini döner (el sallayan oyuncudur: 👋 kendi başında görünür)
     hitGhost(px, py) {
       const k = Math.max(this.k, 0.8);
       for (const g of this.ghosts.values()) {
         if (g.alpha < 0.4) continue;
         const p = this.ghostPos(g);
         if (Math.abs(px - p.x) < 34 * k && py > p.top - 34 * k && py < p.y + 8 * k) {
-          g.wave = 1.2;
-          this.floats.push({ text: '👋', x: p.x, y: p.top - 40 * this.k, life: 0, max: 1.4, color: '#ffffff', big: false });
           return g.o;
         }
       }
@@ -1492,8 +1493,8 @@
       }
       this.parts = this.parts.filter(p => p.life < p.max && p.x > -60 && p.y < this.H + 40);
       this.updateGhosts(dt);
-      for (const [pub, m] of this.msgs) { m.t += dt; if (m.t > MSG_LIFE) this.msgs.delete(pub); }
-      if (this.myMsg) { this.myMsg.t += dt; if (this.myMsg.t > MSG_LIFE) this.myMsg = null; }
+      for (const [pub, m] of this.msgs) { m.t += dt; if (m.t > m.life) this.msgs.delete(pub); }
+      if (this.myMsg) { this.myMsg.t += dt; if (this.myMsg.t > this.myMsg.life) this.myMsg = null; }
       for (const f of this.floats) f.life += dt;
       this.floats = this.floats.filter(f => f.life < f.max);
       // kelebek

@@ -56,10 +56,10 @@
       if (!d || !Array.isArray(d.feed)) return;
       for (const m of d.feed) {
         const key = m.pub + ':' + m.at;
-        if (this._seen.has(key) || !MSGS.includes(m.msg)) continue;
+        if (this._seen.has(key) || !(MSGS.includes(m.msg) || m.msg === 'wave')) continue;
         this._seen.add(key);
         const age = Math.max(0, d.now - m.at);
-        if (age < MSG_FRESH_MS && this.onMessage) this.onMessage({ pub: m.pub, msg: m.msg, age });
+        if (age < MSG_FRESH_MS && this.onMessage) this.onMessage({ pub: m.pub, msg: m.msg, age, to: m.to || '' });
       }
       if (this._seen.size > 500) this._seen = new Set([...this._seen].slice(-200));
     },
@@ -69,10 +69,10 @@
       const timer = ctl && setTimeout(() => ctl.abort(), TIMEOUT_MS);
       try { return await fetch(url, Object.assign({ signal: ctl && ctl.signal }, opts)); } catch (e) { return null; } finally { if (timer) clearTimeout(timer); }
     },
-    // Hazır mesaj gönderir: 'ok' | 'too-soon' | 'offline' | 'error'
-    async say(msg, id, key) {
-      if (!MSGS.includes(msg)) return 'error';
-      const r = await this._fetch('api/say', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, key, msg }) });
+    // Hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı) gönderir: 'ok' | 'too-soon' | 'offline' | 'error'
+    async say(msg, id, key, to) {
+      if (!MSGS.includes(msg) && !(msg === 'wave' && to)) return 'error';
+      const r = await this._fetch('api/say', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, key, msg, to }) });
       if (!r) return 'error';
       if (r.ok) { try { this._takeFeed(await r.json()); } catch (e) { /* yok say */ } return 'ok'; }
       try { const e = await r.json(); return e.error === 'too-soon' ? 'too-soon' : e.error === 'offline' || e.error === 'unknown' ? 'offline' : 'error'; } catch (e) { return 'error'; }
