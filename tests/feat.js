@@ -5,7 +5,7 @@ const { chromium } = require('./lib/pw');
   const p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.message));
   await p.addInitScript(() => { if (!localStorage.getItem('seeded')) { localStorage.setItem('seeded', 1);
-    localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), distance: 6e8, credits: 1e6, clicks: 300, regionIdx: 11, msIdx: 15,
+    localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), distance: 1.5e9, credits: 1e6, clicks: 300, regionIdx: 11, msIdx: 15,
       owned: { walk: true, skates: true, board: true, bike: true }, active: 'walk' })); } });
   await p.goto(require('url').pathToFileURL(require('path').resolve(__dirname, '../public/index.html')).href); await p.waitForTimeout(800);
   // Karabaş

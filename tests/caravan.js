@@ -26,6 +26,11 @@ const BASE = 'http://127.0.0.1:8787';
     await A.waitForTimeout(5000);
   }
   console.log('Bora tahmini mesafe artışı (5 sn arayla):', diffs.slice(1).map((d, i) => Math.round(d - diffs[i])).join(', '), 'm');
+  // v1.27: pencere yolun %15'i (en az 10 km). %10 öndeki Cem kervana katılır (eski %3'lük pencerede katılmazdı), %30 öndeki Deniz katılmaz.
+  const C = await open('Cem', base * 1.1, 'car'), D = await open('Deniz', base * 1.3, 'car');
+  await C.evaluate(() => IT.Online.now()); await D.evaluate(() => IT.Online.now()); await A.waitForTimeout(1200);
+  await A.evaluate(() => IT.Online.now()); await A.waitForTimeout(1500);
+  console.log('A etkisi (uzak gezginlerle):', await fx(A), '| beklenen: 2 gezgin');
   await A.screenshot({ path: process.env.SP + '/caravan.png', clip: { x: 0, y: 55, width: 890, height: 640 } });
   console.log(errs.join('\n') || 'no errors'); await b.close();
 })();

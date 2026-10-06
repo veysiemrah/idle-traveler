@@ -433,14 +433,6 @@ button { font: inherit; color: inherit; }
 .up { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-top: 6px; }
 .up > div, .up > small { min-width: 0; flex: 1 1 auto; }
 /* Araç kartında yükseltme satırı simgenin altında kartın tam genişliğini kullanır (dar telefonlarda da sığar) */
-.card > .up, .card > .progress, .card > .trade { grid-column: 1 / -1; }
-/* Takas indirimi satırı: önceki aracı yükseltmeye teşvik */
-.card > .trade { font-size: 12px; color: var(--soft-text); background: rgba(111, 211, 193, 0.1); border: 1px dashed rgba(111, 211, 193, 0.45); border-radius: var(--r-sm); padding: 6px 9px; margin-top: 2px; }
-.card > .trade b { color: var(--teal); }
-.card > .trade s { color: var(--muted); }
-/* Önceki araç hazırsa ipucu sıcak renge döner: yeni araca geçme zamanı */
-.card > .trade.ready { background: rgba(255, 196, 92, 0.12); border-color: rgba(230, 160, 50, 0.55); }
-.card > .trade.ready b { color: var(--apricot-text); }
 .card > .up, .card > .progress { grid-column: 1 / -1; }
 .card > .up { margin-top: -2px; padding-top: 10px; border-top: 1px solid var(--line-soft); }
 .card > .progress { margin-top: -6px; }
@@ -562,6 +554,27 @@ button { font: inherit; color: inherit; }
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 .badge.on b { color: var(--paper); }
+/* Yadigâr rafı: bulunanlar bölgenin renginde, bulunmayanlar kesik çizgili boş bir yuva */
+.keeps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+.keep {
+  --c: #6fd3c1;
+  width: 100%; min-height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  padding: 8px 6px; border-radius: var(--r-sm); text-align: center; color: var(--muted);
+  border: 1.5px dashed color-mix(in srgb, var(--c) 45%, transparent); background: var(--ink-2);
+}
+.keep .e { font-size: 22px; line-height: 1; font-weight: 800; opacity: .55; }
+.keep small { font-size: 10.5px; line-height: 1.2; overflow-wrap: anywhere; text-wrap: balance; }
+.keep.on {
+  cursor: pointer; color: var(--paper); border-style: solid; border-color: color-mix(in srgb, var(--c) 70%, transparent);
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 26%, transparent), transparent 70%), var(--ink-2);
+  transition: transform .15s ease;
+}
+.keep.on .e { font-size: 26px; opacity: 1; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .2)); }
+.keep.on b { font: 700 12px/1.15 var(--font-body); overflow-wrap: anywhere; text-wrap: balance; }
+.keep.on:hover { transform: translateY(-2px); }
+.keep.on:active { transform: scale(.96); }
+.keep.wiggle .e { animation: keepWiggle .55s ease; }
+@keyframes keepWiggle { 25% { transform: rotate(-14deg) scale(1.15); } 60% { transform: rotate(10deg) scale(1.1); } }
 /* Hazine haritası: dört parçalı parşömen, ortada X işareti */
 .tmap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: 10px 12px; }
 .tmap-grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 64px; height: 50px; }
@@ -741,5 +754,7 @@ button { font: inherit; color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hint, .banner.show, .toast, .modal-card, .fx { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
+  .hint, .banner.show, .toast, .modal-card, .fx, .keep .e { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
 }
+/* Yeni sürüm: sayfa yenilenmeden önce yumuşakça solar */
+html.reloading body { opacity: 0; transition: opacity .6s ease; }

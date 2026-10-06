@@ -40,13 +40,20 @@ ekler (`node -r tests/pw_name.js …`); kaydında gezgin adı yoksa "Test" adı 
 
 | Grup | Betikler |
 | --- | --- |
-| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj fiyat satırı), `i18n`, `fuzz` |
+| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj: ipucusuz kartlar, Sv. eşikleri), `keeps` (yadigârlar), `update` (yeni sürümde kendiliğinden yenilenme), `i18n`, `fuzz` |
 | Çok oyunculu (8787) | `mp` (ad, Yolcular), `mp_off` (sunucusuz), `chat` (hazır mesajlar), `wave` (el sallama), `caravan` (Kervan, canlı mesafe), `trains`, `ghosts`, `ghost_tap`, `tabs`, `land` (yatay telefon), `popmodal`, `audit` (gece/koyu tema) |
-| Araçlar | `keys` (sözlükler), `sim_tempo` / `sim_static` / `sim_price` (ekonomi), `extent` (araç çizim sınırlarını ölçer), `gull` (kuş kanadı kareleri) |
+| Araçlar | `keys` (sözlükler), `sim_switch` (verimli oyuncu: hangi seviyede araç değiştirir), `sim_tempo` / `sim_static` / `sim_price` (ekonomi), `extent` (araç çizim sınırlarını ölçer), `gull` (kuş kanadı kareleri) |
 
 Simülasyon örnekleri:
 
 ```bash
 node tests/sim_tempo.js '{}' 12                           # açgözlü oyuncu: araçlara ulaşma süreleri, saatlik yol
 node tests/sim_static.js public/js/data.js '{"G":[10]}' 9  # biriktiren / açgözlü / sabırlı oyuncu karşılaştırması
+```
+
+Garaj dengesini değiştirirken önce verimli oyuncu simülasyonuna bak; ayarları dosyaya dokunmadan JSON ile deneyebilirsin:
+
+```bash
+node tests/sim_switch.js 12 1                                     # data.js'teki değerlerle: geçiş seviyeleri, saatlik yol
+node tests/sim_switch.js 12 1 '{"R":2.5,"C0":800,"Q":6,"S":1.05,"f":0.01,"g":1.095,"gain":0.1,"dbl":[25,50,100,150,200],"click":0.5}'
 ```

@@ -1015,6 +1015,8 @@
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
       this.gift = null; this.star = null; this.chest = null;
+      // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
+      this.keep = null; this.keepOk = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1203,6 +1205,29 @@
         return true;
       }
       return false;
+    }
+    // Yadigâr: aracın önünde, yolun biraz üstünde 20 saniye süzülür
+    spawnKeep(id) {
+      const k = IT.KEEP && IT.KEEP[id];
+      if (!k || (this.keepOk && !this.keepOk(id))) return;
+      this.keep = { id, e: k.e, t: 0, dur: 20, seed: Math.random() * TAU };
+    }
+    keepPos() {
+      const k = this.k, c = this.keep, t = c ? c.t : 0, seed = c ? c.seed : 0;
+      const r = FLYING[this.vehicle] ? 40 : vehExtent(this.vehicle, this.vehTier || 0, null, false)[1];
+      const x = clamp(this.travelerX + (r + 64) * k, 40 * k, this.W - 40 * k) + Math.sin(t * 0.7 + seed) * 6 * k;
+      return { x, y: this.groundY() - 50 * k + Math.sin(t * 1.6 + seed) * 5 * k };
+    }
+    hitKeep(px, py) {
+      const c = this.keep;
+      if (!c || c.t > c.dur) return null;
+      const p = this.keepPos(), k = Math.max(this.k, 0.8);
+      if (Math.hypot(px - p.x, py - p.y) < 40 * k) {
+        this.burst(p.x, p.y, 36, ['#ffd56b', '#fff1c2', '#ffffff', '#cfe0ff']);
+        this.keep = null;
+        return c.id;
+      }
+      return null;
     }
     /* --- Diğer gezginler --- */
     // list: önceliğe göre sıralı (az önce konuşanlar, sonra en yakınlar) { pub, name, sub, veh, tier, outfit, pal, ahead }
@@ -1511,6 +1536,11 @@
         const c = this.chest; c.t += dt;
         if (Math.random() < dt * 6) { const p = this.chestPos(); this.parts.push({ type: 'spark', x: p.x + rand(-14, 14) * this.k, y: p.y - rand(10, 30) * this.k, vx: rand(-10, 10), vy: rand(-30, -10), life: 0, max: rand(0.6, 1.2), size: rand(1.2, 2.4), color: pick(['#ffd56b', '#fff1c2']), rot: 0 }); }
         if (c.t > c.dur) this.chest = null;
+      }
+      if (this.keep) {
+        const c = this.keep; c.t += dt;
+        if (Math.random() < dt * 5) { const p = this.keepPos(), a = Math.random() * TAU; this.parts.push({ type: 'spark', x: p.x + Math.cos(a) * 22 * this.k, y: p.y + Math.sin(a) * 22 * this.k, vx: rand(-8, 8), vy: rand(-26, -8), life: 0, max: rand(0.6, 1.1), size: rand(1.1, 2.2), color: pick(['#fff1c2', '#ffffff', '#cfe0ff']), rot: 0 }); }
+        if (c.t > c.dur) this.keep = null;
       }
       if (this.star) {
         const s = this.star;
@@ -1827,6 +1857,7 @@
       this.drawBubbles(ctx);
       this.drawParts(ctx, true);
       if (this.chest) this.drawChest(ctx, this.chest);
+      if (this.keep) this.drawKeep(ctx, this.keep);
       if (this.gift) this.drawButterfly(ctx, this.gift);
       this.drawFloats(ctx);
 
@@ -2151,6 +2182,32 @@
       if (open > 0.05) { ctx.fillStyle = `rgba(255,236,160,${(open * 2).toFixed(3)})`; ellipse(ctx, x, y - 18 * k, 14 * k, 2.4 * k); }
       ctx.fillStyle = GOLD; ctx.fillRect(x - 16 * k, y - 12 * k, 32 * k, 3 * k); ctx.fillRect(x - 2 * k, y - 18 * k, 4 * k, 18 * k);
       ctx.fillStyle = '#5a3a20'; rrect(ctx, x - 3 * k, y - 11 * k, 6 * k, 5 * k, 1 * k); ctx.fill(); // kilit
+      ctx.restore();
+    }
+    // Cam kabarcık: belirirken küçük bir sıçrayışla açılır, sonunda solar; arada bir halka yayarak dikkat çeker
+    drawKeep(ctx, c) {
+      const k = Math.max(this.k, 0.75), p = this.keepPos(), t = c.t;
+      const a = clamp(t / 0.6, 0, 1) * clamp((c.dur - t) / 1.5, 0, 1);
+      const u = clamp(t / 0.45, 0, 1), pop = u < 1 ? 1 + 2.7 * Math.pow(u - 1, 3) + 1.7 * Math.pow(u - 1, 2) : 1; // easeOutBack
+      const r = 20 * k * pop;
+      if (a <= 0 || r <= 0) return;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(30,30,50,0.14)'; ellipse(ctx, p.x, this.groundY() - 2 * k, 14 * k, 2.6 * k);
+      ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, p.x, p.y, 48 * k, hex('#fff1c2'), 0.42 + 0.14 * Math.sin(t * 4));
+      ctx.globalCompositeOperation = 'source-over';
+      // her 2,4 saniyede yayılan ince halka
+      const ring = (t % 2.4) / 2.4;
+      if (!this.reduced) { ctx.strokeStyle = `rgba(255,241,194,${(0.55 * (1 - ring) * a).toFixed(3)})`; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(p.x, p.y, r * (1 + ring * 0.9), 0, TAU); ctx.stroke(); }
+      const g = ctx.createRadialGradient(p.x - r * 0.35, p.y - r * 0.4, r * 0.1, p.x, p.y, r);
+      g.addColorStop(0, 'rgba(255,255,255,0.55)'); g.addColorStop(0.6, 'rgba(220,236,255,0.22)'); g.addColorStop(1, 'rgba(190,215,255,0.38)');
+      ctx.fillStyle = g; circle(ctx, p.x, p.y, r);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `${Math.round(21 * k * pop)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      ctx.fillText(c.e, p.x, p.y + 1.5 * k);
+      // camın parlak yansıması
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ellipse(ctx, p.x - r * 0.42, p.y - r * 0.45, r * 0.22, r * 0.12, -0.6);
       ctx.restore();
     }
     drawStar(ctx, s) {

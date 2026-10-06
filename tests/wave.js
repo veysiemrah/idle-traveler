@@ -15,8 +15,10 @@ const BASE = 'http://127.0.0.1:8787';
   };
   const A = await open('Ayşe', base), B = await open('Bora', base + 40);
   await A.evaluate(() => IT.Online.now()); await B.evaluate(() => IT.Online.now()); await A.waitForTimeout(1500);
-  // B, A'ya el sallar (dokunmanın gönderdiği istekle aynısı)
-  const r = await B.evaluate(async () => { const s = JSON.parse(localStorage.getItem('idle-traveler-save-v1')); const a = IT.Online.data.players.find(p => p.name === 'Ayşe'); return IT.Online.say('wave', s.player.id, s.player.key, a.pub); });
+  // B, A'ya el sallar (dokunmanın gönderdiği istekle aynısı). Alıcı adla değil anahtarla bulunur:
+  // yerel test veritabanında önceki çalıştırmalardan kalan başka "Ayşe"ler de olabilir.
+  const aPub = await A.evaluate(() => IT.Online.myPub());
+  const r = await B.evaluate(async to => { const s = JSON.parse(localStorage.getItem('idle-traveler-save-v1')); return IT.Online.say('wave', s.player.id, s.player.key, to); }, aPub);
   console.log('gönderim:', r);
   let toastTxt = '';
   for (let i = 0; i < 16 && !/el salladı/.test(toastTxt); i++) { await A.waitForTimeout(500); toastTxt = await A.textContent('#toasts'); }

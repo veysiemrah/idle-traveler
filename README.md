@@ -87,20 +87,27 @@ npx wrangler dev   # http://localhost:8787
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
   Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
   Yenilikler, Ayarlar ve Kartpostal pencereleri dışına basınca ya da Esc tuşuyla kapanır (tanıtım penceresi düğmeyle kapanır).
+- **Kendiliğinden güncelleme**: Oyun yayındaki sürümü açılıştan 30 saniye sonra, sonra 3 dakikada bir ve sekmeye dönünce
+  yoklar (`js/changelog.js` önbelleksiz okunur, `IT.VERSION` karşılaştırılır). Yeni sürüm varsa "Yeni sürüm hazır" bildirimi
+  gelir, 4 saniye sonra ilerleme kaydedilir ve sayfa yumuşakça solarak yenilenir. Sekme arka plandaysa hemen yenilenir. Açık bir
+  pencere (ör. ad yazılırken) kapanana kadar beklenir. Aynı sürüm için yalnızca bir kez denenir (`sessionStorage`), böylece
+  önbellekten eski dosya gelse de sayfa döngüye girmez. Dosyadan (`file://`) açılan oyunda yoklama yapılmaz.
 
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
-  Her aracın kendi yükseltme hattı var. Her seviye +%25 hız verir, 10, 25, 50… seviyelerde hız ikiye katlanır.
-- **Fiyat dengesi**: Araçların satın alma ve yükseltme fiyatları sabittir; bir aracı yükseltmek başka bir aracın fiyatını
-  değiştirmez. Yükseltmeler aracın fiyatının %0,9'undan başlar ve her seviyede 1,55 katına çıkar. Sıradaki araç,
-  elindekini Sv. 10'a getirmenin toplam maliyetinden çok pahalıdır (çoğu araçta 3,5–5 katı). Bu yüzden aracı yükseltmeden yenisine para
-  biriktirmek kârsızdır. Simülasyonda motora 48 dakikada ulaşan oyuncu, yükseltme yapmadan biriktirince 446 dakikada ulaşır.
-- **Tempo**: v1.23'te oyunun temposu yarıya indi; araç ve güçlendirme fiyatları iki katına çıktı, yükseltmeler aynı kaldı.
-  Açgözlü bir oyuncu (saniyede bir dokunuş) motora yaklaşık 54 dakikada, arabaya 4,5 saatte ulaşır; 12 saatte yaklaşık
-  80 bin km yol gider (önceden 32 dk, 2,4 saat, 168 bin km).
-  Sıradaki aracın kartındaki ipucu önce elindeki aracı Sv. 10'a getirmeyi önerir, o seviyeye gelince yeni araç zamanını haber verir.
+  Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
+  (en büyük sıçrama Sv. 50'de). Yükseltme satırı sıradaki eşiği söyler: yeni görünüm (Sv. 10) ya da hız ×2.
+- **Fiyat dengesi (v1.27)**: Kilit yoktur, sıradaki araç her zaman alınabilir; oyuncuyu fiyatlar yönlendirir. Araçların satın alma
+  ve yükseltme fiyatları sabittir; bir aracı yükseltmek başka bir aracın fiyatını değiştirmez. Yükseltmeler aracın fiyatının
+  %1'inden başlar ve her seviyede yalnızca %9,5 pahalanır. Araç hızları 2,5 katlık, fiyatları ~6 katlık ve giderek dikleşen bir
+  zincirdir. Bu yüzden en kârlı yol, aracı Sv. 50 civarına getirip sonra yenisine geçmektir. Araç kartlarında ipucu satırı yoktur.
+  Ayar `tests/sim_switch.js` ile yapıldı: her an kredi başına en çok hız getiren alımı seçen oyuncu araçları Sv. 44–62 arasında
+  bırakır. Hiç yükseltme yapmadan araca biriktiren oyuncu ata 6,5 saatte, yükselten oyuncu 44 dakikada ulaşır.
+- **Tempo**: Dokunuşların etkisi v1.27'de yarıya indi. Verimli bir oyuncu (saniyede bir dokunuş) motora yaklaşık 50 dakikada,
+  arabaya 1,5 saatte, trene 5 saatte ulaşır; 100.000 km'yi 6–7 saatte geçer. Daha seyrek dokunan oyuncuda (5 saniyede bir)
+  motor ~1 saat, araba ~1,8 saat, 100.000 km ~7,5 saattir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
@@ -121,7 +128,7 @@ npx wrangler dev   # http://localhost:8787
   bırakarak öne ve geriye doğru; yerde ve gökyüzünde iki ayrı sıra vardır, sığmayan gezgin gösterilmez. Diğer gezginlerin
   treni lokomotif ve tek vagonla çizilir, böylece beş kişi aynı anda trende olsa da yol kalabalıklaşmaz. Araç genişlikleri
   (`VEH_EXT`) ve yükseklikleri (`VEH_TOP`) araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
-- **Kervan**: Şu an yolda olan ve sana yakın (yolunun %3'ü, en az 2 km içinde) her gezgin hızını %10 artırır, en çok 3
+- **Kervan**: Şu an yolda olan ve sana yakın (yolunun %15'i, en az 10 km içinde; v1.27'den önce %3 ve 2 km) her gezgin hızını %10 artırır, en çok 3
   gezgin (+%30). Sahnenin sol üstünde süresiz bir "🐫 Kervan" etkisi görünür; kervana ilk katılınca bildirim gelir (en sık
   2 dakikada bir). Kervandan ayrılmak için pencerenin %25 dışına çıkmak gerekir, böylece sınırdaki gezgin yüzünden etki
   yanıp sönmez. Yalnızca canlı oyunda geçerlidir, çevrimdışı ilerlemeye eklenmez. Sürüm notunda yalnızca ipucu verilir.
@@ -178,7 +185,16 @@ npx wrangler dev   # http://localhost:8787
   yeniden gelir). Sandık yaklaşık 10 dakikalık gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
-- **Eve Dönüş ve Hatıralar**: Yolculuk 50.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin. Kredi, araçlar,
+- **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,
+  eski testi, kiraz çiçeği, kızıl yaprak, kum saati, kardan adam, yıldız dürbünü, çay fincanı, minik balon, lale ve nazar boncuğu.
+  Yadigârı henüz bulunmamış bir bölgede yaklaşık 45–85 saniye sonra aracın önünde, yolun biraz üstünde parıldayan bir cam kabarcık
+  belirir ("Yol kenarında bir şey parıldıyor…"). 20 saniye süzülür; kaçırılırsa 1,5–2,5 dakika sonra yeniden gelir. Dokununca
+  yadigâr rafa konur ve ömür boyu +%2 hız verir (15 yadigârla +%30). Eve dönüşte kaybolmaz. Yol Defteri'ndeki rafta bulunanlar
+  bölgenin renginde durur (dokununca küçük bir sallanma ve ses), bulunmayanlar "?" ve bölgenin adıyla bekler. Bazı bölgelere ilk
+  yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
+  *Kâşif* kıyafeti açılır. Sürüm notunda yalnızca ipucu verilir.
+- **Eve Dönüş ve Hatıralar**: Yolculuk 100.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin; bu eşik her eve dönüşte
+  1,5 katına çıkar (150.000 km, 225.000 km…). Eski kayıtlarda "eve dönüş hazır" durumu yeni eşiğe göre yeniden hesaplanır. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
@@ -191,6 +207,7 @@ npx wrangler dev   # http://localhost:8787
   - **İpek Yolu** (4.): buğday ovası, peri bacaları, kanyon ve çöl; kelebek etkileri %50 uzun, anında kredi iki katı.
   - **Kervansaray Yolu** (5.): çöl, kanyon ve peri bacalarıyla başlar; Kervan iki kat sayılır (yakındaki her gezgin +%20 hız).
   - **Pusula Yolu** (6.): kıyıdan kanyona ve çöle; hazine haritasının parçaları iki kat sık düşer.
+  - **Yonca Yolu** (7.): lale, çay bahçeleri ve çam ormanıyla başlar; şanslı adımlar iki kat sık.
   Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
@@ -204,11 +221,12 @@ npx wrangler dev   # http://localhost:8787
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
-  Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet
-  yolcuya, araçların vurgu renklerine, garaj simgelerine ve kartpostallara yansır.
-- **Kademeli rozetler**: 16 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
-  eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri ve hazine. Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
-  Gümüş, Altın, Platin, Elmas (toplam 128 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
+  Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
+  Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
+- **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
+  eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
+  Gümüş, Altın, Platin, Elmas (toplam 136 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
   tamamı +%10). Rozetler ömür boyu kazanılır ve eve dönüşte kaybolmaz. Yol Defteri her ailenin kademesini, kademe noktalarını
   ve bir sonraki hedefi gösterir. Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
   dizisine bir eşik eklemek yeter.

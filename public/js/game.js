@@ -36,12 +36,11 @@
   // cycle: gün döngüsü, sahne sayfa temasından bağımsız olarak bölgenin mevsimine göre gündüz/gece yaşar
   const SKIES = ['auto', 'day', 'night', 'cycle'];
   const UNITS = ['auto', 'metric', 'imperial'];
-  const DOUBLINGS = [10, 25, 50, 100, 150, 200];
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps',
     'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -60,6 +59,7 @@
       palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir)
       route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
       mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
+      keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -111,6 +111,8 @@
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
     s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6);
+    const keeps = isObj(d.keeps) ? d.keeps : {};
+    s.keeps = Object.fromEntries(IT.KEEPSAKES.filter(x => keeps[x.id] === 1 || keeps[x.id] === true).map(x => [x.id, 1]));
     // rota açık değilse (bozuk kayıt) ilk rotaya dönülür
     const ri = IT.ROUTES.findIndex(r => r.id === s.route);
     if (ri < 0 || ri >= routesOpenFor(s.trips)) s.route = 'anatolia';
@@ -137,7 +139,8 @@
     if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
     if (!['auto', 'light', 'dark'].includes(s.settings.page)) s.settings.page = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
-    s.intro = !!s.intro; s.homeReady = !!s.homeReady;
+    // Eve dönüş eşiği sürüme göre değişebilir (v1.27: 100.000 km ve her dönüşte uzar): yeniden hesaplanır
+    s.intro = !!s.intro; s.homeReady = Econ.memoryGain(s.distance, s.trips) > 0;
     const day = isObj(d.day) ? d.day : {};
     s.day = { last: /^\d{4}-\d{2}-\d{2}$/.test(day.last) ? day.last : '', streak: count(day.streak, 1e5), best: count(day.best, 1e5) };
     s.day.best = Math.max(s.day.best, s.day.streak);
@@ -156,14 +159,15 @@
 
   /* ---------- Hesaplar ---------- */
   /* ---------- Kervan ---------- */
-  // Şu an yolda olan ve sana yakın (yolunun %3'ü, en az 2 km içinde) her gezgin hızını %10 artırır; en çok 3 gezgin (+%30).
+  // Şu an yolda olan ve sana yakın (yolunun %15'i, en az 10 km içinde) her gezgin hızını %10 artırır; en çok 3 gezgin (+%30).
   // Kervandan ayrılmak için pencerenin biraz dışına çıkmak gerekir: sınırdaki gezgin yüzünden etki yanıp sönmez.
-  const CARAVAN_MAX = 3, CARAVAN_STEP = 0.1;
+  // (v1.27'de pencere genişledi: önceden yolun %3'ü, en az 2 km)
+  const CARAVAN_MAX = 3, CARAVAN_STEP = 0.1, CARAVAN_NEAR = 0.15, CARAVAN_MIN = 10000;
   let caravan = new Set(), caravanToastAt = 0;
   function updateCaravan() {
     const d = IT.Online.data, before = caravan.size, next = new Set();
     if (IT.Online.status === 'ok' && d) {
-      const win = Math.max(2000, S.distance * 0.03);
+      const win = Math.max(CARAVAN_MIN, S.distance * CARAVAN_NEAR);
       for (const p of d.players) {
         if (!p.online || p.me || !p.pub) continue;
         const gap = Math.abs(IT.Online.liveDist(p) - S.distance);
@@ -253,7 +257,7 @@
       uiDirty.journal = true;
     }
     if (!silent) for (const { m, bonus } of ms) { toast(t('toast.milestone', { name: esc(m.name), c: fmtNum(bonus) }), 'gold'); Sound.milestone(); }
-    if (!S.homeReady && Econ.memoryGain(S.distance) > 0) {
+    if (!S.homeReady && Econ.memoryGain(S.distance, S.trips) > 0) {
       S.homeReady = true; uiDirty.buffs = true;
       if (!silent) toast(t('toast.homeReady'), 'gold');
     }
@@ -261,7 +265,7 @@
   }
 
   const nBadges = () => IT.badgeCount(S);
-  const outfitOpen = o => nBadges() >= o.need;
+  const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : nBadges() >= o.need);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -276,7 +280,9 @@
         <b>${ok ? esc(r.name) : '???'}</b><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
     }).join('')}</div>`;
   }
-  function applyOutfit() { const o = OUTFIT[S.settings.outfit]; IT.setOutfit(o && outfitOpen(o) ? o.id : 'classic'); }
+  // Üzerindeki kıyafet: seçili olan kilitliyse (ör. sıfırlamadan sonra) klasik
+  const wornOutfit = () => { const o = OUTFIT[S.settings.outfit]; return o && outfitOpen(o) ? o.id : 'classic'; };
+  function applyOutfit() { IT.setOutfit(wornOutfit()); }
   // Rekorları güncelle, hak edilen yeni kademeleri ver. Birden çok kademe birden geçilirse en yükseği duyurulur.
   function checkBadges(silent) {
     const got = [], before = nBadges();
@@ -296,7 +302,7 @@
         toast(t('toast.badge', { name: esc(g.b.name), tier: tier.name, tierLow: tier.name.toLocaleLowerCase(IT.locale()), p: fmtPct(g.bonus * 100) }), 'gold');
         Sound.milestone();
       }
-      const opened = OUTFITS.filter(o => o.need > before && o.need <= nBadges());
+      const opened = OUTFITS.filter(o => !o.keeps && o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
     }
     return got;
@@ -308,7 +314,7 @@
     combo = now - lastClick < 650 ? combo + 1 : Math.max(1, combo * 0.5);
     lastClick = now;
     const cur = current();
-    const crit = Math.random() < Econ.luckChance(S.buffs.luck);
+    const crit = Math.random() < Econ.luckChance(S.buffs.luck) * (perk() === 'lucky' ? 2 : 1);
     const d = cur.click * comboMult() * (crit ? Econ.luckMult : 1);
     addDistance(d, cur.cpm);
     S.clicks++;
@@ -387,6 +393,34 @@
     }
     if (ex) ex.until += dur * 1000; else S.effects.push({ id: g.id, until: now + dur * 1000, dur, stack: 1 });
     return { dur, stacked: false, stack: ex ? ex.stack || 1 : 1 };
+  }
+
+  /* ---------- Yadigârlar ---------- */
+  // Bulunmamış yadigârın bölgesinde arada bir yol kenarında parlar (20 sn kalır); kaçırılırsa bir süre sonra yeniden gelir
+  let keepIn = 45 + Math.random() * 40;
+  function updateKeeps(dt) {
+    const id = IT.regionAt(S.regionIdx).biome;
+    if (S.keeps[id] || !IT.KEEP[id] || scene.keep || !$('#modal').hidden) return;
+    keepIn -= dt;
+    if (keepIn > 0) return;
+    keepIn = 80 + Math.random() * 70;
+    scene.spawnKeep(id);
+    toast(t('toast.keepSeen'), 'teal'); Sound.chat();
+  }
+  function catchKeep(id) {
+    Sound.unlock();
+    if (!IT.KEEP[id] || S.keeps[id]) return;
+    S.keeps[id] = 1;
+    const k = IT.KEEP[id], n = IT.keepCount(S), m = IT.KEEPSAKES.length;
+    Sound.wish();
+    toast(t('toast.keep', { name: esc(k.name), p: fmtPct(Econ.keepBonus * 100), n, m }), 'gold');
+    scene.addFloat(`${k.e} ${k.name}`, { color: '#fff1c2', big: true });
+    if (n === m) {
+      const o = OUTFITS.find(x => x.keeps);
+      setTimeout(() => { toast(t('toast.keepsAll', { name: esc(o.name) }), 'gold'); Sound.region(); }, 900);
+    }
+    uiDirty.journal = uiDirty.garage = true;
+    checkBadges(); save();
   }
 
   /* ---------- Günün hediyesi ---------- */
@@ -477,7 +511,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.chest = null;
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.chest = null; scene.keep = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -518,9 +552,11 @@
       if (!spend(q.cost)) return;
       S.levels[id] = lvl + q.n;
       S.bestLevel = Math.max(S.bestLevel, S.levels[id]);
-      const crossed = DOUBLINGS.filter(t => t > lvl && t <= lvl + q.n).length;
+      const crossed = Econ.doublings.filter(t => t > lvl && t <= lvl + q.n).length;
       const looked = Econ.lookTier(lvl + q.n) > Econ.lookTier(lvl);
-      if (crossed) toast(t(looked ? 'toast.doubledLook' : crossed > 1 ? 'toast.doubledN' : 'toast.doubled', { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed }), looked ? 'gold' : 'teal');
+      const vars = { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed };
+      if (crossed) toast(t(looked ? 'toast.doubledLook' : crossed > 1 ? 'toast.doubledN' : 'toast.doubled', vars), looked ? 'gold' : 'teal');
+      else if (looked) toast(t('toast.look', vars), 'gold');
       // Araç yeni bir görünüm kazandı: sahnedeyse parıltıyla göster
       if (looked && S.active === id) { scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 30, ['#ffd56b', '#fff1c2', '#ffffff', '#6fd3c1']); Sound.region(); }
       uiDirty.garage = true;
@@ -550,6 +586,11 @@
       const i = IT.ROUTES.findIndex(r => r.id === id);
       if (i < 0 || i >= routesOpenFor(S.trips) || S.regionIdx > 0 || S.route === id) return;
       S.route = id; applyRoute(); save();
+    },
+    // Raftaki yadigâra dokununca küçük bir sallanma ve ses
+    keepPeek(_, el) {
+      el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
+      Sound.chat();
     },
     palPick(id) {
       const p = Econ.pals.find(x => x.id === id);
@@ -599,7 +640,7 @@
     sfx() { S.settings.sfx = !S.settings.sfx; Sound.setSfx(S.settings.sfx); uiDirty.journal = true; syncSoundBtn(); },
     music() { S.settings.music = !S.settings.music; Sound.unlock(); Sound.setMusic(S.settings.music); uiDirty.journal = true; syncSoundBtn(); },
     home(_, el) {
-      const gain = Econ.memoryGain(S.distance);
+      const gain = Econ.memoryGain(S.distance, S.trips);
       if (gain < 1) return;
       if (el.dataset.armed !== '1') {
         el.dataset.armed = '1'; el.textContent = t('ui.confirmHome');
@@ -626,7 +667,7 @@
         return;
       }
       try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
-      newTrip(['settings', 'intro', 'player']);
+      newTrip(['settings', 'intro', 'player', 'seenVer']);
       applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
       save();
@@ -658,6 +699,7 @@
     checkProgress();
     S.effects = S.effects.filter(e => e.until > Date.now());
     updateWeather(dt);
+    updateKeeps(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -906,6 +948,36 @@
         }).join('')}</ol>` };
     }, null, null, true);
   }
+  // Yayındaki sürüm birkaç dakikada bir (ve sekmeye dönünce) yoklanır. Yeni sürüm varsa ilerleme kaydedilir ve sayfa
+  // yumuşakça yenilenir; açık bir pencere (ör. ad yazılırken) kapanana kadar beklenir. Aynı sürüm için yalnızca bir kez
+  // denenir: önbellekten eski dosya gelirse sayfa döngüye girmez.
+  const UPDATE_MS = 3 * 60e3, RELOAD_KEY = 'idle-traveler-reload';
+  let updateAt = 0, updating = '';
+  async function checkUpdate() {
+    if (updating || !/^https?:$/.test(location.protocol)) return;
+    updateAt = Date.now();
+    let v = '';
+    try {
+      const r = await fetch('js/changelog.js?t=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) { const m = /IT\.VERSION\s*=\s*'(\d+(?:\.\d+)*)'/.exec(await r.text()); if (m) v = m[1]; }
+    } catch (e) { return; /* çevrimdışı: bir dahaki sefere */ }
+    if (!v || IT.verCmp(v, IT.VERSION) <= 0 || updating) return;
+    let tried = null;
+    try { tried = sessionStorage.getItem(RELOAD_KEY); } catch (e) { /* yok say */ }
+    if (tried === v) return;
+    updating = v;
+    if (!document.hidden) toast(t('toast.update', { v }), 'teal');
+    setTimeout(applyUpdate, document.hidden ? 0 : 4000);
+  }
+  function applyUpdate() {
+    if (!$('#modal').hidden) { setTimeout(applyUpdate, 1000); return; }
+    try { sessionStorage.setItem(RELOAD_KEY, updating); } catch (e) { /* yok say */ }
+    save();
+    document.documentElement.classList.add('reloading');
+    setTimeout(() => location.reload(), document.hidden ? 0 : 700);
+  }
+  IT.checkUpdate = checkUpdate;
+
   function introHtml() {
     return `
       <p class="eyebrow">${t('intro.eyebrow')}</p>
@@ -1009,7 +1081,7 @@
         </div>
         ${owned
           ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
-          : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>${tipLine(v)}`}
+          : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
         </article>`;
     }
     if (hidden) html += `<article class="card veh mystery"><canvas class="icon" data-icon="mystery" width="72" height="56"></canvas>
@@ -1017,22 +1089,17 @@
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
   }
-  // Sıradaki aracın kartında ipucu: önce elindeki aracı Sv. 10'a getir (fiyatlar sabittir, yalnızca yol gösterir)
-  function tipLine(v) {
-    const prev = VEHICLES[v.index - 1];
-    if (!prev || !S.owned[prev.id]) return '';
-    const lvl = S.levels[prev.id] || 0, ready = lvl >= Econ.tipLevel;
-    return `<p class="trade${ready ? ' ready' : ''}">${t(ready ? 'garage.tipReady' : 'garage.tip', { prev: prev.name, lvl: t('ui.lvl', { n: Econ.tipLevel }) })}</p>`;
-  }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
     return costBtn('upgrade', v.id, q.cost, q.n > 1 ? t('ui.upgradeN', { n: q.n }) : t('ui.upgrade'));
   }
   function nextDoubling(lvl) {
-    const next = DOUBLINGS.find(x => x > lvl);
-    if (!next) return t('ui.perLevel', { p: fmtPct(25) });
-    // görünüm değiştiren eşiklerde merak uyandıran ipucu
-    return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p: fmtPct(25), t: next });
+    const p = fmtPct(Econ.levelGain * 100);
+    const next = Econ.doublings.find(x => x > lvl), look = Econ.looks.find(x => x > lvl);
+    // görünüm değiştiren eşiklerde merak uyandıran ipucu (ikiye katlanmadan önce gelen görünüm ayrıca yazılır)
+    if (look && (!next || look < next)) return t('ui.nextLook', { p, t: look });
+    if (!next) return t('ui.perLevel', { p });
+    return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p, t: next });
   }
 
   function renderBuffs() {
@@ -1059,7 +1126,7 @@
     }).join('') + homeCard();
   }
   function homeCard() {
-    const gain = Econ.memoryGain(S.distance), pct = HOME.bonus * 100;
+    const gain = Econ.memoryGain(S.distance, S.trips), pct = HOME.bonus * 100;
     const now = S.memories ? t('homecard.mem', { n: fmtNum(S.memories), p: fmtPct(pct * S.memories) }) : t('homecard.none');
     return `<article class="card home">
       <div class="body">
@@ -1070,7 +1137,7 @@
         ${S.regionIdx === 0 && routesOpenFor(S.trips) > 1 ? `<p class="tag small">${t('homecard.pick')}</p>${routePicker()}` : ''}
         ${gain || S.homeReady
           ? `<p class="tag">${t('homecard.now', { gain: '<b class="mem" id="homeGain"></b>', next: '<span id="homeNext"></span>' })}</p>`
-          : `<p class="tag">${t('homecard.locked', { d: fmtDist(HOME.min) })}</p><div class="progress"><i id="homeProg"></i></div>`}
+          : `<p class="tag">${t('homecard.locked', { d: fmtDist(Econ.homeMin(S.trips)) })}</p><div class="progress"><i id="homeProg"></i></div>`}
         <div class="up"><small>${t('homecard.hint')}</small><button class="buy home-btn" data-act="home" ${gain ? '' : 'disabled'}>${t('ui.home')}</button></div>
       </div></article>`;
   }
@@ -1212,7 +1279,7 @@
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
-    const nBadges = IT.badgeCount(S);
+    const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S);
     // Her aile tek kart: madalya o anki kademenin renginde, altında 8 kademe noktası ve bir sonraki hedef
     const badges = BADGES.map(b => {
       const k = S.badges[b.id] || 0, tier = k ? TIERS[k - 1] : null;
@@ -1245,6 +1312,14 @@
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
         <p class="tag small">${S.mapPieces >= MAP_PIECES ? t('j.mapReady') : t('j.mapHint')}</p>
       </div>
+      <h3 class="sec">${t('j.keeps')} <small>${t('j.keepsSub', { n: nKeeps, m: IT.KEEPSAKES.length, p: fmtPct(Econ.keepBonus * 100 * nKeeps) })}</small></h3>
+      <ul class="keeps">${IT.KEEPSAKES.map(k => {
+        const where = IT.REGIONS.find(r => r.biome === k.id).name;
+        return S.keeps[k.id]
+          ? `<li><button class="keep on s-${k.id}" type="button" data-act="keepPeek" data-id="${k.id}" title="${esc(k.name + ' · ' + where)}"><span class="e" aria-hidden="true">${k.e}</span><b>${esc(k.name)}</b></button></li>`
+          : `<li><div class="keep s-${k.id}" title="${esc(t('j.keepWhere', { region: where }))}"><span class="e" aria-hidden="true">?</span><small>${esc(where)}</small></div></li>`;
+      }).join('')}</ul>
+      <p class="tag small">${nKeeps === IT.KEEPSAKES.length ? t('j.keepsDone') : t('j.keepsHint')}</p>
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
@@ -1258,7 +1333,7 @@
         const open = outfitOpen(o), on = open && (S.settings.outfit === o.id || (!outfitOpen(OUTFIT[S.settings.outfit]) && o.id === 'classic'));
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
-          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
   }
 
@@ -1371,10 +1446,10 @@
     $('.tab[data-id="garage"]').classList.toggle('dot', canGarage);
     $('.tab[data-id="buffs"]').classList.toggle('dot', canBuffs);
     if (!$('#pane-buffs').hidden) {
-      const gain = Econ.memoryGain(S.distance);
+      const gain = Econ.memoryGain(S.distance, S.trips);
       setText('#homeGain', t('homecard.gain', { n: gain, c: fmtNum(gain) }));
-      setText('#homeNext', fmtDist(Econ.memoryNext(S.distance)));
-      const hp = $('#homeProg'); if (hp) hp.style.transform = `scaleX(${Math.min(1, S.distance / HOME.min)})`;
+      setText('#homeNext', fmtDist(Econ.memoryNext(S.distance, S.trips)));
+      const hp = $('#homeProg'); if (hp) hp.style.transform = `scaleX(${Math.min(1, S.distance / Econ.homeMin(S.trips))})`;
       const hb = $('.home-btn'); if (hb && hb.disabled !== !gain) hb.disabled = !gain;
     }
     if (!$('#pane-journal').hidden) {
@@ -1419,6 +1494,7 @@
     if (window.MutationObserver) new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     scene.setBiome(IT.regionAt(S.regionIdx).biome, true);
     scene.setVehicle(S.active, true);
+    scene.keepOk = id => !S.keeps[id];
     scene.signText = () => {
       const n = IT.regionAt(S.regionIdx + 1);
       return { title: n.name, sub: fmtDist(Math.max(0, n.at - S.distance)) };
@@ -1438,6 +1514,8 @@
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
+      const kp = scene.hitKeep(x, y);
+      if (kp) { catchKeep(kp); return; }
       const g = scene.hitGhost(x, y);
       if (g) { waveAt(g); return; }
       const before = S.distance;
@@ -1511,7 +1589,10 @@
     window.addEventListener('resize', () => { scene.resize(); });
     if (window.ResizeObserver) new ResizeObserver(() => scene.resize()).observe(stage);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { save(); Sound.pause(); } else { lastFrame = performance.now(); Sound.resume(); if (Date.now() - IT.Online.at > 20e3) IT.Online.now(); }
+      if (document.hidden) { save(); Sound.pause(); } else {
+        lastFrame = performance.now(); Sound.resume(); if (Date.now() - IT.Online.at > 20e3) IT.Online.now();
+        if (Date.now() - updateAt > 60e3) checkUpdate();
+      }
     });
     window.addEventListener('pagehide', save);
     window.addEventListener('beforeunload', save);
@@ -1548,10 +1629,13 @@
     // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
     const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
     IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
-      tier: Econ.lookTier(S.levels[S.active]), outfit: S.settings.outfit, pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
+      tier: Econ.lookTier(S.levels[S.active]), outfit: wornOutfit(), pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;
     if (hot && hot.snapshot) { try { hot.snapshot(() => { save(); return { save: S }; }); } catch (e) { /* yok say */ } }
+
+    // yayındaki sürümü yokla: açılıştan kısa süre sonra, sonra birkaç dakikada bir
+    setTimeout(checkUpdate, 30e3); setInterval(checkUpdate, UPDATE_MS);
 
     refreshUI();
     lastFrame = performance.now();

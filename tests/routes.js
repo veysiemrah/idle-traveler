@@ -3,7 +3,7 @@ const { chromium } = require('./lib/pw');
   const b = await chromium.launch(); const errs = [];
   const p = await b.newPage({ locale: 'tr-TR', viewport: { width: 1280, height: 900 } });
   p.on('pageerror', e => errs.push(e.message));
-  await p.addInitScript(() => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, distance: 6e7, regionIdx: 11, msIdx: 18, owned: { walk: 1, skates: 1 } })); } });
+  await p.addInitScript(() => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, distance: 1.2e8, regionIdx: 11, msIdx: 18, owned: { walk: 1, skates: 1 } })); } });
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(600);
   await p.click('.tab[data-id="buffs"]'); await p.waitForTimeout(200);
   console.log('kart (yolculuk 1):', (await p.$eval('.card.home', e => e.innerText.replace(/\s+/g, ' '))).slice(0, 260));

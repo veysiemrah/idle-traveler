@@ -3,9 +3,18 @@
 # Kullanım: tests/run-all.sh   (Python 3 ve Playwright gerekir; bkz. tests/README.md)
 set -u
 # başlatılan sunucuyu alt süreçleriyle (npx → wrangler → workerd) birlikte kapatır
-killtree() { for c in $(pgrep -P "$1"); do killtree "$c"; done; kill "$1" 2>/dev/null; }
+killtree() {
+  # Windows (Git Bash): pgrep yok; süreç ağacı Windows kimliğiyle taskkill /T ile kapatılır
+  if ! command -v pgrep >/dev/null 2>&1; then
+    [ -r "/proc/$1/winpid" ] && taskkill //F //T //PID "$(cat "/proc/$1/winpid")" >/dev/null 2>&1
+    kill "$1" 2>/dev/null; return
+  fi
+  for c in $(pgrep -P "$1"); do killtree "$c"; done; kill "$1" 2>/dev/null
+}
 cd "$(dirname "$0")"
-export SP="$PWD/out"; mkdir -p "$SP"
+# Windows (Git Bash): node "/c/..." biçimindeki yolları tanımaz; yollar "C:/..." biçimine çevrilir
+HERE="$PWD"; command -v cygpath >/dev/null 2>&1 && HERE="$(cygpath -m "$PWD")"
+export SP="$HERE/out"; mkdir -p "$SP"
 OUT="$SP/regress.out"; : > "$OUT"
 # statik sunucu: açık değilse başlat, bitince kapat
 SRV=""
@@ -14,8 +23,8 @@ if ! curl -s -o /dev/null http://localhost:8765/; then
   for _ in $(seq 1 30); do curl -s -o /dev/null http://localhost:8765/ && break; sleep 0.3; done
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
-export NODE_OPTIONS="-r $PWD/pw_name.js"
-for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade; do
+export NODE_OPTIONS="-r $HERE/pw_name.js"
+for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update; do
   echo "== $f" >> "$OUT"
   timeout 300 node "$f.js" 2>&1 | grep -iE "error|KAYDI|şüpheli|∞|NaN|sıçradı|adım attı" | grep -v ERR_CERT | grep -v "501 (Unsupported" | head -6 >> "$OUT"
 done
