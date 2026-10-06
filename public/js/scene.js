@@ -652,35 +652,58 @@
   }
 
   // At: dört nala koşan doru at, yolcu eyerde
+  // At: dörtnal (kanter). Her bacak yere basar (toynak yerde kalır, bacak geriye süpürülür) ve havada katlanıp öne gelir;
+  // gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele ve kuyruk rüzgârda dalgalanır.
+  // Bacak sırası (sağ öncü): uzak arka → yakın arka ile uzak ön birlikte → yakın ön.
   function drawHorse(ctx, x, y, k, st) {
-    const q = st.phase, bob = Math.abs(Math.sin(q)) * 2 * k;
-    const coat = '#a8703f', dark = '#7d4f2a', mane = '#3d2a22';
+    const q = st.phase, t = st.t || 0;
+    const bob = (1 - Math.cos(q - 0.6)) * 1.6 * k;          // gövde: adım başına bir yükselme
+    const nod = Math.sin(q - 1.3) * 2.4 * k;                 // baş ve boyun sallanışı
+    const coat = '#a8703f', dark = '#7d4f2a', mane = '#3d2a22', ground = y - 1 * k;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    const leg = (lx, off, back) => {
-      const a = Math.sin(q + off) * 0.55, top = [lx, y - 26 * k - bob];
-      const knee = [top[0] + Math.sin(a) * 11 * k, top[1] + Math.cos(a) * 11 * k];
-      const bend = Math.max(0, Math.cos(q + off)) * 0.9 * (back ? -1 : 1);
-      const hoof = [knee[0] + Math.sin(a + bend) * 12 * k, Math.min(y - 1 * k, knee[1] + Math.cos(a + bend) * 12 * k)];
-      line(ctx, [top[0], top[1], knee[0], knee[1], hoof[0], hoof[1]], 4.2 * k, back ? dark : coat);
-      ctx.fillStyle = '#2f2722'; ellipse(ctx, hoof[0] + 1 * k, hoof[1], 2.6 * k, 1.6 * k);
+    const leg = (lx, off, front, near) => {
+      const c = (((q + off) / TAU) % 1 + 1) % 1, top = [lx, y - 26 * k - bob], reach = (front ? 9 : 8) * k, stance = 0.46;
+      let hx, hy;
+      if (c < stance) { hx = top[0] + lerp(reach, -reach, c / stance); hy = ground; }
+      else {
+        const u = (c - stance) / (1 - stance), e = u * u * (3 - 2 * u);
+        hx = top[0] + lerp(-reach, reach, e); hy = ground - Math.sin(Math.PI * u) * (front ? 10 : 7) * k;
+      }
+      // ön bacakta diz öne, arka bacakta diz eklemi geriye bükülür
+      const kn = ik(top[0], top[1], hx, hy, 13.5 * k, 15 * k, front ? 1 : -1);
+      line(ctx, [top[0], top[1], kn[0], kn[1], hx, hy], (near ? 4.4 : 4) * k, near ? coat : dark);
+      ctx.fillStyle = '#2f2722'; ellipse(ctx, hx + 1 * k, hy, 2.7 * k, 1.6 * k);
     };
-    leg(x - 16 * k, 0.6, true); leg(x + 12 * k, 2.2, true);
-    // kuyruk
-    ctx.strokeStyle = mane; ctx.lineWidth = 4 * k;
-    ctx.beginPath(); ctx.moveTo(x - 23 * k, y - 36 * k - bob);
-    ctx.quadraticCurveTo(x - 34 * k, y - 34 * k - bob + Math.sin(q * 2) * 2 * k, x - 33 * k, y - 20 * k - bob + Math.sin(q * 2) * 3 * k); ctx.stroke();
-    // gövde ve boyun
+    leg(x - 16 * k, 0, false, false); leg(x + 12 * k, 1.4, true, false);
+    // kuyruk: arkaya savrulur, adımla dalgalanır
+    const tw = Math.sin(q * 1.0 + 0.4), tw2 = Math.sin(t * 7);
+    ctx.strokeStyle = mane; ctx.lineWidth = 4.2 * k;
+    ctx.beginPath(); ctx.moveTo(x - 23 * k, y - 37 * k - bob);
+    ctx.bezierCurveTo(x - 32 * k, y - 38 * k - bob + tw * 2 * k, x - 38 * k, y - 32 * k - bob + tw * 3 * k, x - 41 * k + tw2 * 1.5 * k, y - 22 * k - bob + tw * 4 * k); ctx.stroke();
+    ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(x - 30 * k, y - 35 * k - bob + tw * 2 * k);
+    ctx.quadraticCurveTo(x - 38 * k, y - 34 * k - bob, x - 44 * k + tw2 * 2 * k, y - 27 * k - bob + tw * 3 * k); ctx.stroke();
+    // gövde
     ctx.fillStyle = coat; ellipse(ctx, x, y - 33 * k - bob, 25 * k, 10.5 * k);
-    ctx.beginPath(); ctx.moveTo(x + 13 * k, y - 40 * k - bob); ctx.quadraticCurveTo(x + 22 * k, y - 52 * k - bob, x + 27 * k, y - 58 * k - bob);
-    ctx.lineTo(x + 33 * k, y - 50 * k - bob); ctx.quadraticCurveTo(x + 26 * k, y - 38 * k - bob, x + 20 * k, y - 28 * k - bob); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = coat; ellipse(ctx, x + 34 * k, y - 53 * k - bob, 9 * k, 4.6 * k, 0.55);
-    ctx.fillStyle = dark; circle(ctx, x + 39 * k, y - 49 * k - bob, 1.3 * k);
-    ctx.fillStyle = coat; ctx.beginPath(); ctx.moveTo(x + 27 * k, y - 59 * k - bob); ctx.lineTo(x + 28 * k, y - 65 * k - bob); ctx.lineTo(x + 31 * k, y - 59 * k - bob); ctx.fill();
-    ctx.fillStyle = P.dark; circle(ctx, x + 32 * k, y - 56 * k - bob, 1.1 * k);
+    // boyun ve baş: boyun ucu ve baş adımla öne-aşağı iner, yukarı kalkar
+    const hy0 = y - bob + nod, hx0 = x + nod * 0.35;
+    ctx.beginPath(); ctx.moveTo(x + 13 * k, y - 40 * k - bob); ctx.quadraticCurveTo(x + 22 * k, y - 52 * k - bob + nod * 0.5, hx0 + 27 * k, hy0 - 58 * k);
+    ctx.lineTo(hx0 + 33 * k, hy0 - 50 * k); ctx.quadraticCurveTo(x + 26 * k, y - 38 * k - bob + nod * 0.4, x + 20 * k, y - 28 * k - bob); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = coat; ellipse(ctx, hx0 + 34 * k, hy0 - 53 * k, 9 * k, 4.6 * k, 0.55 + nod / k * 0.03);
+    ctx.fillStyle = dark; circle(ctx, hx0 + 39 * k, hy0 - 49 * k, 1.3 * k); // burun deliği
+    // kulak: ara sıra seğirir
+    const flick = Math.max(0, Math.sin(t * 1.7) - 0.92) * 12;
+    ctx.fillStyle = coat; ctx.beginPath(); ctx.moveTo(hx0 + 27 * k, hy0 - 59 * k); ctx.lineTo(hx0 + (28 - flick) * k, hy0 - 65 * k); ctx.lineTo(hx0 + 31 * k, hy0 - 59 * k); ctx.fill();
+    ctx.fillStyle = P.dark; circle(ctx, hx0 + 32 * k, hy0 - 56 * k, 1.1 * k);
+    // yele: boyun boyunca, telleri rüzgârda geriye dalgalanır
     ctx.strokeStyle = mane; ctx.lineWidth = 3.4 * k;
-    ctx.beginPath(); ctx.moveTo(x + 27 * k, y - 59 * k - bob); ctx.quadraticCurveTo(x + 20 * k, y - 50 * k - bob, x + 14 * k, y - 42 * k - bob); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx0 + 27 * k, hy0 - 59 * k); ctx.quadraticCurveTo(x + 20 * k, y - 50 * k - bob + nod * 0.5, x + 14 * k, y - 42 * k - bob); ctx.stroke();
+    ctx.lineWidth = 1.6 * k;
+    for (let i = 0; i < 4; i++) {
+      const u = 0.15 + i * 0.22, mx = lerp(hx0 + 27 * k, x + 14 * k, u), my = lerp(hy0 - 59 * k, y - 42 * k - bob, u), w = Math.sin(t * 9 + i * 1.3) * 1.6 * k;
+      ctx.beginPath(); ctx.moveTo(mx, my); ctx.quadraticCurveTo(mx - 4 * k, my - 1 * k + w, mx - 7 * k, my + 1.5 * k + w); ctx.stroke();
+    }
     ctx.fillStyle = 'rgba(255,255,255,0.18)'; ellipse(ctx, x - 4 * k, y - 38 * k - bob, 14 * k, 3 * k, -0.05);
-    leg(x - 12 * k, 3.6, false); leg(x + 16 * k, 5.2, false);
+    leg(x - 12 * k, 1.4, false, true); leg(x + 16 * k, 2.6, true, true);
     // eyer ve yolcu
     const T = st.tier || 0;
     if (T >= 1) { // saçaklı eyer örtüsü
@@ -695,21 +718,26 @@
     }
     ctx.fillStyle = P.teal; rrect(ctx, x - 12 * k, y - 45 * k - bob, 18 * k, 9 * k, 3 * k); ctx.fill();
     ctx.fillStyle = '#5a3d2a'; rrect(ctx, x - 10 * k, y - 47 * k - bob, 14 * k, 4 * k, 2 * k); ctx.fill();
-    const hip = [x - 3 * k, y - 47 * k - bob], sh = [x + 3 * k, y - 70 * k - bob];
+    // binici atın hareketini biraz gecikmeyle izler: eyere doğru hafifçe çöker (havada kalmaz)
+    const rb = bob - Math.max(0, Math.sin(q - 1.5)) * 1.2 * k;
+    const hip = [x - 3 * k, y - 47 * k - rb], sh = [x + 3 * k, y - 70 * k - rb];
     backpack(ctx, sh[0], sh[1], k, 0.2);
     torso(ctx, hip[0], hip[1], sh[0], sh[1], k);
-    const knee = [x + 7 * k, y - 37 * k - bob], foot = [x + 4 * k, y - 26 * k - bob];
+    const knee = [x + 7 * k, y - 37 * k - rb], foot = [x + 4 * k, y - 26 * k - bob];
     line(ctx, [hip[0], hip[1], knee[0], knee[1], foot[0], foot[1]], 7 * k, P.pants); shoe(ctx, foot[0], foot[1], k);
     head(ctx, sh[0] + 3 * k, sh[1] - 9 * k, k);
-    const hand = [x + 17 * k, y - 50 * k - bob], el = ik(sh[0], sh[1] + 2 * k, hand[0], hand[1], 11.5 * k, 11.5 * k, -1);
+    const hand = [x + 17 * k, y - 50 * k - rb + nod * 0.25], el = ik(sh[0], sh[1] + 2 * k, hand[0], hand[1], 11.5 * k, 11.5 * k, -1);
     line(ctx, [sh[0], sh[1] + 2 * k, el[0], el[1], hand[0], hand[1]], 5.6 * k, P.jacket);
-    ctx.strokeStyle = T >= 4 ? GOLD : '#3a2c2a'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(hand[0], hand[1]); ctx.lineTo(x + 35 * k, y - 51 * k - bob); ctx.stroke();
+    ctx.strokeStyle = T >= 4 ? GOLD : '#3a2c2a'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(hand[0], hand[1]); ctx.quadraticCurveTo(hand[0] + 9 * k, hand[1] + 3 * k, hx0 + 35 * k, hy0 - 51 * k); ctx.stroke();
     ctx.fillStyle = P.skin; circle(ctx, hand[0], hand[1], 2.6 * k);
-    if (T >= 2) { // yeleye örülmüş renkli kurdeleler
+    if (T >= 2) { // yeleye örülmüş renkli kurdeleler (yeleyle birlikte sallanır)
       const cols = ['#e84a5f', '#ffd56b', '#6fd3c1'];
-      for (let i = 0; i < 3; i++) { const u = 0.25 + i * 0.25; ctx.fillStyle = cols[i]; circle(ctx, lerp(x + 27 * k, x + 14 * k, u) - 1 * k, lerp(y - 59 * k, y - 42 * k, u) - bob, 2.7 * k);
-        ctx.strokeStyle = cols[i]; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.moveTo(lerp(x + 27 * k, x + 14 * k, u) - 1 * k, lerp(y - 59 * k, y - 42 * k, u) - bob);
-        ctx.lineTo(lerp(x + 27 * k, x + 14 * k, u) - 3 * k + Math.sin(st.t * 8 + i) * 1.5 * k, lerp(y - 59 * k, y - 42 * k, u) - bob + 6 * k); ctx.stroke(); }
+      for (let i = 0; i < 3; i++) {
+        const u = 0.25 + i * 0.25, rx = lerp(hx0 + 27 * k, x + 14 * k, u) - 1 * k, ry = lerp(hy0 - 59 * k, y - 42 * k - bob, u);
+        ctx.fillStyle = cols[i]; circle(ctx, rx, ry, 2.7 * k);
+        ctx.strokeStyle = cols[i]; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.moveTo(rx, ry);
+        ctx.lineTo(rx - 3 * k + Math.sin(st.t * 8 + i) * 1.5 * k, ry + 6 * k); ctx.stroke();
+      }
     }
     if (T >= 4) sparkles(ctx, x, y - 40 * k, k, st.t, 8, 80 * k, 60 * k);
   }
@@ -863,7 +891,46 @@
     if (back) l = Math.min(l, -(back + 16));
     return [l, r];
   }
+  // Sv. 150 ve 200 görünümleri: aracın arkasından akan yıldız tozu izi ve gökkuşağı kuyruğu.
+  // Bütün araçlarda aynı biçimde çizilir (sahnede, garaj simgelerinde ve diğer gezginlerde).
+  const RIBBON = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#4dabf7', '#9775fa'];
+  function trail(ctx, id, x, y, k, st) {
+    const T = st.tier || 0;
+    if (T < 5 || st.icon) return;
+    // trende iz lokomotifin bacasından çıkıp vagonların üstünden akar (vagonların arkası çoğu zaman ekranın dışında kalır)
+    const train = id === 'train';
+    const rear = x + (train ? 10 : (VEH_EXT[id] || [-30, 30])[0]) * k;
+    const cy = train ? y - (VEH_TOP.train + 6) * k : y - (VEH_TOP[id] || 60) * 0.42 * k, L = (train ? 170 : 130) * k, t = st.t || 0;
+    ctx.save();
+    if (T >= 6) {
+      // gökkuşağı kuyruğu: altı ince bant, uca doğru dalgalanıp solar
+      ctx.lineCap = 'round'; ctx.lineWidth = 2.6 * k;
+      RIBBON.forEach((c, j) => {
+        ctx.strokeStyle = c; ctx.beginPath();
+        for (let i = 0; i <= 16; i++) {
+          const u = i / 16, px = rear - u * L, py = cy + (j - 2.5) * 2.3 * k + Math.sin(u * 5 - t * 3.2) * 5 * k * u;
+          if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+        }
+        const g = ctx.createLinearGradient(rear, 0, rear - L, 0);
+        g.addColorStop(0, c); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = g; ctx.globalAlpha = 0.7; ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+    }
+    // yıldız tozu: kıyafet renklerinde ve altın tonlarında küçük parıltılar geriye akar
+    const cols = [P.hat, P.jacket, GOLD_HI, '#ffffff'];
+    for (let i = 0; i < 9; i++) {
+      const u = ((i / 9) + t * 0.45) % 1, a = (1 - u) * (0.55 + 0.45 * Math.sin(t * 5 + i));
+      if (a <= 0.05) continue;
+      const px = rear - u * L, py = cy + (hash(i * 5.7) - 0.5) * 16 * k + Math.sin(u * 6 + i) * 3 * k, r = (1.2 + 2.6 * (1 - u)) * k;
+      ctx.globalAlpha = a; ctx.fillStyle = cols[i % cols.length];
+      ctx.beginPath(); ctx.moveTo(px, py - r); ctx.quadraticCurveTo(px, py, px + r, py); ctx.quadraticCurveTo(px, py, px, py + r);
+      ctx.quadraticCurveTo(px, py, px - r, py); ctx.quadraticCurveTo(px, py, px, py - r); ctx.fill();
+    }
+    ctx.restore();
+  }
   function drawVehicle(ctx, id, x, y, k, st) {
+    trail(ctx, id, x, y, k, st);
     switch (id) {
       case 'walk': return drawWalker(ctx, x, y, k, st, false);
       case 'skates': return drawWalker(ctx, x, y, k, st, true);
@@ -1469,6 +1536,15 @@
       this.phase += dx / (stride * k) * (this.vehicle === 'bike' ? 1 : 1.1);
       this.wheel += dx / (13 * k);
       this.dogPhase = (this.dogPhase || 0) + dx / (11 * k);
+      // At: toynaklar yere vurdukça (uzak arka ve yakın ön bacak) küçük toz bulutları kalkar
+      if (this.vehicle === 'horse' && this.flyT() === 0) {
+        const beat = Math.floor(this.phase / TAU) + Math.floor((this.phase + 2.6) / TAU);
+        if (this.hoofBeat !== undefined && beat !== this.hoofBeat && !this.reduced) {
+          const gx = this.travelerX + (beat % 2 ? 24 : -8) * k, gy = this.groundY();
+          for (let i = 0; i < 3; i++) this.parts.push({ type: 'dust', x: gx + rand(-4, 4) * k, y: gy - rand(0, 3), vx: -rand(25, 60), vy: -rand(6, 20), life: 0, max: rand(0.4, 0.7), size: rand(1.6, 3.6) * k });
+        }
+        this.hoofBeat = beat;
+      } else this.hoofBeat = undefined;
       this.stepKick = Math.max(0, this.stepKick - dt * 4);
       this.fill(false);
 
@@ -2283,11 +2359,26 @@
       moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85], van: [0.46, 0.5, 0.88], train: [0.36, 0.5, 0.86], balloon: [0.46, 0.5, 0.62],
       plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62] };
     const [k, xf, yf] = sizes[id];
-    const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0, tier: tier || 0 };
+    const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0, tier: tier || 0, icon: true };
+    // Sv. 200: aracın arkasında minik bir gökkuşağı yayı (sahnedeki iz simgeye sığmaz)
+    if (tier >= 6) {
+      ctx.save(); ctx.globalAlpha = 0.55; ctx.lineWidth = 2;
+      RIBBON.forEach((c, j) => { ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(w / 2, h * 0.98, h * (0.78 - j * 0.07), Math.PI * 1.08, Math.PI * 1.92); ctx.stroke(); });
+      ctx.restore();
+    }
     ctx.save();
     if (id === 'train') { ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip(); }
     drawVehicle(ctx, id, w * xf, h * yf, k * (h / 56), st);
     ctx.restore();
+    // Sv. 150 ve üstü: simgenin çevresinde parıltılar
+    if (tier >= 5) {
+      // açık ve koyu kart zemininde de seçilsin diye ince koyu kenarlı altın yıldızlar
+      for (const [px, py, r] of [[w * 0.1, h * 0.2, 4.2], [w * 0.88, h * 0.16, 3.4], [w * 0.92, h * 0.62, 2.8], [w * 0.16, h * 0.7, 2.6]]) {
+        ctx.beginPath(); ctx.moveTo(px, py - r); ctx.quadraticCurveTo(px, py, px + r, py); ctx.quadraticCurveTo(px, py, px, py + r);
+        ctx.quadraticCurveTo(px, py, px - r, py); ctx.quadraticCurveTo(px, py, px, py - r);
+        ctx.fillStyle = GOLD; ctx.strokeStyle = 'rgba(90,60,10,0.45)'; ctx.lineWidth = 0.8; ctx.fill(); ctx.stroke();
+      }
+    }
     if (locked) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = 'rgba(40,44,82,0.92)'; ctx.fillRect(0, 0, w, h);

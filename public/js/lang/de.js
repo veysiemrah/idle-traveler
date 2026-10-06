@@ -323,5 +323,7 @@ IT.addLang('de', {
     "badge.keepsake.desc": { one: "Finde {v} Andenken.", other: "Finde {v} Andenken." },
     "route.clover.name": "Kleeblatt-Straße",
     "route.clover.perk": "Glücksschritte kommen doppelt so oft.",
+    // Fener Yolu (v1.28)
+    "route.lighthouse.name": "Leuchtturm-Straße", "route.lighthouse.perk": "Stationen unterwegs bringen fünfmal so viel.",
   },
 });

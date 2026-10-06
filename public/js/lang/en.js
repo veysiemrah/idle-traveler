@@ -307,5 +307,7 @@ IT.addLang('en', {
     "badge.keepsake.desc": { one: "Find {v} keepsake.", other: "Find {v} keepsakes." },
     "route.clover.name": "Clover Road",
     "route.clover.perk": "Lucky steps happen twice as often.",
+    // Fener Yolu (v1.28)
+    "route.lighthouse.name": "Lighthouse Road", "route.lighthouse.perk": "Stops along the way pay out five times as much.",
   },
 });

@@ -309,5 +309,7 @@ IT.addLang('fr', {
     "badge.keepsake.desc": { one: "Trouve {v} bibelot.", other: "Trouve {v} bibelots." },
     "route.clover.name": "Route du Trèfle",
     "route.clover.perk": "Les pas chanceux arrivent deux fois plus souvent.",
+    // Fener Yolu (v1.28)
+    "route.lighthouse.name": "Route du Phare", "route.lighthouse.perk": "Les étapes de la route rapportent cinq fois plus.",
   },
 });

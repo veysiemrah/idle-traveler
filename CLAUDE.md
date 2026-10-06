@@ -10,9 +10,10 @@ Kullanıcı "oyunu geliştir" dediğinde işleri şu sırayla yap:
    mekanikler, kayıt/yükleme sorunları, arayüz ve sahne hataları.
 2. **Mantık eksiklerini gider.** Oyun mantığındaki boşlukları ve tutarsızlıkları kapat: dengesiz ekonomi,
    ulaşılamayan ya da anlamsız ilerleme, eksik kontroller, hesaplanmayan durumlar, eski kayıtlarla uyumsuzluk.
-3. **Yenilik ekle.** Ardından oyuna yeni özellikler, içerik ya da iyileştirmeler ekle. Hangi yeniliklerin
-   ekleneceğini seçmekte tamamen özgürsün; kullanıcıya sormadan karar verip uygula. Yenilikler oyunun
-   rahatlatıcı tonuna ve mevcut yapısına uymalı.
+3. **Yenilik ekle ya da var olanı geliştir.** Ardından oyuna yeni özellikler, içerik ya da iyileştirmeler ekle.
+   Her turda yeni bir özellik eklemek zorunlu değil: var olan bir özelliği geliştirmek, güzelleştirmek ya da
+   iyileştirmek de bu adımı karşılar. Neyin yapılacağını seçmekte tamamen özgürsün; kullanıcıya sormadan karar
+   verip uygula. Yapılanlar oyunun rahatlatıcı tonuna ve mevcut yapısına uymalı.
 
 Yenilik seçerken şu ilkeleri gözet (hepsini tek seferde uygulamak gerekmez, turlara yay):
 - Her yenilik oyuncunun merakını çeksin, oyunu oynama isteği uyandırsın (gizem, sürpriz, bir sonraki hedefi merak ettirme).
@@ -30,6 +31,7 @@ Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSIO
 başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.
 
 Sürüm notlarını yazarken:
+- Oyunun balans ayarlarındaki değişiklikleri açıkça yazma
 - Hata düzeltmelerini açıkça yazma ("X bozuktu, düzeldi" gibi). Gerekirse yalnızca "küçük rötuşlar" gibi genel bir satırla geç.
 - Merak uyandırması gereken yenilikleri (gizli ödüller, sürprizler, açılan görünümler, yeni yol arkadaşları gibi) ayrıntısıyla
   anlatma; ne olduğunu ve nasıl açıldığını söylemeden yalnızca ipucu ver ve oyuncunun kendisi keşfetmesine bırak.

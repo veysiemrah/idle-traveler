@@ -157,6 +157,8 @@
     { id: 'compass',  perk: 'map',       biomes: ['meadow', 'coast', 'canyon', 'desert', 'cappadocia', 'olive', 'tulip', 'wheat', 'lavender', 'pine', 'autumn', 'tea', 'sakura', 'snow', 'aurora'] },
     // 8. yolculuk: şanslı adımlar iki kat sık
     { id: 'clover',   perk: 'lucky',     biomes: ['meadow', 'tulip', 'tea', 'pine', 'lavender', 'sakura', 'olive', 'coast', 'autumn', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    // 9. yolculuk: duraklarda (gerçek dünya mesafeleri) beş kat ödül
+    { id: 'lighthouse', perk: 'milestone', biomes: ['meadow', 'olive', 'coast', 'tulip', 'wheat', 'lavender', 'autumn', 'sakura', 'tea', 'pine', 'snow', 'aurora', 'canyon', 'cappadocia', 'desert'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
@@ -347,8 +349,9 @@
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.01 * lvl; },
     luckMult: 5, // şanslı adım kaç kat uzun
-    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–4)
-    looks: [10, 25, 50, 100],
+    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–6).
+    // 150: arkasında yıldız tozu izi, 200: gökkuşağı kuyruğu (v1.28, yeni ekonomide bu seviyelere ulaşılabiliyor)
+    looks: [10, 25, 50, 100, 150, 200],
     lookTier(lvl) { return Econ.looks.filter(t => (lvl || 0) >= t).length; },
     // Yol arkadaşı: ilk seviye +%10 kredi, sonraki her seviye +%5; görünüm 2, 4, 7 ve 10. seviyede değişir
     palBonus(lvl) { return lvl > 0 ? 0.1 + 0.05 * (lvl - 1) : 0; },
