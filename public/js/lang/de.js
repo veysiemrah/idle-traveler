@@ -95,7 +95,7 @@ IT.addLang('de', {
     'name.btn': "Losgehen",
     'name.save': "Speichern",
     'toast.named': "In der Liste der Reisenden heißt du jetzt <b>{name}</b>.",
-    'tr.lead': "Reisende der letzten 24 Stunden, sortiert nach der Strecke auf ihrer aktuellen Reise. Wer gerade unterwegs ist, reist auch im Bild neben dir; tippe jemanden an, um zu winken.",
+    'tr.lead': "Reisende der letzten 24 Stunden: Wer gerade unterwegs ist, steht oben, danach die anderen – jeweils sortiert nach der Strecke auf ihrer aktuellen Reise. Wer gerade unterwegs ist, reist auch im Bild neben dir; tippe jemanden an, um zu winken.",
     'tr.online': "Gerade unterwegs",
     'tr.total': "Letzte 24 Stunden",
     'tr.you': "du",
@@ -325,5 +325,8 @@ IT.addLang('de', {
     "route.clover.perk": "Glücksschritte kommen doppelt so oft.",
     // Fener Yolu (v1.28)
     "route.lighthouse.name": "Leuchtturm-Straße", "route.lighthouse.perk": "Stationen unterwegs bringen fünfmal so viel.",
+    // Yakınlaştırma (v1.30)
+    "zoom.label": "Zoom", "zoom.in": "Vergrößern", "zoom.out": "Verkleinern",
+    "tr.earlier": "Früher unterwegs",
   },
 });

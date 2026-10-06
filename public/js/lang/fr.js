@@ -88,7 +88,7 @@ IT.addLang('fr', {
     'name.btn': "En route",
     'name.save': "Enregistrer",
     'toast.named': "Tu apparais maintenant dans la liste des voyageurs sous le nom <b>{name}</b>.",
-    'tr.lead': "Les voyageurs sur la route ces dernières 24 heures, classés selon la distance parcourue pendant ce voyage. Ceux qui sont sur la route en ce moment voyagent aussi à tes côtés dans la scène ; touche-en un pour lui faire signe.",
+    'tr.lead': "Les voyageurs sur la route ces dernières 24 heures : d'abord ceux qui sont sur la route en ce moment, puis les autres, chaque groupe classé selon la distance parcourue pendant ce voyage. Ceux qui sont sur la route en ce moment voyagent aussi à tes côtés dans la scène ; touche-en un pour lui faire signe.",
     'tr.online': "Sur la route",
     'tr.total': "Dernières 24 h",
     'tr.you': "toi",
@@ -311,5 +311,8 @@ IT.addLang('fr', {
     "route.clover.perk": "Les pas chanceux arrivent deux fois plus souvent.",
     // Fener Yolu (v1.28)
     "route.lighthouse.name": "Route du Phare", "route.lighthouse.perk": "Les étapes de la route rapportent cinq fois plus.",
+    // Yakınlaştırma (v1.30)
+    "zoom.label": "Zoom", "zoom.in": "Zoom avant", "zoom.out": "Zoom arrière",
+    "tr.earlier": "Sur la route plus tôt",
   },
 });

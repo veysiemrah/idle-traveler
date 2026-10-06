@@ -86,7 +86,7 @@ IT.addLang('en', {
     'name.btn': "Set off",
     'name.save': "Save",
     'toast.named': "You now appear on the Travelers list as <b>{name}</b>.",
-    'tr.lead': "Travelers on the road in the last 24 hours, ranked by how far they've gone on this trip. Those on the road right now travel beside you in the scene too; tap one to wave.",
+    'tr.lead': "Travelers on the road in the last 24 hours: those on the road right now come first, then the rest, each group ranked by how far they've gone on this trip. Those on the road right now travel beside you in the scene too; tap one to wave.",
     'tr.online': "On the road now",
     'tr.total': "Last 24 hours",
     'tr.you': "you",
@@ -309,5 +309,8 @@ IT.addLang('en', {
     "route.clover.perk": "Lucky steps happen twice as often.",
     // Fener Yolu (v1.28)
     "route.lighthouse.name": "Lighthouse Road", "route.lighthouse.perk": "Stops along the way pay out five times as much.",
+    // Yakınlaştırma (v1.30)
+    "zoom.label": "Zoom", "zoom.in": "Zoom in", "zoom.out": "Zoom out",
+    "tr.earlier": "On the road earlier",
   },
 });

@@ -5,9 +5,36 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.29';
+  IT.VERSION = '1.30';
 
   IT.CHANGELOG = [
+    { v: '1.30', date: '2026-10-06', items: {
+      tr: ['Sahneye yakınlaş ya da uzaklaş: sağ alttaki ＋ ve − düğmeleriyle (bilgisayarda fare tekerleği ya da + / − tuşlarıyla) yolcuna yaklaş ya da manzaranın genişine bak.',
+        'Bisiklet daha canlı: pedallar zincirle dişliye bağlı dönüyor, sürücü her pedal vuruşunda hafifçe sallanıyor.',
+        'Yolda birlikte kervan kurduğun gezginleri artık bir bakışta tanırsın…',
+        'Yolcular listesinde şu an yolda olan gezginler artık en başta.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Zoom the scene in or out: use the ＋ and − buttons at the bottom right (or the mouse wheel and the + / − keys on a computer) to get closer to your traveler or take in the wider view.',
+        'The bicycle feels more alive: the pedals turn on a chainring with a real chain, and the rider sways gently with every stroke.',
+        'You can now spot the travelers you share a caravan with at a glance…',
+        'In the Travelers list, everyone on the road right now is now at the top.',
+        'A few small touches along the road.'],
+      de: ['Zoome in die Szene hinein oder heraus: Mit ＋ und − unten rechts (am Computer auch mit dem Mausrad und den Tasten + / −) kommst du näher an deine Reisenden heran oder siehst mehr von der Landschaft.',
+        'Das Fahrrad wirkt lebendiger: Die Pedale drehen sich am Kettenblatt mit echter Kette, und bei jedem Tritt wiegt sich der Oberkörper leicht mit.',
+        'Reisende, mit denen du eine Karawane bildest, erkennst du jetzt auf einen Blick …',
+        'In der Liste der Reisenden stehen alle, die gerade unterwegs sind, jetzt ganz oben.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Acerca o aleja la escena: con los botones ＋ y − abajo a la derecha (o con la rueda del ratón y las teclas + / − en el ordenador) te acercas a tu viajero o ves el paisaje más amplio.',
+        'La bicicleta tiene más vida: los pedales giran en el plato con una cadena de verdad y quien pedalea se balancea un poco a cada pedalada.',
+        'Ahora reconoces de un vistazo a los viajeros con los que formas caravana…',
+        'En la lista de Viajeros, quienes están en camino ahora aparecen arriba del todo.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Zoome sur la scène ou prends du recul : avec les boutons ＋ et − en bas à droite (ou la molette et les touches + / − sur ordinateur), approche-toi de ton voyageur ou admire le paysage plus large.',
+        'Le vélo est plus vivant : les pédales tournent sur un plateau avec une vraie chaîne, et le cycliste se balance doucement à chaque coup de pédale.',
+        'Tu reconnais désormais d’un coup d’œil les voyageurs avec qui tu formes une caravane…',
+        'Dans la liste des Voyageurs, ceux qui sont sur la route en ce moment apparaissent désormais en tête.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.29', date: '2026-10-06', items: {
       tr: ['Yolda birkaç küçük rötuş.'],
       en: ['A few small touches along the road.'],

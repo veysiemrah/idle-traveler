@@ -297,7 +297,7 @@
   // Uzun bir yolculuğun sonunda eve dönülür: araçlar, yükseltmeler, güçlendirmeler ve kredi sıfırlanır.
   // Yolculuğun uzunluğuna göre hatıra kazanılır; her hatıra sonraki yolculuklarda kalıcı hız verir.
   // min: ilk yolculukta eve dönüşün açıldığı mesafe (100.000 km); her eve dönüşte grow katına çıkar.
-  const HOME = { min: 1.0e8, grow: 1.5, unit: 1.0e8, per: 10, exp: 1 / 3, bonus: 0.1 };
+  const HOME = { min: 1.0e8, grow: 3, unit: 1.0e8, per: 10, exp: 1 / 3, bonus: 0.1 };
 
   /* ---------- Ekonomi ---------- */
   // Yol tecrübesi: binilmeyen araçlar da hızlarının bu kadarını yolculuğa katar.

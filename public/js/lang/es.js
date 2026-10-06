@@ -86,7 +86,7 @@ IT.addLang('es', {
     'name.btn': "En marcha",
     'name.save': "Guardar",
     'toast.named': "Ahora apareces en la lista de viajeros como <b>{name}</b>.",
-    'tr.lead': "Viajeros en el camino en las últimas 24 horas, ordenados por lo que han recorrido en este viaje. Quienes están en camino ahora también viajan a tu lado en la escena; toca a alguien para saludar.",
+    'tr.lead': "Viajeros en el camino en las últimas 24 horas: primero quienes están en camino ahora y luego el resto, cada grupo ordenado por lo que ha recorrido en este viaje. Quienes están en camino ahora también viajan a tu lado en la escena; toca a alguien para saludar.",
     'tr.online': "En camino ahora",
     'tr.total': "Últimas 24 horas",
     'tr.you': "tú",
@@ -309,5 +309,8 @@ IT.addLang('es', {
     "route.clover.perk": "Los pasos de la suerte llegan el doble de a menudo.",
     // Fener Yolu (v1.28)
     "route.lighthouse.name": "Camino del Faro", "route.lighthouse.perk": "Las paradas del camino dan cinco veces más.",
+    // Yakınlaştırma (v1.30)
+    "zoom.label": "Zoom", "zoom.in": "Acercar", "zoom.out": "Alejar",
+    "tr.earlier": "En camino antes",
   },
 });

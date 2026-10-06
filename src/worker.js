@@ -40,7 +40,8 @@ async function sha256(text) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Yolcu listesi: son 24 saatte oynayanlar, yola göre sıralı. me: isteği yapanın satırı (ilk 50'de değilse sırasıyla eklenir)
+// Yolcu listesi: son 24 saatte oynayanlar; önce şu an yolda olanlar, sonra diğerleri, her grup yola göre sıralı.
+// me: isteği yapanın satırı (ilk 50'de değilse aynı kurala göre sırasıyla eklenir)
 // pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
 const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
 const COLS = 'id, name, dist, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt';
@@ -54,7 +55,7 @@ async function feed(db, now) {
 async function listPlayers(db, id, now) {
   const since = now - LIST_MS, onlineSince = now - ONLINE_MS;
   const [rows, counts] = await db.batch([
-    db.prepare(`SELECT ${COLS} FROM players WHERE seen > ?1 ORDER BY dist DESC LIMIT ?2`).bind(since, LIST_MAX),
+    db.prepare(`SELECT ${COLS} FROM players WHERE seen > ?1 ORDER BY (seen > ?3) DESC, dist DESC LIMIT ?2`).bind(since, LIST_MAX, onlineSince),
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?2) AS online FROM players WHERE seen > ?1').bind(since, onlineSince),
   ]);
   const map = async r => ({
@@ -67,7 +68,10 @@ async function listPlayers(db, id, now) {
   if (!me && id) {
     const r = await db.prepare(`SELECT ${COLS} FROM players WHERE id = ?1 AND seen > ?2`).bind(id, since).first();
     if (r) {
-      const above = await db.prepare('SELECT COUNT(*) AS n FROM players WHERE seen > ?1 AND dist > ?2').bind(since, r.dist).first();
+      // önünde kalanlar: yoldaysa daha uzağa gitmiş yoldakiler; değilse bütün yoldakiler ve daha uzağa gitmiş diğerleri
+      const above = r.seen > onlineSince
+        ? await db.prepare('SELECT COUNT(*) AS n FROM players WHERE seen > ?1 AND dist > ?2').bind(onlineSince, r.dist).first()
+        : await db.prepare('SELECT COUNT(*) AS n FROM players WHERE seen > ?1 AND (seen > ?3 OR dist > ?2)').bind(since, r.dist, onlineSince).first();
       me = Object.assign(await map(r), { rank: (above ? above.n : 0) + 1 });
     }
   }

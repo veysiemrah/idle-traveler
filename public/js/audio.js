@@ -104,6 +104,7 @@
     chat() { if (!this.ctx) return; this.tone(PENTA[4] * 2, 0.05, 0.22, 'sine', this.sfx, false); this.tone(PENTA[6] * 2, 0.04, 0.3, 'sine', this.sfx, true, 0.07); },
     // Bir gezgine el sallayınca: iki yumuşak nota
     wave() { if (!this.ctx) return; [4, 6].forEach((n, i) => this.tone(PENTA[n] * 2, 0.045, 0.6, 'sine', this.sfx, true, i * 0.12)); },
+    zoom(dir) { if (!this.ctx) return; this.tone(dir > 0 ? 880 : 660, 0.035, 0.12, 'sine', this.sfx, false); this.tone(dir > 0 ? 1175 : 523, 0.03, 0.14, 'sine', this.sfx, false, 0.05); },
     deny() { if (!this.ctx) return; this.tone(220, 0.05, 0.18, 'triangle'); },
     gift() { if (!this.ctx) return; [0, 2, 4, 5, 6].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.06, 0.9, 'sine', this.sfx, true, i * 0.06)); },
     // kayan yıldız: yukarıdan aşağı inen ince, parıltılı bir dizi
