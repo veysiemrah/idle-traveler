@@ -1,10 +1,10 @@
 const { chromium } = require('./lib/pw');
 (async () => {
   const b = await chromium.launch(); const errs = [];
-  // 1) 5 yolculuk tamamlanmış: 6 rota açık, 7.si gizemli
+  // 1) 7 yolculuk tamamlanmış: 8 rotanın hepsi açık, Yonca Yolu seçili
   const p = await b.newPage({ locale: 'tr-TR', viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
   p.on('pageerror', e => errs.push(e.message));
-  await p.addInitScript(() => { localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', trips: 5, memories: 60, route: 'caravan',
+  await p.addInitScript(() => { localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', trips: 7, memories: 80, route: 'clover',
     player: { id: crypto.randomUUID(), key: 'a'.repeat(64), name: 'Rota' } })); });
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(800);
   await p.click('.tab[data-id="buffs"]'); await p.waitForTimeout(300);

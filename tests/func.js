@@ -9,9 +9,9 @@ const { chromium } = require('./lib/pw');
   await p.waitForTimeout(500);
   console.log('intro visible:', await p.isVisible('#modal'));
   await p.click('#modalBtn');
-  // click until 600+ credits
+  // click until 800+ credits (Paten'in fiyatı; v1.27'de tıklama etkisi yarıya indi)
   let n = 0;
-  while (n < 900) { await p.mouse.click(300, 300); n++; const c = await p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1') || '{}')); if (n % 20 === 0) { const txt = await p.textContent('#credits'); if (parseInt(txt.replace(/\./g,'')) >= 600) break; } await p.waitForTimeout(40); }
+  while (n < 1800) { await p.mouse.click(300, 300); n++; if (n % 20 === 0) { const txt = await p.textContent('#credits'); if (parseInt(txt.replace(/\./g,'')) >= 800) break; } await p.waitForTimeout(40); }
   console.log('clicks', n, 'credits', await p.textContent('#credits'), 'dist', await p.textContent('#hudDist'));
   await p.waitForTimeout(300);
   const btn = p.locator('[data-act="buyVeh"][data-id="skates"]');

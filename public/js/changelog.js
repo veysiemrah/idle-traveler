@@ -5,9 +5,51 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.26';
+  IT.VERSION = '1.27';
 
   IT.CHANGELOG = [
+    { v: '1.27', date: '2026-10-06', items: {
+      tr: ["Garaj yeniden düzenlendi: yükseltmeler artık çok daha yavaş pahalanıyor ve her seviye +%10 hız veriyor. Hız Sv. 25'te ve Sv. 50'de ikiye katlanır; aracını iyice geliştirmeden yenisine geçmek pek kârlı değil.",
+        'Dokunuşların etkisi yarıya indi; yol artık daha çok kendiliğinden akıyor.',
+        "Eve dönüş yolu 100.000 km'de açılıyor ve her yolculukta biraz daha uzağa taşınıyor.",
+        "Yol kenarında arada bir bir şey parıldıyor… Yol Defteri'nde onlar için boş bir raf seni bekliyor. Raf dolunca ne olacağını kim bilir?",
+        'Haritanın kenarında bir rota daha belirdi: şansına güvenen yolculara göre.',
+        'Kervanlar artık çok daha uzaktaki yolcuları da bir araya topluyor…',
+        'Yeni sürümler artık kendiliğinden gelir: oyun ilerlemeni kaydeder ve sayfayı yumuşakça yeniler.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ["The garage has been reworked: upgrades now get pricier much more slowly and every level adds +10% speed. Speed doubles at Lv. 25 and Lv. 50, so moving on before you've really grown your vehicle rarely pays off.",
+        'Taps now carry half the effect; the road flows more on its own.',
+        'The way home now opens at 100,000 km and moves a little further with every journey.',
+        "Now and then something glints by the roadside… An empty shelf is waiting for them in your Journal. Who knows what happens when it's full?",
+        'One more route has appeared at the edge of the map, made for travelers who trust their luck.',
+        'Caravans now gather travelers from much farther away…',
+        'New versions now arrive on their own: the game saves your progress and gently refreshes the page.',
+        'A few small touches along the road.'],
+      de: ['Die Garage wurde überarbeitet: Upgrades werden jetzt viel langsamer teurer, und jede Stufe bringt +10 % Tempo. Bei Stufe 25 und Stufe 50 verdoppelt sich das Tempo – wer zu früh umsteigt, verschenkt meist viel.',
+        'Tippen wirkt nur noch halb so stark; der Weg läuft mehr von selbst.',
+        'Der Heimweg öffnet sich jetzt bei 100.000 km und rückt mit jeder Reise ein Stück weiter.',
+        'Ab und zu glitzert etwas am Wegesrand … In deinem Tagebuch wartet ein leeres Regal darauf. Wer weiß, was passiert, wenn es voll ist?',
+        'Am Rand der Karte ist eine weitere Route aufgetaucht – für Reisende, die auf ihr Glück vertrauen.',
+        'Karawanen sammeln jetzt Reisende aus viel größerer Entfernung …',
+        'Neue Versionen kommen jetzt von selbst: Das Spiel speichert deinen Fortschritt und lädt die Seite sanft neu.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['El garaje se ha renovado: las mejoras ahora se encarecen mucho más despacio y cada nivel suma +10 % de velocidad. La velocidad se duplica en el Nv. 25 y en el Nv. 50, así que cambiar de vehículo sin haberlo mejorado bien rara vez compensa.',
+        'Los toques tienen ahora la mitad de efecto; el camino avanza más por sí solo.',
+        'El camino a casa se abre ahora a los 100 000 km y se aleja un poco más en cada viaje.',
+        'De vez en cuando algo brilla junto al camino… En tu Diario te espera un estante vacío. ¿Quién sabe qué pasará cuando esté lleno?',
+        'Ha aparecido una ruta más en el borde del mapa, pensada para quienes confían en su suerte.',
+        'Las caravanas ahora reúnen a viajeros que están mucho más lejos…',
+        'Las nuevas versiones llegan ahora solas: el juego guarda tu progreso y recarga la página con suavidad.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ["Le garage a été repensé : les améliorations deviennent bien moins vite chères et chaque niveau ajoute +10 % de vitesse. La vitesse double au Niv. 25 et au Niv. 50 : changer de véhicule avant de l'avoir bien fait grandir rapporte rarement.",
+        "Les touches ont désormais deux fois moins d'effet ; la route avance davantage d'elle-même.",
+        "Le chemin du retour s'ouvre maintenant à 100 000 km et s'éloigne un peu plus à chaque voyage.",
+        "De temps en temps, quelque chose scintille au bord de la route… Une étagère vide t'attend dans ton Carnet. Qui sait ce qui arrivera quand elle sera pleine ?",
+        'Une route de plus est apparue au bord de la carte, pour les voyageurs qui se fient à leur chance.',
+        'Les caravanes rassemblent désormais des voyageurs bien plus lointains…',
+        'Les nouvelles versions arrivent désormais toutes seules : le jeu enregistre ta progression et recharge la page en douceur.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.26', date: '2026-10-06', items: {
       tr: ['Eve dönüş yolunda iki yeni ufuk belirdi. Haritanın kenarında, henüz adı konmamış yollar seni bekliyor…',
         'Yolda birkaç küçük rötuş.'],

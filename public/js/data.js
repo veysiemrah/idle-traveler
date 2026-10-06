@@ -9,26 +9,27 @@
   /* ---------- Araçlar ---------- */
   // idle: otomatik hız (m/sn), click: tıklama başına mesafe (m), alt: kameranın yükseldiği irtifa (0 = yer)
   // (v1.11'de bütün mesafeler 1/10'a indi; metre başına kredi CREDITS_PER_M ile 10 katına çıktığı için tempo aynı kaldı)
-  // (v1.19'da araç fiyatları 2 katına çıktı, yükseltmeler fiyatın %1,8'inden başlıyor: aracı Sv. 10'a getirmeden yenisini almak kârsız)
-  // (v1.23'te tempo yarıya indi: araç ve güçlendirme fiyatları yine 2 katına çıktı, yükseltmeler aynı kaldı (fiyatın %0,9'u))
+  // (v1.27'de garaj yeniden dengelendi: araçlar Sv. 50 civarına kadar yükseltilince yenisine geçmek en kârlısı.
+  //  Hızlar 2,5 katlık bir zincir, fiyatlar ~6 katlık ve giderek dikleşen bir zincir; tıklama etkisi yarıya indi.
+  //  Ayar tests/sim_switch.js ile yapıldı: verimli oyuncu araçları Sv. 44–61 arasında bırakır, motora ~1 saatte ulaşır.)
   const VEHICLES = [
-    { id: 'walk',   cost: 0,       idle: 0.035,  click: 0.04,   road: 'path',    alt: 0 },
-    { id: 'skates', cost: 600,     idle: 0.15,   click: 0.125,   road: 'path',    alt: 0 },
-    { id: 'board',  cost: 3600,     idle: 0.3,     click: 0.22,   road: 'path',    alt: 0 },
-    { id: 'bike',   cost: 2.0e4,    idle: 0.6,     click: 0.4,     road: 'path',    alt: 0 },
-    { id: 'horse',  cost: 1.28e5,   idle: 1.2,    click: 0.75,   road: 'path',    alt: 0 },
-    { id: 'moto',   cost: 8.0e5,   idle: 2.4,    click: 1.4,    road: 'asphalt', alt: 0 },
-    { id: 'car',    cost: 3.2e7,   idle: 9.5,    click: 5,   road: 'asphalt', alt: 0 },
-    { id: 'van',    cost: 1.6e8,   idle: 19,   click: 9.5,    road: 'asphalt', alt: 0 },
-    { id: 'train',  cost: 8.0e8,   idle: 38,   click: 19,   road: 'rail',    alt: 0 },
-    { id: 'balloon', cost: 3.6e9, idle: 87, click: 41,   road: 'asphalt', alt: 0.4 },
-    { id: 'plane',  cost: 1.6e10,   idle: 200,  click: 90,  road: 'asphalt', alt: 0.55 },
-    { id: 'jet',    cost: 8.0e10, idle: 450,  click: 190,  road: 'asphalt', alt: 0.55 },
-    { id: 'rocket', cost: 4.0e11,  idle: 1000, click: 400,  road: 'asphalt', alt: 1 },
-    { id: 'sail',   cost: 1.0e13,  idle: 5000, click: 2000, road: 'asphalt', alt: 1.15 },
+    { id: 'walk',    cost: 0,      idle: 0.035, click: 0.02,  road: 'path',    alt: 0 },
+    { id: 'skates',  cost: 800,    idle: 0.09,  click: 0.036, road: 'path',    alt: 0 },
+    { id: 'board',   cost: 4800,   idle: 0.22,  click: 0.08,  road: 'path',    alt: 0 },
+    { id: 'bike',    cost: 3.0e4,  idle: 0.55,  click: 0.18,  road: 'path',    alt: 0 },
+    { id: 'horse',   cost: 2.0e5,  idle: 1.4,   click: 0.43,  road: 'path',    alt: 0 },
+    { id: 'moto',    cost: 1.4e6,  idle: 3.4,   click: 1.0,   road: 'asphalt', alt: 0 },
+    { id: 'car',     cost: 1.0e7,  idle: 8.5,   click: 2.25,  road: 'asphalt', alt: 0 },
+    { id: 'van',     cost: 7.8e7,  idle: 21,    click: 5.3,   road: 'asphalt', alt: 0 },
+    { id: 'train',   cost: 6.2e8,  idle: 53,    click: 13.5,  road: 'rail',    alt: 0 },
+    { id: 'balloon', cost: 5.3e9,  idle: 134,   click: 32,    road: 'asphalt', alt: 0.4 },
+    { id: 'plane',   cost: 4.7e10, idle: 335,   click: 75,    road: 'asphalt', alt: 0.55 },
+    { id: 'jet',     cost: 4.4e11, idle: 835,   click: 175,   road: 'asphalt', alt: 0.55 },
+    { id: 'rocket',  cost: 4.3e12, idle: 2100,  click: 420,   road: 'asphalt', alt: 1 },
+    { id: 'sail',    cost: 4.4e13, idle: 5200,  click: 1040,  road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
-    v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.009);
+    v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.01);
     // Metinler seçili dilden okunur
     Object.defineProperties(v, {
       name: { get: () => T(`veh.${v.id}.name`) },
@@ -154,6 +155,8 @@
     // 6. ve 7. yolculuk: kervan etkisi iki kat sayılır / hazine haritası parçaları iki kat sık düşer
     { id: 'caravan',  perk: 'caravan',   biomes: ['meadow', 'desert', 'canyon', 'cappadocia', 'wheat', 'olive', 'tea', 'coast', 'tulip', 'lavender', 'sakura', 'autumn', 'pine', 'snow', 'aurora'] },
     { id: 'compass',  perk: 'map',       biomes: ['meadow', 'coast', 'canyon', 'desert', 'cappadocia', 'olive', 'tulip', 'wheat', 'lavender', 'pine', 'autumn', 'tea', 'sakura', 'snow', 'aurora'] },
+    // 8. yolculuk: şanslı adımlar iki kat sık
+    { id: 'clover',   perk: 'lucky',     biomes: ['meadow', 'tulip', 'tea', 'pine', 'lavender', 'sakura', 'olive', 'coast', 'autumn', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
@@ -213,6 +216,18 @@
   ];
   { let n = 0; MILESTONES.forEach(m => { const k = m.key || n++; Object.defineProperty(m, 'name', { get: () => T(`ms.${k}`) }); }); }
 
+  /* ---------- Yadigârlar: her bölgenin yol kenarında arada bir parlayan küçük bir hatıra ----------
+     Biyom başına bir tane; bulunan her yadigâr ömür boyu +%2 hız verir ve eve dönüşte kaybolmaz.
+     Raf dolunca Kâşif kıyafeti açılır. Bazı bölgelere ilk yolculukta varılamaz: onları başka rotalar erken gezer. */
+  const KEEPSAKES = [
+    { id: 'meadow', e: '🍯' }, { id: 'lavender', e: '💐' }, { id: 'pine', e: '🌲' }, { id: 'wheat', e: '🌾' }, { id: 'coast', e: '🐚' },
+    { id: 'canyon', e: '🏺' }, { id: 'sakura', e: '🌸' }, { id: 'autumn', e: '🍁' }, { id: 'desert', e: '⏳' }, { id: 'snow', e: '⛄' },
+    { id: 'aurora', e: '🔭' }, { id: 'tea', e: '🍵' }, { id: 'cappadocia', e: '🎈' }, { id: 'tulip', e: '🌷' }, { id: 'olive', e: '🧿' },
+  ];
+  KEEPSAKES.forEach(x => Object.defineProperty(x, 'name', { get: () => T(`keep.${x.id}`) }));
+  const KEEP = Object.fromEntries(KEEPSAKES.map(x => [x.id, x]));
+  const keepCount = s => KEEPSAKES.filter(x => s.keeps && s.keeps[x.id]).length;
+
   /* ---------- Rozetler: her ailenin 8 kademesi (plastikten elmasa) ---------- */
   // Her kademe kalıcı kredi bonusu verir; değerli kademeler daha çok. Bir ailenin bütün kademeleri: +%10.
   // Yeni kademe eklemek için TIERS'e bir satır ve her ailenin at listesine bir eşik ekle.
@@ -246,6 +261,7 @@
     { id: 'wish',      at: [1, 3, 10, 25, 50, 100, 200, 400],                 stat: s => s.wishes },
     { id: 'streak',    at: [2, 3, 5, 7, 14, 30, 60, 100],                     stat: s => s.day ? s.day.best : 0 },
     { id: 'treasure',  at: [1, 2, 3, 5, 8, 12, 20, 30],                       stat: s => s.treasures },
+    { id: 'keepsake',  at: [1, 2, 4, 6, 8, 10, 12, 15],                       stat: s => keepCount(s) },
   ];
   BADGES.forEach(b => {
     Object.defineProperty(b, 'name', { get: () => T(`badge.${b.id}.name`) });
@@ -269,6 +285,8 @@
     { id: 'sunset',   need: 25, jacket: '#f2a03d', jacketDark: '#cf8228', hat: '#7b4fa8', hatDark: '#5f3b85', pack: '#2f9e8f' },
     { id: 'night',    need: 40, jacket: '#3d4380', jacketDark: '#2b2f5e', hat: '#ffd56b', hatDark: '#d9b24c', pack: '#cfe0ff' },
     { id: 'gold',     need: 60, jacket: '#e8b93c', jacketDark: '#c4962a', hat: '#fbf4e6', hatDark: '#d9cfbb', pack: '#c9553d' },
+    // rozetle değil, yadigâr rafını doldurunca açılır
+    { id: 'explorer', need: 0, keeps: 15, jacket: '#8a6440', jacketDark: '#6e4f31', hat: '#e9dcb8', hatDark: '#c9b98f', pack: '#3f8a83' },
   ];
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
   const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
@@ -276,7 +294,8 @@
   /* ---------- Eve dönüş ve hatıralar ---------- */
   // Uzun bir yolculuğun sonunda eve dönülür: araçlar, yükseltmeler, güçlendirmeler ve kredi sıfırlanır.
   // Yolculuğun uzunluğuna göre hatıra kazanılır; her hatıra sonraki yolculuklarda kalıcı hız verir.
-  const HOME = { min: 5.0e7, unit: 1.0e8, per: 10, exp: 1 / 3, bonus: 0.1 };
+  // min: ilk yolculukta eve dönüşün açıldığı mesafe (100.000 km); her eve dönüşte grow katına çıkar.
+  const HOME = { min: 1.0e8, grow: 1.5, unit: 1.0e8, per: 10, exp: 1 / 3, bonus: 0.1 };
 
   /* ---------- Ekonomi ---------- */
   // Yol tecrübesi: binilmeyen araçlar da hızlarının bu kadarını yolculuğa katar.
@@ -287,15 +306,17 @@
   // Sahnenin kayma hızı mesafe ölçeğinden bağımsız: eski görsel tempo korunur
   const SPEED_VIS = 10;
   const Econ = {
+    // Her seviye aracın hızına +%10 ekler; bu seviyelerde hız ikiye katlanır (en büyük sıçrama Sv. 50'de)
+    levelGain: 0.1,
+    doublings: [25, 50, 100, 150, 200],
     vehicleMult(lvl) {
-      let m = 1 + 0.25 * lvl;
-      for (const t of [10, 25, 50, 100, 150, 200]) if (lvl >= t) m *= 2;
+      let m = 1 + Econ.levelGain * lvl;
+      for (const t of Econ.doublings) if (lvl >= t) m *= 2;
       return m;
     },
-    upgradeCost(v, lvl) { return Math.ceil(v.upBase * Math.pow(1.55, lvl)); },
-    // Araçların satın alma ve yükseltme fiyatları sabittir. Sıradaki araç, elindekinin Sv. 10 civarına kadar yükseltilmesinden
-    // çok daha pahalıdır: önce yükseltmek hep daha çok hız kazandırır, araca erken biriktirmek oyuncuyu yavaşlatır.
-    tipLevel: 10,
+    // Araçların satın alma ve yükseltme fiyatları sabittir. Yükseltmeler yavaş pahalanır (seviye başına %9,5); sıradaki araç,
+    // elindekini Sv. 50 civarına getirmenin toplamından pahalıdır. Böylece aracı iyice geliştirmek en kârlı yoldur.
+    upgradeCost(v, lvl) { return Math.ceil(v.upBase * Math.pow(1.095, lvl)); },
     // n seviyenin toplam maliyeti; n = 'max' ise bütçenin yettiği kadar (en az 1 seviye gösterilir)
     upgradeQuote(v, lvl, n, budget) {
       let cost = 0, k = 0;
@@ -309,12 +330,17 @@
     },
     buffCost(b, lvl) { return Math.ceil(b.base * Math.pow(b.growth, lvl)); },
     discoveryMult(regionIdx) { return 1 + 0.06 * regionIdx; },
-    memoryGain(dist) { return dist < HOME.min ? 0 : Math.floor(HOME.per * Math.pow(dist / HOME.unit, HOME.exp) + 1e-9); },
+    // Eve dönüşün açıldığı mesafe: her eve dönüşte biraz daha uzar
+    homeMin(trips) { return HOME.min * Math.pow(HOME.grow, Math.min(trips || 0, 200)); },
+    memoryGain(dist, trips) { return dist < Econ.homeMin(trips) ? 0 : Math.floor(HOME.per * Math.pow(dist / HOME.unit, HOME.exp) + 1e-9); },
     // Bir sonraki hatıra için gereken yolculuk mesafesi
-    memoryNext(dist) {
-      const g = Econ.memoryGain(dist);
-      return g === 0 ? HOME.min : HOME.unit * Math.pow((g + 1) / HOME.per, 1 / HOME.exp);
+    memoryNext(dist, trips) {
+      const g = Econ.memoryGain(dist, trips);
+      return g === 0 ? Econ.homeMin(trips) : HOME.unit * Math.pow((g + 1) / HOME.per, 1 / HOME.exp);
     },
+    // Yadigârlar: her biri ömür boyu +%2 hız
+    keepBonus: 0.02,
+    keepMult(state) { return 1 + Econ.keepBonus * keepCount(state); },
     memoryMult(memories) { return 1 + HOME.bonus * (memories || 0); },
     rhythmCap(lvl) { return 0.5 + 0.1 * lvl; },
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
@@ -343,7 +369,7 @@
     },
     // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
     own(state, id) {
-      const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories);
+      const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories) * Econ.keepMult(state);
       return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.2 * state.buffs.stride) };
     },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
@@ -356,7 +382,7 @@
         idle += v.idle * m; click += v.click * m;
         if (v.id !== lead) cIdle += v.idle * m;
       }
-      const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories), bi = 1 + 0.25 * b.breeze;
+      const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories) * Econ.keepMult(state), bi = 1 + 0.25 * b.breeze;
       return {
         idle: idle * d * bi,
         click: click * d * (1 + 0.2 * b.stride),
@@ -443,7 +469,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, KEEPSAKES, KEEP, keepCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
   });
 })(typeof window !== 'undefined' ? window : globalThis);
