@@ -213,6 +213,32 @@ button { font: inherit; color: inherit; }
   transition: opacity .5s, transform .5s;
 }
 .toast b { font-weight: 700; }
+/* Yakınlaştırma denetimi: konuşma düğmesinin üstünde dikey bir hap; ortadaki noktalar seçili kademeyi gösterir */
+.zoom-ctl {
+  position: absolute; right: 20px; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 118px); z-index: 3;
+  width: 38px; display: flex; flex-direction: column; align-items: center; padding: 3px 0; border-radius: 19px;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 22px rgba(20, 20, 50, 0.18);
+}
+.zoom-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 0; background: transparent; color: var(--paper); cursor: pointer;
+  display: grid; place-items: center; transition: transform .16s cubic-bezier(.2, .9, .3, 1.4), background .15s, opacity .2s;
+}
+.zoom-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.zoom-btn:hover:not(:disabled) { background: var(--ink-3); }
+.zoom-btn:active:not(:disabled) { transform: scale(0.88); }
+.zoom-btn:disabled { opacity: .35; cursor: default; }
+.zoom-pips { display: flex; flex-direction: column-reverse; gap: 3px; padding: 2px 0; }
+.zoom-pips b { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); opacity: .45; transition: background .25s, opacity .25s, transform .25s; }
+.zoom-ctl[data-zoom="0"] .zoom-pips b:nth-child(1), .zoom-ctl[data-zoom="1"] .zoom-pips b:nth-child(2),
+.zoom-ctl[data-zoom="2"] .zoom-pips b:nth-child(3), .zoom-ctl[data-zoom="3"] .zoom-pips b:nth-child(4) { background: var(--teal); opacity: 1; transform: scale(1.35); }
+/* telefonlarda (dar ya da yatay ve alçak sahne) denetim konuşma düğmesinin soluna yatay olarak geçer: bildirimlere binmez */
+@media (max-width: 640px), (max-height: 480px) and (min-width: 480px) {
+  /* soldan sağa: −, kademe noktaları (en uzaktan en yakına), + */
+  .zoom-ctl { flex-direction: row-reverse; width: auto; height: 38px; padding: 0 3px; right: 72px; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 66px); }
+  .zoom-pips { flex-direction: row; padding: 0 2px; }
+}
+@media (prefers-reduced-motion: reduce) { .zoom-btn, .zoom-pips b { transition: none; } }
 /* Hazır mesajlar: sahnenin sağ altında, durak çubuğunun üstünde yuvarlak bir düğme ve açılan mesaj seçici */
 .chat-btn {
   position: absolute; right: 16px; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 62px); z-index: 3;
@@ -660,6 +686,10 @@ button { font: inherit; color: inherit; }
 .tr-dot.on { background: var(--teal); opacity: 1; box-shadow: 0 0 0 3px rgba(111, 211, 193, 0.2); }
 .tr-dist { font-size: 13.5px; color: var(--teal); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tr-gap { text-align: center; color: var(--muted); line-height: 1; }
+/* yoldakilerle daha önce yolda olanlar arasındaki ayırıcı: ortasında küçük bir yazı olan ince çizgi */
+.tr-sep { display: flex; align-items: center; gap: 10px; margin: 6px 2px 2px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.tr-sep::before, .tr-sep::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+.tr-sep span { white-space: nowrap; }
 .tr-note { margin: 0; font-size: 13px; color: var(--muted); background: var(--well); border-radius: var(--r-sm); padding: 10px 12px; }
 .card.tr-ask { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
 .card.tr-ask .tag { margin: 0; }

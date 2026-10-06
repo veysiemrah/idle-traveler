@@ -93,6 +93,12 @@ npx wrangler dev   # http://localhost:8787
   pencere (ör. ad yazılırken) kapanana kadar beklenir. Aynı sürüm için yalnızca bir kez denenir (`sessionStorage`), böylece
   önbellekten eski dosya gelse de sayfa döngüye girmez. Dosyadan (`file://`) açılan oyunda yoklama yapılmaz.
 
+- **Yakınlaştırma**: Sahnenin sağ altındaki ＋/− denetimiyle sahne %80, %100, %125 ve %160 arasında yumuşakça yakınlaşır ya da
+  uzaklaşır (bilgisayarda fare tekerleği sahnenin üstündeyken, ya da + / − tuşları). Sahne gerçek boyutun 1/zoom katı bir
+  "sanal ekrana" çizilip ölçeklenir: gökyüzü, dağlar ve yolun yeri ekranda sabit kalır; yakınlaşınca yolcu ve çevresi büyür,
+  uzaklaşınca daha geniş bir manzara ve daha çok gezgin görünür. İsim etiketleri, balonlar ve uçan yazılar uzaklaşınca küçülmez.
+  Dokunuşlar sanal koordinata çevrildiği için kelebek, yıldız, sandık ve yadigâr her kademede yakalanır. Ortadaki noktalar seçili
+  kademeyi gösterir; seçim kaydedilir. Geniş ekranda denetim konuşma düğmesinin üstünde dikey, telefonda solunda yataydır.
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
@@ -105,13 +111,22 @@ npx wrangler dev   # http://localhost:8787
   zincirdir. Bu yüzden en kârlı yol, aracı Sv. 50 civarına getirip sonra yenisine geçmektir. Araç kartlarında ipucu satırı yoktur.
   Ayar `tests/sim_switch.js` ile yapıldı: her an kredi başına en çok hız getiren alımı seçen oyuncu araçları Sv. 44–62 arasında
   bırakır. Hiç yükseltme yapmadan araca biriktiren oyuncu ata 6,5 saatte, yükselten oyuncu 44 dakikada ulaşır.
-- **Tempo**: Dokunuşların etkisi v1.27'de yarıya indi. Verimli bir oyuncu (saniyede bir dokunuş) motora yaklaşık 50 dakikada,
-  arabaya 1,5 saatte, trene 5 saatte ulaşır; 100.000 km'yi 6–7 saatte geçer. Daha seyrek dokunan oyuncuda (5 saniyede bir)
-  motor ~1 saat, araba ~1,8 saat, 100.000 km ~7,5 saattir.
+- **Tempo**: Dokunuşların etkisi v1.27'de yarıya indi. Gerçek tempo `tests/sim_game.js` ile ölçülür: oyundaki bütün kazanç
+  kaynaklarını (ritim, şanslı adım, kelebekler, gökkuşağı, kayan yıldız, hazine sandığı, bölge/durak ödülleri, yadigârlar,
+  rozetler, güçlendirmeler) saniye saniye işler. Tek yolculukta son araca (Güneş Yelkeni) ulaşma, ortanca (20 deneme):
+  - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi): ~740 dk (~12 saat; 600–906 dk).
+    Tren ~15 dk, uçak ~40 dk, jet ~1,5 saat, roket ~4,5 saat.
+  - **Aktif** (aynı, normal şans): ~1.150 dk (~19 saat). Saniyede 4 dokunan şanslı oyuncu: ~516 dk.
+  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~22 dk, tren ~1,3 saat, roket ~32 saat.
+  Erken dakikalardaki büyük sıçramalar gökkuşağı (×10 hız) ile Rüzgâr Hortumu'nun (×3) üst üste gelmesinden doğar.
+  Kayan yıldızlar (gece, ×10 kredi) en güçlü kaynaklardandır: hiç gece yaşamayan (açık temada oynayan) şanslı oyuncu 24 saatte
+  son araca ulaşamaz. `sim_switch.js` ve `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
-  son 24 saatte oynayan gezginleri bu yolculukta gittikleri yola göre sıralar. Her satırda ad, bindiği araç,
+  son 24 saatte oynayan gezginleri listeler: önce şu an yolda olanlar (sen dahil), ince bir "Daha önce yoldaydı" ayırıcısının
+  altında diğerleri; her grup bu yolculukta gidilen yola göre sıralıdır. Sunucu da ilk 50'yi bu kuralla seçer, böylece yoldaki hiç
+  kimse listeden düşmez; ilk 50'de olmayan kendi satırın yoldakilerin sonuna eklenir. Her satırda ad, bindiği araç,
   kaçıncı yolculukta olduğu, mesafesi ve şu an yolda olup olmadığı görünür. Sekmedeki sayı şu an yolda olanlardır
   (son 3 dakikada haber verenler). Oyun her 30 saniyede bir kaydını günceller. Sunucuya ulaşılamazsa oyun aynen sürer,
   liste "ulaşılamıyor" der ve kendiliğinden yeniden dener.
@@ -129,7 +144,7 @@ npx wrangler dev   # http://localhost:8787
   treni lokomotif ve tek vagonla çizilir, böylece beş kişi aynı anda trende olsa da yol kalabalıklaşmaz. Araç genişlikleri
   (`VEH_EXT`) ve yükseklikleri (`VEH_TOP`) araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
 - **Kervan**: Şu an yolda olan ve sana yakın (yolunun %15'i, en az 10 km içinde; v1.27'den önce %3 ve 2 km) her gezgin hızını %10 artırır, en çok 3
-  gezgin (+%30). Sahnenin sol üstünde süresiz bir "🐫 Kervan" etkisi görünür; kervana ilk katılınca bildirim gelir (en sık
+  gezgin (+%30). Sahnenin sol üstünde süresiz bir "🐫 Kervan" etkisi görünür, kervandaki gezginlerin isim etiketinde de 🐫 durur; kervana ilk katılınca bildirim gelir (en sık
   2 dakikada bir). Kervandan ayrılmak için pencerenin %25 dışına çıkmak gerekir, böylece sınırdaki gezgin yüzünden etki
   yanıp sönmez. Yalnızca canlı oyunda geçerlidir, çevrimdışı ilerlemeye eklenmez. Sürüm notunda yalnızca ipucu verilir.
 - **Canlı mesafeler**: Her oyuncu bildirimde hızını da (`spd`, m/sn) gönderir. İki bildirim arasında diğer gezginlerin
@@ -158,6 +173,8 @@ npx wrangler dev   # http://localhost:8787
   At dörtnal (kanter) koşar: her bacak yere basar (toynak yerde kalır) ve havada katlanıp öne gelir; ön dizler öne, arka diz
   eklemleri geriye bükülür. Gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele telleri ve kuyruk rüzgârda
   dalgalanır, kulak ara sıra seğirir. Binici atı biraz gecikmeyle izler, dizgin başa uzanır; toynaklar yere vurdukça toz kalkar.
+  Bisiklette pedallar krank kollarıyla aynakol dişlisine bağlı döner (dişliden arka göbeğe zincir uzanır), ayaklar pedallara basar;
+  binicinin omuzları ve başı her pedal vuruşunda hafifçe iner ve yana salınır, sepetteki çiçekler sallanır.
   Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
@@ -201,7 +218,9 @@ npx wrangler dev   # http://localhost:8787
   yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
   *Kâşif* kıyafeti açılır. Sürüm notunda yalnızca ipucu verilir.
 - **Eve Dönüş ve Hatıralar**: Yolculuk 100.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin; bu eşik her eve dönüşte
-  1,5 katına çıkar (150.000 km, 225.000 km…). Eski kayıtlarda "eve dönüş hazır" durumu yeni eşiğe göre yeniden hesaplanır. Kredi, araçlar,
+  3 katına çıkar (300.000 km, 900.000 km…). Hatıraların verdiği hız yolculukları kısaltmasın diye büyüme 3 kat
+  seçildi (`tests/sim_trips.js`): ikinci yolculuk birincisinden biraz kısa sürer, sonrakilerin her biri %10–15 uzar ve oyuncu araç zincirinde
+  daha ileri gider (1,5 katta yolculuklar 6,8 saatten 1,7 saate iniyordu). Eski kayıtlarda "eve dönüş hazır" durumu yeni eşiğe göre yeniden hesaplanır. Kredi, araçlar,
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.

@@ -96,7 +96,7 @@ IT.addLang('tr', {
     'name.btn': "Yola çık",
     'name.save': "Kaydet",
     'toast.named': "Yolcular listesinde artık <b>{name}</b> adıyla görünüyorsun.",
-    'tr.lead': "Son 24 saatte yolda olan gezginler, bu yolculukta gittikleri yola göre sıralı. Şu an yolda olanlar sahnede de yanında yolculuk eder; birine dokunup el sallayabilirsin.",
+    'tr.lead': "Son 24 saatte yolda olan gezginler: şu an yolda olanlar başta, sonra diğerleri; her grup bu yolculukta gittikleri yola göre sıralı. Şu an yolda olanlar sahnede de yanında yolculuk eder; birine dokunup el sallayabilirsin.",
     'tr.online': "Şu an yolda",
     'tr.total': "Son 24 saatte",
     'tr.you': "sen",
@@ -318,5 +318,8 @@ IT.addLang('tr', {
     "route.clover.perk": "Şanslı adımlar iki kat sık.",
     // Fener Yolu (v1.28)
     "route.lighthouse.name": "Fener Yolu", "route.lighthouse.perk": "Duraklarda beş kat ödül.",
+    // Yakınlaştırma (v1.30)
+    "zoom.label": "Yakınlaştırma", "zoom.in": "Yakınlaştır", "zoom.out": "Uzaklaştır",
+    "tr.earlier": "Daha önce yoldaydı",
   },
 });

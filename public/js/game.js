@@ -36,6 +36,8 @@
   // cycle: gün döngüsü, sahne sayfa temasından bağımsız olarak bölgenin mevsimine göre gündüz/gece yaşar
   const SKIES = ['auto', 'day', 'night', 'cycle'];
   const UNITS = ['auto', 'metric', 'imperial'];
+  // Sahne yakınlaştırma seviyeleri (1 = varsayılan)
+  const ZOOMS = [0.8, 1, 1.25, 1.6];
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
@@ -64,7 +66,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto', others: true }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto', others: true, zoom: 1 }, intro: false,
       // Yolcular listesindeki kimlik: id herkese kapalı, key yalnızca bu tarayıcıda (sunucu özetini saklar)
       player: { id: IT.newId(), key: IT.newKey(), name: '' },
     };
@@ -136,6 +138,7 @@
     if (!SKIES.includes(s.settings.sky)) s.settings.sky = 'auto';
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
+    if (!ZOOMS.includes(s.settings.zoom)) s.settings.zoom = 1;
     if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
     if (!['auto', 'light', 'dark'].includes(s.settings.page)) s.settings.page = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
@@ -1037,6 +1040,19 @@
     btn.querySelector('.ico-moon').toggleAttribute('hidden', !night);
   }
 
+  // Yakınlaştırma: düğmeler, fare tekerleği (sahnenin üstünde) ve + / − tuşları
+  function zoomBy(dir) {
+    const i = ZOOMS.indexOf(S.settings.zoom), j = clamp(i + dir, 0, ZOOMS.length - 1);
+    if (j === i) { Sound.deny(); return; }
+    S.settings.zoom = ZOOMS[j]; scene.setZoom(ZOOMS[j]); Sound.unlock(); Sound.zoom(dir); syncZoom(); save();
+  }
+  function syncZoom() {
+    const i = ZOOMS.indexOf(S.settings.zoom);
+    $('#btnZoomIn').disabled = i >= ZOOMS.length - 1; $('#btnZoomOut').disabled = i <= 0;
+    $('#zoomCtl').dataset.zoom = String(i);
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
   function syncSoundBtn() {
     const on = S.settings.sfx || S.settings.music;
     const btn = $('#btnSound');
@@ -1153,8 +1169,8 @@
       .map(p => ({ p, diff: IT.Online.liveDist(p) - S.distance, talk: talking(p) }))
       .sort((a, b) => a.talk - b.talk || Math.abs(a.diff) - Math.abs(b.diff))
       .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
-        // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz
-        ahead: diff > 0, diff, sub: Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff)) }));
+        // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz; kervandaki gezginin etiketinde 🐫 durur
+        ahead: diff > 0, diff, sub: (caravan.has(p.pub) ? '🐫 ' : '') + (Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff))) }));
   }
   /* ---------- Hazır mesajlar ---------- */
   // Mesaj seçici açıkken sahneye dokunmak onu kapatır; o dokunuş adım sayılmaz
@@ -1252,12 +1268,17 @@
     if (!d) body = `<p class="tr-note">${t(O.status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
     else {
       // yoldakilerin mesafesi iki bildirim arasında da akar; sıra buna göre yeniden kurulur
-      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? S.distance : O.liveDist(p) })).sort((a, b) => b.dist - a.dist);
+      // önce şu an yolda olanlar (sen dahil), sonra diğerleri; her grup tahmini mesafeye göre, aralarında ince bir ayırıcı
+      const on = p => (p.online || p.me ? 1 : 0);
+      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? S.distance : O.liveDist(p) })).sort((a, b) => on(b) - on(a) || b.dist - a.dist);
       live.forEach((p, i) => { p.rank = i + 1; });
-      const list = live.map(row).join('');
+      // ilk 50'de olmayan kendi satırın yoldakilerin sonuna (sunucunun verdiği sırayla) eklenir
       const meOut = d.me && !live.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(d.me)}` : '';
+      const split = live.findIndex(p => !on(p)), cut = split < 0 ? live.length : split;
+      const sep = cut < live.length && (cut > 0 || meOut) ? `<li class="tr-sep"><span>${t('tr.earlier')}</span></li>` : '';
+      const list = live.slice(0, cut).map(row).join('') + meOut + sep + live.slice(cut).map(row).join('');
       body = `${O.status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
-        ${list || meOut ? `<ol class="tr-list">${list}${meOut}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
+        ${list ? `<ol class="tr-list">${list}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
     }
     pane.innerHTML = `<div class="garage-top"><p class="tag">${t('tr.lead')}</p></div>
       <dl class="garage-sum">
@@ -1495,6 +1516,7 @@
     if (window.MutationObserver) new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     scene.setBiome(IT.regionAt(S.regionIdx).biome, true);
     scene.setVehicle(S.active, true);
+    scene.setZoom(S.settings.zoom, true); syncZoom();
     scene.keepOk = id => !S.keeps[id];
     scene.signText = () => {
       const n = IT.regionAt(S.regionIdx + 1);
@@ -1511,7 +1533,7 @@
       if (e.target.closest('button, a, .chat-pop')) return;
       if (chatJustClosed()) return;
       const r = scene.canvas.getBoundingClientRect();
-      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
@@ -1580,6 +1602,19 @@
     $('#btnPhoto').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();
       takePostcard();
+    });
+    for (const [sel, dir] of [['#btnZoomIn', 1], ['#btnZoomOut', -1]]) $(sel).addEventListener('click', e => { if (e.detail > 0) e.currentTarget.blur(); zoomBy(dir); });
+    let wheelAt = 0;
+    stage.addEventListener('wheel', e => {
+      if (e.target !== scene.canvas || Math.abs(e.deltaY) < 4) return;
+      e.preventDefault();
+      if (performance.now() - wheelAt < 280) return; // bir tekerlek hareketi tek kademe
+      wheelAt = performance.now(); zoomBy(e.deltaY < 0 ? 1 : -1);
+    }, { passive: false });
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey || e.metaKey || e.altKey || !$('#modal').hidden) return;
+      const tg = e.target; if (tg && tg.closest && tg.closest('input, select, textarea')) return;
+      if (e.key === '+' || e.key === '=') zoomBy(1); else if (e.key === '-' || e.key === '_') zoomBy(-1);
     });
     $('#btnSky').addEventListener('click', e => {
       if (e.detail > 0) e.currentTarget.blur();

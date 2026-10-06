@@ -1,13 +1,15 @@
-// At animasyonu: sahneden art arda kareler alıp tek bir film şeridinde birleştirir (dörtnal, baş sallanışı, yele, toz).
-// Düz at (Sv. 0) ve tüm süsleriyle at (Sv. 100), gündüz ve gece. Çıktı: out/horse_strip_*.png
+// Araç animasyonu film şeridi: sahneden art arda kareler alıp tek görüntüde birleştirir.
+// Kullanım: node horse.js [araç]   (varsayılan: horse). Düz (Sv. 0) ve tüm süsleriyle (Sv. 100), gündüz ve gece.
+// Çıktı: out/<araç>_strip_*.png
 const { chromium } = require('./lib/pw');
+const VEH = process.argv[2] || 'horse';
 (async () => {
   const b = await chromium.launch(); const errs = [];
   for (const [name, lvl, scheme] of [['plain_day', 0, 'light'], ['gold_night', 100, 'dark']]) {
     const p = await b.newPage({ locale: 'tr-TR', viewport: { width: 900, height: 700 }, colorScheme: scheme, deviceScaleFactor: 2 });
     p.on('pageerror', e => errs.push(name + ': ' + e.message));
-    await p.addInitScript(l => { localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50,
-      owned: { walk: 1, skates: 1, board: 1, bike: 1, horse: 1 }, levels: { horse: l }, active: 'horse' })); }, lvl);
+    await p.addInitScript(([l, v]) => { localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50,
+      owned: { walk: 1, skates: 1, board: 1, bike: 1, horse: 1, [v]: 1 }, levels: { [v]: l }, active: v })); }, [lvl, VEH]);
     await p.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); });
     await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1500);
     // 10 kare, ~60 ms arayla: yolcunun çevresi büyük bir tuvale yan yana kopyalanır
@@ -20,7 +22,7 @@ const { chromium } = require('./lib/pw');
       Object.assign(out.style, { position: 'fixed', left: '0', top: '0', width: (w * 5 / dpr) + 'px', height: (h * 2 / dpr) + 'px', zIndex: 9999, background: '#000' });
       document.body.appendChild(out);
     });
-    await p.locator('#__strip').screenshot({ path: `${process.env.SP}/horse_strip_${name}.png` });
+    await p.locator('#__strip').screenshot({ path: `${process.env.SP}/${VEH}_strip_${name}.png` });
     // toz bulutları
     const dust = await p.evaluate(async () => { let n = 0; for (let i = 0; i < 20; i++) { await new Promise(r => setTimeout(r, 50)); n = Math.max(n, window.__sc.parts.filter(x => x.type === 'dust').length); } return n; });
     console.log(name, '| toz parçacığı (en çok):', dust);

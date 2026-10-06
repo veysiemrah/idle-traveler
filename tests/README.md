@@ -40,9 +40,9 @@ ekler (`node -r tests/pw_name.js …`); kaydında gezgin adı yoksa "Test" adı 
 
 | Grup | Betikler |
 | --- | --- |
-| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj: ipucusuz kartlar, Sv. eşikleri), `keeps` (yadigârlar), `looks200` (Sv. 150/200 görünümleri, Fener Yolu), `update` (yeni sürümde kendiliğinden yenilenme), `i18n`, `fuzz` |
+| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj: ipucusuz kartlar, Sv. eşikleri), `keeps` (yadigârlar), `looks200` (Sv. 150/200 görünümleri, Fener Yolu), `zoom` (sahne yakınlaştırma), `update` (yeni sürümde kendiliğinden yenilenme), `i18n`, `fuzz` |
 | Çok oyunculu (8787) | `mp` (ad, Yolcular), `mp_off` (sunucusuz), `chat` (hazır mesajlar), `wave` (el sallama), `caravan` (Kervan, canlı mesafe), `trains`, `ghosts`, `ghost_tap`, `tabs`, `land` (yatay telefon), `popmodal`, `audit` (gece/koyu tema) |
-| Araçlar | `keys` (sözlükler), `sim_switch` (verimli oyuncu: hangi seviyede araç değiştirir), `sim_tempo` / `sim_static` / `sim_price` (ekonomi), `extent` (araç çizim sınırlarını ölçer), `horse` (at animasyonundan film şeridi), `gull` (kuş kanadı kareleri) |
+| Araçlar | `keys` (sözlükler), `sim_switch` (verimli oyuncu: hangi seviyede araç değiştirir), `sim_tempo` / `sim_static` / `sim_price` (ekonomi), `extent` (araç çizim sınırlarını ölçer), `horse` (araç animasyonundan film şeridi: `node tests/horse.js bike`), `sim_trips` (art arda yolculukların süresi), `sim_game` (bütün olaylarla gerçek tempo: `node tests/sim_game.js '{"profile":"lucky","runs":20}'`), `gull` (kuş kanadı kareleri) |
 
 Simülasyon örnekleri:
 

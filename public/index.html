@@ -64,6 +64,15 @@
     <div class="effects" id="effects" aria-live="polite"></div>
     <div class="toasts" id="toasts" aria-live="polite"></div>
 
+    <!-- Yakınlaştırma: konuşma düğmesinin üstünde dikey bir denetim -->
+    <div class="zoom-ctl" id="zoomCtl" role="group" aria-label="Yakınlaştırma" data-i18n-aria="zoom.label">
+      <button class="zoom-btn" id="btnZoomIn" type="button" title="Yakınlaştır" aria-label="Yakınlaştır" data-i18n-title="zoom.in" data-i18n-aria="zoom.in">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></button>
+      <i class="zoom-pips" aria-hidden="true"><b></b><b></b><b></b><b></b></i>
+      <button class="zoom-btn" id="btnZoomOut" type="button" title="Uzaklaştır" aria-label="Uzaklaştır" data-i18n-title="zoom.out" data-i18n-aria="zoom.out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+    </div>
+
     <!-- Hazır mesajlar: diğer gezginlere seslen, balon olarak başının üstünde görünür -->
     <button class="chat-btn" id="btnChat" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="chatPop"
       title="Yoldaşlara seslen" aria-label="Yoldaşlara seslen" data-i18n-title="chat.btn" data-i18n-aria="chat.btn">

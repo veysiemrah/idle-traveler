@@ -261,19 +261,26 @@
     ctx.fillStyle = '#c7ccd8'; circle(ctx, x, y, 2 * k);
   }
 
+  // Bisiklet: pedallar aynakol dişlisine bağlı krank kollarında döner, zincir arka göbeğe uzanır;
+  // binicinin omuzları ve başı her pedal vuruşunda hafifçe sallanır.
   function drawBike(ctx, x, y, k, st) {
     const r = 14 * k, wy = y - r;
     const rx = x - 22 * k, fx = x + 22 * k;
     const bb = [x - 2 * k, y - 12 * k], seat = [x - 8 * k, y - 35 * k], headT = [x + 14 * k, y - 33 * k], bar = [x + 15 * k, y - 40 * k];
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    // arka bacak
-    const hip = [x - 8 * k, y - 39 * k], sh = [x + 6 * k, y - 62 * k];
+    const T = st.tier || 0, frame = T >= 4 ? GOLD : P.teal, rim = T >= 2 ? '#ffd56b' : undefined, metal = T >= 4 ? GOLD : '#4a5060';
+    // binici: kalça eyerde sabit, omuzlar pedal vuruşuyla (turda iki kez) hafifçe iner, yana salınır
+    const push = Math.abs(Math.sin(st.phase)), sway = Math.sin(st.phase) * 0.9 * k;
+    const hip = [x - 8 * k, y - 39 * k], sh = [x + 6 * k + sway, y - 62 * k + push * 1.2 * k];
     const cr = 6.5 * k;
     const pedal = q => [bb[0] + Math.cos(q) * cr, bb[1] + Math.sin(q) * cr];
     const p1 = pedal(st.phase), p2 = pedal(st.phase + Math.PI);
+    // pedal: krank ucunda yatay duran küçük blok (ayakkabının altında)
+    const pedalBlock = p => { ctx.fillStyle = '#2b2f3a'; rrect(ctx, p[0] - 3.4 * k, p[1] - 0.9 * k, 6.8 * k, 1.9 * k, 0.9 * k); ctx.fill(); };
+    // uzak taraftaki krank ve bacak çerçevenin arkasında kalır
+    line(ctx, [bb[0], bb[1], p2[0], p2[1]], 2 * k, '#3a3f4c'); pedalBlock(p2);
     const kn2 = ik(hip[0], hip[1], p2[0], p2[1], 16 * k, 16 * k, 1);
-    line(ctx, [hip[0], hip[1], kn2[0], kn2[1], p2[0], p2[1]], 7 * k, P.pantsDark); shoe(ctx, p2[0] - 2 * k, p2[1] + 2 * k, k);
-    const T = st.tier || 0, frame = T >= 4 ? GOLD : P.teal, rim = T >= 2 ? '#ffd56b' : undefined;
+    line(ctx, [hip[0], hip[1], kn2[0], kn2[1], p2[0], p2[1]], 7 * k, P.pantsDark); shoe(ctx, p2[0] - 2 * k, p2[1] + 1 * k, k);
     if (T >= 1) pennant(ctx, rx - 6 * k, wy - 4 * k, k, st.t, 46 * k, P.hat);
     wheel(ctx, rx, wy, r, st.wheel, k, undefined, rim); wheel(ctx, fx, wy, r, st.wheel, k, undefined, rim);
     if (T >= 3) { // heybe
@@ -283,16 +290,26 @@
     line(ctx, [rx, wy, bb[0], bb[1], headT[0], headT[1], seat[0], seat[1], rx, wy], 3 * k, frame);
     line(ctx, [seat[0], seat[1], bb[0], bb[1]], 3 * k, frame);
     line(ctx, [headT[0], headT[1], fx, wy], 3 * k, frame);
+    // zincir (aynakoldan arka göbeğe iki kol) ve dişli: dişler pedalla birlikte döner
+    const ring = 4.6 * k;
+    ctx.strokeStyle = 'rgba(58,63,76,0.85)'; ctx.lineWidth = 1.1 * k; ctx.beginPath();
+    ctx.moveTo(bb[0], bb[1] - ring); ctx.lineTo(rx, wy - 2.2 * k); ctx.moveTo(bb[0], bb[1] + ring); ctx.lineTo(rx, wy + 2.2 * k); ctx.stroke();
+    ctx.fillStyle = metal; circle(ctx, bb[0], bb[1], ring);
+    ctx.fillStyle = T >= 4 ? GOLD_HI : '#9aa1b2';
+    for (let i = 0; i < 8; i++) { const a = st.phase + i * Math.PI / 4; circle(ctx, bb[0] + Math.cos(a) * ring, bb[1] + Math.sin(a) * ring, 0.8 * k); }
+    ctx.fillStyle = '#2b2f3a'; circle(ctx, bb[0], bb[1], 1.6 * k);
     line(ctx, [headT[0], headT[1], bar[0], bar[1], bar[0] + 5 * k, bar[1] + 1 * k], 2.4 * k, P.dark);
     ctx.fillStyle = P.dark; rrect(ctx, seat[0] - 6 * k, seat[1] - 3 * k, 11 * k, 3.6 * k, 1.8 * k); ctx.fill();
     // basket
     ctx.fillStyle = '#c99a5b'; rrect(ctx, fx - 4 * k, y - 46 * k, 12 * k, 8 * k, 2 * k); ctx.fill();
-    ctx.fillStyle = '#ff9fb4'; circle(ctx, fx, y - 47 * k, 2.4 * k); ctx.fillStyle = '#ffd25e'; circle(ctx, fx + 4 * k, y - 48 * k, 2.2 * k);
+    const fb = Math.sin(st.phase * 2) * 0.7 * k;
+    ctx.fillStyle = '#ff9fb4'; circle(ctx, fx + fb, y - 47 * k - push * 0.6 * k, 2.4 * k); ctx.fillStyle = '#ffd25e'; circle(ctx, fx + 4 * k - fb, y - 48 * k - (1 - push) * 0.6 * k, 2.2 * k);
     backpack(ctx, sh[0], sh[1], k, 0.5);
     torso(ctx, hip[0], hip[1], sh[0], sh[1], k);
     head(ctx, sh[0] + 5 * k, sh[1] - 8 * k, k);
+    line(ctx, [bb[0], bb[1], p1[0], p1[1]], 2.4 * k, metal); pedalBlock(p1);
     const kn1 = ik(hip[0], hip[1], p1[0], p1[1], 16 * k, 16 * k, 1);
-    line(ctx, [hip[0], hip[1], kn1[0], kn1[1], p1[0], p1[1]], 7 * k, P.pants); shoe(ctx, p1[0] - 2 * k, p1[1] + 2 * k, k);
+    line(ctx, [hip[0], hip[1], kn1[0], kn1[1], p1[0], p1[1]], 7 * k, P.pants); shoe(ctx, p1[0] - 2 * k, p1[1] + 1 * k, k);
     const el = ik(sh[0], sh[1] + 2 * k, bar[0] + 3 * k, bar[1], 11 * k, 11 * k, -1);
     line(ctx, [sh[0], sh[1] + 2 * k, el[0], el[1], bar[0] + 3 * k, bar[1]], 5.6 * k, P.jacket);
     ctx.fillStyle = P.skin; circle(ctx, bar[0] + 3 * k, bar[1], 2.6 * k);
@@ -1092,6 +1109,9 @@
       this.nextBird = 8; this.nextBalloon = 2; this.signEvery = 2400;
       this.rain = 0; this.rainTarget = 0; this.rainbow = 0; this.rainbowTarget = 0;
       this.signText = () => null;
+      // Yakınlaştırma: sahne gerçek boyutun 1/zoom katı bir "sanal ekrana" çizilip ölçeklenir. Gökyüzü, dağlar ve yolun yeri
+      // ekranda sabit kalır; yakınlaşınca yolcu ve çevresi büyür, uzaklaşınca daha geniş bir manzara görünür. Geçiş yumuşaktır.
+      this.zoom = 1; this.zoomTarget = 1;
       this.resize();
       for (let i = 0; i < 7; i++) this.spawnCloud(Math.random() * this.W);
       this.fill(true);
@@ -1099,13 +1119,22 @@
 
     resize() {
       const r = this.canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.W = Math.max(1, r.width); this.H = Math.max(1, r.height);
-      this.canvas.width = Math.round(this.W * dpr); this.canvas.height = Math.round(this.H * dpr);
-      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      this.k = clamp(Math.min(this.H / 640, this.W / 560), 0.55, 1.35);
-      this.travelerX = Math.round(this.W * (this.W < 640 ? 0.36 : 0.32));
+      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.RW = Math.max(1, r.width); this.RH = Math.max(1, r.height);
+      this.canvas.width = Math.round(this.RW * this.dpr); this.canvas.height = Math.round(this.RH * this.dpr);
+      // ölçek gerçek boyuttan gelir: sanal ekranda aynı kalır, ekranda zoom katı büyür
+      this.k = clamp(Math.min(this.RH / 640, this.RW / 560), 0.55, 1.35);
+      this.applyZoom();
     }
+    applyZoom() {
+      const z = this.zoom;
+      this.W = this.RW / z; this.H = this.RH / z;
+      this.ctx.setTransform(this.dpr * z, 0, 0, this.dpr * z, 0, 0);
+      this.travelerX = Math.round(this.W * (this.RW < 640 ? 0.36 : 0.32));
+    }
+    setZoom(z, instant) { this.zoomTarget = z; if (instant) { this.zoom = z; this.applyZoom(); } }
+    // Yazılar (isim etiketleri, balonlar, uçan yazılar) uzaklaşınca küçülmesin: ekranda en az normal boyutta kalır
+    tz() { return 1 / Math.min(1, this.zoom); }
 
     setBiome(id, instant) {
       if (id === this.biome && !instant) return;
@@ -1377,7 +1406,7 @@
     }
     // Etiketler soldan sağa yerleşir; üst üste binen etiket yumuşakça yukarı kalkar ve ince bir çizgiyle gezgine bağlanır
     drawTags(ctx, night) {
-      const k = Math.max(this.k, 0.85), h = 30 * k, gap = 4 * k, placed = [];
+      const k = Math.max(this.k, 0.85) * this.tz(), h = 30 * k, gap = 4 * k, placed = [];
       for (const [x, y, o, a, g] of (this.tags || []).slice().sort((p, q) => p[0] - q[0])) {
         const w = this.tagWidth(ctx, o), bx = clamp(x - w / 2, 4, this.W - w - 4);
         let top = y - h;
@@ -1392,7 +1421,7 @@
       }
     }
     tagWidth(ctx, o) {
-      const k = Math.max(this.k, 0.85);
+      const k = Math.max(this.k, 0.85) * this.tz();
       ctx.font = `700 ${Math.round(11 * k)}px "Figtree", system-ui, sans-serif`;
       const w1 = ctx.measureText(o.name).width;
       ctx.font = `600 ${Math.round(9.5 * k)}px "Figtree", system-ui, sans-serif`;
@@ -1402,7 +1431,7 @@
     // Gündüz beyaz, gece lacivert bir etiket; renkler gecenin derinliğine göre yumuşakça geçer
     // y: okun gösterdiği nokta; lift: komşu etikete değmemek için kalkma payı
     drawTag(ctx, x, y, o, a, night, bx, w, lift) {
-      const k = Math.max(this.k, 0.85), n = clamp(night || 0, 0, 1), h = 30 * k;
+      const k = Math.max(this.k, 0.85) * this.tz(), n = clamp(night || 0, 0, 1), h = 30 * k;
       const bg = css(mixc(hex('#ffffff'), hex('#262a48'), n), 0.86);
       ctx.save();
       ctx.globalAlpha = a * 0.92;
@@ -1433,14 +1462,14 @@
       for (const g of this.ghosts.values()) {
         const m = this.msgs.get(g.o.pub);
         if (!m || g.alpha < 0.3) continue;
-        const p = this.ghostPos(g), kk = Math.max(k, 0.85);
+        const p = this.ghostPos(g), kk = Math.max(k, 0.85) * this.tz();
         // isim etiketinin üstünde (etiket yukarı kalktıysa o da kalkar)
         this.drawBubble(ctx, p.x, p.top - 6 * k - 30 * kk - (g.lift || 0) - 8 * k, m, g.alpha);
       }
     }
     // Balon küçük bir sıçrayışla açılır, hafifçe yükselir ve sonunda solar; kuyruğu konuşanı gösterir
     drawBubble(ctx, x, y, m, alpha) {
-      const k = Math.max(this.k, 0.85), t = m.t;
+      const k = Math.max(this.k, 0.85) * this.tz(), t = m.t;
       const pop = t < 0.3 ? 1 + 2.7 * Math.pow(t / 0.3 - 1, 3) + 1.7 * Math.pow(t / 0.3 - 1, 2) : 1; // easeOutBack
       const a = (alpha === undefined ? 1 : alpha) * clamp(t / 0.15, 0, 1) * clamp((m.life - t) / 0.7, 0, 1);
       if (a <= 0) return;
@@ -1498,6 +1527,11 @@
     /* --- Güncelleme --- */
     update(dt, speedMs, night) {
       this.t += dt;
+      if (this.zoom !== this.zoomTarget) {
+        this.zoom += (this.zoomTarget - this.zoom) * Math.min(1, dt * (this.reduced ? 30 : 7));
+        if (Math.abs(this.zoomTarget - this.zoom) < 0.002) this.zoom = this.zoomTarget;
+        this.applyZoom();
+      }
       const target = Math.min(900, 34 * Math.log2(1 + 2 * Math.max(0, speedMs)));
       this.vs += (target - this.vs) * Math.min(1, dt * 2.5);
       this.alt += (this.altTarget - this.alt) * Math.min(1, dt * 0.9);
@@ -2333,7 +2367,7 @@
         const u = f.life / f.max;
         const y = f.y - u * (f.big ? 60 : 44) * this.k;
         const a = u < 0.15 ? u / 0.15 : 1 - Math.max(0, (u - 0.55) / 0.45);
-        const size = Math.round((f.big ? 22 : 15) * Math.max(this.k, 0.8));
+        const size = Math.round((f.big ? 22 : 15) * Math.max(this.k, 0.8) * this.tz());
         ctx.font = `800 ${size}px "Baloo 2", "Figtree", system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.lineWidth = 4; ctx.strokeStyle = `rgba(30,33,64,${(0.55 * a).toFixed(3)})`; ctx.lineJoin = 'round';

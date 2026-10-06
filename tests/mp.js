@@ -47,6 +47,13 @@ const BASE = process.argv[2] || 'http://127.0.0.1:8787';
   await a.click('#modalBtn'); await a.waitForTimeout(200);
   console.log('ad değişti:', await rows(a));
   await a.screenshot({ path: process.env.SP + '/mp_list1280.png' });
+  // yoldakiler başta: ayırıcının üstünde yalnızca yolda olanlar, altında yalnızca yolda olmayanlar; sıra numaraları kesintisiz
+  const order = await a.$$eval('#pane-travelers .tr-list > li', l => l.map(x => x.classList.contains('tr-sep') ? 'SEP' : x.classList.contains('tr-gap') ? 'GAP'
+    : (x.querySelector('.tr-dot.on') ? 'on' : 'off') + ':' + x.querySelector('.tr-rank').textContent));
+  const sep = order.indexOf('SEP'), above = order.slice(0, sep < 0 ? order.length : sep), below = sep < 0 ? [] : order.slice(sep + 1);
+  console.log('sıralama: yoldaki', above.filter(x => x.startsWith('on')).length, '| ayırıcı', sep >= 0, '| üstte yolda olmayan', above.filter(x => x.startsWith('off')).length,
+    '| altta yoldaki', below.filter(x => x.startsWith('on')).length, '| numaralar sıralı mı', order.filter(x => x.includes(':')).every((x, i) => +x.split(':')[1] === i + 1));
+  if (sep >= 0) { await a.$eval('#pane-travelers .tr-sep', e => e.scrollIntoView({ block: 'center' })); await a.waitForTimeout(150); await a.screenshot({ path: process.env.SP + '/mp_list_sep.png', clip: { x: 890, y: 55, width: 390, height: 600 } }); }
   // 4) dar ekran
   const n = await page({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }, Object.assign({}, seed, { player: undefined }));
   await n.screenshot({ path: process.env.SP + '/mp_name320.png' });
