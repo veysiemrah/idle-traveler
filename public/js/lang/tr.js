@@ -316,5 +316,7 @@ IT.addLang('tr', {
     "badge.keepsake.desc": { one: "{v} yadigâr bul.", other: "{v} yadigâr bul." },
     "route.clover.name": "Yonca Yolu",
     "route.clover.perk": "Şanslı adımlar iki kat sık.",
+    // Fener Yolu (v1.28)
+    "route.lighthouse.name": "Fener Yolu", "route.lighthouse.perk": "Duraklarda beş kat ödül.",
   },
 });

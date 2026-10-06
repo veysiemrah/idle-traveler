@@ -307,5 +307,7 @@ IT.addLang('es', {
     "badge.keepsake.desc": { one: "Encuentra {v} reliquia.", other: "Encuentra {v} reliquias." },
     "route.clover.name": "Camino del Trébol",
     "route.clover.perk": "Los pasos de la suerte llegan el doble de a menudo.",
+    // Fener Yolu (v1.28)
+    "route.lighthouse.name": "Camino del Faro", "route.lighthouse.perk": "Las paradas del camino dan cinco veces más.",
   },
 });

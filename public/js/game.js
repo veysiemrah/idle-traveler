@@ -250,7 +250,8 @@
     const ms = [];
     while (S.msIdx < MILESTONES.length && S.distance >= MILESTONES[S.msIdx].at) {
       const m = MILESTONES[S.msIdx];
-      const bonus = Math.max(15, incomeRate() * 15);
+      // Fener Yolu'nda duraklar beş kat ödül verir
+      const bonus = Math.max(15, incomeRate() * 15) * (perk() === 'milestone' ? 5 : 1);
       grant(bonus);
       ms.push({ m, bonus });
       S.msIdx++;
@@ -1239,7 +1240,7 @@
       const me = p.me, veh = VEH[me ? S.active : p.veh] || VEH.walk, trip = me ? S.trips + 1 : p.trip;
       return `<li class="tr-row${me ? ' me' : ''}">
         <span class="tr-rank">${fmtNum(p.rank)}</span>
-        <canvas class="tr-icon" data-icon="${veh.id}" width="72" height="56" aria-hidden="true"></canvas>
+        <canvas class="tr-icon" data-icon="${veh.id}" data-tier="${me ? Econ.lookTier(S.levels[S.active]) : Math.max(0, Math.min(Econ.looks.length, p.tier | 0))}" width="72" height="56" aria-hidden="true"></canvas>
         <div class="tr-main">
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
           <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
@@ -1265,7 +1266,7 @@
       </dl>
       ${S.player.name ? '' : `<div class="card tr-ask"><p class="tag">${t('tr.noName')}</p><button class="buy" data-act="nameAsk"><span>${t('tr.pick')}</span></button></div>`}
       ${body}`;
-    pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, 0));
+    pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
     trRenderedAt = Date.now();
   }
   let trRenderedAt = 0;

@@ -7,7 +7,7 @@
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail'];
-const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover'];
+const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer'];
 const PALS = ['', 'dog', 'bird', 'cat'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
@@ -89,7 +89,7 @@ async function hello(request, env) {
   if (!Number.isInteger(trip) || trip < 1 || trip > 1e5 + 1) return json({ error: 'bad-trip' }, 400);
   const veh = VEHICLES.includes(b.veh) ? b.veh : 'walk';
   const route = ROUTES.includes(b.route) ? b.route : 'anatolia';
-  const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 4 ? b.tier : 0;
+  const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 6 ? b.tier : 0;
   const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
   const pal = PALS.includes(b.pal) ? b.pal : '';
   // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder

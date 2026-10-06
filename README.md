@@ -143,14 +143,21 @@ npx wrangler dev   # http://localhost:8787
   Yatay telefonlarda (alçak sahne) mesaj seçici beş sütunlu iki sıraya geçer, böylece taşmaz.
   Az önce konuşan gezgin sahnede öncelikle gösterilir; Yolcular listesinde son bir dakikanın mesajı adının altında yazar.
   Yolda başka gezgin varken ve sekme açıkken mesajlar 6 saniyede bir yoklanır; yalnızken hiç istek atılmaz.
-- **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
-  eşikler) her araç yeni bir parça kazanır; 100. seviyede altın süsler ve parıltı gelir. Örnekler: yürüyüşte sopa, atkı ve
+- **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50, 100, 150 ve 200'de her araç yeni
+  bir görünüm kazanır (25'ten sonrakiler aynı zamanda hızın ikiye katlandığı eşikler); 100. seviyede altın süsler ve parıltı gelir.
+  150. seviyede aracın arkasından kıyafet renklerinde yıldız tozu izi akar, 200. seviyede buna dalgalanan bir gökkuşağı kuyruğu
+  eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). Garaj simgelerinde bu aşamalar köşelerdeki altın
+  yıldızlar ve aracın arkasındaki minik gökkuşağı yayıyla görünür; diğer gezginler ve Yolcular listesindeki simgeler de bu
+  görünümle çizilir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
   eyer örtüsü, yeleye örülü kurdele ve heybe; motosiklette rüzgâr camı, şerit ve çanta kutusu; arabada yarış şeridi, altın jant
   ve sörf tahtası; karavanda çiçek desenleri, arkada bisiklet, güneş paneli ve ışık zinciri; trende bayrak, altın şerit ve
   dördüncü vagon; balonda flamalar, renkli zarf ve kum torbaları; uçakta kuyruk şeridi, kanatçık ve pankart; jette burun ucu,
   kanat şeridi ve art yakıcı; rokette şeritler, yan iticiler ve anten; güneş yelkeninde yıldız arması, yanardöner kenar ve
   ikinci yelken. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
+  At dörtnal (kanter) koşar: her bacak yere basar (toynak yerde kalır) ve havada katlanıp öne gelir; ön dizler öne, arka diz
+  eklemleri geriye bükülür. Gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele telleri ve kuyruk rüzgârda
+  dalgalanır, kulak ara sıra seğirir. Binici atı biraz gecikmeyle izler, dizgin başa uzanır; toynaklar yere vurdukça toz kalkar.
   Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
@@ -208,6 +215,7 @@ npx wrangler dev   # http://localhost:8787
   - **Kervansaray Yolu** (5.): çöl, kanyon ve peri bacalarıyla başlar; Kervan iki kat sayılır (yakındaki her gezgin +%20 hız).
   - **Pusula Yolu** (6.): kıyıdan kanyona ve çöle; hazine haritasının parçaları iki kat sık düşer.
   - **Yonca Yolu** (7.): lale, çay bahçeleri ve çam ormanıyla başlar; şanslı adımlar iki kat sık.
+  - **Fener Yolu** (8.): zeytinlikler ve kıyıyla başlar; duraklar (gerçek dünya mesafeleri) beş kat ödül verir.
   Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
