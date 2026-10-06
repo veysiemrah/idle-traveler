@@ -15,6 +15,20 @@ python3 -m http.server 8000 -d public
 # http://localhost:8000
 ```
 
+Çok oyunculu özelliklerle (Yolcular, mesajlar, Kervan) birlikte yerelde çalıştırmak için Worker'ı yerel bir D1 kopyasıyla başlat:
+
+```bash
+cd tests && npm install && cd ..                                   # wrangler ve playwright (bir kez)
+npx --prefix tests wrangler d1 migrations apply idle-traveler --local
+npx --prefix tests wrangler dev                                    # http://localhost:8787
+```
+
+## Testler
+
+`tests/` klasöründe oyunu gerçek bir tarayıcıda açıp tıklayan Playwright testleri ve ekonomi simülasyonları var.
+Kurulum ve kullanım için `tests/README.md` dosyasına bak. Kısaca: `tests/run-all.sh` tam regresyon setini,
+`tests/run-online.sh` çok oyunculu testleri çalıştırır; `node tests/keys.js` beş dil sözlüğünü karşılaştırır.
+
 ## Yayın: Cloudflare Workers → idle-traveler.vebaban.com
 
 Site Cloudflare'de, statik varlık sunan bir Worker olarak barınır (`wrangler.jsonc`). Aynı Worker Yolcular API'sini de karşılar.
@@ -247,6 +261,7 @@ Eksik bir anahtar önce İngilizceye, sonra Türkçeye düşer.
 | `src/worker.js` | Cloudflare Worker: statik siteyi sunar, `/api/hello` ve `/api/players` uçlarıyla Yolcular listesini D1'de tutar |
 | `migrations/` | D1 veritabanı şeması (`players` tablosu) |
 | `wrangler.jsonc` | Cloudflare Workers ayarı: Worker kodu, statik varlık klasörü, D1 bağlantısı ve özel alan adı |
+| `tests/` | Playwright testleri, regresyon ve çok oyunculu test çalıştırıcıları, ekonomi simülasyonları |
 
 Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
 

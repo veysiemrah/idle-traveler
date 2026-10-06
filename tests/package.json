@@ -1,0 +1,15 @@
+{
+  "name": "idle-traveler-tests",
+  "private": true,
+  "description": "Idle Traveler için tarayıcı testleri (Playwright) ve ekonomi simülasyonları",
+  "scripts": {
+    "test": "./run-all.sh",
+    "test:online": "./run-online.sh",
+    "keys": "node keys.js",
+    "sim": "node sim_tempo.js '{}' 12"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0",
+    "wrangler": "^4.0.0"
+  }
+}

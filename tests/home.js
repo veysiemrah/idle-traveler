@@ -1,0 +1,30 @@
+const { chromium } = require('./lib/pw');
+(async () => {
+  const b = await chromium.launch(); const errs = [];
+  const p = await b.newPage({ locale: 'tr-TR', viewport: { width: 1280, height: 900 } });
+  p.on('pageerror', e => errs.push(e.message));
+  p.on('console', m => { if (m.type() === 'error' && !/CERT|net::/.test(m.text())) errs.push(m.text()); });
+  await p.addInitScript(() => { if (!localStorage.getItem('seeded')) { localStorage.setItem('seeded', 1);
+    const owned = { walk: true, skates: true, bike: true, moto: true, car: true, train: true };
+    localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), distance: 4e9, credits: 5e9, clicks: 500, gifts: 3,
+      owned, levels: { walk: 5, train: 12 }, active: 'train', regionIdx: 12, msIdx: 13, buffs: { stride: 5, breeze: 5 }, badges: { steps100: 1, fly1: 1 } })); } });
+  await p.goto(require('url').pathToFileURL(require('path').resolve(__dirname, '../public/index.html')).href);
+  await p.waitForTimeout(800);
+  const show = async label => console.log(label.padEnd(14), '| yol', await p.textContent('#hudDist'), '| kredi', await p.textContent('#credits'), '| araç', await p.textContent('#hudVehicle'), '| bölge', await p.textContent('#hudRegion'));
+  await show('önce');
+  await p.click('.tab[data-id="buffs"]');
+  const btn = p.locator('[data-act="home"]');
+  console.log('önizleme:', (await p.locator('.card', { has: btn }).textContent()).replace(/\s+/g, ' ').trim().slice(0, 220));
+  await btn.click(); console.log('1. dokunuş:', (await btn.textContent()).trim());
+  await btn.click(); await p.waitForTimeout(600);
+  console.log('pencere:', await p.isVisible('#modal'), (await p.textContent('#modalBody')).replace(/\s+/g, ' ').trim().slice(0, 200));
+  await p.click('#modalBtn'); await p.waitForTimeout(400);
+  await show('dönüş sonrası');
+  const s = JSON.parse(await p.evaluate(() => localStorage.getItem('idle-traveler-save-v1')));
+  console.log('kayıt: hatıra', s.memories, '| tur', s.trips, '| rozetler', Object.keys(s.badges).join(','), '| adım', s.clicks, '| araçlar', Object.keys(s.owned).join(','), '| güçlendirme', JSON.stringify(s.buffs).slice(0, 60));
+  await p.reload(); await p.waitForTimeout(600);
+  await show('yeniden yükle');
+  await p.click('.tab[data-id="garage"]');
+  console.log('yürüyüş kartı:', (await p.locator('#pane-garage .card').first().textContent()).replace(/\s+/g, ' ').match(/Otomatik [^T]*/)[0]);
+  console.log(errs.join('\n') || 'no errors'); await b.close();
+})();
