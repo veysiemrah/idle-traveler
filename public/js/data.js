@@ -151,6 +151,9 @@
     { id: 'north',    perk: 'stars',     biomes: ['meadow', 'pine', 'autumn', 'tea', 'snow', 'aurora', 'lavender', 'wheat', 'coast', 'olive', 'tulip', 'sakura', 'canyon', 'cappadocia', 'desert'] },
     { id: 'bloom',    perk: 'butterfly', biomes: ['meadow', 'lavender', 'tulip', 'sakura', 'tea', 'olive', 'wheat', 'autumn', 'coast', 'pine', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
     { id: 'silk',     perk: 'gold',      biomes: ['meadow', 'wheat', 'cappadocia', 'canyon', 'desert', 'olive', 'coast', 'tea', 'sakura', 'lavender', 'tulip', 'autumn', 'pine', 'snow', 'aurora'] },
+    // 6. ve 7. yolculuk: kervan etkisi iki kat sayılır / hazine haritası parçaları iki kat sık düşer
+    { id: 'caravan',  perk: 'caravan',   biomes: ['meadow', 'desert', 'canyon', 'cappadocia', 'wheat', 'olive', 'tea', 'coast', 'tulip', 'lavender', 'sakura', 'autumn', 'pine', 'snow', 'aurora'] },
+    { id: 'compass',  perk: 'map',       biomes: ['meadow', 'coast', 'canyon', 'desert', 'cappadocia', 'olive', 'tulip', 'wheat', 'lavender', 'pine', 'autumn', 'tea', 'sakura', 'snow', 'aurora'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });

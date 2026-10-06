@@ -177,8 +177,10 @@
     }
   }
   const caravanN = () => Math.min(CARAVAN_MAX, caravan.size);
+  // Kervansaray Yolu'nda kervan iki kat sayılır
+  const caravanStep = () => CARAVAN_STEP * (perk() === 'caravan' ? 2 : 1);
   function tempMult() {
-    const now = Date.now(), m = { speed: 1 + CARAVAN_STEP * caravanN(), credit: 1, click: 1 };
+    const now = Date.now(), m = { speed: 1 + caravanStep() * caravanN(), credit: 1, click: 1 };
     for (const e of S.effects) if (e.until > now) {
       const em = effMult(GIFT[e.id], e.stack);
       m.speed *= em.speed; m.credit *= em.credit; m.click *= em.click;
@@ -361,7 +363,7 @@
     checkBadges();
   }
   function dropMapPiece(src) {
-    if (S.mapPieces >= MAP_PIECES || Math.random() >= MAP_DROP[src]) return;
+    if (S.mapPieces >= MAP_PIECES || Math.random() >= MAP_DROP[src] * (perk() === 'map' ? 2 : 1)) return;
     S.mapPieces++; uiDirty.journal = true;
     if (S.mapPieces < MAP_PIECES) toast(t('toast.mapPiece', { n: S.mapPieces, m: MAP_PIECES }), 'gold');
     else { toast(t('toast.mapDone'), 'gold'); chestIn = 4; }
@@ -909,7 +911,7 @@
       <p class="eyebrow">${t('intro.eyebrow')}</p>
       <h2>Idle Traveler</h2>
       <p class="lead">${t('intro.lead')}</p>
-      <ul class="intro-list">${[1, 2, 3, 4, 5, 6, 7].map(i => `<li>${t('intro.li' + i)}</li>`).join('')}</ul>
+      <ul class="intro-list">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<li>${t('intro.li' + i)}</li>`).join('')}</ul>
       <label class="intro-lang"><span>${t('j.lang')}</span>${langSelect('introLang')}</label>`;
   }
   let modalRender = null;
@@ -1347,7 +1349,7 @@
       live.add('caravan');
       let el = fxBox.querySelector('[data-fx="caravan"]');
       if (!el) { el = document.createElement('span'); el.className = 'fx fx-caravan'; el.dataset.fx = 'caravan'; fxBox.appendChild(el); }
-      const html = t('ui.caravan', { n: caravanN(), p: fmtPct(CARAVAN_STEP * 100 * caravanN()) });
+      const html = t('ui.caravan', { n: caravanN(), p: fmtPct(caravanStep() * 100 * caravanN()) });
       if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
     }
     for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx)) el.remove();

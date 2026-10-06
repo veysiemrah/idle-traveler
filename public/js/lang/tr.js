@@ -203,6 +203,10 @@ IT.addLang('tr', {
     'route.north.name': 'Kuzey Yolu', 'route.north.perk': 'Kayan yıldızlar iki kat sık.',
     'route.bloom.name': 'Çiçek Yolu', 'route.bloom.perk': 'Altın kelebekler daha sık gelir.',
     'route.silk.name': 'İpek Yolu', 'route.silk.perk': 'Kelebek hediyeleri daha bereketli: etkiler %50 uzun, anında kredi iki katı.',
+    'route.caravan.name': "Kervansaray Yolu",
+    'route.caravan.perk': "Kervanlar iki kat sayılır: yakındaki her gezgin hızını %20 artırır.",
+    'route.compass.name': "Pusula Yolu",
+    'route.compass.perk': "Hazine haritasının parçaları iki kat sık düşer.",
     'homecard.desc': 'Yolculuğunu tamamla ve eve dön. Kredi, araçlar, yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır; rozetler ve istatistikler kalır. Her hatıra sonraki yolculuklarda kalıcı olarak +{p} hız verir.',
     'homecard.mem': 'Hatıraların: <b>{n}</b> · kalıcı hız +{p}.', 'homecard.none': 'Henüz hatıran yok.',
     'homecard.now': 'Şimdi dönersen: {gain} · sıradaki hatıra {next}',
@@ -220,6 +224,7 @@ IT.addLang('tr', {
     'intro.li5': '<b>Rozetler</b> topla. Her rozet kalıcı olarak daha fazla kredi kazandırır.',
     'intro.li6': 'Oyunu kapatsan da yolcun daha yavaş bir tempoda yürümeye devam eder.',
     'intro.li7': 'Uzun bir yolculuktan sonra <b>eve dönebilirsin</b>. Topladığın hatıralar sonraki yolculukları hızlandırır.',
+    'intro.li8': "<b>Yolda yalnız değilsin.</b> O an oynayan gezginler sahnede yanında yolculuk eder; birine dokunup el salla ya da köşedeki balondan seslen.",
     'intro.btn': 'Yola çık',
 
     // Yol defteri

@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.25';
+  IT.VERSION = '1.26';
 
   IT.CHANGELOG = [
+    { v: '1.26', date: '2026-10-06', items: {
+      tr: ['Eve dönüş yolunda iki yeni ufuk belirdi. Haritanın kenarında, henüz adı konmamış yollar seni bekliyor…',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Two new horizons have appeared on the way home. At the edge of the map, roads without names are waiting for you…',
+        'A few small touches along the road.'],
+      de: ['Auf dem Heimweg sind zwei neue Horizonte aufgetaucht. Am Rand der Karte warten Wege, die noch keinen Namen haben …',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['En el camino a casa han aparecido dos nuevos horizontes. Al borde del mapa te esperan caminos que aún no tienen nombre…',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Sur le chemin du retour, deux nouveaux horizons sont apparus. Au bord de la carte, des routes encore sans nom t\'attendent…',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.25', date: '2026-10-06', items: {
       tr: ['Yolda yalnız değilsen yol daha kolay akar… Yakınında başka gezginler olduğunda neler olduğunu bir gör.',
         'Yolda birkaç küçük rötuş.'],
