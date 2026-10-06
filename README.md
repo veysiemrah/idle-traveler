@@ -87,7 +87,8 @@ npx wrangler dev   # http://localhost:8787
   Açgözlü bir oyuncu (saniyede bir dokunuş) motora yaklaşık 54 dakikada, arabaya 4,5 saatte ulaşır; 12 saatte yaklaşık
   80 bin km yol gider (önceden 32 dk, 2,4 saat, 168 bin km).
   Sıradaki aracın kartındaki ipucu önce elindeki aracı Sv. 10'a getirmeyi önerir, o seviyeye gelince yeni araç zamanını haber verir.
-- **Yolcular (çok oyunculu)**: Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
+- **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
+  Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
   son 24 saatte oynayan gezginleri bu yolculukta gittikleri yola göre sıralar. Her satırda ad, bindiği araç,
   kaçıncı yolculukta olduğu, mesafesi ve şu an yolda olup olmadığı görünür. Sekmedeki sayı şu an yolda olanlardır
@@ -118,6 +119,7 @@ npx wrangler dev   # http://localhost:8787
   Seçilen mesaj yolcunun başının üstünde 8 saniyelik bir konuşma balonu olur; diğer oyuncuların sahnesinde de o gezginin
   başında görünür (kısa bir ses ve küçük bir sıçrayışla). Sunucu yalnızca mesajın kimliğini saklar, her oyuncu metni kendi
   dilinde görür; serbest metin yoktur. Mesajlar arasında 5 saniye bekleme vardır (düğmenin çevresinde azalan bir halka).
+  Yatay telefonlarda (alçak sahne) mesaj seçici beş sütunlu iki sıraya geçer, böylece taşmaz.
   Az önce konuşan gezgin sahnede öncelikle gösterilir; Yolcular listesinde son bir dakikanın mesajı adının altında yazar.
   Yolda başka gezgin varken ve sekme açıkken mesajlar 6 saniyede bir yoklanır; yalnızken hiç istek atılmaz.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50 ve 100'de (hızın ikiye katlandığı
@@ -173,6 +175,8 @@ npx wrangler dev   # http://localhost:8787
   - **Kuzey Yolu** (2.): çam ormanı, karlı geçit ve kuzey ışıkları erkenden; kayan yıldızlar iki kat sık.
   - **Çiçek Yolu** (3.): lavanta, lale ve kiraz çiçekleri; altın kelebekler daha sık.
   - **İpek Yolu** (4.): buğday ovası, peri bacaları, kanyon ve çöl; kelebek etkileri %50 uzun, anında kredi iki katı.
+  - **Kervansaray Yolu** (5.): çöl, kanyon ve peri bacalarıyla başlar; Kervan iki kat sayılır (yakındaki her gezgin +%20 hız).
+  - **Pusula Yolu** (6.): kıyıdan kanyona ve çöle; hazine haritasının parçaları iki kat sık düşer.
   Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,

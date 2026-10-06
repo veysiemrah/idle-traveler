@@ -194,6 +194,10 @@ IT.addLang('es', {
     'route.north.name': 'Ruta del norte', 'route.north.perk': 'Estrellas fugaces el doble de a menudo.',
     'route.bloom.name': 'Sendero de las flores', 'route.bloom.perk': 'Las mariposas doradas llegan más a menudo.',
     'route.silk.name': 'Ruta de la seda', 'route.silk.perk': 'Regalos de mariposa más generosos: efectos un 50 % más largos y créditos instantáneos dobles.',
+    'route.caravan.name': "Camino del Caravasar",
+    'route.caravan.perk': "Las caravanas cuentan el doble: cada viajero cercano suma un 20 % de velocidad.",
+    'route.compass.name': "Camino de la Brújula",
+    'route.compass.perk': "Los trozos del mapa del tesoro caen el doble de a menudo.",
     'homecard.desc': 'Termina tu viaje y vuelve a casa. Se reinician los créditos, vehículos, niveles, mejoras y regiones; las insignias y estadísticas se quedan. Cada recuerdo da +{p} de velocidad en todos los viajes futuros.',
     'homecard.mem': 'Tus recuerdos: <b>{n}</b> · +{p} de velocidad para siempre.', 'homecard.none': 'Aún no tienes recuerdos.',
     'homecard.now': 'Si vuelves a casa ahora: {gain} · siguiente recuerdo a los {next}',
@@ -210,6 +214,7 @@ IT.addLang('es', {
     'intro.li5': 'Consigue <b>insignias</b>. Cada una te da más créditos para siempre.',
     'intro.li6': 'Aunque cierres el juego, tu viajero sigue avanzando a un ritmo más lento.',
     'intro.li7': 'Tras un viaje largo puedes <b>volver a casa</b>. Los recuerdos que reúnas aceleran todos los viajes siguientes.',
+    'intro.li8': "<b>No viajas solo.</b> Quienes juegan ahora viajan a tu lado en la escena; toca a alguien para saludar o llámale con el bocadillo de la esquina.",
     'intro.btn': 'En marcha',
 
     'j.trip': 'Viaje', 'j.thisTrip': 'Este viaje', 'j.total': 'Distancia total', 'j.credits': 'Créditos totales', 'j.clicks': 'Pasos dados',

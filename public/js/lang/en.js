@@ -194,6 +194,10 @@ IT.addLang('en', {
     'route.north.name': 'Northern Route', 'route.north.perk': 'Shooting stars twice as often.',
     'route.bloom.name': 'Blossom Trail', 'route.bloom.perk': 'Golden butterflies come more often.',
     'route.silk.name': 'Silk Road', 'route.silk.perk': 'Richer butterfly gifts: effects last 50% longer, instant credits doubled.',
+    'route.caravan.name': "Caravanserai Road",
+    'route.caravan.perk': "Caravans count double: every traveler nearby adds 20% speed.",
+    'route.compass.name': "Compass Road",
+    'route.compass.perk': "Treasure map pieces drop twice as often.",
     'homecard.desc': 'Finish your journey and head home. Credits, vehicles, upgrades, boosts and regions reset; badges and stats stay. Each memory gives +{p} speed on every future journey.',
     'homecard.mem': 'Your memories: <b>{n}</b> · +{p} speed for good.', 'homecard.none': 'No memories yet.',
     'homecard.now': 'If you go home now: {gain} · next memory at {next}',
@@ -210,6 +214,7 @@ IT.addLang('en', {
     'intro.li5': 'Collect <b>badges</b>. Each one earns you more credits for good.',
     'intro.li6': 'Even when the game is closed, your traveller keeps going at a slower pace.',
     'intro.li7': 'After a long journey you can <b>go home</b>. The memories you gather speed up every journey after.',
+    'intro.li8': "<b>You’re not alone on the road.</b> Travelers playing right now journey beside you in the scene; tap one to wave, or call out with the bubble in the corner.",
     'intro.btn': 'Set off',
 
     'j.trip': 'Journey', 'j.thisTrip': 'This journey', 'j.total': 'Total distance', 'j.credits': 'Total credits', 'j.clicks': 'Steps taken',

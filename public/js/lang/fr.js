@@ -196,6 +196,10 @@ IT.addLang('fr', {
     'route.north.name': 'Route du Nord', 'route.north.perk': 'Étoiles filantes deux fois plus souvent.',
     'route.bloom.name': 'Sentier des fleurs', 'route.bloom.perk': 'Les papillons dorés viennent plus souvent.',
     'route.silk.name': 'Route de la soie', 'route.silk.perk': 'Cadeaux de papillon plus généreux : effets 50 % plus longs, crédits instantanés doublés.',
+    'route.caravan.name': "Route du Caravansérail",
+    'route.caravan.perk': "Les caravanes comptent double : chaque voyageur proche ajoute 20 % de vitesse.",
+    'route.compass.name': "Route de la Boussole",
+    'route.compass.perk': "Les morceaux de la carte au trésor tombent deux fois plus souvent.",
     'homecard.desc': "Termine ton voyage et rentre chez toi. Crédits, véhicules, améliorations, bonus et régions repartent de zéro. Badges et statistiques restent. Chaque souvenir donne +{p} de vitesse à chaque voyage suivant.",
     'homecard.mem': 'Tes souvenirs : <b>{n}</b> · +{p} de vitesse pour toujours.', 'homecard.none': 'Aucun souvenir pour le moment.',
     'homecard.now': 'Si tu rentres maintenant : {gain} · prochain souvenir à {next}',
@@ -212,6 +216,7 @@ IT.addLang('fr', {
     'intro.li5': 'Collectionne les <b>badges</b>. Chacun te rapporte plus de crédits pour toujours.',
     'intro.li6': 'Même quand le jeu est fermé, ton voyageur continue, à un rythme plus lent.',
     'intro.li7': 'Après un long voyage, tu peux <b>rentrer à la maison</b>. Les souvenirs rassemblés accélèrent chaque voyage suivant.',
+    'intro.li8': "<b>Tu n’es pas seul sur la route.</b> Ceux qui jouent en ce moment voyagent à tes côtés ; touche-en un pour lui faire signe, ou appelle-le avec la bulle dans le coin.",
     'intro.btn': 'En route',
 
     'j.trip': 'Voyage', 'j.thisTrip': 'Ce voyage', 'j.total': 'Distance totale', 'j.credits': 'Crédits totaux', 'j.clicks': 'Pas effectués',

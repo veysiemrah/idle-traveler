@@ -208,6 +208,10 @@ IT.addLang('de', {
     'route.north.name': 'Nordroute', 'route.north.perk': 'Sternschnuppen doppelt so oft.',
     'route.bloom.name': 'Blütenpfad', 'route.bloom.perk': 'Goldene Schmetterlinge kommen öfter.',
     'route.silk.name': 'Seidenstraße', 'route.silk.perk': 'Reichere Schmetterlingsgeschenke: Effekte 50 % länger, Sofort-Credits doppelt.',
+    'route.caravan.name': "Karawanserei-Straße",
+    'route.caravan.perk': "Karawanen zählen doppelt: Alle Reisenden in der Nähe bringen je +20 % Tempo.",
+    'route.compass.name': "Kompass-Straße",
+    'route.compass.perk': "Teile der Schatzkarte fallen doppelt so oft.",
     'homecard.desc': 'Beende deine Reise und kehr heim. Credits, Fahrzeuge, Upgrades, Verstärkungen und Regionen werden zurückgesetzt. Abzeichen und Statistiken bleiben. Jede Erinnerung gibt dir auf allen künftigen Reisen +{p} Tempo.',
     'homecard.mem': 'Deine Erinnerungen: <b>{n}</b> · dauerhaft +{p} Tempo.', 'homecard.none': 'Noch keine Erinnerungen.',
     'homecard.now': 'Wenn du jetzt heimkehrst: {gain} · nächste Erinnerung bei {next}',
@@ -225,6 +229,7 @@ IT.addLang('de', {
     'intro.li5': 'Sammle <b>Abzeichen</b>. Jedes bringt dir dauerhaft mehr Credits.',
     'intro.li6': 'Auch wenn das Spiel geschlossen ist, reist du in gemütlicherem Tempo weiter.',
     'intro.li7': 'Nach einer langen Reise kannst du <b>heimkehren</b>. Deine gesammelten Erinnerungen machen jede weitere Reise schneller.',
+    'intro.li8': "<b>Du bist nicht allein unterwegs.</b> Wer gerade spielt, reist im Bild neben dir; tippe jemanden an, um zu winken, oder ruf über die Sprechblase in der Ecke.",
     'intro.btn': 'Aufbrechen',
 
     // Reisetagebuch

@@ -261,6 +261,13 @@ button { font: inherit; color: inherit; }
 .chat-pop .msg:active { transform: scale(0.95); }
 .chat-pop .msg .e { font-size: 20px; line-height: 1; }
 @media (prefers-reduced-motion: reduce) { .chat-pop { animation: none; } .chat-btn { transition: none; } }
+/* yatay telefon: sahne alçak ama geniş; mesajlar iki sıra halinde yan yana dizilir */
+@media (max-height: 480px) and (min-width: 480px) {
+  .chat-pop { width: min(580px, calc(100% - 32px)); grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px; gap: 5px; }
+  .chat-pop .msg { min-height: 0; padding: 5px 3px; gap: 1px; font-size: 11px; line-height: 1.1; }
+  .chat-pop .msg .e { font-size: 16px; }
+  .chat-title { display: none; }
+}
 @media (max-width: 400px) {
   .chat-pop { padding: 8px; gap: 5px; }
   .chat-pop .msg { min-height: 0; padding: 5px 2px; gap: 1px; font-size: 11px; line-height: 1.1; }
