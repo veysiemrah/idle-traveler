@@ -124,18 +124,22 @@ npx wrangler dev   # http://localhost:8787
   bırakır. Hiç yükseltme yapmadan araca biriktiren oyuncu ata 6,5 saatte, yükselten oyuncu 44 dakikada ulaşır.
 - **Tempo**: Dokunuşların etkisi v1.27'de yarıya indi. Gerçek tempo `tests/sim_game.js` ile ölçülür: oyundaki bütün kazanç
   kaynaklarını (ritim, şanslı adım, kelebekler, gökkuşağı, kayan yıldız, hazine sandığı, bölge/durak ödülleri, yadigârlar,
-  rozetler, güçlendirmeler) saniye saniye işler. Tek yolculukta son araca (Güneş Yelkeni) ulaşma, ortanca (20 deneme):
+  rozetler, güçlendirmeler) saniye saniye işler. Tek yolculukta araçlara ulaşma, ortanca (8 deneme; parantezde en hızlı–en yavaş):
   - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi), gün döngüsünde (%44 gece):
-    ~471 dk (~8 saat; 366–528 dk). Tren ~9 dk, uçak ~30 dk, roket ~3 saat. v1.36'dan beri zincir sürer: aynı oyuncu
-    Kuyruklu Yıldız'a tek yolculukta ~22 saatte ulaşır, Yıldız Gemisi'ne 48 saatte ulaşamaz. İkisi hatıralarla hızlanan
-    sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu Kuyruklu Yıldız'a 14. yolculukta ulaşır).
-  - Aynı oyuncu hep gece (koyu tema): ~418 dk; hep gündüz (açık tema): ~520 dk.
-  - **Aktif** (aynı, normal şans): ~753 dk (~12,5 saat).
-  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, roket ~21 saat.
-  Erken dakikalardaki büyük sıçramalar gökkuşağı (×10 hız) ile Rüzgâr Hortumu'nun (×3) üst üste gelmesinden doğar.
-  Dilekler (gece kayan yıldız, gündüz karahindiba tohumu; ×10 kredi) en güçlü kaynaklardandır. v1.31'den önce yalnızca gece
-  vardı ve hiç gece yaşamayan (açık temada oynayan) şanslı oyuncu son araca 24 saatte ulaşamıyordu. `sim_switch.js` ve
-  `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
+    tren ~10 dk (7–12), uçak ~26 dk, jet ~66 dk, roket ~3,2 saat (176–195 dk), Güneş Yelkeni ~8,5 saat (463–536 dk).
+    Aynı oyuncu Kuyruklu Yıldız'a tek yolculukta ~22 saatte ulaşır, Yıldız Gemisi'ne 48 saatte ulaşamaz. İkisi hatıralarla
+    hızlanan sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu Kuyruklu Yıldız'a 14. yolculukta ulaşır).
+  - **Aktif** (aynı, normal şans): tren ~15 dk, uçak ~44 dk, roket ~5 saat, Güneş Yelkeni ~13,7 saat.
+  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~16 dk, tren ~52 dk (41–54), uçak ~2,7 saat, roket ~15,7 saat.
+- **Gelire bağlı ödüller (v1.37)**: Bölge (40 sn), durak (30 sn), kelebekten anında kredi (600 sn), hazine sandığı (6000 sn)
+  ve günün hediyesi (120 sn × gün) **kalıcı gelirin** o kadar saniyesini verir (`game.js` → `REWARD`, `sim_game.js` → `RW`).
+  Kalıcı gelir, geçici çarpanlar (kelebek etkileri, gökkuşağı, dilek, kervan) olmadan hesaplanan kredi/sn'dir (`baseEma`).
+  Önceden ödüller şişmiş gelirle hesaplanıyordu: dilekle (kredi ×10) düşen dördüncü harita parçasının sandığı on kat,
+  gökkuşağı ile Rüzgâr Hortumu'nun (×30 hız) üst üste geldiği anlardaki bölge ödülleri otuz kat veriyordu. Tempo bu rastlantıya
+  bağlıydı (sıradan oyuncu trene 4 ile 72 dk arasında ulaşıyordu). Süreler `sim_game.js` ızgarasıyla, aktif ve şanslı
+  oyuncunun temposu korunacak biçimde seçildi; sıradan oyuncu orta oyunda ~%25 hızlandı, şansa bağlı yayılım daraldı.
+  Olaylar yine güçlüdür: hazine sandığı aktif oyuncunun en büyük gelir kaynağıdır (saatte ~12 sandık), sandıksız tempo ~3 kat yavaştır.
+  `sim_switch.js` ve `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
@@ -231,7 +235,7 @@ npx wrangler dev   # http://localhost:8787
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Hazine haritası**: Yakalanan her altın kelebek %20, her dilek (kayan yıldız ya da karahindiba) %50 olasılıkla bir harita parçası düşürür. Dört parça
   tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
-  yeniden gelir). Sandık yaklaşık 10 dakikalık gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
+  yeniden gelir). Sandık yaklaşık 100 dakikalık kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
 - **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,

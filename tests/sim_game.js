@@ -27,6 +27,8 @@ const GIFTS = [
   { id: 'gust', dur: 30, speed: 3, w: 3 }, { id: 'harvest', dur: 45, credit: 2, w: 3 }, { id: 'zeal', dur: 25, click: 5, w: 2 }, { id: 'postcard', instant: true, w: 2 },
 ];
 const RAINBOW = { id: 'rainbow', dur: 20, speed: 10 }, WISH = { id: 'wish', dur: 20, credit: 10 }, SEED = { id: 'seed', dur: 20, credit: 10 };
+// Gelire bağlı ödüllerin süresi (sn; game.js'teki REWARD ile aynı). Denemek için: '{"rw":{"chest":1800}}'
+const RW = Object.assign({ region: 40, ms: 30, instant: 600, chest: 6000 }, A.rw || {});
 const STACK_AFTER = 300, STACK_MAX = 10, MAP_DROP = { gift: 0.2, star: 0.5 };
 const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
 
@@ -64,12 +66,13 @@ function run(seed) {
     const m = tempMult(t), b = Econ.base(s);
     const dIdle = b.idle * m.speed, dClick = b.click * m.speed * m.click * comboMult() * critEV() * P.cps;
     const d = dIdle + dClick, c = d * b.cpm * m.credit;
-    s.distance += d; grant(c); rate = c; s.clicks += P.cps; s.crits += P.cps * (critEV() - 1) / (Econ.luckMult - 1);
+    // ödüller kalıcı gelirle ölçeklenir (v1.37): geçici kelebek, gökkuşağı ve dilek çarpanları sayılmaz
+    s.distance += d; grant(c); rate = (b.idle + b.click * comboMult() * critEV() * P.cps) * b.cpm; s.clicks += P.cps; s.crits += P.cps * (critEV() - 1) / (Econ.luckMult - 1);
     s.bestCombo = Math.max(s.bestCombo, combo); if (night) s.nightTime++;
     // bölgeler, duraklar, yadigârlar
     const ri = IT.regionIndexFor(s.distance);
-    while (s.regionIdx < ri) { s.regionIdx++; s.bestRegion = s.regionIdx; grant(Math.max(20, income() * 20)); }
-    while (s.msIdx < MILESTONES.length && s.distance >= MILESTONES[s.msIdx].at) { s.msIdx++; grant(Math.max(15, income() * 15)); }
+    while (s.regionIdx < ri) { s.regionIdx++; s.bestRegion = s.regionIdx; grant(Math.max(20, income() * RW.region)); }
+    while (s.msIdx < MILESTONES.length && s.distance >= MILESTONES[s.msIdx].at) { s.msIdx++; grant(Math.max(15, income() * RW.ms)); }
     const biome = IT.regionAt(s.regionIdx).biome;
     if (biome !== keepBiome) { keepBiome = biome; keepIn = 45 + roll('low') * 40; }
     if (!s.keeps[biome] && --keepIn <= 0) { if (rnd0() < P.catch) s.keeps[biome] = 1; keepIn = 80 + roll('low') * 70; }
@@ -83,10 +86,10 @@ function run(seed) {
         // tür: ağırlıklı seçim; şanslı oyuncu iki denemeden o an daha değerli olanı alır
         const pick = () => { let r = rnd0() * 10; for (const g of GIFTS) { r -= g.w; if (r <= 0) return g; } return GIFTS[0]; };
         // etkinin süresi boyunca getirdiği ek kredi: hız ve kredi bütün geliri, Coşku yalnızca dokunuşların payını büyütür
-        const value = g => g.instant ? Math.max(40, income() * 60)
+        const value = g => g.instant ? Math.max(40, income() * RW.instant)
           : g.dur * (1 + 0.15 * s.buffs.butterfly) * income() * (g.click ? (dClick / d) * (g.click - 1) : (g.speed || g.credit) - 1);
         let g = pick(); if (P.luck) { const h = pick(); if (value(h) > value(g)) g = h; }
-        if (g.instant) grant(Math.max(40, income() * 60)); else addFx(g, g.dur * (1 + 0.15 * s.buffs.butterfly), t, true);
+        if (g.instant) grant(Math.max(40, income() * RW.instant)); else addFx(g, g.dur * (1 + 0.15 * s.buffs.butterfly), t, true);
       }
     }
     // yağmur ve gökkuşağı (gökkuşağı yalnızca gündüz)
@@ -112,7 +115,7 @@ function run(seed) {
       }
     }
     // hazine sandığı (harita tamamken; kaçırılırsa 45 sn sonra yeniden)
-    if (t >= chestIn) { if (rnd0() < P.catch) { grant(Math.max(500, income() * 600)); s.treasures++; s.mapPieces = 0; chestIn = Infinity; } else chestIn = t + 70; }
+    if (t >= chestIn) { if (rnd0() < P.catch) { grant(Math.max(500, income() * RW.chest)); s.treasures++; s.mapPieces = 0; chestIn = Infinity; } else chestIn = t + 70; }
     // rozet kademeleri (kalıcı kredi bonusu)
     if (t % 10 === 0) for (const bd of BADGES) s.badges[bd.id] = Math.max(s.badges[bd.id] || 0, bd.tierFor(s));
     // alımlar

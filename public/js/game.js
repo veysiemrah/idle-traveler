@@ -24,6 +24,8 @@
   const STACK_AFTER = 300, STACK_MAX = 10;
   // Hazine haritası: kelebekten %20, kayan yıldızdan %50 olasılıkla parça düşer; dört parça bir sandık açar
   const MAP_PIECES = 4, MAP_DROP = { gift: 0.2, star: 0.5 };
+  // Gelire bağlı ödüller: kaç saniyelik kalıcı gelir verdikleri (tests/sim_game.js'teki RW ile aynı tutulur)
+  const REWARD = { region: 40, ms: 30, instant: 600, chest: 6000 };
   // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
   const effMult = (g, stack) => {
     const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
@@ -206,7 +208,7 @@
 
   /* ---------- Çalışma zamanı değişkenleri ---------- */
   let combo = 0, lastClick = 0, stepFloat = null, cycNight = null;
-  let rateEma = 0, creditEma = 0;
+  let rateEma = 0, creditEma = 0, baseEma = 0; // baseEma: geçici çarpanlar olmadan kredi/sn (ödüller buna göre)
   let giftIn = 25;
   // Kayan yıldız: yalnızca gece gökyüzünde
   let starIn = 20 + Math.random() * 25;
@@ -231,10 +233,12 @@
     return c;
   }
   function grant(c) { S.credits += c; S.totalCredits += c; }
-  // Ödüller son gelire göre ölçeklenir. Çevrimdışıyken ortalama sıfır olduğundan otomatik gelir esas alınır.
+  // Ödüller son kalıcı gelire göre ölçeklenir (v1.37): geçici kelebek, gökkuşağı, dilek ve kervan çarpanları sayılmaz.
+  // Önceden şişmiş gelir esas alındığı için dilekle (kredi ×10) gelen sandık on kat, ×30 hızdaki bölge ödülleri otuz kat
+  // veriyordu; tempo şansa bağlıydı. Çevrimdışıyken ortalama sıfır olduğundan otomatik gelir esas alınır.
   function incomeRate() {
     const b = Econ.base(S);
-    return Math.max(creditEma, b.idle * b.cpm);
+    return Math.max(baseEma, b.idle * b.cpm);
   }
 
   function checkProgress(silent) {
@@ -244,7 +248,7 @@
       S.regionIdx++;
       S.bestRegion = Math.max(S.bestRegion, S.regionIdx);
       const r = IT.regionAt(S.regionIdx);
-      const bonus = Math.max(20, incomeRate() * 20);
+      const bonus = Math.max(20, incomeRate() * REWARD.region);
       grant(bonus);
       found.push({ r, bonus });
     }
@@ -261,7 +265,7 @@
     while (S.msIdx < MILESTONES.length && S.distance >= MILESTONES[S.msIdx].at) {
       const m = MILESTONES[S.msIdx];
       // Fener Yolu'nda duraklar beş kat ödül verir
-      const bonus = Math.max(15, incomeRate() * 15) * (perk() === 'milestone' ? 5 : 1);
+      const bonus = Math.max(15, incomeRate() * REWARD.ms) * (perk() === 'milestone' ? 5 : 1);
       grant(bonus);
       ms.push({ m, bonus });
       S.msIdx++;
@@ -328,6 +332,7 @@
     const crit = Math.random() < Econ.luckChance(S.buffs.luck) * (perk() === 'lucky' ? 2 : 1);
     const d = cur.click * comboMult() * (crit ? Econ.luckMult : 1);
     addDistance(d, cur.cpm);
+    clickBase += cur.base.click * comboMult() * (crit ? Econ.luckMult : 1); // ödüller için: geçici çarpanlar olmadan
     S.clicks++;
     if (crit) S.crits++;
     scene.onStep(crit);
@@ -356,7 +361,7 @@
     for (const x of pool) { r -= x.w; if (r <= 0) { g = x; break; } }
     Sound.gift();
     if (g.instant) {
-      const bonus = Math.max(40, incomeRate() * 60) * (perk() === 'gold' ? 2 : 1);
+      const bonus = Math.max(40, incomeRate() * REWARD.instant) * (perk() === 'gold' ? 2 : 1);
       grant(bonus);
       toast(t('toast.giftInstant', { name: g.name, c: fmtNum(bonus) }), 'gold');
       scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffd56b', big: true });
@@ -419,7 +424,7 @@
   // Sandık: harita tamamken yol kenarında belirir; kaçırılırsa bir süre sonra yeniden gelir
   function catchChest() {
     Sound.unlock(); Sound.region();
-    const bonus = Math.max(500, incomeRate() * 600) * (perk() === 'gold' ? 2 : 1);
+    const bonus = Math.max(500, incomeRate() * REWARD.chest) * (perk() === 'gold' ? 2 : 1);
     grant(bonus);
     S.mapPieces = 0; S.treasures++; uiDirty.journal = true;
     toast(t('toast.treasure', { c: fmtNum(bonus) }), 'gold');
@@ -553,7 +558,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -756,7 +761,9 @@
       const a = 1 - Math.exp(-dt / 0.9);
       rateEma += (gained / dt - rateEma) * a;
       creditEma += (gained * cur.cpm / dt - creditEma) * a;
+      baseEma += ((cur.base.idle * dt + clickBase) * cur.base.cpm / dt - baseEma) * a;
     }
+    clickBase = 0;
     if (rateEma > S.best) S.best = rateEma;
 
     // altın kelebek (pencere açıkken yakalanamayacağı için gelmez)
@@ -794,7 +801,7 @@
     requestAnimationFrame(frame);
   }
   // Tıklamalarla gelen mesafe, hız ortalamasına bir sonraki karede eklenir
-  let clickBuffer = 0;
+  let clickBuffer = 0, clickBase = 0;
 
   /* ---------- Kartpostal ---------- */
   // Sahnenin arayüzsüz görüntüsünden kenarlıklı, yazılı, pullu bir kartpostal üretir
