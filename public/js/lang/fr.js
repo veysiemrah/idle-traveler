@@ -328,5 +328,12 @@ IT.addLang('fr', {
     "unit.lyHint": "1 année-lumière est la distance parcourue par la lumière en un an : environ {d} (≈ {au} UA).",
     "toast.unitAu": "<b>Les distances se mesurent désormais en UA</b> · 1 UA ≈ {d}, de la Terre au Soleil. Touche la distance pour revoir ceci.",
     "toast.unitLy": "<b>Les distances se mesurent désormais en années-lumière</b> · 1 année-lumière ≈ {d}. Touche la distance pour revoir ceci.",
+    // Route des Grues (v1.35)
+    "route.crane.name": "Route des Grues", "route.crane.perk": "Des vols de grues t’accompagnent dans le ciel.",
+    "gift.crane.name": "Vent des grues", "gift.crane.text": "vitesse ×3",
+    "toast.cranesSeen": "Des grues crient au loin… Lève les yeux !",
+    "toast.cranes": "<b>Les grues ont partagé leur vent avec toi : {name}</b> · {text} pendant {dur}",
+    "float.cranes": "Des grues !",
+    "j.cranes": "Vols de grues",
   },
 });

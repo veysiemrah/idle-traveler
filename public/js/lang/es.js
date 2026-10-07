@@ -326,5 +326,12 @@ IT.addLang('es', {
     "unit.lyHint": "1 año luz es la distancia que recorre la luz en un año: unos {d} (≈ {au} UA).",
     "toast.unitAu": "<b>Ahora las distancias se miden en UA</b> · 1 UA ≈ {d}, de la Tierra al Sol. Toca la distancia para volver a verlo.",
     "toast.unitLy": "<b>Ahora las distancias se miden en años luz</b> · 1 año luz ≈ {d}. Toca la distancia para volver a verlo.",
+    // Ruta de las Grullas (v1.35)
+    "route.crane.name": "Ruta de las Grullas", "route.crane.perk": "Bandadas de grullas te acompañan por el cielo.",
+    "gift.crane.name": "Viento de grullas", "gift.crane.text": "velocidad ×3",
+    "toast.cranesSeen": "Se oyen grullas a lo lejos… ¡Mira al cielo!",
+    "toast.cranes": "<b>Las grullas compartieron su viento contigo: {name}</b> · {text} durante {dur}",
+    "float.cranes": "¡Grullas!",
+    "j.cranes": "Bandadas de grullas",
   },
 });

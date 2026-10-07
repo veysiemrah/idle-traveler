@@ -129,8 +129,8 @@
       const sec = Math.min(180, (p.ago + (Date.now() - this.at)) / 1000);
       return p.dist + p.spd * sec;
     },
-    // Sunucudan bu yana geçen süre de eklenmiş "en son görülme" (ms)
-    ago(p) { return p.online ? 0 : p.ago + (Date.now() - this.at); },
+    // Sunucudan bu yana geçen süre de eklenmiş "en son görülme" (ms); at: satırın geldiği yanıtın anı (tüm zamanlar için topAt)
+    ago(p, at) { return p.online ? 0 : p.ago + (Date.now() - (at || this.at)); },
   };
 
   Object.assign(IT, { Online, MSGS, cleanName, newId, newKey, validId, validKey });

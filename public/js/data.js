@@ -159,6 +159,8 @@
     { id: 'clover',   perk: 'lucky',     biomes: ['meadow', 'tulip', 'tea', 'pine', 'lavender', 'sakura', 'olive', 'coast', 'autumn', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
     // 9. yolculuk: duraklarda (gerçek dünya mesafeleri) beş kat ödül
     { id: 'lighthouse', perk: 'milestone', biomes: ['meadow', 'olive', 'coast', 'tulip', 'wheat', 'lavender', 'autumn', 'sakura', 'tea', 'pine', 'snow', 'aurora', 'canyon', 'cappadocia', 'desert'] },
+    // 10. yolculuk: gökyüzünden ara sıra turna sürüleri geçer (yalnızca bu rotada); dokununca Turna Rüzgârı
+    { id: 'crane', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });

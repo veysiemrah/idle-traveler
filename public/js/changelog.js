@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.34';
+  IT.VERSION = '1.35';
 
   IT.CHANGELOG = [
+    { v: '1.35', date: '2026-10-07', items: {
+      tr: ['Eve dönmeyi göze alan uzun yolcuları yeni bir rota bekliyor. Bu yolda gökyüzü biraz kalabalık… Önce kulak ver, sonra yukarı bak.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A new route awaits the seasoned travelers who keep coming home. On this road the sky gets a little crowded… Listen first, then look up.',
+        'A few small touches along the road.'],
+      de: ['Eine neue Route wartet auf alle, die schon oft heimgekehrt sind. Auf diesem Weg wird es am Himmel etwas voller … Erst lauschen, dann nach oben schauen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una nueva ruta espera a quienes ya han vuelto a casa muchas veces. En este camino el cielo se llena un poco… Primero escucha, luego mira arriba.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle route attend les voyageurs aguerris qui rentrent souvent à la maison. Sur ce chemin, le ciel est un peu plus animé… Écoute d’abord, puis lève les yeux.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.34', date: '2026-10-07', items: {
       tr: ['Yol uzayın derinliklerine uzandığında mesafeler AB ve ışık yılıyla yazılır. Artık bu birimlerin ne olduğunu oyun anlatıyor: mesafenin yanındaki küçük "i" işaretine dokun.',
         'Yolda birkaç küçük rötuş.'],

@@ -621,6 +621,38 @@
     ctx.fillStyle = '#e4e9f0'; ctx.beginPath(); ctx.moveTo(x - 1 * k, y - 1 * k); ctx.quadraticCurveTo(x - 6 * k, y - 9 * k - wy, x - 16 * k, y - 10 * k - wy * 1.9); ctx.quadraticCurveTo(x - 8 * k, y - 2 * k, x + 2 * k, y); ctx.fill(); // ön kanat
     if (T >= 4) sparkles(ctx, x - 14 * k, y, k, t, 4, 24 * k, 14 * k);
   }
+  // Turna: açık gri gövde, siyah boyun ve kanat uçları, başında kırmızı tepe; ayakları geride uzanır. Sağa doğru uçar.
+  // w: kanadın konumu (1 yukarıda, −0,6 aşağıda), night: gece karartması (0–1)
+  function drawCrane(ctx, x, y, k, w, night) {
+    const col = c => css(mixc(hex(c), hex('#3a4266'), night * 0.45));
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const wing = (dx, s, c1, c2) => {
+      const tx = x + dx - 7 * k, ty = y - 21 * k * s;
+      ctx.fillStyle = col(c1); ctx.beginPath();
+      ctx.moveTo(x + dx + 5 * k, y - 1 * k); ctx.quadraticCurveTo(x + dx + 3 * k, y - 13 * k * s, tx, ty);
+      ctx.quadraticCurveTo(x + dx - 13 * k, y - 8 * k * s, x + dx - 6 * k, y - 0.5 * k); ctx.closePath(); ctx.fill();
+      // kanat ucundaki siyah uçuş tüyleri
+      ctx.fillStyle = col(c2); ctx.beginPath();
+      ctx.moveTo(x + dx + 0.5 * k, y - 16.5 * k * s); ctx.lineTo(tx, ty); ctx.lineTo(x + dx - 10 * k, y - 14.5 * k * s); ctx.closePath(); ctx.fill();
+    };
+    wing(-2 * k, w * 0.85, '#aeb4c0', '#2c2e38'); // arka kanat (gölgede)
+    // ayaklar ve kabarık kuyruk
+    ctx.strokeStyle = col('#2c2a33'); ctx.lineWidth = 1.1 * k;
+    ctx.beginPath(); ctx.moveTo(x - 7 * k, y + 1 * k); ctx.lineTo(x - 23 * k, y + 3 * k); ctx.moveTo(x - 7 * k, y + 1.6 * k); ctx.lineTo(x - 22 * k, y + 4.4 * k); ctx.stroke();
+    ctx.fillStyle = col('#7d828d'); ellipse(ctx, x - 8.5 * k, y + 0.3 * k, 4.6 * k, 3 * k);
+    ctx.fillStyle = col('#e6e9ef'); ellipse(ctx, x, y, 10 * k, 3.6 * k);
+    // boyun: gövdeye yakın açık gri, sonra siyah; baş siyah, yanağında beyaz şerit, tepede kırmızı
+    ctx.lineWidth = 2.6 * k; ctx.strokeStyle = col('#dfe2e8');
+    ctx.beginPath(); ctx.moveTo(x + 7 * k, y - 0.8 * k); ctx.lineTo(x + 14 * k, y - 2 * k); ctx.stroke();
+    ctx.strokeStyle = col('#24252c'); ctx.lineWidth = 2.2 * k;
+    ctx.beginPath(); ctx.moveTo(x + 13 * k, y - 1.9 * k); ctx.lineTo(x + 20.5 * k, y - 3 * k); ctx.stroke();
+    ctx.fillStyle = col('#24252c'); circle(ctx, x + 21 * k, y - 3.2 * k, 2.3 * k);
+    ctx.fillStyle = col('#f4f5f8'); ellipse(ctx, x + 19.6 * k, y - 2.2 * k, 2 * k, 0.8 * k, -0.15);
+    ctx.fillStyle = col('#d9473c'); circle(ctx, x + 21.4 * k, y - 5.1 * k, 1 * k);
+    ctx.strokeStyle = col('#7c7466'); ctx.lineWidth = 1.1 * k;
+    ctx.beginPath(); ctx.moveTo(x + 23 * k, y - 3.1 * k); ctx.lineTo(x + 28 * k, y - 2.4 * k); ctx.stroke();
+    wing(0, w, '#d3d7df', '#24252c'); // ön kanat
+  }
   // Araç penceresinden ya da balon sepetinden başını uzatan yol arkadaşı
   function petHead(ctx, kind, x, y, k, t, tier) { if (kind === 'cat') catHead(ctx, x, y, k, t, tier); else dogHead(ctx, x, y, k, t, tier); }
   // Araçta pencereden ya da sepetten başını uzatan Karabaş (tier: drawDog ile aynı)
@@ -1099,6 +1131,8 @@
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
       this.gift = null; this.star = null; this.seed = null; this.chest = null;
+      // Turna sürüsü (Turna Yolu): V düzeninde soldan sağa, yolcuyla aynı yöne uçar
+      this.cranes = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
       this.keep = null; this.keepOk = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
@@ -1295,6 +1329,35 @@
         for (let i = 0; i < 26; i++) { const a = Math.random() * TAU, sp = rand(30, 120); this.parts.push({ type: 'spark', x: s.x, y: s.y, vx: Math.cos(a) * sp - 30, vy: Math.sin(a) * sp - 40, life: 0, max: rand(0.8, 1.6), size: rand(1.4, 2.8), color: pick(['#ffffff', '#fbf8ee', '#fff8d6']), rot: 0 }); }
         this.seed = null;
         return true;
+      }
+      return false;
+    }
+    // Turna sürüsü: önde bir lider, arkasında iki kola açılan V; gökyüzünün ortasında soldan sağa süzülür
+    spawnCranes() {
+      const n = pick([5, 7, 7, 9]);
+      // konum kartının (sol üst) altından geçer; telefonda da görünsün diye çok küçülmez
+      const k = Math.max(this.k, 0.8);
+      this.cranes = { n, t: 0, x: -40 * k, y0: this.H * rand(0.36, 0.45), vx: (this.W + 300 * k) / 20, caught: 0, ph: Math.random() * TAU };
+    }
+    // i. turnanın yeri ve kanat konumu (lider 0; sonrakiler sırayla alt ve üst kolda geride)
+    cranePos(c, i) {
+      const k = Math.max(this.k, 0.8) * 1.1, rank = Math.ceil(i / 2), side = i % 2 ? 1 : -1;
+      const x = c.x - rank * 32 * k + Math.sin(c.t * 0.9 + i) * 2 * k;
+      const y = c.y0 + Math.sin(c.t * 0.6 + c.ph) * 8 * k + side * rank * 12 * k + Math.sin(c.t * 1.3 + i * 1.7) * 1.5 * k;
+      return { x, y, k, w: 0.2 + 0.8 * Math.sin(c.t * 9 - rank * 0.7 + c.ph) };
+    }
+    hitCranes(px, py) {
+      const c = this.cranes;
+      if (!c || c.caught) return false;
+      const r = 30 * Math.max(this.k, 0.8);
+      for (let i = 0; i < c.n; i++) {
+        const p = this.cranePos(c, i);
+        if (Math.hypot(px - (p.x + 6 * p.k), py - p.y) < r) {
+          // sürü sevinçle kanat çırpıp yükselir; dokunulan yerden tüyler ve ışık dağılır
+          c.caught = 0.001;
+          this.burst(p.x, p.y, 26, ['#ffffff', '#e9f3ff', '#d3d7df', '#ffd56b']);
+          return true;
+        }
       }
       return false;
     }
@@ -1674,6 +1737,14 @@
         if (Math.random() < dt * 2.5) this.parts.push({ type: 'spark', x: s.x + rand(-6, 6) * k, y: s.y - rand(4, 10) * k, vx: rand(10, 30), vy: rand(-12, 6), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: '#ffffff', rot: 0 });
         if (s.t > s.dur) this.seed = null;
       }
+      if (this.cranes) {
+        const c = this.cranes;
+        // dokunulunca hızlanıp yükselir ve yumuşakça solar
+        if (c.caught) { c.caught += dt; c.y0 -= 40 * this.k * dt; }
+        c.t += dt; c.x += c.vx * (c.caught ? 1 + Math.min(1.5, c.caught * 1.5) : 1) * dt;
+        if (!c.caught && Math.random() < dt * 2.2) { const p = this.cranePos(c, (Math.random() * c.n) | 0); this.parts.push({ type: 'spark', x: p.x - 8 * p.k, y: p.y, vx: -rand(10, 30), vy: rand(-6, 10), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: pick(['#ffffff', '#fff4c2']), rot: 0 }); }
+        if (c.caught > 1.4 || c.x - (c.n >> 1) * 36 * Math.max(this.k, 0.8) > this.W + 60 * this.k) this.cranes = null;
+      }
       if (this.star) {
         const s = this.star;
         s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt;
@@ -1991,6 +2062,7 @@
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.keep) this.drawKeep(ctx, this.keep);
       if (this.seed) this.drawSeed(ctx, this.seed);
+      if (this.cranes) this.drawCranes(ctx, this.cranes, night);
       if (this.gift) this.drawButterfly(ctx, this.gift);
       this.drawFloats(ctx);
 
@@ -2341,6 +2413,19 @@
       ctx.fillText(c.e, p.x, p.y + 1.5 * k);
       // camın parlak yansıması
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ellipse(ctx, p.x - r * 0.42, p.y - r * 0.45, r * 0.22, r * 0.12, -0.6);
+      ctx.restore();
+    }
+    // Turna sürüsü: belirirken ve dokunulup uzaklaşırken yumuşakça görünür/solar; liderin çevresinde hafif bir ışık
+    drawCranes(ctx, c, night) {
+      const a = clamp(c.t / 1, 0, 1) * (c.caught ? clamp(1 - c.caught / 1.4, 0, 1) : 1);
+      if (a <= 0) return;
+      ctx.save(); ctx.globalAlpha = a;
+      const lead = this.cranePos(c, 0);
+      ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, lead.x - 30 * lead.k, lead.y, 90 * lead.k, hex(night > 0.5 ? '#cfe0ff' : '#fff8e0'), (c.caught ? 0.4 : 0.16) + 0.06 * Math.sin(c.t * 3));
+      ctx.globalCompositeOperation = 'source-over';
+      // arkadakiler önce çizilir, lider en üstte
+      for (let i = c.n - 1; i >= 0; i--) { const p = this.cranePos(c, i); drawCrane(ctx, p.x, p.y, p.k, c.caught ? Math.sin(c.t * 16 + i) : p.w, night); }
       ctx.restore();
     }
     // Karahindiba tohumu: altta küçük kahverengi tohum, ince bir sap ve tepede ışınsal beyaz teller (paraşüt)

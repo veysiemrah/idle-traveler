@@ -335,5 +335,12 @@ IT.addLang('tr', {
     "unit.lyHint": "1 ışık yılı, ışığın bir yılda gittiği yoldur: yaklaşık {d} (≈ {au} AB).",
     "toast.unitAu": "<b>Yol artık AB ile ölçülüyor</b> · 1 AB ≈ {d}, Dünya ile Güneş arası. Mesafeye dokunup yeniden bakabilirsin.",
     "toast.unitLy": "<b>Yol artık ışık yılıyla ölçülüyor</b> · 1 ışık yılı ≈ {d}. Mesafeye dokunup yeniden bakabilirsin.",
+    // Turna Yolu (v1.35)
+    "route.crane.name": "Turna Yolu", "route.crane.perk": "Turna sürüleri gökyüzünde sana eşlik eder.",
+    "gift.crane.name": "Turna Rüzgârı", "gift.crane.text": "hız ×3",
+    "toast.cranesSeen": "Uzaktan turna sesleri geliyor… Gökyüzüne bak!",
+    "toast.cranes": "<b>Turnalar rüzgârlarını seninle paylaştı: {name}</b> · {dur} boyunca {text}",
+    "float.cranes": "Turnalar!",
+    "j.cranes": "Turna sürüsü",
   },
 });

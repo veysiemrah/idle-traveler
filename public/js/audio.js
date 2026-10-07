@@ -109,6 +109,20 @@
     gift() { if (!this.ctx) return; [0, 2, 4, 5, 6].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.06, 0.9, 'sine', this.sfx, true, i * 0.06)); },
     // kayan yıldız: yukarıdan aşağı inen ince, parıltılı bir dizi
     wish() { if (!this.ctx) return; [6, 5, 4, 2, 0].forEach((n, i) => this.tone(PENTA[n] * 2, 0.04, 1.6, 'sine', this.sfx, true, i * 0.09)); },
+    // turna sesi: uzaktan gelen, aşağı kayan yumuşak "krruu" çağrıları (iki üç kuş birbirine seslenir)
+    cranes() {
+      if (!this.ctx || !this.sfxOn) return;
+      const c = this.ctx;
+      [[0, 1], [0.32, 0.92], [0.7, 1.06]].forEach(([w, r]) => {
+        const t = c.currentTime + w, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(560 * r, t); o.frequency.linearRampToValueAtTime(470 * r, t + 0.26);
+        f.type = 'bandpass'; f.frequency.value = 1100 * r; f.Q.value = 2.2;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.03, t + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+        o.connect(f); f.connect(g); g.connect(this.sfx); g.connect(this.delay);
+        o.start(t); o.stop(t + 0.4);
+      });
+    },
     region() {
       if (!this.ctx) return;
       [261.63, 329.63, 392.0, 493.88, 587.33].forEach((f, i) => this.tone(f, 0.05, 3.5, 'sine', this.sfx, true, i * 0.12));

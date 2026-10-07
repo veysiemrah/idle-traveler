@@ -192,6 +192,7 @@ button { font: inherit; color: inherit; }
 .fx-wish { border-color: rgba(185, 200, 255, 0.8); }
 .fx-seed { border-color: rgba(214, 236, 170, 0.85); }
 .fx-seed b { color: var(--teal); }
+.fx-crane { border-color: rgba(190, 212, 240, 0.9); }
 .fx-caravan { border-color: rgba(111, 211, 193, 0.8); }
 .fx-caravan b { color: var(--teal); }
 /* Yıldız Tozu: koyu zeminde açık, açık zeminde koyu mavi (beyaz cam üstünde de okunur) */

@@ -251,7 +251,13 @@ npx wrangler dev   # http://localhost:8787
   - **Pusula Yolu** (6.): kıyıdan kanyona ve çöle; hazine haritasının parçaları iki kat sık düşer.
   - **Yonca Yolu** (7.): lale, çay bahçeleri ve çam ormanıyla başlar; şanslı adımlar iki kat sık.
   - **Fener Yolu** (8.): zeytinlikler ve kıyıyla başlar; duraklar (gerçek dünya mesafeleri) beş kat ödül verir.
-  Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
+  - **Turna Yolu** (9.): sonbahar korusu, buğday ovası ve karlı geçitten geçer; yalnızca bu rotada gökyüzünden ara sıra
+    V düzeninde bir turna sürüsü (5–9 kuş) soldan sağa, yolcuyla aynı yöne uçar (ilki 35–65 sn, sonra 110–200 sn arayla;
+    pencere açıkken, yağmurda ve uzayda gelmez). Sürü belirirken uzaktan turna sesleri duyulur, ilk üç sürüde "Gökyüzüne bak!"
+    bildirimi gelir. Sürüdeki bir turnaya dokununca sürü kanat çırpıp yükselerek solar ve 25 saniye *Turna Rüzgârı* (hız ×3)
+    gelir. Yakalanan sürüler Yol Defteri'nde sayılır (ilk sürüden sonra görünür). Rota kartında ödül yazmaz, yalnızca
+    "Turna sürüleri gökyüzünde sana eşlik eder." der; sürüm notunda da yalnızca ipucu verilir.
+  Rotalar 10 tanedir; dokuzuncu eve dönüşle sonuncusu açılır. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
   sonraki her seviye +%5 ekler (10. seviyede +%55). Seviye 2, 4, 7 ve 10'da görünümü değişir: tasma ve künye, boyunluk, sırtta
