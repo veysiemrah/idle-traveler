@@ -129,23 +129,28 @@ npx wrangler dev   # http://localhost:8787
   rozetler, güçlendirmeler) saniye saniye işler. Simülasyondaki oyuncu kredi başına en çok kalıcı gelir getiren alımı yapar;
   Kelebek Dostu, Rüya ve Kamp'ı fiyatları son 60 saniyelik gelirini aşmayınca alır (v1.38'e kadar bunları hiç almıyor, Şans'ı
   da yanlışlıkla değersiz sayıyordu; önceki sürümlerde yazan tempolar bu yüzden gerçekte olduğundan 2,5–10 kat yavaştı).
-  Tek yolculukta araçlara ulaşma, ortanca (8 deneme; parantezde en hızlı–en yavaş), v1.38:
+  Tek yolculukta araçlara ulaşma, ortanca (8 deneme), v1.39. Hedefler v1.27'den beri belgelenenlerdir; v1.39'da gerçek tempo
+  bu hedeflere geri çekildi (bkz. aşağıda):
   - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi), gün döngüsünde (%44 gece):
-    tren ~8 dk, uçak ~15 dk, jet ~30 dk, roket ~74 dk (66–80), Güneş Yelkeni ~3 saat (156–180 dk), Kuyruklu Yıldız ~8,3 saat.
-    Hep gece (koyu tema): Güneş Yelkeni ~171 dk; hep gündüz (açık tema): ~184 dk. Yıldız Gemisi 24 saatte ulaşılamaz;
-    hatıralarla hızlanan sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu Kuyruklu Yıldız'a 14. yolculukta ulaşır).
-  - **Aktif** (aynı, normal şans): tren ~10 dk, uçak ~25 dk, roket ~94 dk, Güneş Yelkeni ~3,6 saat, Kuyruklu Yıldız ~8,2 saat.
-  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~18 dk, tren ~44 dk, uçak ~2,1 saat, jet ~4,6 saat, roket ~10 saat.
-  Karşılaştırma (aynı simülasyonla): v1.36 kurallarında Güneş Yelkeni şanslı oyuncuda ~37 dk, aktifte ~93 dk; sıradan oyuncuda
-  roket ~10 saat. v1.37 (kalıcı gelirle ödüller) aktif oyuncuları yavaşlattı, sıradan oyuncuyu neredeyse değiştirmedi.
-- **Gelire bağlı ödüller (v1.37)**: Bölge (40 sn), durak (30 sn), kelebekten anında kredi (600 sn), hazine sandığı (6000 sn)
+    tren ~10 dk, uçak ~29 dk, jet ~76 dk, roket ~3,1 saat (181–195 dk), Güneş Yelkeni ~8 saat (462–490 dk), Kuyruklu Yıldız
+    ~23 saat. Hep gece (koyu tema): Güneş Yelkeni ~450 dk; hep gündüz (açık tema): ~504 dk. Yıldız Gemisi tek yolculukta
+    30 saatte ulaşılamaz; hatıralarla hızlanan sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu
+    Kuyruklu Yıldız'a 14. yolculukta ulaşır).
+  - **Aktif** (aynı, normal şans): tren ~15 dk, uçak ~46 dk, roket ~4,6 saat, Güneş Yelkeni ~12,7 saat.
+  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, uçak ~3,9 saat, roket ~20,6 saat.
+  **Ölçüm geçmişi:** v1.38'e kadar simülasyon Kelebek Dostu'nu hiç almıyor, Şans'ı da yanlışlıkla değersiz sayıyordu. Gerçek
+  tempo bu yüzden yazılandan çok hızlıydı (aynı düzeltilmiş simülasyonla Güneş Yelkeni: v1.36 kurallarında şanslı oyuncu ~37 dk,
+  aktif ~93 dk; v1.38'de ~177 ve ~214 dk). Asıl hızlandırıcı Kelebek Dostu'ydu: 10. seviyede kelebekler iki kat sık, etkileri
+  2,5 kat uzun geliyor, üst üste binen etkiler katlanıyordu (Rüzgâr Hortumu ×3 → ×21). v1.39'da Kelebek Dostu seviye başına
+  +%5 sıklık ve +%5 süreye indi (10. seviyede +%50 / +%50), gelire bağlı ödüller de yeniden seçildi.
+- **Gelire bağlı ödüller**: Bölge (120 sn), durak (90 sn), kelebekten anında kredi (250 sn), hazine sandığı (2200 sn)
   ve günün hediyesi (120 sn × gün) **kalıcı gelirin** o kadar saniyesini verir (`game.js` → `REWARD`, `sim_game.js` → `RW`).
   Kalıcı gelir, geçici çarpanlar (kelebek etkileri, gökkuşağı, dilek, kervan) olmadan hesaplanan kredi/sn'dir (`baseEma`).
-  Önceden ödüller şişmiş gelirle hesaplanıyordu: dilekle (kredi ×10) düşen dördüncü harita parçasının sandığı on kat,
-  gökkuşağı ile Rüzgâr Hortumu'nun (×30 hız) üst üste geldiği anlardaki bölge ödülleri otuz kat veriyordu. Tempo bu rastlantıya
-  bağlıydı (sıradan oyuncu trene 4 ile 72 dk arasında ulaşıyordu). Süreler `sim_game.js` ızgarasıyla seçildi; şansa bağlı
-  yayılım daraldı. (Izgara o sırada Kelebek Dostu'nu almayan simülasyonla yapıldı; düzeltilmiş ölçüm için yukarıdaki Tempo'ya bak.)
-  Olaylar yine güçlüdür: hazine sandığı aktif oyuncunun en büyük gelir kaynağıdır (saatte ~12 sandık).
+  v1.37'den önce ödüller şişmiş gelirle hesaplanıyordu: dilekle (kredi ×10) düşen dördüncü harita parçasının sandığı on kat,
+  gökkuşağı ile Rüzgâr Hortumu'nun (×30 hız) üst üste geldiği anlardaki bölge ödülleri otuz kat veriyordu; tempo bu rastlantıya
+  bağlıydı (sıradan oyuncu trene 4 ile 72 dk arasında ulaşıyordu). Süreler v1.39'da `sim_game.js` ızgarasıyla, yukarıdaki
+  hedefleri üç profilde birden tutturacak biçimde seçildi (bölge ve durak ödülleri erken oyunu, sandık geç oyunu taşır).
+  Simülasyonda denemek için: `'{"rw":{"chest":3000},"bf":{"bfFreq":0.1}}'`; v1.37 öncesi kural için `'{"boost":1}'`.
   `sim_switch.js` ve `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
@@ -220,7 +225,8 @@ npx wrangler dev   # http://localhost:8787
   İlk üçü tavansızdır (her seviye 2,2–2,6 kat pahalanır, alınabilen seviye gelirin logaritmasıyla artar: 24 saatte ~25–30 seviye).
   Tavanlı olanlar v1.38'de dikleşti (büyüme: Ritim ×4, Şans ve Rüya ×4,5, Kamp ×2,3, Kelebek Dostu ×5, Yol Arkadaşı ×6). Son
   seviyeleri artık minibüs ile uçak arasındaki fiyatlarda (Ritim ~79 Mn, Kelebek Dostu ~3,5 Mr, Yol Arkadaşı ~50 Mr); önceden
-  hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar, tempo neredeyse aynı kaldı.
+  hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar.
+  Kelebek Dostu seviye başına kelebekleri %5 sık getirir ve etkilerini %5 uzatır (v1.39'a kadar %10 ve %15).
 - **Bölgeler**: Sabah Köyü, Lavanta Tarlaları, Çam Ormanı, Altın Buğday Ovası, Ege Sahil Yolu, Kızıl Kanyon,
   Kiraz Çiçeği Vadisi, Sonbahar Korusu, Vaha Yolu, Karlı Geçit, Kuzey Işıkları, Rize Çay Bahçeleri, Peri Bacaları,
   Lale Bahçeleri (yel değirmenleri), Zeytin Bahçeleri (deniz kıyısında zeytinlikler)… Liste bitince bölgeler ikinci tura girer;

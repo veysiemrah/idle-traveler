@@ -25,7 +25,8 @@
   // Hazine haritası: kelebekten %20, kayan yıldızdan %50 olasılıkla parça düşer; dört parça bir sandık açar
   const MAP_PIECES = 4, MAP_DROP = { gift: 0.2, star: 0.5 };
   // Gelire bağlı ödüller: kaç saniyelik kalıcı gelir verdikleri (tests/sim_game.js'teki RW ile aynı tutulur)
-  const REWARD = { region: 40, ms: 30, instant: 600, chest: 6000 };
+  // v1.39: belgelenen tempo hedeflerine göre yeniden seçildi (sim_game ızgarası; bkz. README > Tempo)
+  const REWARD = { region: 120, ms: 90, instant: 250, chest: 2200 };
   // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
   const effMult = (g, stack) => {
     const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
@@ -366,7 +367,7 @@
       toast(t('toast.giftInstant', { name: g.name, c: fmtNum(bonus) }), 'gold');
       scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffd56b', big: true });
     } else {
-      const r = addEffect(g, g.dur * (1 + 0.15 * S.buffs.butterfly) * (perk() === 'gold' ? 1.5 : 1), true);
+      const r = addEffect(g, g.dur * Econ.butterflyDur(S.buffs.butterfly) * (perk() === 'gold' ? 1.5 : 1), true);
       if (r.stacked) toast(t('toast.giftStack', { name: g.name, text: effText(g, r.stack) }), 'gold');
       else toast(t('toast.giftEffect', { name: g.name, dur: fmtDuration(r.dur), text: effText(g, r.stack) }), 'gold');
       scene.addFloat(t('float.gift', { name: g.name }), { color: '#ffd56b', big: true });
@@ -770,7 +771,7 @@
     if ($('#modal').hidden) giftIn -= dt;
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
-      giftIn = (40 + Math.random() * 45) / (1 + 0.1 * S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
+      giftIn = (40 + Math.random() * 45) / Econ.butterflyFreq(S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
     }
     // hazine sandığı: harita tamamken gelir; kaçırılırsa 45 sn sonra yeniden
     if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest) {
