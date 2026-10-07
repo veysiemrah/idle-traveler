@@ -326,5 +326,12 @@ IT.addLang('en', {
     "unit.lyHint": "1 light-year is the distance light travels in a year: about {d} (≈ {au} AU).",
     "toast.unitAu": "<b>Distances are now in AU</b> · 1 AU ≈ {d}, from Earth to the Sun. Tap the distance to see this again.",
     "toast.unitLy": "<b>Distances are now in light-years</b> · 1 light-year ≈ {d}. Tap the distance to see this again.",
+    // Crane Road (v1.35)
+    "route.crane.name": "Crane Road", "route.crane.perk": "Flocks of cranes keep you company across the sky.",
+    "gift.crane.name": "Crane Wind", "gift.crane.text": "speed ×3",
+    "toast.cranesSeen": "Cranes are calling in the distance… Look up!",
+    "toast.cranes": "<b>The cranes shared their wind with you: {name}</b> · {text} for {dur}",
+    "float.cranes": "Cranes!",
+    "j.cranes": "Crane flocks",
   },
 });

@@ -13,6 +13,7 @@
     { id: 'rainbow',  dur: 20, speed: 10, w: 0 },  // hava olayıyla gelir: kısa ama güçlü
     { id: 'wish',     dur: 20, credit: 10, w: 0 }, // gece kayan yıldızla gelir: kısa ama güçlü
     { id: 'seed',     dur: 20, credit: 10, w: 0 }, // gündüz karahindiba tohumuyla gelir (açık temada oynayan da dilek tutabilsin)
+    { id: 'crane',    dur: 25, speed: 3, w: 0 },   // Turna Yolu'nda geçen turna sürüsüne dokununca gelir
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -43,7 +44,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes',
     'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -64,6 +65,7 @@
       mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
       keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
       unitTip: 0, // büyük birim açıklaması gösterildi mi: 1 AB, 2 ışık yılı (bir kez)
+      cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -95,7 +97,7 @@
     if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
     s.v = 3;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
@@ -388,6 +390,26 @@
     scene.addFloat(t('float.wish'), { color: '#fff8d6', big: true });
     checkBadges();
   }
+  // Turna Yolu: gökyüzünden geçen turna sürüsüne dokununca rüzgârlarını seninle paylaşırlar (Turna Rüzgârı, hız ×3)
+  let craneIn = 35 + Math.random() * 30;
+  function updateCranes(dt) {
+    if (perk() !== 'cranes' || scene.cranes || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    craneIn -= dt;
+    if (craneIn > 0) return;
+    craneIn = 110 + Math.random() * 90;
+    scene.spawnCranes(); Sound.cranes();
+    // ilk birkaç sürüde gökyüzüne bakmayı hatırlatan bir bildirim
+    if (S.cranes < 3) toast(t('toast.cranesSeen'), 'teal');
+  }
+  function catchCranes() {
+    Sound.unlock();
+    S.cranes++; uiDirty.journal = true;
+    const g = GIFT.crane, dur = addEffect(g, g.dur).dur;
+    Sound.gift(); Sound.cranes();
+    toast(t('toast.cranes', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    scene.addFloat(t('float.cranes'), { color: '#e9f3ff', big: true });
+    checkBadges();
+  }
   function dropMapPiece(src) {
     if (S.mapPieces >= MAP_PIECES || Math.random() >= MAP_DROP[src] * (perk() === 'map' ? 2 : 1)) return;
     S.mapPieces++; uiDirty.journal = true;
@@ -531,7 +553,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null;
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -726,6 +748,7 @@
     S.effects = S.effects.filter(e => e.until > Date.now());
     updateWeather(dt);
     updateKeeps(dt);
+    updateCranes(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -1317,7 +1340,7 @@
         <canvas class="tr-icon" data-icon="${veh.id}" data-tier="${me ? Econ.lookTier(S.levels[S.active]) : Math.max(0, Math.min(Econ.looks.length, p.tier | 0))}" width="72" height="56" aria-hidden="true"></canvas>
         <div class="tr-main">
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
-          <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
+          <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p, all ? O.topAt : O.at))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
         </div>
         <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? (all ? myLife() : S.distance) : p.dist)}</b>
       </li>`;
@@ -1394,6 +1417,7 @@
         <div><dt>${t('j.rainbows')}</dt><dd id="jRainbows"></dd></div>
         <div><dt>${t('j.wishes')}</dt><dd id="jWishes"></dd></div>
         <div><dt>${t('j.photos')}</dt><dd id="jPhotos"></dd></div>
+        ${S.cranes ? `<div><dt>${t('j.cranes')}</dt><dd>${fmtNum(S.cranes)}</dd></div>` : ''}
         <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
@@ -1548,12 +1572,12 @@
     if (!$('#pane-journal').hidden) {
       setText('#jDist', fmtDist(S.distance)); setText('#jCred', fmtNum(S.totalCredits));
       // defterdeki büyük mesafelerde de üstüne gelince birimin açıklaması
-      for (const [sel, m] of [['#jDist', S.distance], ['#jLife', S.lifeDist + S.distance]]) { const el = $(sel), u = el && IT.distUnit(m); if (el) el.title = u ? unitHint(u) : ''; }
+      for (const [sel, m] of [['#jDist', S.distance], ['#jLife', myLife()]]) { const el = $(sel), u = el && IT.distUnit(m); if (el) el.title = u ? unitHint(u) : ''; }
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
       setText('#jWishes', fmtNum(S.wishes)); setText('#jPhotos', fmtNum(S.photos));
-      if (S.trips) setText('#jLife', t('j.lifeVal', { d: fmtDist(S.lifeDist + S.distance), n: S.trips + 1 }));
+      if (S.trips) setText('#jLife', t('j.lifeVal', { d: fmtDist(myLife()), n: S.trips + 1 }));
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
@@ -1612,6 +1636,7 @@
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
+      if (scene.hitCranes(x, y)) { catchCranes(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }

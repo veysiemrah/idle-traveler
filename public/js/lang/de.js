@@ -342,5 +342,12 @@ IT.addLang('de', {
     "unit.lyHint": "1 Lichtjahr ist die Strecke, die Licht in einem Jahr zurücklegt: etwa {d} (≈ {au} AE).",
     "toast.unitAu": "<b>Strecken jetzt in AE</b> · 1 AE ≈ {d}, von der Erde zur Sonne. Tippe auf die Entfernung, um das erneut zu sehen.",
     "toast.unitLy": "<b>Strecken jetzt in Lichtjahren</b> · 1 Lichtjahr ≈ {d}. Tippe auf die Entfernung, um das erneut zu sehen.",
+    // Kranichweg (v1.35)
+    "route.crane.name": "Kranichweg", "route.crane.perk": "Kranichschwärme begleiten dich am Himmel.",
+    "gift.crane.name": "Kranichwind", "gift.crane.text": "Tempo ×3",
+    "toast.cranesSeen": "In der Ferne rufen Kraniche … Schau nach oben!",
+    "toast.cranes": "<b>Die Kraniche teilen ihren Wind mit dir: {name}</b> · {text} für {dur}",
+    "float.cranes": "Kraniche!",
+    "j.cranes": "Kranichschwärme",
   },
 });
