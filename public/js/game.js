@@ -67,7 +67,7 @@
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
       regionIdx: 0, msIdx: 0, effects: [], badges: {},
-      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto', others: true, zoom: 1 }, intro: false,
+      settings: { sfx: true, music: true, bulk: 1, sky: 'auto', lang: 'auto', units: 'auto', outfit: 'classic', page: 'auto', others: true, zoom: 1, trScope: 'day' }, intro: false,
       // Yolcular listesindeki kimlik: id herkese kapalı, key yalnızca bu tarayıcıda (sunucu özetini saklar)
       player: { id: IT.newId(), key: IT.newKey(), name: '' },
     };
@@ -140,6 +140,7 @@
     if (s.settings.lang !== 'auto' && !IT.LANGS[s.settings.lang]) s.settings.lang = 'auto';
     if (!UNITS.includes(s.settings.units)) s.settings.units = 'auto';
     if (!ZOOMS.includes(s.settings.zoom)) s.settings.zoom = 1;
+    if (!['day', 'all'].includes(s.settings.trScope)) s.settings.trScope = 'day';
     if (!OUTFIT[s.settings.outfit]) s.settings.outfit = 'classic';
     if (!['auto', 'light', 'dark'].includes(s.settings.page)) s.settings.page = 'auto';
     if (typeof s.lastSeen !== 'number' || !isFinite(s.lastSeen) || s.lastSeen > Date.now()) s.lastSeen = Date.now();
@@ -604,6 +605,12 @@
       const i = IT.ROUTES.findIndex(r => r.id === id);
       if (i < 0 || i >= routesOpenFor(S.trips) || S.regionIdx > 0 || S.route === id) return;
       S.route = id; applyRoute(); save();
+    },
+    // Yolcular: son 24 saat ya da tüm zamanlar
+    trScope(id) {
+      if (!['day', 'all'].includes(id) || S.settings.trScope === id) return;
+      S.settings.trScope = id; save(); uiDirty.travelers = true;
+      if (id === 'all') loadTop();
     },
     // Raftaki yadigâra dokununca küçük bir sallanma ve ses
     keepPeek(_, el) {
@@ -1189,6 +1196,8 @@
         // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz; kervandaki gezginin etiketinde 🐫 durur
         ahead: diff > 0, diff, sub: (caravan.has(p.pub) ? '🐫 ' : '') + (Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff))) }));
   }
+  // Bütün yolculuklarda gidilen toplam yol (Yol Defteri'ndeki "toplam yol" ile aynı)
+  const myLife = () => Math.max((S.lifeDist || 0) + S.distance, S.legacyDist || 0);
   /* ---------- Hazır mesajlar ---------- */
   // Mesaj seçici açıkken sahneye dokunmak onu kapatır; o dokunuş adım sayılmaz
   let chatClosedAt = 0;
@@ -1263,11 +1272,19 @@
     uiDirty.travelers = true;
   }
 
-  // Yolcular: son 24 saatte oynayan gezginler, bu yolculukta gittikleri yola göre sıralı
+  // Tüm zamanlar listesi istendiğinde getirilir; sekme açıkken dakikada bir tazelenir
+  let topBusy = false;
+  async function loadTop() {
+    if (topBusy) return;
+    topBusy = true; uiDirty.travelers = true;
+    await IT.Online.fetchTop(S.player.id);
+    topBusy = false; uiDirty.travelers = true;
+  }
+  // Yolcular: son 24 saatte oynayan gezginler (önce yoldakiler) ya da tüm zamanların gezginleri (toplam yola göre)
   function renderTravelers() {
-    const pane = $('#pane-travelers'), O = IT.Online, d = O.data;
+    const pane = $('#pane-travelers'), O = IT.Online, all = S.settings.trScope === 'all', d = all ? O.top : O.data;
     const rtf = new Intl.RelativeTimeFormat(IT.locale(), { numeric: 'auto', style: 'short' });
-    const ago = ms => { const m = Math.floor(ms / 60e3); return m < 60 ? rtf.format(-Math.max(1, m), 'minute') : rtf.format(-Math.floor(m / 60), 'hour'); };
+    const ago = ms => { const m = Math.floor(ms / 60e3); return m < 60 ? rtf.format(-Math.max(1, m), 'minute') : m < 1440 ? rtf.format(-Math.floor(m / 60), 'hour') : rtf.format(-Math.floor(m / 1440), 'day'); };
     const row = p => {
       // Kendi satırın sunucuyu beklemeden güncel değerleri gösterir
       const me = p.me, veh = VEH[me ? S.active : p.veh] || VEH.walk, trip = me ? S.trips + 1 : p.trip;
@@ -1278,12 +1295,21 @@
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
           <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
         </div>
-        <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? S.distance : p.dist)}</b>
+        <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? (all ? myLife() : S.distance) : p.dist)}</b>
       </li>`;
     };
     let body;
-    if (!d) body = `<p class="tr-note">${t(O.status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
-    else {
+    const status = all ? O.topStatus : O.status;
+    if (!d) body = `<p class="tr-note">${t(status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
+    else if (all) {
+      // tüm zamanlar: saf sıralama (toplam yol); yoldakilerin toplamı iki bildirim arasında da akar
+      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? myLife() : O.liveLife(p) })).sort((a, b) => b.dist - a.dist);
+      live.forEach((p, i) => { p.rank = i + 1; });
+      const meOut = d.me && !live.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(Object.assign({}, d.me, { dist: myLife() }))}` : '';
+      const list = live.map(row).join('') + meOut;
+      body = `${status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
+        ${list ? `<ol class="tr-list">${list}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
+    } else {
       // yoldakilerin mesafesi iki bildirim arasında da akar; sıra buna göre yeniden kurulur
       // önce şu an yolda olanlar (sen dahil), sonra diğerleri; her grup tahmini mesafeye göre, aralarında ince bir ayırıcı
       const on = p => (p.online || p.me ? 1 : 0);
@@ -1297,17 +1323,19 @@
       body = `${O.status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
         ${list ? `<ol class="tr-list">${list}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
     }
-    pane.innerHTML = `<div class="garage-top"><p class="tag">${t('tr.lead')}</p></div>
+    pane.innerHTML = `<div class="garage-top"><p class="tag">${t(all ? 'tr.leadAll' : 'tr.lead')}</p>
+        <div class="seg" role="group" aria-label="${t('tr.scope')}">${['day', 'all'].map(k =>
+          `<button class="seg-btn" data-act="trScope" data-id="${k}" aria-pressed="${S.settings.trScope === k}">${t(k === 'all' ? 'tr.scopeAll' : 'tr.scopeDay')}</button>`).join('')}</div></div>
       <dl class="garage-sum">
         <div><dt>${t('tr.online')}</dt><dd>${d ? fmtNum(d.online) : '–'}</dd></div>
-        <div><dt>${t('tr.total')}</dt><dd>${d ? fmtNum(d.total) : '–'}</dd></div>
+        <div><dt>${t(all ? 'tr.totalAll' : 'tr.total')}</dt><dd>${d ? fmtNum(d.total) : '–'}</dd></div>
       </dl>
       ${S.player.name ? '' : `<div class="card tr-ask"><p class="tag">${t('tr.noName')}</p><button class="buy" data-act="nameAsk"><span>${t('tr.pick')}</span></button></div>`}
       ${body}`;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
     trRenderedAt = Date.now();
   }
-  let trRenderedAt = 0;
+  let trRenderedAt = 0, lastTopTry = 0;
   function renderJournal() {
     const pane = $('#pane-journal');
     const stamps = [];
@@ -1409,9 +1437,10 @@
     if (uiDirty.journal) { renderJournal(); uiDirty.journal = false; }
     // Yolcular sekmesi açıkken mesafeler ve sıra iki saniyede bir tazelenir
     if (!$('#pane-travelers').hidden && Date.now() - trRenderedAt > 2000) uiDirty.travelers = true;
+    if (!$('#pane-travelers').hidden && S.settings.trScope === 'all' && !topBusy && Date.now() - IT.Online.topAt > 60e3 && Date.now() - lastTopTry > 20e3) { lastTopTry = Date.now(); loadTop(); }
     if (uiDirty.travelers) { renderTravelers(); uiDirty.travelers = false; }
     // Kendi satırında mesafe canlı akar; sekmedeki sayı "şu an yolda" olanlardır
-    setText('#trMeDist', fmtDist(S.distance));
+    setText('#trMeDist', fmtDist(S.settings.trScope === 'all' ? myLife() : S.distance));
     scene.setOthers(othersOnStage());
     const od = IT.Online.data;
     setText('#trCount', IT.Online.status === 'ok' && od ? fmtNum(od.online) : '');
@@ -1682,7 +1711,7 @@
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
     // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
     const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
-    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
+    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
       tier: Econ.lookTier(S.levels[S.active]), outfit: wornOutfit(), pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;

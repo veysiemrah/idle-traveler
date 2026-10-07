@@ -324,5 +324,11 @@ IT.addLang('tr', {
     // Karahindiba tohumu (v1.31)
     "gift.seed.name": "Rüzgâr Dileği", "gift.seed.text": 'kredi ×10',
     "toast.seed": "<b>Karahindiba! Tohumu üfledin, dilek tuttun: {name}</b> · {dur} boyunca {text}",
+    // Yolcular: tüm zamanlar (v1.32)
+    "tr.scope": "Liste",
+    "tr.scopeDay": "Son 24 saat",
+    "tr.scopeAll": "Tüm zamanlar",
+    "tr.totalAll": "Tüm gezginler",
+    "tr.leadAll": "Şimdiye kadar yola çıkmış bütün gezginler, bütün yolculuklarında gittikleri toplam yola göre sıralı. Şu an yolda olanların yanında yeşil bir nokta yanar.",
   },
 });

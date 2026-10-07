@@ -58,7 +58,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 
 | İstek | Ne yapar |
 | --- | --- |
-| `POST /api/hello` | `{ id, key, name, dist, spd, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner |
+| `POST /api/hello` | `{ id, key, name, dist, life, spd, trip, veh, route, tier, outfit, pal }`: kaydı ekler ya da günceller, yolcu listesini döner (`life`: bütün yolculukların toplam yolu, kayıtta hiç azalmaz) |
+| `POST /api/top` | `{ id? }`: tüm zamanlar; toplam yola göre ilk 50 ve listede değilse isteyenin kendi satırı: `{ online, total, players, me }` |
 | `POST /api/say` | `{ id, key, msg, to? }`: hazır mesaj ya da el sallama (`msg: 'wave'`, `to`: alıcının `pub`'ı) gönderir (yalnızca yoldaki, anahtarı tutan yolcu; en sık 4 sn'de bir), son mesajları döner |
 | `GET /api/feed` | Son 20 saniyenin mesajları: `{ now, feed: [{ pub, msg, at, to }] }` |
 | `GET /api/players` | Yalnızca yolcu listesi: `{ online, total, players: [{ pub, name, dist, spd, trip, veh, tier, outfit, pal, online, ago, rank, me, msg, msgAgo }], me }` |
@@ -66,7 +67,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
   özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
 - `pub`, gizli kimlikten türetilen kısa ve kalıcı bir anahtardır; sahne aynı gezgini bununla tanır, kimliği açık etmez.
-- Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen kayıtlar ara sıra silinir.
+- Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen ve toplamda 1 km'ye ulaşmamış kayıtlar ara sıra silinir; yol gitmiş
+  gezginler tüm zamanlar listesi için kalır.
 - Ad sunucuda da aynı kuralla temizlenir ve denetlenir.
 
 Yerelde API ile denemek için:
@@ -127,7 +129,9 @@ npx wrangler dev   # http://localhost:8787
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
   son 24 saatte oynayan gezginleri listeler: önce şu an yolda olanlar (sen dahil), ince bir "Daha önce yoldaydı" ayırıcısının
-  altında diğerleri; her grup bu yolculukta gidilen yola göre sıralıdır. Sunucu da ilk 50'yi bu kuralla seçer, böylece yoldaki hiç
+  altında diğerleri; her grup bu yolculukta gidilen yola göre sıralıdır. Sekmenin üstündeki "Son 24 saat | Tüm zamanlar" seçimiyle
+  tüm zamanlar listesine geçilir: şimdiye kadar yola çıkmış bütün gezginler, bütün yolculuklarında gittikleri toplam yola göre
+  (yoldakilerin yanında yeşil nokta). Bu liste istendiğinde getirilir ve sekme açıkken dakikada bir tazelenir; seçim kaydedilir. Sunucu da ilk 50'yi bu kuralla seçer, böylece yoldaki hiç
   kimse listeden düşmez; ilk 50'de olmayan kendi satırın yoldakilerin sonuna eklenir. Her satırda ad, bindiği araç,
   kaçıncı yolculukta olduğu, mesafesi ve şu an yolda olup olmadığı görünür. Sekmedeki sayı şu an yolda olanlardır
   (son 3 dakikada haber verenler). Oyun her 30 saniyede bir kaydını günceller. Sunucuya ulaşılamazsa oyun aynen sürer,

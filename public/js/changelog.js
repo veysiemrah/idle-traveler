@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.31';
+  IT.VERSION = '1.32';
 
   IT.CHANGELOG = [
+    { v: '1.32', date: '2026-10-07', items: {
+      tr: ['Yolcular sekmesinde yeni bir liste: Tüm zamanlar. Şimdiye kadar yola çıkmış bütün gezginler, bütün yolculuklarında gittikleri toplam yola göre sıralı. Sen kaçıncısın?',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A new list in the Travelers tab: All time. Every traveler who has ever hit the road, ranked by the total distance of all their trips. Where do you stand?',
+        'A few small touches along the road.'],
+      de: ['Eine neue Liste im Tab Reisende: Alle Zeiten. Alle, die je aufgebrochen sind, sortiert nach der Gesamtstrecke all ihrer Reisen. Auf welchem Platz bist du?',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una lista nueva en la pestaña Viajeros: Histórico. Todos los viajeros que alguna vez se pusieron en camino, ordenados por la distancia total de todos sus viajes. ¿En qué puesto estás?',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle liste dans l’onglet Voyageurs : Depuis toujours. Tous les voyageurs qui ont pris la route un jour, classés selon la distance totale de tous leurs voyages. Quelle est ta place ?',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.31', date: '2026-10-07', items: {
       tr: ['Dilekler yalnızca geceye ait değil… Güneşli bir günde rüzgârın getirdiklerine dikkat et.',
         'Yolda birkaç küçük rötuş.'],

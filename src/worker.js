@@ -1,8 +1,9 @@
 /* Idle Traveler — Worker: statik site + "Yolcular" API'si (D1).
    /api/* dışındaki her istek public/ klasöründeki statik dosyalara gider.
 
-   POST /api/hello   { id, key, name, dist, spd, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
+   POST /api/hello   { id, key, name, dist, life, spd, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
    GET  /api/players                                           → yalnızca yolcu listesi
+   POST /api/top     { id? }                                   → tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50
    POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
@@ -19,7 +20,8 @@ const ONLINE_MS = 3 * 60e3;      // son 3 dakikada haber veren yolcu "yolda" say
 const LIST_MS = 24 * 3600e3;     // listede son 24 saatte oynayanlar görünür
 const LIST_MAX = 50;
 const MIN_GAP_MS = 5e3;          // aynı yolcunun kaydı en sık 5 saniyede bir yazılır
-const PRUNE_MS = 30 * 24 * 3600e3; // 30 gün görünmeyen kayıtlar silinir
+const PRUNE_MS = 30 * 24 * 3600e3; // 30 gün görünmeyen ve neredeyse hiç yol gitmemiş kayıtlar silinir
+const PRUNE_LIFE = 1000;           // (tüm zamanlar listesi gerçekten tüm zamanlar olsun: 1 km'yi geçen kayıt kalır)
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
@@ -44,7 +46,7 @@ async function sha256(text) {
 // me: isteği yapanın satırı (ilk 50'de değilse aynı kurala göre sırasıyla eklenir)
 // pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
 const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
-const COLS = 'id, name, dist, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt';
+const COLS = 'id, name, dist, life, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt';
 const validId = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
 const validKey = v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
 // Son mesajlar: { pub, msg, at } (at sunucu saatidir; istemci now ile kendi saatine çevirir)
@@ -59,7 +61,7 @@ async function listPlayers(db, id, now) {
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?2) AS online FROM players WHERE seen > ?1').bind(since, onlineSince),
   ]);
   const map = async r => ({
-    pub: await pubOf(r.id), name: r.name, dist: r.dist, spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
+    pub: await pubOf(r.id), name: r.name, dist: r.dist, life: Math.max(r.life || 0, r.dist), spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
     online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
     msg: r.msgAt > now - 60e3 ? r.msg : '', msgAgo: Math.max(0, now - r.msgAt),
   });
@@ -78,6 +80,34 @@ async function listPlayers(db, id, now) {
   const c = counts.results[0] || {};
   return { now, online: c.online || 0, total: c.total || 0, players, me, feed: await feed(db, now) };
 }
+// Tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50; me: isteği yapanın satırı (ilk 50'de değilse sırasıyla)
+async function topPlayers(db, id, now) {
+  const onlineSince = now - ONLINE_MS;
+  const [rows, counts] = await db.batch([
+    db.prepare(`SELECT ${COLS} FROM players ORDER BY MAX(life, dist) DESC LIMIT ?1`).bind(LIST_MAX),
+    db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?1) AS online FROM players').bind(onlineSince),
+  ]);
+  const map = async r => ({
+    pub: await pubOf(r.id), name: r.name, life: Math.max(r.life || 0, r.dist), spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier,
+    online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
+  });
+  const players = await Promise.all(rows.results.map(async (r, i) => Object.assign(await map(r), { rank: i + 1 })));
+  let me = players.find(p => p.me) || null;
+  if (!me && id) {
+    const r = await db.prepare(`SELECT ${COLS} FROM players WHERE id = ?1`).bind(id).first();
+    if (r) {
+      const above = await db.prepare('SELECT COUNT(*) AS n FROM players WHERE MAX(life, dist) > ?1').bind(Math.max(r.life || 0, r.dist)).first();
+      me = Object.assign(await map(r), { rank: (above ? above.n : 0) + 1 });
+    }
+  }
+  const c = counts.results[0] || {};
+  return { now, online: c.online || 0, total: c.total || 0, players, me };
+}
+async function top(request, env) {
+  let b = {};
+  try { b = await request.json(); } catch (e) { /* gövdesiz istek: yalnızca liste */ }
+  return json(await topPlayers(env.DB, b && validId(b.id) ? b.id : null, Date.now()));
+}
 
 async function hello(request, env) {
   let b;
@@ -87,6 +117,8 @@ async function hello(request, env) {
   const key = validKey(b.key) ? b.key : null;
   const name = cleanName(b.name);
   const dist = Number(b.dist), trip = Number(b.trip);
+  // toplam yol: eski istemciler göndermez (o zaman bu yolculuğun mesafesi); kayıtta hiç azalmaz
+  const lifeIn = Number(b.life), life = isFinite(lifeIn) && lifeIn >= dist && lifeIn < 1e24 ? lifeIn : dist;
   if (!id || !key) return json({ error: 'bad-id' }, 400);
   if (!name) return json({ error: 'bad-name' }, 400);
   if (!isFinite(dist) || dist < 0 || dist > 1e22) return json({ error: 'bad-dist' }, 400);
@@ -100,16 +132,16 @@ async function hello(request, env) {
   const spd = Number(b.spd), speed = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
   const now = Date.now(), hash = await sha256(key);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
-  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13)
+  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14)
     ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
-      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd
-    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed).run();
+      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd, life = MAX(players.life, excluded.life)
+    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed, life).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key FROM players WHERE id = ?1').bind(id).first();
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);
   }
   // Ara sıra eski kayıtları temizle
-  if (Math.random() < 0.01) await env.DB.prepare('DELETE FROM players WHERE seen < ?1').bind(now - PRUNE_MS).run();
+  if (Math.random() < 0.01) await env.DB.prepare('DELETE FROM players WHERE seen < ?1 AND MAX(life, dist) < ?2').bind(now - PRUNE_MS, PRUNE_LIFE).run();
   return json(await listPlayers(env.DB, id, now));
 }
 
@@ -141,6 +173,7 @@ export default {
       if (url.pathname === '/api/hello' && request.method === 'POST') return await hello(request, env);
       if (url.pathname === '/api/players' && request.method === 'GET') return json(await listPlayers(env.DB, null, Date.now()));
       if (url.pathname === '/api/say' && request.method === 'POST') return await say(request, env);
+      if (url.pathname === '/api/top' && request.method === 'POST') return await top(request, env);
       if (url.pathname === '/api/feed' && request.method === 'GET') { const now = Date.now(); return json({ now, feed: await feed(env.DB, now) }); }
       return json({ error: 'not-found' }, 404);
     } catch (e) {

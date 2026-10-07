@@ -317,5 +317,11 @@ IT.addLang('fr', {
     // Karahindiba tohumu (v1.31)
     "gift.seed.name": "Vœu au vent", "gift.seed.text": 'crédits ×10',
     "toast.seed": "<b>Pissenlit ! Tu as soufflé un vœu : {name}</b> · {text} pendant {dur}",
+    // Yolcular: tüm zamanlar (v1.32)
+    "tr.scope": "Liste",
+    "tr.scopeDay": "Dernières 24 h",
+    "tr.scopeAll": "Depuis toujours",
+    "tr.totalAll": "Tous les voyageurs",
+    "tr.leadAll": "Tous les voyageurs qui ont pris la route un jour, classés selon la distance totale de tous leurs voyages. Un point vert signale ceux qui sont sur la route en ce moment.",
   },
 });

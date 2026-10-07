@@ -315,5 +315,11 @@ IT.addLang('en', {
     // Karahindiba tohumu (v1.31)
     "gift.seed.name": "Wind Wish", "gift.seed.text": 'credits ×10',
     "toast.seed": "<b>Dandelion! You blew a wish: {name}</b> · {text} for {dur}",
+    // Yolcular: tüm zamanlar (v1.32)
+    "tr.scope": "List",
+    "tr.scopeDay": "Last 24 hours",
+    "tr.scopeAll": "All time",
+    "tr.totalAll": "All travelers",
+    "tr.leadAll": "Every traveler who has ever hit the road, ranked by the total distance of all their trips. A green dot marks those on the road right now.",
   },
 });

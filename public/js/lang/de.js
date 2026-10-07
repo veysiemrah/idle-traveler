@@ -331,5 +331,11 @@ IT.addLang('de', {
     // Karahindiba tohumu (v1.31)
     "gift.seed.name": "Windwunsch", "gift.seed.text": 'Credits ×10',
     "toast.seed": "<b>Pusteblume! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}",
+    // Yolcular: tüm zamanlar (v1.32)
+    "tr.scope": "Liste",
+    "tr.scopeDay": "Letzte 24 Stunden",
+    "tr.scopeAll": "Alle Zeiten",
+    "tr.totalAll": "Alle Reisenden",
+    "tr.leadAll": "Alle Reisenden, die je aufgebrochen sind, sortiert nach der Gesamtstrecke all ihrer Reisen. Ein grüner Punkt zeigt, wer gerade unterwegs ist.",
   },
 });
