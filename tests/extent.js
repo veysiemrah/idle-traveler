@@ -7,7 +7,7 @@ const { chromium } = require('./lib/pw');
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(400);
   const r = await p.evaluate(() => {
     const out = {};
-    for (const id of ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail']) for (const tier of [0, 4]) for (const cars of [undefined, 1]) {
+    for (const id of ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp']) for (const tier of [0, 4]) for (const cars of [undefined, 1]) {
       if (cars === 1 && id !== 'train') continue;
       const c = document.createElement('canvas'); c.width = 1200; c.height = 400; const ctx = c.getContext('2d');
       IT._drawVehicle(ctx, id, 800, 300, 1, { phase: 0.5, wheel: 0, t: 1, night: 0, tier, pal: 0, palKind: null, cars });

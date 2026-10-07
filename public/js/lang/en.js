@@ -333,5 +333,10 @@ IT.addLang('en', {
     "toast.cranes": "<b>The cranes shared their wind with you: {name}</b> · {text} for {dur}",
     "float.cranes": "Cranes!",
     "j.cranes": "Crane flocks",
+    // Yeni araçlar (v1.36)
+    "veh.comet.name": "Comet", "veh.comet.up": "Ice Core", "veh.comet.by": "by comet",
+    "veh.comet.tagline": "Hop on a comet's back and leave a trail of light behind you.",
+    "veh.warp.name": "Starship", "veh.warp.up": "Warp Rings", "veh.warp.by": "by starship",
+    "veh.warp.tagline": "Fold space and take the shortcut between the stars.",
   },
 });

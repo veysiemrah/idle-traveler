@@ -335,5 +335,10 @@ IT.addLang('fr', {
     "toast.cranes": "<b>Les grues ont partagé leur vent avec toi : {name}</b> · {text} pendant {dur}",
     "float.cranes": "Des grues !",
     "j.cranes": "Vols de grues",
+    // Yeni araçlar (v1.36)
+    "veh.comet.name": "Comète", "veh.comet.up": "Noyau de glace", "veh.comet.by": "à dos de comète",
+    "veh.comet.tagline": "Grimpe sur le dos d’une comète et laisse derrière toi un sillage de lumière.",
+    "veh.warp.name": "Vaisseau stellaire", "veh.warp.up": "Anneaux de distorsion", "veh.warp.by": "en vaisseau stellaire",
+    "veh.warp.tagline": "Plie l’espace et prends le raccourci entre les étoiles.",
   },
 });

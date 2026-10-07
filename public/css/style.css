@@ -495,10 +495,16 @@ button { font: inherit; color: inherit; }
 .pal-btn:disabled { cursor: not-allowed; opacity: .55; }
 .up small, .card small { display: block; color: var(--muted); font-size: 11.5px; }
 .upline { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.upname { font-weight: 600; font-size: 13.5px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Uzun yükseltme adları (dar telefonlarda, uzun çevirilerde) kesilmez, en çok iki satıra iner. Ad kendi satırının tamamını
+   kullanır, seviye etiketi altına geçer: seviye kaç basamaklı olursa olsun adın kırıldığı yer ve kartın yüksekliği değişmez. */
+.upline { flex-wrap: wrap; row-gap: 3px; }
+.upname { flex: 1 1 100%; font-weight: 600; font-size: 13.5px; line-height: 1.25; min-width: 0; overflow: hidden; overflow-wrap: break-word; hyphens: auto;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
 .upline .lvl { flex: none; }
 /* Katlanma ipucu iki satıra kadar uzayabilir; yer baştan ayrılır */
 .card > .up small { line-height: 1.35; min-height: 2.7em; margin-top: 2px; }
+/* dar telefonlarda eşik ipucu üç satıra inebilir: yeri baştan ayrılır, seviye artınca kart büyümez */
+@media (max-width: 420px) { .card > .up small { min-height: 4.05em; } }
 .lvl {
   font-size: 11.5px; font-weight: 700; color: var(--teal);
   background: rgba(111, 211, 193, 0.12); padding: 1px 7px; border-radius: 99px; white-space: nowrap;

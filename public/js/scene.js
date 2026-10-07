@@ -537,6 +537,120 @@
     ctx.restore();
   }
 
+  // Kuyruklu yıldız: buzlu bir kaya çekirdeğin üstünde ata biner gibi oturan yolcu; arkada ışıktan bir kuyruk.
+  // Aşamalar: 1 eyer örtüsü ve dizgin, 2 çekirdekte buz kristalleri, 3 ikinci (toz) kuyruk, 4 altın süsler ve parıltı
+  function drawComet(ctx, x, y, k, st) {
+    const T = st.tier || 0, t = st.t || 0, L = (st.icon ? 58 : 128) * k, wav = Math.sin(t * 1.6) * 3 * k;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.05 + Math.sin(t * 0.8) * 0.025);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // toz kuyruğu (3. aşama): biraz aşağı kıvrılan sıcak renkli ikinci kuyruk
+    if (T >= 3) {
+      const g = ctx.createLinearGradient(-4 * k, 0, -L * 0.85, 0);
+      g.addColorStop(0, 'rgba(255,228,170,0.75)'); g.addColorStop(1, 'rgba(255,190,140,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-6 * k, 6 * k);
+      ctx.quadraticCurveTo(-L * 0.45, 12 * k, -L * 0.85, 30 * k + wav); ctx.quadraticCurveTo(-L * 0.45, 22 * k, -6 * k, 16 * k); ctx.closePath(); ctx.fill();
+    }
+    // iyon kuyruğu: çekirdekten geriye açılan, uca doğru solan mavi-beyaz ışık
+    const g = ctx.createLinearGradient(-2 * k, 0, -L, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(0.35, 'rgba(176,212,255,0.55)'); g.addColorStop(1, 'rgba(150,190,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-2 * k, -12 * k);
+    ctx.quadraticCurveTo(-L * 0.5, -14 * k - wav, -L, -22 * k + wav); ctx.lineTo(-L, 12 * k + wav);
+    ctx.quadraticCurveTo(-L * 0.5, 16 * k + wav * 0.5, -2 * k, 16 * k); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1 * k;
+    for (const o of [-6, 2, 9]) { ctx.beginPath(); ctx.moveTo(-8 * k, o * k); ctx.quadraticCurveTo(-L * 0.4, (o * 1.3) * k - wav * 0.6, -L * 0.75, (o * 1.8) * k + wav); ctx.stroke(); }
+    // koma: çekirdeğin çevresindeki soluk ışık
+    glow(ctx, 2 * k, 8 * k, 50 * k, hex('#d6eaff'), 0.55);
+    // çekirdek: girintili buzlu kaya
+    ctx.fillStyle = '#8f9cb6'; ctx.beginPath();
+    for (let i = 0; i < 14; i++) { const a = i / 14 * TAU, r = 1 + 0.1 * Math.sin(i * 2.7) + 0.05 * Math.sin(i * 5.3); ctx.lineTo(2 * k + Math.cos(a) * 29 * k * r, 9 * k + Math.sin(a) * 17 * k * r); }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(60,70,100,0.25)'; ellipse(ctx, 4 * k, 16 * k, 24 * k, 8 * k);
+    ctx.fillStyle = '#76839f'; circle(ctx, -14 * k, 12 * k, 4 * k); circle(ctx, 16 * k, 14 * k, 3 * k); circle(ctx, 2 * k, 19 * k, 2.2 * k); circle(ctx, -22 * k, 4 * k, 1.8 * k);
+    ctx.fillStyle = 'rgba(236,246,255,0.85)'; ellipse(ctx, 6 * k, -3 * k, 16 * k, 3.6 * k, -0.06); // buzlu parlak sırt
+    ctx.fillStyle = '#9aa7c0'; ctx.beginPath(); ctx.moveTo(23 * k, -2 * k); ctx.lineTo(32 * k, -10 * k); ctx.lineTo(29 * k, 3 * k); ctx.closePath(); ctx.fill(); // önde dizginin bağlandığı sivri kaya
+    if (T >= 2) for (const [cx, cy, r] of [[-16, 5, 2.8], [18, 6, 2.4], [-4, 16, 2], [26, 10, 1.7], [-24, 13, 1.6]]) { // buz kristalleri
+      const a = 0.6 + 0.4 * Math.sin(t * 4 + cx), px = cx * k, py = cy * k, rr = r * k * (0.8 + 0.3 * a);
+      ctx.fillStyle = `rgba(214,240,255,${a.toFixed(3)})`; ctx.beginPath();
+      ctx.moveTo(px, py - rr * 1.6); ctx.lineTo(px + rr, py); ctx.lineTo(px, py + rr * 1.6); ctx.lineTo(px - rr, py); ctx.closePath(); ctx.fill();
+    }
+    // eyer örtüsü (1. aşama), 4. aşamada altın
+    if (T >= 1) {
+      ctx.fillStyle = T >= 4 ? GOLD : P.jacket; ctx.beginPath(); ctx.moveTo(-16 * k, -5 * k); ctx.quadraticCurveTo(-2 * k, -11 * k, 12 * k, -5 * k);
+      ctx.lineTo(10 * k, 7 * k); ctx.lineTo(-14 * k, 7 * k); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = T >= 4 ? GOLD_HI : P.hat; ctx.fillRect(-14 * k, 4 * k, 24 * k, 1.8 * k);
+    }
+    // yolcu: kayanın sırtında oturur, öne eğilip dizgini tutar
+    const hip = [-2 * k, -9 * k], sh = [5 * k, -30 * k], foot = [5 * k, 9 * k];
+    backpack(ctx, sh[0], sh[1], k, 0.32);
+    const kn = ik(hip[0], hip[1], foot[0], foot[1], 9 * k, 9 * k, 1);
+    torso(ctx, hip[0], hip[1], sh[0], sh[1], k);
+    line(ctx, [hip[0], hip[1], kn[0], kn[1], foot[0], foot[1]], 7.4 * k, P.pants); shoe(ctx, foot[0], foot[1] + 2 * k, k);
+    scarf(ctx, sh[0] + 1 * k, sh[1] - 1 * k, k, t);
+    head(ctx, sh[0] + 4 * k, sh[1] - 9 * k, k);
+    const hand = [17 * k, -18 * k];
+    const el = ik(sh[0], sh[1] + 2 * k, hand[0], hand[1], 11 * k, 11 * k, -1);
+    line(ctx, [sh[0], sh[1] + 2 * k, el[0], el[1], hand[0], hand[1]], 5.6 * k, P.jacket);
+    ctx.fillStyle = P.skin; circle(ctx, hand[0], hand[1], 2.6 * k);
+    if (T >= 1) { ctx.strokeStyle = T >= 4 ? GOLD : '#c9a46a'; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.moveTo(hand[0], hand[1]); ctx.quadraticCurveTo(26 * k, -14 * k + wav * 0.3, 30 * k, -8 * k); ctx.stroke(); } // dizgin
+    if (T >= 4) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 60 * k, hex('#ffd56b'), 0.16); ctx.globalCompositeOperation = 'source-over'; sparkles(ctx, -10 * k, -6 * k, k, t, 9, 110 * k, 60 * k); }
+    ctx.restore();
+  }
+
+  // Yıldız gemisi: yuvarlak burunlu gövde, üstte ve altta pilonlara bağlı iki motor bölmesi, çevresinde ışıklı bükülme halkası.
+  // Aşamalar: 1 gövde şeridi ve lomboz ışıkları, 2 ikinci halka, 3 üçüncü halka ve konum ışıkları, 4 altın süsler ve parıltı
+  function drawStarship(ctx, x, y, k, st) {
+    const T = st.tier || 0, t = st.t || 0;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.02 + Math.sin(t * 0.7) * 0.02);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // motor bölmelerinden ve gövdeden çıkan mor-mavi plazma
+    const fl = (st.icon ? 12 : 26) + 6 * Math.sin(t * 23) + 4 * Math.sin(t * 13);
+    const flame = (cy, h, len) => {
+      const g = ctx.createLinearGradient(-48 * k, 0, (-48 - len) * k, 0);
+      g.addColorStop(0, 'rgba(235,240,255,0.95)'); g.addColorStop(0.4, 'rgba(150,140,255,0.7)'); g.addColorStop(1, 'rgba(110,90,255,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-46 * k, (cy - h) * k); ctx.quadraticCurveTo((-48 - len * 0.6) * k, (cy - h * 0.6) * k, (-48 - len) * k, cy * k);
+      ctx.quadraticCurveTo((-48 - len * 0.6) * k, (cy + h * 0.6) * k, -46 * k, (cy + h) * k); ctx.closePath(); ctx.fill();
+    };
+    flame(-21, 3, fl * 0.8); flame(21, 3, fl * 0.8); flame(0, 6, fl);
+    // bükülme halkaları: arka yarısı gövdenin arkasında, ön yarısı önünde çizilir
+    const rings = [-12, ...(T >= 2 ? [-26] : []), ...(T >= 3 ? [2] : [])];
+    const ring = (rx, front) => {
+      ctx.strokeStyle = `hsla(${(195 + 40 * Math.sin(t * 2 + rx)) | 0},90%,70%,${front ? 0.9 : 0.6})`; ctx.lineWidth = 2.6 * k;
+      ctx.beginPath(); ctx.ellipse(rx * k, 0, 7 * k, 32 * k, 0, front ? -Math.PI / 2 : Math.PI / 2, front ? Math.PI / 2 : Math.PI * 1.5); ctx.stroke();
+    };
+    for (const rx of rings) ring(rx, false);
+    // pilonlar ve motor bölmeleri
+    ctx.strokeStyle = '#9aa1b3'; ctx.lineWidth = 3 * k;
+    ctx.beginPath(); ctx.moveTo(-14 * k, -8 * k); ctx.lineTo(-24 * k, -19 * k); ctx.moveTo(-14 * k, 8 * k); ctx.lineTo(-24 * k, 19 * k); ctx.stroke();
+    for (const sy of [-24.5, 17.5]) {
+      ctx.fillStyle = '#c9ced9'; rrect(ctx, -48 * k, sy * k, 46 * k, 7 * k, 3.5 * k); ctx.fill();
+      ctx.fillStyle = `rgba(140,200,255,${(0.7 + 0.3 * Math.sin(t * 5 + sy)).toFixed(3)})`; rrect(ctx, -42 * k, (sy + 2.3) * k, 34 * k, 2.4 * k, 1.2 * k); ctx.fill();
+      ctx.fillStyle = T >= 4 ? GOLD : P.jacket; circle(ctx, -3 * k, (sy + 3.5) * k, 3.6 * k);
+    }
+    // gövde: yuvarlak burunlu kapsül ve arkada motor çanı
+    ctx.fillStyle = '#9aa1b3'; ctx.beginPath(); ctx.moveTo(-40 * k, -7 * k); ctx.lineTo(-48 * k, -9 * k); ctx.lineTo(-48 * k, 9 * k); ctx.lineTo(-40 * k, 7 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = P.cream; ctx.beginPath();
+    ctx.moveTo(-40 * k, -10 * k); ctx.lineTo(22 * k, -11 * k); ctx.quadraticCurveTo(52 * k, -10 * k, 54 * k, 0);
+    ctx.quadraticCurveTo(52 * k, 10 * k, 22 * k, 11 * k); ctx.lineTo(-40 * k, 10 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.beginPath(); ctx.moveTo(-40 * k, 4 * k); ctx.lineTo(30 * k, 4 * k); ctx.quadraticCurveTo(48 * k, 5 * k, 52 * k, 4 * k);
+    ctx.quadraticCurveTo(46 * k, 10 * k, 22 * k, 11 * k); ctx.lineTo(-40 * k, 10 * k); ctx.closePath(); ctx.fill();
+    if (T >= 1) { // gövde şeridi ve lomboz ışıkları
+      ctx.fillStyle = T >= 4 ? GOLD : P.jacket; ctx.fillRect(-40 * k, 0, 76 * k, 2.4 * k);
+      for (const px of [-32, -22, 0, 10]) { ctx.fillStyle = '#fff3c4'; circle(ctx, px * k, -4.5 * k, 1.7 * k); }
+    }
+    for (const rx of rings) ring(rx, true);
+    if (T >= 3) { // konum ışıkları
+      ctx.fillStyle = Math.sin(t * 5) > 0 ? '#ff6b6b' : '#ffd56b'; circle(ctx, -46 * k, -21 * k, 1.8 * k);
+      ctx.fillStyle = '#6fd3c1'; circle(ctx, -46 * k, 21 * k, 1.8 * k);
+    }
+    // kubbe kokpit
+    const dome = () => { ctx.beginPath(); ctx.moveTo(14 * k, -10.5 * k); ctx.quadraticCurveTo(26 * k, -26 * k, 40 * k, -9 * k); ctx.closePath(); };
+    ctx.fillStyle = P.glass; dome(); ctx.fill();
+    ctx.save(); dome(); ctx.clip(); head(ctx, 26 * k, -10 * k, k * 0.7); ctx.restore();
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ellipse(ctx, 22 * k, -17 * k, 4 * k, 1.4 * k, -0.5);
+    if (T >= 4) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 70 * k, hex('#ffd56b'), 0.14); ctx.globalCompositeOperation = 'source-over'; sparkles(ctx, 4 * k, 0, k, t, 9, 120 * k, 60 * k); }
+    ctx.restore();
+  }
+
   // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar.
   // tier: görünüm aşaması (1 tasma ve künye, 2 boyunluk, 3 sırtta heybe, 4 altın tasma ve parıltı)
   function drawDog(ctx, x, y, k, ph, t, tier) {
@@ -921,14 +1035,14 @@
     ctx.restore();
   }
 
-  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true };
+  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true, comet: true, warp: true };
   // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
-  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3 };
+  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3, comet: 0.33, warp: 0.34 };
   // Araçların çizim sınırları (k = 1, çizim noktasına göre; görünüm aşamalarının en genişi): [sol, sağ] ve üst yükseklik.
   // Değerler araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
   const VEH_EXT = { walk: [-23, 15], skates: [-23, 21], board: [-26, 25], bike: [-42, 37], horse: [-35, 41], moto: [-44, 43], car: [-46, 45],
-    van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72] };
-  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80 };
+    van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72], comet: [-117, 47], warp: [-76, 55] };
+  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34 };
   // Karabaş ve Tekir'in yavaş araçlarda koştuğu yer (aracın gerisinde)
   const PAL_BACK = { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 };
   const GHOST_SCALE = 0.8;
@@ -995,6 +1109,8 @@
       case 'jet': return drawJet(ctx, x, y, k, st);
       case 'rocket': return drawRocket(ctx, x, y, k, st);
       case 'sail': return drawSail(ctx, x, y, k, st);
+      case 'comet': return drawComet(ctx, x, y, k, st);
+      case 'warp': return drawStarship(ctx, x, y, k, st);
     }
   }
 
@@ -1777,6 +1893,11 @@
         const ry = this.riderY();
         this.parts.push({ type: 'smoke', x: this.travelerX - 70 * this.k, y: ry + rand(-4, 4) + 6 * this.k, vx: -rand(80, 160), vy: rand(-12, 12), life: 0, max: rand(0.6, 1.3), size: rand(4, 9) * this.k, color: '#ffffff' });
       }
+      // kuyruklu yıldızdan buz tozu, yıldız gemisinin motorundan soluk ışık bulutçukları dökülür
+      if ((v === 'comet' || v === 'warp') && Math.random() < dt * 16 * mult) {
+        const ry = this.riderY();
+        this.parts.push({ type: 'puff', x: this.travelerX - (v === 'warp' ? 60 : 24) * this.k, y: ry + rand(-8, 10) * this.k, vx: -rand(30, 70), vy: rand(-6, 6), life: 0, max: rand(0.8, 1.5), size: rand(1.4, 2.6) * this.k });
+      }
       if ((v === 'plane' || v === 'jet') && Math.random() < dt * 22 * mult) {
         const ry = this.riderY();
         this.parts.push({ type: 'puff', x: this.travelerX - (v === 'jet' ? 66 : 50) * this.k, y: ry + rand(-2, 2), vx: -rand(20, 40), vy: 0, life: 0, max: rand(1.2, 2), size: rand(2, 4) * this.k, color: '#ffffff' });
@@ -1850,7 +1971,7 @@
       if (bowA > 0.01) this.drawRainbow(ctx, bowA, horizon);
 
       // güneş yelkeninde uzak halkalı gezegen
-      if (this.vehicle === 'sail' && space > 0.05) this.drawRingedPlanet(ctx, space / 0.6);
+      if ((this.vehicle === 'sail' || this.vehicle === 'comet' || this.vehicle === 'warp') && space > 0.05) this.drawRingedPlanet(ctx, space / 0.6);
 
       // balonlar ve kuşlar (uzak)
       for (const bl of this.balloons) this.drawBalloon(ctx, bl, light, night, 1);
@@ -2524,7 +2645,7 @@
     if (id === 'mystery') return drawGarageDoor(ctx, w, h, getComputedStyle(canvas).color);
     const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], board: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], horse: [0.5, 0.44, 0.96],
       moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85], van: [0.46, 0.5, 0.88], train: [0.36, 0.5, 0.86], balloon: [0.46, 0.5, 0.62],
-      plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62] };
+      plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62], comet: [0.5, 0.66, 0.66], warp: [0.48, 0.5, 0.56] };
     const [k, xf, yf] = sizes[id];
     const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0, tier: tier || 0, icon: true };
     // Sv. 200: aracın arkasında minik bir gökkuşağı yayı (sahnedeki iz simgeye sığmaz)
