@@ -67,6 +67,12 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
 - `id` herkese kapalı bir UUID'dir. `key`, tarayıcıda üretilen 64 haneli gizli anahtardır; sunucu yalnızca SHA-256
   özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
 - `pub`, gizli kimlikten türetilen kısa ve kalıcı bir anahtardır; sahne aynı gezgini bununla tanır, kimliği açık etmez.
+- **Makullük sınırı (tüm zamanlar sahteciliğine karşı):** Bildirilen yol (bu yolculuk ve toplam), kaydın yaşında en hızlı dürüst
+  oyuncunun ulaşabileceği yolun 100 katını aşamaz; aşan değer reddedilmez, sınıra kırpılır. Sınır isteklerin sıklığıyla değil kaydın
+  yaşıyla büyür (yeni kayıt en çok ~170.000 km, 1 saatlik kayıt ~5×10¹¹ m, 1 günlük ~3×10¹⁴ m), böylece kısa aralıklı isteklerle
+  tavan aşılamaz. Eğri `tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}'` ile ölçüldü
+  (Worker'daki `REACH`); canlıdaki gerçek oyuncular tavanın en çok binde biri kadar. Oyun tarayıcıda çalıştığı için sahtecilik
+  tamamen önlenemez, ama tek istekle listenin zirvesine çıkılamaz.
 - Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen ve toplamda 1 km'ye ulaşmamış kayıtlar ara sıra silinir; yol gitmiş
   gezginler tüm zamanlar listesi için kalır.
 - Ad sunucuda da aynı kuralla temizlenir ve denetlenir.

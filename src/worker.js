@@ -23,6 +23,23 @@ const MIN_GAP_MS = 5e3;          // aynı yolcunun kaydı en sık 5 saniyede bir
 const PRUNE_MS = 30 * 24 * 3600e3; // 30 gün görünmeyen ve neredeyse hiç yol gitmemiş kayıtlar silinir
 const PRUNE_LIFE = 1000;           // (tüm zamanlar listesi gerçekten tüm zamanlar olsun: 1 km'yi geçen kayıt kalır)
 
+// Makullük sınırı: bildirilen yol (bu yolculuk ve toplam), kaydın yaşında en hızlı dürüst oyuncunun ulaşabileceği yolun
+// LIFE_SLACK katını aşamaz; aşarsa reddedilmez, sınıra kırpılır (dürüst oyuncu gerçekte geride kalmaz, sınır zamanla büyür).
+// Sınır isteklerin sıklığıyla değil kaydın yaşıyla büyür: kısa aralıklı istekleri üst üste katlayarak tavan aşılamaz.
+// REACH: tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}' ile ölçülen en uzak yol (sn, m).
+const REACH = [[60, 1.7e6], [300, 3.5e7], [900, 2.3e8], [1800, 1.5e9], [3600, 5.2e9], [7200, 2.2e10], [14400, 9.8e10],
+  [28800, 3.8e11], [57600, 1.5e12], [86400, 3.0e12], [172800, 8.2e12]];
+const LIFE_SLACK = 100;
+function reachCap(ageMs) {
+  const t = Math.max(REACH[0][0], ageMs / 1000);
+  let i = 1;
+  while (i < REACH.length - 1 && REACH[i][0] < t) i++;
+  const [t0, d0] = REACH[i - 1], [t1, d1] = REACH[i];
+  // log-log aralarında doğrusal; son noktanın ötesinde cömert bir eğimle (yol ∝ süre²) uzar
+  const slope = t > REACH[REACH.length - 1][0] ? 2 : Math.log(d1 / d0) / Math.log(t1 / t0);
+  return LIFE_SLACK * d0 * Math.pow(t / t0, slope);
+}
+
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
 });
@@ -131,11 +148,15 @@ async function hello(request, env) {
   // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder
   const spd = Number(b.spd), speed = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
   const now = Date.now(), hash = await sha256(key);
+  // makullük sınırı: kaydın yaşına göre (yeni kayıt: yaşı sıfır)
+  const born = await env.DB.prepare('SELECT created FROM players WHERE id = ?1').bind(id).first();
+  const cap = reachCap(now - (born && born.created ? born.created : now));
+  const distOk = Math.min(dist, cap), lifeOk = Math.max(distOk, Math.min(life, cap));
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
   const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14)
     ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
       tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd, life = MAX(players.life, excluded.life)
-    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, dist, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed, life).run();
+    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, distOk, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed, lifeOk).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key FROM players WHERE id = ?1').bind(id).first();
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);

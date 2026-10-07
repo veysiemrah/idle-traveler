@@ -138,9 +138,32 @@ function run(seed) {
       const lead = Econ.lead(s);
       console.log(`${(t / 60).toFixed(1)}dk kredi ${IT.fmtNum(s.credits)} gelir/sn ${IT.fmtNum(c)} | otomatik ${dIdle.toFixed(3)} dokunuş ${dClick.toFixed(3)} m/sn | geçici hız×${m.speed.toFixed(1)} kredi×${m.credit.toFixed(1)} dokunuş×${m.click.toFixed(1)} | ${lead}@${s.levels[lead]} | cpm ${b.cpm.toFixed(1)} rozet ${IT.badgeCount(s)} hazine ${s.treasures} bölge ${s.regionIdx + 1} güç ${JSON.stringify(s.buffs)}`);
     }
-    if (reached.sail !== undefined) break;
+    if (P.growth || P.reach) (s.track || (s.track = [])).push(s.distance);
+    if (reached.sail !== undefined && !P.reach) break;
   }
-  return { reached, dist: s.distance, region: s.regionIdx + 1, keeps: Object.keys(s.keeps).length, badges: IT.badgeCount(s), treasures: s.treasures };
+  return { reached, dist: s.distance, region: s.regionIdx + 1, keeps: Object.keys(s.keeps).length, badges: IT.badgeCount(s), treasures: s.treasures, track: s.track };
+}
+
+// P.reach: en hızlı oyuncunun belli sürelerde ulaştığı en uzak yol (son araçtan sonra da sürer). Sunucudaki
+// toplam yol sınırı (Worker LIFE_CAP) bu eğrinin güvenli bir katıdır: kaydın yaşına göre, sık istekle büyümez.
+if (P.reach) {
+  const runs = Array.from({ length: P.runs }, (_, i) => run(P.seed + i));
+  for (const T of [60, 300, 900, 1800, 3600, 7200, 4 * 3600, 8 * 3600, 16 * 3600, 24 * 3600, 48 * 3600]) {
+    const ds = runs.map(r => r.track[Math.min(T, r.track.length) - 1]).filter(x => x !== undefined);
+    if (ds.length && T <= runs[0].track.length) console.log(`${String(T).padStart(6)} sn: en uzak ${Math.max(...ds).toExponential(3)} m`);
+  }
+  process.exit(0);
+}
+// P.growth: sunucudaki toplam yol sınırını ayarlamak için en büyük büyüme oranları.
+// Her aralık (sn) için en büyük (yol(t+Δ) + A) / (yol(t) + A) oranı; A = 1 km (oyunun ilk saniyelerindeki sıfıra bölmeyi yumuşatır)
+if (P.growth) {
+  const runs = Array.from({ length: P.runs }, (_, i) => run(P.seed + i)), A = 1000;
+  for (const D of [30, 120, 600, 1800, 3600, 4 * 3600, 8 * 3600]) {
+    let worst = 0;
+    for (const r of runs) for (let t = 0; t + D < r.track.length; t += 5) worst = Math.max(worst, (r.track[t + D] + A) / (r.track[t] + A));
+    console.log(`Δ ${String(D).padStart(6)} sn: en büyük oran ×${worst.toExponential(2)}  (saniye başına e^${(Math.log(worst) / D).toFixed(4)})`);
+  }
+  process.exit(0);
 }
 
 const mins = v => (v === undefined ? '—' : (v / 60).toFixed(0));

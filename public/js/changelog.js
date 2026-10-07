@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.32';
+  IT.VERSION = '1.33';
 
   IT.CHANGELOG = [
+    { v: '1.33', date: '2026-10-07', items: {
+      tr: ['Yolda birkaç küçük rötuş.'],
+      en: ['A few small touches along the road.'],
+      de: ['Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Algunos pequeños retoques por el camino.'],
+      fr: ['Quelques petites retouches en chemin.'],
+    } },
     { v: '1.32', date: '2026-10-07', items: {
       tr: ['Yolcular sekmesinde yeni bir liste: Tüm zamanlar. Şimdiye kadar yola çıkmış bütün gezginler, bütün yolculuklarında gittikleri toplam yola göre sıralı. Sen kaçıncısın?',
         'Yolda birkaç küçük rötuş.'],
