@@ -26,9 +26,11 @@ const PRUNE_LIFE = 1000;           // (tüm zamanlar listesi gerçekten tüm zam
 // Makullük sınırı: bildirilen yol (bu yolculuk ve toplam), kaydın yaşında en hızlı dürüst oyuncunun ulaşabileceği yolun
 // LIFE_SLACK katını aşamaz; aşarsa reddedilmez, sınıra kırpılır (dürüst oyuncu gerçekte geride kalmaz, sınır zamanla büyür).
 // Sınır isteklerin sıklığıyla değil kaydın yaşıyla büyür: kısa aralıklı istekleri üst üste katlayarak tavan aşılamaz.
-// REACH: tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}' ile ölçülen en uzak yol (sn, m; v1.36'da yeni araçlarla yeniden ölçüldü).
-const REACH = [[60, 1.7e6], [300, 3.5e7], [900, 2.3e8], [1800, 1.5e9], [3600, 5.2e9], [7200, 2.2e10], [14400, 9.8e10],
-  [28800, 3.8e11], [57600, 1.6e12], [86400, 3.3e12], [172800, 1.3e13]];
+// REACH: tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}' ile ölçülen en uzak yol (sn, m).
+// v1.38'de simülasyon Kelebek Dostu'nu da almaya başladı; eğri hem bugünkü kurallarla hem de v1.37 öncesi kurallarla
+// ('"boost":1' ve eski ödül/güçlendirme fiyatları) ölçüldü, o kurallarla ilerlemiş kayıtlar da kırpılmasın diye büyüğü alındı.
+const REACH = [[60, 7.7e6], [300, 1.4e9], [900, 2.3e10], [1800, 3.8e11], [3600, 1.1e13], [7200, 1.9e13], [14400, 1.6e14],
+  [28800, 6.0e14], [57600, 2.4e15], [86400, 4.6e15], [172800, 1.3e16]];
 const LIFE_SLACK = 100;
 function reachCap(ageMs) {
   const t = Math.max(REACH[0][0], ageMs / 1000);

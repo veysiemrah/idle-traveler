@@ -45,17 +45,19 @@
 
   /* ---------- Kalıcı güçlendirmeler ---------- */
   // vals: açıklamadaki yer tutucuların değerleri (seviyeye göre), step: bir sonraki seviyenin getirdiği
+  // Tavanlı güçlendirmelerin büyümesi v1.38'de dikleşti: son seviyeleri ilk dakikalarda değil, minibüs ile uçak arasında
+  // alınır (önceden hepsi ~3 Mr krediydi, aktif oyuncu ilk 10 dakikada bitiriyordu). Tempo neredeyse aynı kaldı (sim_game).
   const BUFFS = [
     { id: 'stride',   base: 40,   growth: 2.2,           vals: l => ({ p: fmtPct(20 * l) }),                    step: () => ({ p: fmtPct(20) }) },
     { id: 'breeze',   base: 70,   growth: 2.2,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
     { id: 'postcard', base: 240,  growth: 2.6,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
-    { id: 'rhythm',   base: 300,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
-    { id: 'luck',     base: 500,  growth: 3.0, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
-    { id: 'dream',    base: 800,  growth: 2.4, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
-    { id: 'camp',     base: 1200,  growth: 2.1, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
-    { id: 'butterfly', base: 1800, growth: 2.5, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
+    { id: 'rhythm',   base: 300,  growth: 4.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
+    { id: 'luck',     base: 500,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
+    { id: 'dream',    base: 800,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
+    { id: 'camp',     base: 1200,  growth: 2.3, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
+    { id: 'butterfly', base: 1800, growth: 5.0, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
     // Yol arkadaşı Karabaş: 10 seviye, eve dönüşte de kalır; 2, 4, 7 ve 10. seviyede görünümü gelişir
-    { id: 'pal',      base: 5000, growth: 3.2, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
+    { id: 'pal',      base: 5000, growth: 6.0, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
   ];
   BUFFS.forEach(b => Object.defineProperties(b, {
     name: { get: () => T(`buff.${b.id}.name`) },

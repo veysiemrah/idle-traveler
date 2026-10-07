@@ -28,6 +28,8 @@ const GIFTS = [
 ];
 const RAINBOW = { id: 'rainbow', dur: 20, speed: 10 }, WISH = { id: 'wish', dur: 20, credit: 10 }, SEED = { id: 'seed', dur: 20, credit: 10 };
 // Gelire bağlı ödüllerin süresi (sn; game.js'teki REWARD ile aynı). Denemek için: '{"rw":{"chest":1800}}'
+// Güçlendirme fiyatlarını dosyaya dokunmadan denemek için: '{"buffs":{"pal":{"growth":9.7}}}'
+for (const [id, o] of Object.entries(A.buffs || {})) Object.assign(BUFFS.find(b => b.id === id), o);
 const RW = Object.assign({ region: 40, ms: 30, instant: 600, chest: 6000 }, A.rw || {});
 const STACK_AFTER = 300, STACK_MAX = 10, MAP_DROP = { gift: 0.2, star: 0.5 };
 const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
@@ -50,9 +52,10 @@ function run(seed) {
   // dokunuş ritmi: aralık 650 ms'den kısaysa kombo büyür (en çok 20), değilse yarıya iner
   const interval = 1 / P.cps, combo = interval < 0.65 ? 20 : 1;
   const comboMult = () => 1 + Econ.rhythmCap(s.buffs.rhythm) * Math.min(combo, 20) / 20;
-  const critEV = () => 1 + (Econ.luckMult - 1) * (P.luck ? 1 - Math.pow(1 - Econ.luckChance(s.buffs.luck), 2) : Econ.luckChance(s.buffs.luck));
+  // şanslı adımın beklenen çarpanı (st verilirse o durumun Şans seviyesiyle: alım kararında denenen durum)
+  const critEV = st => { const l = (st || s).buffs.luck; return 1 + (Econ.luckMult - 1) * (P.luck ? 1 - Math.pow(1 - Econ.luckChance(l), 2) : Econ.luckChance(l)); };
   // kalıcı gelir (alım kararları için): otomatik + dokunuş (ritim ve şans beklentisiyle)
-  const inc = st => { const b = Econ.base(st); return (b.idle + b.click * P.cps * (1 + Econ.rhythmCap(st.buffs.rhythm) * Math.min(combo, 20) / 20) * critEV()) * b.cpm; };
+  const inc = st => { const b = Econ.base(st); return (b.idle + b.click * P.cps * (1 + Econ.rhythmCap(st.buffs.rhythm) * Math.min(combo, 20) / 20) * critEV(st)) * b.cpm; };
   const clone = st => ({ ...st, owned: { ...st.owned }, levels: { ...st.levels }, buffs: { ...st.buffs }, keeps: { ...st.keeps }, badges: { ...st.badges } });
   let rate = 0; // son gelir (kredi/sn), ödüller buna göre ölçeklenir
   const income = () => { const b = Econ.base(s); return Math.max(rate, b.idle * b.cpm); };
@@ -67,7 +70,8 @@ function run(seed) {
     const dIdle = b.idle * m.speed, dClick = b.click * m.speed * m.click * comboMult() * critEV() * P.cps;
     const d = dIdle + dClick, c = d * b.cpm * m.credit;
     // ödüller kalıcı gelirle ölçeklenir (v1.37): geçici kelebek, gökkuşağı ve dilek çarpanları sayılmaz
-    s.distance += d; grant(c); rate = (b.idle + b.click * comboMult() * critEV() * P.cps) * b.cpm; s.clicks += P.cps; s.crits += P.cps * (critEV() - 1) / (Econ.luckMult - 1);
+    // (P.boost: v1.37 öncesi kural, ödüller geçici çarpanlarla şişmiş gelirle; karşılaştırma için)
+    s.distance += d; grant(c); rate = P.boost ? c : (b.idle + b.click * comboMult() * critEV() * P.cps) * b.cpm; s.clicks += P.cps; s.crits += P.cps * (critEV() - 1) / (Econ.luckMult - 1);
     s.bestCombo = Math.max(s.bestCombo, combo); if (night) s.nightTime++;
     // bölgeler, duraklar, yadigârlar
     const ri = IT.regionIndexFor(s.distance);
@@ -119,6 +123,14 @@ function run(seed) {
     // rozet kademeleri (kalıcı kredi bonusu)
     if (t % 10 === 0) for (const bd of BADGES) s.badges[bd.id] = Math.max(s.badges[bd.id] || 0, bd.tierFor(s));
     // alımlar
+    // kalıcı geliri değiştirmeyen güçlendirmeler (Kelebek Dostu, Rüya, Kamp): oyuncu, fiyatı son P.cheap saniyelik gelirini
+    // aşmıyorsa hemen alır (varsayılan 60 sn)
+    for (const id of ['butterfly', 'dream', 'camp']) {
+      const bf = BUFFS.find(x => x.id === id), l = s.buffs[id];
+      if (l >= bf.max) continue;
+      const c = Econ.buffCost(bf, l);
+      if (c <= income() * (P.cheap ?? 60) && s.credits >= c) { s.credits -= c; s.buffs[id]++; }
+    }
     for (let k = 0; k < 300; k++) {
       if (!goal) {
         const base = inc(s), opts = [];
@@ -127,7 +139,6 @@ function run(seed) {
         for (const o of VEHICLES) if (s.owned[o.id]) opts.push({ c: Econ.upgradeCost(o, s.levels[o.id]), f: st => { st.levels[o.id]++; } });
         for (const bf of BUFFS) { const l = s.buffs[bf.id]; if (bf.max && l >= bf.max) continue; opts.push({ c: Econ.buffCost(bf, l), f: st => { st.buffs[bf.id]++; } }); }
         for (const o of opts) { const cl = clone(s); o.f(cl); o.v = (inc(cl) - base) / o.c; }
-        // kalıcı geliri değiştirmeyen güçlendirmeler (kelebek, şans dışı) ucuzsa yine de alınır
         opts.sort((p, q) => q.v - p.v); goal = opts[0];
       }
       if (s.credits < goal.c) break;
