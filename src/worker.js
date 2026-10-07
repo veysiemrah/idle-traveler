@@ -7,7 +7,7 @@
    POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
-const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail'];
+const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer'];
 const PALS = ['', 'dog', 'bird', 'cat'];
@@ -26,9 +26,9 @@ const PRUNE_LIFE = 1000;           // (tüm zamanlar listesi gerçekten tüm zam
 // Makullük sınırı: bildirilen yol (bu yolculuk ve toplam), kaydın yaşında en hızlı dürüst oyuncunun ulaşabileceği yolun
 // LIFE_SLACK katını aşamaz; aşarsa reddedilmez, sınıra kırpılır (dürüst oyuncu gerçekte geride kalmaz, sınır zamanla büyür).
 // Sınır isteklerin sıklığıyla değil kaydın yaşıyla büyür: kısa aralıklı istekleri üst üste katlayarak tavan aşılamaz.
-// REACH: tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}' ile ölçülen en uzak yol (sn, m).
+// REACH: tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}' ile ölçülen en uzak yol (sn, m; v1.36'da yeni araçlarla yeniden ölçüldü).
 const REACH = [[60, 1.7e6], [300, 3.5e7], [900, 2.3e8], [1800, 1.5e9], [3600, 5.2e9], [7200, 2.2e10], [14400, 9.8e10],
-  [28800, 3.8e11], [57600, 1.5e12], [86400, 3.0e12], [172800, 8.2e12]];
+  [28800, 3.8e11], [57600, 1.6e12], [86400, 3.3e12], [172800, 1.3e13]];
 const LIFE_SLACK = 100;
 function reachCap(ageMs) {
   const t = Math.max(REACH[0][0], ageMs / 1000);

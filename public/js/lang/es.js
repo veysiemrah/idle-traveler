@@ -333,5 +333,10 @@ IT.addLang('es', {
     "toast.cranes": "<b>Las grullas compartieron su viento contigo: {name}</b> · {text} durante {dur}",
     "float.cranes": "¡Grullas!",
     "j.cranes": "Bandadas de grullas",
+    // Yeni araçlar (v1.36)
+    "veh.comet.name": "Cometa", "veh.comet.up": "Núcleo de Hielo", "veh.comet.by": "en cometa",
+    "veh.comet.tagline": "Súbete a lomos de un cometa y deja una estela de luz tras de ti.",
+    "veh.warp.name": "Nave estelar", "veh.warp.up": "Anillos de Curvatura", "veh.warp.by": "en nave estelar",
+    "veh.warp.tagline": "Pliega el espacio y toma el atajo entre las estrellas.",
   },
 });

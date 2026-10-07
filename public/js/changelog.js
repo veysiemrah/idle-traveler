@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.35';
+  IT.VERSION = '1.36';
 
   IT.CHANGELOG = [
+    { v: '1.36', date: '2026-10-07', items: {
+      tr: ['Güneş Yelkeni yolun sonu değilmiş… Garaj kapısının ardında, yıldızların ötesine uzanan iki yeni araç bekliyor.',
+        'Garajda yükseltme adları artık telefonda da tam okunuyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['The Solar Sail was not the end of the road after all… Behind the garage door, two new vehicles wait to carry you beyond the stars.',
+        'Upgrade names in the garage are now fully readable on phones too.',
+        'A few small touches along the road.'],
+      de: ['Das Sonnensegel war doch nicht das Ende des Weges … Hinter dem Garagentor warten zwei neue Fahrzeuge, die dich über die Sterne hinaus tragen.',
+        'Die Namen der Verbesserungen in der Garage sind jetzt auch auf dem Handy vollständig lesbar.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['La Vela Solar no era el final del camino… Tras la puerta del garaje esperan dos vehículos nuevos que te llevarán más allá de las estrellas.',
+        'Los nombres de las mejoras del garaje ahora se leen completos también en el móvil.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La Voile solaire n’était finalement pas le bout de la route… Derrière la porte du garage, deux nouveaux véhicules attendent de t’emmener au-delà des étoiles.',
+        'Les noms des améliorations du garage se lisent désormais en entier sur téléphone aussi.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.35', date: '2026-10-07', items: {
       tr: ['Eve dönmeyi göze alan uzun yolcuları yeni bir rota bekliyor. Bu yolda gökyüzü biraz kalabalık… Önce kulak ver, sonra yukarı bak.',
         'Yolda birkaç küçük rötuş.'],

@@ -110,7 +110,10 @@ npx wrangler dev   # http://localhost:8787
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
-  Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni (14 araç).
+  Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni → Kuyruklu Yıldız → Yıldız Gemisi (16 araç).
+  Son ikisi v1.36'da zincirin sonuna eklendi (hız ×2,5, fiyat ~×10,7 ve ×11); erken ve orta oyunun dengesi değişmedi.
+  Uzun yolculuklarda (eve dönüş eşiği her dönüşte 3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin
+  son iki kademesi 14 ve 16 araç oldu (önce 13 ve 14; kazanılmış kademeler düşmez).
   Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
   (en büyük sıçrama Sv. 50'de). Yükseltme satırı sıradaki eşiği söyler: yeni görünüm (Sv. 10) ya da hız ×2.
 - **Fiyat dengesi (v1.27)**: Kilit yoktur, sıradaki araç her zaman alınabilir; oyuncuyu fiyatlar yönlendirir. Araçların satın alma
@@ -123,7 +126,9 @@ npx wrangler dev   # http://localhost:8787
   kaynaklarını (ritim, şanslı adım, kelebekler, gökkuşağı, kayan yıldız, hazine sandığı, bölge/durak ödülleri, yadigârlar,
   rozetler, güçlendirmeler) saniye saniye işler. Tek yolculukta son araca (Güneş Yelkeni) ulaşma, ortanca (20 deneme):
   - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi), gün döngüsünde (%44 gece):
-    ~471 dk (~8 saat; 366–528 dk). Tren ~9 dk, uçak ~30 dk, roket ~3 saat.
+    ~471 dk (~8 saat; 366–528 dk). Tren ~9 dk, uçak ~30 dk, roket ~3 saat. v1.36'dan beri zincir sürer: aynı oyuncu
+    Kuyruklu Yıldız'a tek yolculukta ~22 saatte ulaşır, Yıldız Gemisi'ne 48 saatte ulaşamaz. İkisi hatıralarla hızlanan
+    sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu Kuyruklu Yıldız'a 14. yolculukta ulaşır).
   - Aynı oyuncu hep gece (koyu tema): ~418 dk; hep gündüz (açık tema): ~520 dk.
   - **Aktif** (aynı, normal şans): ~753 dk (~12,5 saat).
   - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, roket ~21 saat.
@@ -181,7 +186,9 @@ npx wrangler dev   # http://localhost:8787
   ve sörf tahtası; karavanda çiçek desenleri, arkada bisiklet, güneş paneli ve ışık zinciri; trende bayrak, altın şerit ve
   dördüncü vagon; balonda flamalar, renkli zarf ve kum torbaları; uçakta kuyruk şeridi, kanatçık ve pankart; jette burun ucu,
   kanat şeridi ve art yakıcı; rokette şeritler, yan iticiler ve anten; güneş yelkeninde yıldız arması, yanardöner kenar ve
-  ikinci yelken. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
+  ikinci yelken; kuyruklu yıldızda (yolcu buzlu kaya çekirdeğin sırtında oturup dizgin tutar) eyer örtüsü ve dizgin, buz
+  kristalleri ve ikinci (toz) kuyruk; yıldız gemisinde (üstte ve altta pilonlu motor bölmeleri, kubbe kokpit, bir bükülme
+  halkası) gövde şeridi ve lomboz ışıkları, ikinci ve üçüncü bükülme halkası ve konum ışıkları. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
   At dörtnal (kanter) koşar: her bacak yere basar (toynak yerde kalır) ve havada katlanıp öne gelir; ön dizler öne, arka diz
   eklemleri geriye bükülür. Gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele telleri ve kuyruk rüzgârda
   dalgalanır, kulak ara sıra seğirir. Binici atı biraz gecikmeyle izler, dizgin başa uzanır; toynaklar yere vurdukça toz kalkar.
@@ -194,6 +201,8 @@ npx wrangler dev   # http://localhost:8787
 - **Sabit düğmeler**: Fiyatlar, seviyeler ya da en güçlü araç değiştikçe garaj ve güçlendirme kartlarındaki düğmeler yerinden
   kaymaz. Düğmeler sabit genişliktedir, değişen değerler kendi satırında durur. Böylece aynı düğmeye art arda basılabilir.
   Araç kartında yükseltme satırı simgenin altında kartın tam genişliğini kullanır; 320 piksellik telefonlarda da sığar.
+  Yükseltme adı kesilmez, kendi satırında en çok iki satıra iner; seviye etiketi altında durur. Böylece seviye kaç basamaklı
+  olursa olsun ad aynı yerden kırılır. Dar telefonlarda eşik ipucuna üç satırlık yer ayrılır: seviye artınca kart büyümez.
 - **Toplu yükseltme**: Garajın üstündeki ×1 / ×10 / Maks seçimiyle tek dokunuşta birden çok seviye alınır.
 - **Güçlendirmeler**: Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu (kredi), Yolun Ritmi,
   Şanslı Adım (seviye başına %1 ihtimalle 5 kat uzun adım), Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.

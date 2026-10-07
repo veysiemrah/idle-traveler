@@ -1,5 +1,5 @@
 // Olay düzeyinde oyun simülasyonu: oyundaki bütün kazanç kaynaklarını saniye saniye işler ve oyuncunun araçlara,
-// özellikle son araca (Güneş Yelkeni) ne zaman ulaştığını bulur. Tek yolculuk; oyuncu eve dönmez.
+// özellikle son araca (Yıldız Gemisi) ne zaman ulaştığını bulur. Tek yolculuk; oyuncu eve dönmez.
 //
 // Hesaba katılanlar (game.js'teki kurallarla aynı):
 //   tıklama ve Ritim bonusu (art arda 650 ms'den kısa aralıklı dokunuşlar), Şanslı Adım (×5), otomatik hız ve yol tecrübesi,
@@ -139,7 +139,7 @@ function run(seed) {
       console.log(`${(t / 60).toFixed(1)}dk kredi ${IT.fmtNum(s.credits)} gelir/sn ${IT.fmtNum(c)} | otomatik ${dIdle.toFixed(3)} dokunuş ${dClick.toFixed(3)} m/sn | geçici hız×${m.speed.toFixed(1)} kredi×${m.credit.toFixed(1)} dokunuş×${m.click.toFixed(1)} | ${lead}@${s.levels[lead]} | cpm ${b.cpm.toFixed(1)} rozet ${IT.badgeCount(s)} hazine ${s.treasures} bölge ${s.regionIdx + 1} güç ${JSON.stringify(s.buffs)}`);
     }
     if (P.growth || P.reach) (s.track || (s.track = [])).push(s.distance);
-    if (reached.sail !== undefined && !P.reach) break;
+    if (reached[VEHICLES[VEHICLES.length - 1].id] !== undefined && !P.reach) break;
   }
   return { reached, dist: s.distance, region: s.regionIdx + 1, keeps: Object.keys(s.keeps).length, badges: IT.badgeCount(s), treasures: s.treasures, track: s.track };
 }

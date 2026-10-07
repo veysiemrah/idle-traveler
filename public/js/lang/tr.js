@@ -147,7 +147,10 @@ IT.addLang('tr', {
     'garage.rule': 'Hızını garajdaki en güçlü araç belirler.', 'garage.sumLead': 'En güçlü araç', 'garage.sumConvoy': 'Diğer araçlardan',
     'garage.convoy0': 'Diğer araçlar hızlarının {p} kadarını katar.',
     'garage.cosmetic': 'Hangi araca bindiğin yalnızca görünümü değiştirir.',
-    'garage.mystery': 'Garaj kapısının ardında {n} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.',
+    'garage.mystery': {
+      one: 'Garaj kapısının ardında bir araç daha var. Ne olduğunu sıradaki aracı alınca göreceksin.',
+      other: 'Garaj kapısının ardında {n} araç daha var. Ne olduklarını sıradaki aracı alınca göreceksin.',
+    },
 
     // Bildirimler
     'toast.region': '+{c} kredi · Keşif bonusu: kalıcı hız +{p}',
@@ -342,5 +345,10 @@ IT.addLang('tr', {
     "toast.cranes": "<b>Turnalar rüzgârlarını seninle paylaştı: {name}</b> · {dur} boyunca {text}",
     "float.cranes": "Turnalar!",
     "j.cranes": "Turna sürüsü",
+    // Yeni araçlar (v1.36)
+    "veh.comet.name": "Kuyruklu Yıldız", "veh.comet.up": "Buz Çekirdeği", "veh.comet.by": "kuyruklu yıldızla",
+    "veh.comet.tagline": "Bir kuyruklu yıldızın sırtına atla, ardında ışıktan bir yol bırak.",
+    "veh.warp.name": "Yıldız Gemisi", "veh.warp.up": "Bükülme Halkaları", "veh.warp.by": "yıldız gemisiyle",
+    "veh.warp.tagline": "Uzayı katla, yıldızların arasından kestirmeden git.",
   },
 });

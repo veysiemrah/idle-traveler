@@ -27,6 +27,9 @@
     { id: 'jet',     cost: 4.4e11, idle: 835,   click: 175,   road: 'asphalt', alt: 0.55 },
     { id: 'rocket',  cost: 4.3e12, idle: 2100,  click: 420,   road: 'asphalt', alt: 1 },
     { id: 'sail',    cost: 4.4e13, idle: 5200,  click: 1040,  road: 'asphalt', alt: 1.15 },
+    // (v1.36) zincir aynı oranlarla uzadı: hız ×2,5, fiyat ~×10,7 ve ×11 (uzun yolculuklarda yeni hedefler)
+    { id: 'comet',   cost: 4.7e14, idle: 13000, click: 2600,  road: 'asphalt', alt: 1.15 },
+    { id: 'warp',    cost: 5.2e15, idle: 32500, click: 6500,  road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
     v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.01);
@@ -257,7 +260,7 @@
     { id: 'night',     at: [5, 10, 30, 60, 180, 600, 1440, 4320],              stat: s => (s.nightTime || 0) / 60 },
     { id: 'region',    at: [3, 5, 8, 11, 15, 21, 31, 45],                    stat: s => Math.max(s.bestRegion || 0, s.regionIdx || 0) + 1 },
     { id: 'dist',      at: [5000, 42195, 1e6, 4.0075e7, 3.844e8, 1.496e11, 4.5e12, 9.4607e15], stat: lifeDist, fmt: 'dist' },
-    { id: 'garage',    at: [2, 4, 6, 8, 10, 12, 13, 14],                     stat: s => Math.max(s.bestGarage || 0, VEHICLES.filter(v => s.owned && s.owned[v.id]).length) },
+    { id: 'garage',    at: [2, 4, 6, 8, 10, 12, 14, 16],                     stat: s => Math.max(s.bestGarage || 0, VEHICLES.filter(v => s.owned && s.owned[v.id]).length) },
     { id: 'tuned',     at: [10, 25, 50, 100, 150, 200, 300, 500],             stat: s => Math.max(s.bestLevel || 0, ...Object.values(s.levels || {})) },
     { id: 'home',      at: [1, 2, 3, 5, 8, 12, 20, 30],                      stat: s => s.trips },
     { id: 'memory',    at: [10, 30, 100, 300, 1000, 3000, 10000, 30000],        stat: s => s.memories },

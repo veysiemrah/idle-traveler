@@ -349,5 +349,10 @@ IT.addLang('de', {
     "toast.cranes": "<b>Die Kraniche teilen ihren Wind mit dir: {name}</b> · {text} für {dur}",
     "float.cranes": "Kraniche!",
     "j.cranes": "Kranichschwärme",
+    // Yeni araçlar (v1.36)
+    "veh.comet.name": "Komet", "veh.comet.up": "Eiskern", "veh.comet.by": "mit dem Kometen",
+    "veh.comet.tagline": "Spring auf einen Kometen und zieh eine Spur aus Licht hinter dir her.",
+    "veh.warp.name": "Sternenschiff", "veh.warp.up": "Warp-Ringe", "veh.warp.by": "mit dem Sternenschiff",
+    "veh.warp.tagline": "Falte den Raum und nimm die Abkürzung zwischen den Sternen.",
   },
 });
