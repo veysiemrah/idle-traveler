@@ -54,6 +54,16 @@ const BASE = process.argv[2] || 'http://127.0.0.1:8787';
   console.log('sıralama: yoldaki', above.filter(x => x.startsWith('on')).length, '| ayırıcı', sep >= 0, '| üstte yolda olmayan', above.filter(x => x.startsWith('off')).length,
     '| altta yoldaki', below.filter(x => x.startsWith('on')).length, '| numaralar sıralı mı', order.filter(x => x.includes(':')).every((x, i) => +x.split(':')[1] === i + 1));
   if (sep >= 0) { await a.$eval('#pane-travelers .tr-sep', e => e.scrollIntoView({ block: 'center' })); await a.waitForTimeout(150); await a.screenshot({ path: process.env.SP + '/mp_list_sep.png', clip: { x: 890, y: 55, width: 390, height: 600 } }); }
+  // tüm zamanlar: toplam yola göre azalan sıra, kendi satırın listede, seçim kayıtta saklanır
+  await a.click('[data-act="trScope"][data-id="all"]'); await a.waitForTimeout(1500);
+  const allRows = await a.$$eval('#pane-travelers .tr-list > li.tr-row', l => l.map(x => ({ me: x.classList.contains('me'), d: x.querySelector('.tr-dist').textContent })));
+  console.log('tüm zamanlar: satır', allRows.length, '| kendi satırın var mı', allRows.some(r => r.me), '| başlık:', (await a.textContent('#pane-travelers .garage-sum')).replace(/\s+/g, ' ').trim(),
+    '| seçim kaydedildi mi', await a.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1')).settings.trScope === 'all'));
+  const lifeOrder = await a.evaluate(() => { const t = IT.Online.top; return t ? t.players.every((p, i, arr) => !i || arr[i - 1].life >= p.life) : null; });
+  console.log('sunucu sırası toplam yola göre mi:', lifeOrder);
+  await a.$eval('#pane-travelers', e => e.scrollIntoView({ block: 'start' })); await a.waitForTimeout(150);
+  await a.screenshot({ path: process.env.SP + '/mp_list_all.png', clip: { x: 890, y: 55, width: 390, height: 700 } });
+  await a.click('[data-act="trScope"][data-id="day"]'); await a.waitForTimeout(300);
   // 4) dar ekran
   const n = await page({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true }, Object.assign({}, seed, { player: undefined }));
   await n.screenshot({ path: process.env.SP + '/mp_name320.png' });

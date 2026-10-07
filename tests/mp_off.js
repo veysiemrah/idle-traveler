@@ -10,5 +10,9 @@ const { chromium } = require('./lib/pw');
   await p.click('.tab[data-id="travelers"]'); await p.waitForTimeout(300);
   console.log('durum:', await p.evaluate(() => IT.Online.status), '|', await p.textContent('#pane-travelers .tr-note'));
   await p.screenshot({ path: process.env.SP + '/mp_off.png' });
+  // tüm zamanlar da sunucusuz düzgün bir not gösterir
+  await p.click('[data-act="trScope"][data-id="all"]'); await p.waitForTimeout(1500);
+  console.log('tüm zamanlar:', await p.evaluate(() => IT.Online.topStatus), '|', await p.textContent('#pane-travelers .tr-note'));
+  await p.screenshot({ path: process.env.SP + '/mp_off_all.png' });
   console.log(errs.join('\n') || 'no errors'); await b.close();
 })();

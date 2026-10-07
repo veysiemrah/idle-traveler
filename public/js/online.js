@@ -35,6 +35,7 @@
     onUpdate: null, // liste ya da durum değişince çağrılır
     onConflict: null, // kimlik başkasına aitse (403) yeni kimlik istenir
     onMessage: null,  // yeni bir hazır mesaj gelince: { pub, msg, age }
+    top: null, topAt: 0, topStatus: 'wait', // tüm zamanlar listesi (istendiğinde getirilir)
     _get: null, _timer: 0, _busy: false, _feedTimer: 0, _seen: new Set(),
     // Bu tarayıcının sahnedeki anahtarı (kendi mesajını iki kez göstermemek için)
     myPub() { const d = this.data; const m = d && (d.me || d.players.find(p => p.me)); return m ? m.pub : null; },
@@ -107,6 +108,20 @@
       this._busy = false;
       this._next(ok ? BEAT_MS : RETRY_MS);
       if (this.onUpdate) this.onUpdate();
+    },
+    // Tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50 (id verilirse kendi satırın da gelir)
+    async fetchTop(id) {
+      const r = await this._fetch('api/top', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id }) });
+      let ok = false;
+      if (r && r.ok) { try { const d = await r.json(); if (d && Array.isArray(d.players)) { this.top = d; this.topAt = Date.now(); ok = true; } } catch (e) { /* yok say */ } }
+      this.topStatus = ok ? 'ok' : 'error';
+      return ok;
+    },
+    // Yoldaki bir gezginin toplam yolu: bildirdiği toplam + hızı × aradan geçen süre (en çok 3 dk)
+    liveLife(p) {
+      if (!p.online || !p.spd) return p.life;
+      const sec = Math.min(180, (p.ago + (Date.now() - this.topAt)) / 1000);
+      return p.life + p.spd * sec;
     },
     // Yoldaki bir gezginin şu anki tahmini mesafesi: son bildirdiği mesafe + hızı × aradan geçen süre (en çok 3 dk)
     liveDist(p) {

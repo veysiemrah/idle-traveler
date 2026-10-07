@@ -315,5 +315,11 @@ IT.addLang('es', {
     // Karahindiba tohumu (v1.31)
     "gift.seed.name": "Deseo al viento", "gift.seed.text": 'créditos ×10',
     "toast.seed": "<b>¡Diente de león! Soplaste un deseo: {name}</b> · {text} durante {dur}",
+    // Yolcular: tüm zamanlar (v1.32)
+    "tr.scope": "Lista",
+    "tr.scopeDay": "Últimas 24 horas",
+    "tr.scopeAll": "Histórico",
+    "tr.totalAll": "Todos los viajeros",
+    "tr.leadAll": "Todos los viajeros que alguna vez se pusieron en camino, ordenados por la distancia total de todos sus viajes. Un punto verde marca a quienes están en camino ahora.",
   },
 });
