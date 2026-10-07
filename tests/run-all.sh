@@ -24,7 +24,7 @@ if ! curl -s -o /dev/null http://localhost:8765/; then
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
 export NODE_OPTIONS="-r $HERE/pw_name.js"
-for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom; do
+for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed; do
   echo "== $f" >> "$OUT"
   timeout 300 node "$f.js" 2>&1 | grep -iE "error|KAYDI|şüpheli|∞|NaN|sıçradı|adım attı" | grep -v ERR_CERT | grep -v "501 (Unsupported" | head -6 >> "$OUT"
 done

@@ -12,6 +12,7 @@
     { id: 'postcard', instant: true, w: 2 },
     { id: 'rainbow',  dur: 20, speed: 10, w: 0 },  // hava olayıyla gelir: kısa ama güçlü
     { id: 'wish',     dur: 20, credit: 10, w: 0 }, // gece kayan yıldızla gelir: kısa ama güçlü
+    { id: 'seed',     dur: 20, credit: 10, w: 0 }, // gündüz karahindiba tohumuyla gelir (açık temada oynayan da dilek tutabilsin)
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -205,6 +206,8 @@
   let giftIn = 25;
   // Kayan yıldız: yalnızca gece gökyüzünde
   let starIn = 20 + Math.random() * 25;
+  // Karahindiba tohumu: gündüz ve yağmursuz gökyüzünde, kayan yıldızdan biraz daha seyrek
+  let seedIn = 40 + Math.random() * 40;
   let chestIn = 6; // harita tamamsa sandığın gelmesine kalan süre
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
@@ -372,6 +375,17 @@
     scene.addFloat(t('float.wish'), { color: '#cfe0ff', big: true });
     checkBadges();
   }
+  // Gündüz rüzgârda süzülen karahindiba tohumunu üflemek de bir dilektir: Rüzgâr Dileği etkisi
+  function catchSeed() {
+    Sound.unlock();
+    S.wishes++;
+    dropMapPiece('star');
+    const g = GIFT.seed, dur = addEffect(g, g.dur).dur;
+    Sound.wish();
+    toast(t('toast.seed', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    scene.addFloat(t('float.wish'), { color: '#fff8d6', big: true });
+    checkBadges();
+  }
   function dropMapPiece(src) {
     if (S.mapPieces >= MAP_PIECES || Math.random() >= MAP_DROP[src] * (perk() === 'map' ? 2 : 1)) return;
     S.mapPieces++; uiDirty.journal = true;
@@ -515,7 +529,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.chest = null; scene.keep = null;
+    combo = 0; rateEma = 0; creditEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -731,6 +745,9 @@
       if (!scene.star) scene.spawnStar();
       starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
     }
+    // karahindiba tohumu: aydınlık, yağmursuz gündüzde (uzayda değilken)
+    if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) seedIn -= dt;
+    if (seedIn <= 0) { scene.spawnSeed(); seedIn = 80 + Math.random() * 110; }
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
     scene.palTier = Econ.palTier(S.buffs.pal);
@@ -1536,6 +1553,7 @@
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
+      if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }

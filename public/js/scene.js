@@ -1098,7 +1098,7 @@
       };
       this.clouds = []; this.birds = []; this.balloons = [];
       this.parts = []; this.floats = [];
-      this.gift = null; this.star = null; this.chest = null;
+      this.gift = null; this.star = null; this.seed = null; this.chest = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
       this.keep = null; this.keepOk = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
@@ -1281,6 +1281,19 @@
       if (Math.hypot(px - s.x, py - s.y) < 52 * Math.max(this.k, 0.8)) {
         this.burst(s.x, s.y, 30, ['#ffffff', '#cfe0ff', '#fff4c2', '#b9c8ff']);
         this.star = null;
+        return true;
+      }
+      return false;
+    }
+    // Karahindiba tohumu: gündüz gökyüzünde sağdan sola rüzgârla süzülür, hafifçe dalgalanıp döner
+    spawnSeed() { this.seed = { x: this.W + 30, y0: this.H * rand(0.2, 0.42), y: 0, t: 0, dur: 15, rot: 0, ph: Math.random() * TAU }; }
+    hitSeed(px, py) {
+      const s = this.seed;
+      if (!s || s.t > s.dur) return false;
+      if (Math.hypot(px - s.x, py - s.y) < 44 * Math.max(this.k, 0.8)) {
+        // üflenen tohumun telleri dört bir yana savrulur
+        for (let i = 0; i < 26; i++) { const a = Math.random() * TAU, sp = rand(30, 120); this.parts.push({ type: 'spark', x: s.x, y: s.y, vx: Math.cos(a) * sp - 30, vy: Math.sin(a) * sp - 40, life: 0, max: rand(0.8, 1.6), size: rand(1.4, 2.8), color: pick(['#ffffff', '#fbf8ee', '#fff8d6']), rot: 0 }); }
+        this.seed = null;
         return true;
       }
       return false;
@@ -1652,6 +1665,15 @@
         if (Math.random() < dt * 5) { const p = this.keepPos(), a = Math.random() * TAU; this.parts.push({ type: 'spark', x: p.x + Math.cos(a) * 22 * this.k, y: p.y + Math.sin(a) * 22 * this.k, vx: rand(-8, 8), vy: rand(-26, -8), life: 0, max: rand(0.6, 1.1), size: rand(1.1, 2.2), color: pick(['#fff1c2', '#ffffff', '#cfe0ff']), rot: 0 }); }
         if (c.t > c.dur) this.keep = null;
       }
+      if (this.seed) {
+        const s = this.seed, k = this.k;
+        s.t += dt;
+        s.x = lerp(this.W + 30, -40, s.t / s.dur);
+        s.y = s.y0 + Math.sin(s.t * 1.3 + s.ph) * 14 * k + Math.sin(s.t * 3.1) * 4 * k;
+        s.rot = Math.sin(s.t * 1.7 + s.ph) * 0.35;
+        if (Math.random() < dt * 2.5) this.parts.push({ type: 'spark', x: s.x + rand(-6, 6) * k, y: s.y - rand(4, 10) * k, vx: rand(10, 30), vy: rand(-12, 6), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: '#ffffff', rot: 0 });
+        if (s.t > s.dur) this.seed = null;
+      }
       if (this.star) {
         const s = this.star;
         s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt;
@@ -1968,6 +1990,7 @@
       this.drawParts(ctx, true);
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.keep) this.drawKeep(ctx, this.keep);
+      if (this.seed) this.drawSeed(ctx, this.seed);
       if (this.gift) this.drawButterfly(ctx, this.gift);
       this.drawFloats(ctx);
 
@@ -2318,6 +2341,31 @@
       ctx.fillText(c.e, p.x, p.y + 1.5 * k);
       // camın parlak yansıması
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ellipse(ctx, p.x - r * 0.42, p.y - r * 0.45, r * 0.22, r * 0.12, -0.6);
+      ctx.restore();
+    }
+    // Karahindiba tohumu: altta küçük kahverengi tohum, ince bir sap ve tepede ışınsal beyaz teller (paraşüt)
+    drawSeed(ctx, s) {
+      // açık gökyüzünde de seçilsin: biraz büyük, tellerin altında ince ve koyu bir kontur
+      const k = Math.max(this.k, 0.8) * 1.35, a = clamp(s.t / 0.8, 0, 1) * clamp((s.dur - s.t) / 1.2, 0, 1);
+      if (a <= 0) return;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 5 * k, 30 * k, hex('#fff8d6'), 0.32 + 0.12 * Math.sin(s.t * 4)); ctx.globalCompositeOperation = 'source-over';
+      ctx.translate(s.x, s.y); ctx.rotate(s.rot);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(150,130,100,0.95)'; ctx.lineWidth = 1.2 * k;
+      ctx.beginPath(); ctx.moveTo(0, 8 * k); ctx.quadraticCurveTo(1.5 * k, 2 * k, 0, -4 * k); ctx.stroke();
+      ctx.fillStyle = '#8a6a3f'; ellipse(ctx, 0, 9.5 * k, 1.4 * k, 2.7 * k);
+      const rays = [];
+      for (let i = 0; i < 15; i++) {
+        const ang = -Math.PI + (i / 14) * Math.PI + Math.sin(s.t * 2 + i) * 0.04, len = (8.5 + (i % 3) * 0.8) * k;
+        rays.push([Math.cos(ang) * len, -4 * k + Math.sin(ang) * len]);
+      }
+      for (const [w, col] of [[1.9 * k, 'rgba(70,80,110,0.28)'], [0.95 * k, 'rgba(255,255,255,0.98)']]) {
+        ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath();
+        for (const [ex, ey] of rays) { ctx.moveTo(0, -4 * k); ctx.lineTo(ex, ey); }
+        ctx.stroke();
+      }
+      for (const [ex, ey] of rays) { ctx.fillStyle = 'rgba(70,80,110,0.25)'; circle(ctx, ex, ey, 1.5 * k); ctx.fillStyle = '#ffffff'; circle(ctx, ex, ey, 1 * k); }
       ctx.restore();
     }
     drawStar(ctx, s) {

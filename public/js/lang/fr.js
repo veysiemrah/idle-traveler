@@ -221,7 +221,7 @@ IT.addLang('fr', {
     'j.trip': 'Voyage', 'j.thisTrip': 'Ce voyage', 'j.total': 'Distance totale', 'j.credits': 'Crédits totaux', 'j.clicks': 'Pas effectués',
     'j.time': 'Temps sur la route', 'j.best': 'Vitesse maximale', 'j.gifts': 'Papillons attrapés', 'j.crits': 'Pas chanceux', 'j.rainbows': 'Arcs-en-ciel vus',
     'j.wishes': 'Vœux faits', 'j.photos': 'Cartes postales',
-    'j.map': 'Carte au trésor', 'j.mapSub': '{n}/{m} morceaux · trésors trouvés : {t}', 'j.mapHint': 'Les morceaux tombent des papillons dorés et des étoiles filantes.', 'j.mapReady': 'Carte complète ! Touche le coffre qui brille au bord de la route.',
+    'j.map': 'Carte au trésor', 'j.mapSub': '{n}/{m} morceaux · trésors trouvés : {t}', 'j.mapHint': "Les morceaux tombent des papillons dorés et des vœux que tu fais.", 'j.mapReady': 'Carte complète ! Touche le coffre qui brille au bord de la route.',
     'j.streak': 'Jours d\'affilée', 'j.streakVal': '{n} (record {best})',
     'j.life': 'Tous les voyages', 'j.memories': 'Souvenirs', 'j.memVal': '{n} · vitesse +{p}', 'j.lifeVal': '{d} · voyage {n}',
     'j.stamps': 'Tampons du passeport',
@@ -243,7 +243,7 @@ IT.addLang('fr', {
     'badge.home.name': 'Le chemin du retour', 'badge.home.desc': 'Rentre {v} fois à la maison.',
     'badge.memory.name': 'Boîte à souvenirs', 'badge.memory.desc': 'Rassemble {v} souvenirs.',
     'badge.photo.name': 'Épistolier', 'badge.photo.desc': { one: 'Prends {v} carte postale.', other: 'Prends {v} cartes postales.' },
-    'badge.wish.name': 'Fais un vœu', 'badge.wish.desc': { one: 'Attrape {v} étoile filante.', other: 'Attrape {v} étoiles filantes.' },
+    'badge.wish.name': 'Fais un vœu', 'badge.wish.desc': { one: "Fais {v} vœu.", other: "Fais {v} vœux." },
     'badge.streak.name': 'Sur la route chaque jour', 'badge.streak.desc': 'Prends la route {v} jours d\'affilée.',
     'badge.treasure.name': 'Chasseur de trésors', 'badge.treasure.desc': { one: 'Trouve {v} coffre au trésor.', other: 'Trouve {v} coffres au trésor.' },
     'j.ms': 'Étapes franchies', 'j.msNone': 'Aucune étape franchie pour le moment. Les cent premiers mètres sont tout proches.',
@@ -314,5 +314,8 @@ IT.addLang('fr', {
     // Yakınlaştırma (v1.30)
     "zoom.label": "Zoom", "zoom.in": "Zoom avant", "zoom.out": "Zoom arrière",
     "tr.earlier": "Sur la route plus tôt",
+    // Karahindiba tohumu (v1.31)
+    "gift.seed.name": "Vœu au vent", "gift.seed.text": 'crédits ×10',
+    "toast.seed": "<b>Pissenlit ! Tu as soufflé un vœu : {name}</b> · {text} pendant {dur}",
   },
 });

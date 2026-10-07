@@ -4,7 +4,7 @@
 // Hesaba katılanlar (game.js'teki kurallarla aynı):
 //   tıklama ve Ritim bonusu (art arda 650 ms'den kısa aralıklı dokunuşlar), Şanslı Adım (×5), otomatik hız ve yol tecrübesi,
 //   altın kelebekler (Rüzgâr Hortumu ×3 hız, Bereket ×2 kredi, Coşku ×5 tıklama, anında kredi; 5 dk'yı aşınca kat artar),
-//   bahar yağmuru ve gökkuşağı (×10 hız), kayan yıldız (gece, ×10 kredi), hazine haritası ve sandık, bölge ve durak ödülleri,
+//   bahar yağmuru ve gökkuşağı (×10 hız), kayan yıldız (gece, ×10 kredi), karahindiba tohumu (gündüz, ×10 kredi), hazine haritası ve sandık, bölge ve durak ödülleri,
 //   keşif bonusu (+%6/bölge), yadigârlar (+%2 hız), rozet kademeleri (kredi), yol arkadaşı, güçlendirmeler.
 //   Yükseltme/araç/güçlendirme alımları: kredi başına en çok kalıcı gelir getiren alım (gerekirse ona biriktirir).
 //
@@ -26,7 +26,7 @@ const P = Object.assign({ night: 0.44, hours: 24, runs: 5, seed: 1 }, PROFILES[A
 const GIFTS = [
   { id: 'gust', dur: 30, speed: 3, w: 3 }, { id: 'harvest', dur: 45, credit: 2, w: 3 }, { id: 'zeal', dur: 25, click: 5, w: 2 }, { id: 'postcard', instant: true, w: 2 },
 ];
-const RAINBOW = { id: 'rainbow', dur: 20, speed: 10 }, WISH = { id: 'wish', dur: 20, credit: 10 };
+const RAINBOW = { id: 'rainbow', dur: 20, speed: 10 }, WISH = { id: 'wish', dur: 20, credit: 10 }, SEED = { id: 'seed', dur: 20, credit: 10 };
 const STACK_AFTER = 300, STACK_MAX = 10, MAP_DROP = { gift: 0.2, star: 0.5 };
 const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
 
@@ -57,7 +57,7 @@ function run(seed) {
   const grant = c => { s.credits += c; s.totalCredits += c; };
   const reached = {}; let goal = null;
   // olay zamanlayıcıları (game.js'teki aralıklar; şanslı oyuncuda kısa ucu)
-  let giftIn = 25, starIn = 20 + roll('low') * 25, weatherIn = 150 + roll('low') * 120, rain = 0, chestIn = Infinity, keepIn = 45 + roll('low') * 40, keepBiome = 'meadow';
+  let giftIn = 25, starIn = 20 + roll('low') * 25, weatherIn = 150 + roll('low') * 120, seedIn = 40 + roll('low') * 40, rain = 0, chestIn = Infinity, keepIn = 45 + roll('low') * 40, keepBiome = 'meadow';
   const T = P.hours * 3600;
   for (let t = 0; t < T; t++) {
     const night = (t % 600) / 600 >= 1 - P.night; // 10 dakikalık gün döngüsü
@@ -98,6 +98,15 @@ function run(seed) {
       starIn = 50 + roll('low') * 70;
       if (rnd0() < P.catch) {
         s.wishes++; addFx(WISH, WISH.dur, t, false);
+        if (s.mapPieces === undefined) s.mapPieces = 0;
+        if (s.mapPieces < 4 && roll('low') < MAP_DROP.star) { s.mapPieces++; if (s.mapPieces === 4) chestIn = t + 4; }
+      }
+    }
+    // karahindiba tohumu (v1.31): yalnızca gündüz ve yağmursuz gökyüzü; kayan yıldızdan seyrek, aynı etki (kredi ×10, 20 sn)
+    if (!night && rain === 0 && --seedIn <= 0) {
+      seedIn = 80 + roll('low') * 110;
+      if (rnd0() < P.catch) {
+        s.wishes++; addFx(SEED, SEED.dur, t, false);
         if (s.mapPieces === undefined) s.mapPieces = 0;
         if (s.mapPieces < 4 && roll('low') < MAP_DROP.star) { s.mapPieces++; if (s.mapPieces === 4) chestIn = t + 4; }
       }

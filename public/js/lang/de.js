@@ -235,7 +235,7 @@ IT.addLang('de', {
     'j.trip': 'Reise', 'j.thisTrip': 'Diese Reise', 'j.total': 'Gesamtstrecke', 'j.credits': 'Credits gesamt', 'j.clicks': 'Gemachte Schritte',
     'j.time': 'Zeit unterwegs', 'j.best': 'Höchsttempo', 'j.gifts': 'Gefangene Schmetterlinge', 'j.crits': 'Glücksschritte', 'j.rainbows': 'Gesehene Regenbögen',
     'j.wishes': 'Wünsche', 'j.photos': 'Postkarten',
-    'j.map': 'Schatzkarte', 'j.mapSub': '{n}/{m} Teile · gefundene Schätze: {t}', 'j.mapHint': 'Teile fallen von goldenen Schmetterlingen und Sternschnuppen.', 'j.mapReady': 'Karte vollständig! Tippe auf die leuchtende Truhe am Weg.',
+    'j.map': 'Schatzkarte', 'j.mapSub': '{n}/{m} Teile · gefundene Schätze: {t}', 'j.mapHint': "Teile fallen von goldenen Schmetterlingen und von deinen Wünschen.", 'j.mapReady': 'Karte vollständig! Tippe auf die leuchtende Truhe am Weg.',
     'j.streak': 'Tage in Folge', 'j.streakVal': '{n} (Bestwert {best})',
     'j.life': 'Alle Reisen', 'j.memories': 'Erinnerungen', 'j.memVal': '{n} · Tempo +{p}', 'j.lifeVal': '{d} · Reise {n}',
     'j.stamps': 'Passstempel',
@@ -257,7 +257,7 @@ IT.addLang('de', {
     'badge.home.name': 'Heimweg', 'badge.home.desc': 'Kehre {v}-mal heim.',
     'badge.memory.name': 'Erinnerungskiste', 'badge.memory.desc': 'Sammle {v} Erinnerungen.',
     'badge.photo.name': 'Postkartenschreiber', 'badge.photo.desc': { one: 'Mach {v} Postkarte.', other: 'Mach {v} Postkarten.' },
-    'badge.wish.name': 'Wünsch dir was', 'badge.wish.desc': { one: 'Fang {v} Sternschnuppe.', other: 'Fang {v} Sternschnuppen.' },
+    'badge.wish.name': 'Wünsch dir was', 'badge.wish.desc': { one: "Wünsch dir {v}-mal etwas.", other: "Wünsch dir {v}-mal etwas." },
     'badge.streak.name': 'Jeden Tag unterwegs', 'badge.streak.desc': 'Sei {v} Tage in Folge unterwegs.',
     'badge.treasure.name': 'Schatzsucher', 'badge.treasure.desc': { one: 'Finde {v} Schatztruhe.', other: 'Finde {v} Schatztruhen.' },
     'j.ms': 'Passierte Stationen', 'j.msNone': 'Noch keine Station passiert. Die ersten hundert Meter sind nah.',
@@ -328,5 +328,8 @@ IT.addLang('de', {
     // Yakınlaştırma (v1.30)
     "zoom.label": "Zoom", "zoom.in": "Vergrößern", "zoom.out": "Verkleinern",
     "tr.earlier": "Früher unterwegs",
+    // Karahindiba tohumu (v1.31)
+    "gift.seed.name": "Windwunsch", "gift.seed.text": 'Credits ×10',
+    "toast.seed": "<b>Pusteblume! Du hast dir etwas gewünscht: {name}</b> · {text} für {dur}",
   },
 });

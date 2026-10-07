@@ -114,13 +114,15 @@ npx wrangler dev   # http://localhost:8787
 - **Tempo**: Dokunuşların etkisi v1.27'de yarıya indi. Gerçek tempo `tests/sim_game.js` ile ölçülür: oyundaki bütün kazanç
   kaynaklarını (ritim, şanslı adım, kelebekler, gökkuşağı, kayan yıldız, hazine sandığı, bölge/durak ödülleri, yadigârlar,
   rozetler, güçlendirmeler) saniye saniye işler. Tek yolculukta son araca (Güneş Yelkeni) ulaşma, ortanca (20 deneme):
-  - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi): ~740 dk (~12 saat; 600–906 dk).
-    Tren ~15 dk, uçak ~40 dk, jet ~1,5 saat, roket ~4,5 saat.
-  - **Aktif** (aynı, normal şans): ~1.150 dk (~19 saat). Saniyede 4 dokunan şanslı oyuncu: ~516 dk.
-  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~22 dk, tren ~1,3 saat, roket ~32 saat.
+  - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi), gün döngüsünde (%44 gece):
+    ~471 dk (~8 saat; 366–528 dk). Tren ~9 dk, uçak ~30 dk, roket ~3 saat.
+  - Aynı oyuncu hep gece (koyu tema): ~418 dk; hep gündüz (açık tema): ~520 dk.
+  - **Aktif** (aynı, normal şans): ~753 dk (~12,5 saat).
+  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, roket ~21 saat.
   Erken dakikalardaki büyük sıçramalar gökkuşağı (×10 hız) ile Rüzgâr Hortumu'nun (×3) üst üste gelmesinden doğar.
-  Kayan yıldızlar (gece, ×10 kredi) en güçlü kaynaklardandır: hiç gece yaşamayan (açık temada oynayan) şanslı oyuncu 24 saatte
-  son araca ulaşamaz. `sim_switch.js` ve `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
+  Dilekler (gece kayan yıldız, gündüz karahindiba tohumu; ×10 kredi) en güçlü kaynaklardandır. v1.31'den önce yalnızca gece
+  vardı ve hiç gece yaşamayan (açık temada oynayan) şanslı oyuncu son araca 24 saatte ulaşamıyordu. `sim_switch.js` ve
+  `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
   Adı olmayan eski oyunculara da bir kez sorulur, Ayarlar'dan değiştirilebilir. Panelin dördüncü sekmesi **Yolcular**
@@ -201,10 +203,14 @@ npx wrangler dev   # http://localhost:8787
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
 - **Kayan yıldız**: Gece gökyüzünde (ya da uzayda) ara sıra bir yıldız kayar. Dokunup dilek tutarsan 20 saniye boyunca
   *Yıldız Tozu* etkisiyle kredi ×10 olur. Yağmurlu gecelerde yıldız kaymaz.
+- **Karahindiba tohumu**: Aydınlık, yağmursuz gündüzlerde (uzayda değilken) ara sıra rüzgârda bir karahindiba tohumu sağdan sola
+  süzülür (15 sn; ilk 40–80 sn, sonra 80–190 sn arayla). Dokunup üflersen tohumları savrulur, dilek tutmuş olursun: 20 saniye
+  boyunca *Rüzgâr Dileği* etkisiyle kredi ×10. Kayan yıldız gibi dilek sayılır (*Dilek Tut* rozetleri) ve %50 olasılıkla harita
+  parçası düşürür. Açık temada (hiç gece yaşamadan) oynayan da böylece dilek tutabilir. Sürüm notunda yalnızca ipucu verilir.
 - **Günün hediyesi**: Her yeni günün ilk ziyaretinde kredi hediyesi gelir (yaklaşık 2 dakikalık gelir). Üst üste gelinen her gün
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
-- **Hazine haritası**: Yakalanan her altın kelebek %20, her kayan yıldız %50 olasılıkla bir harita parçası düşürür. Dört parça
+- **Hazine haritası**: Yakalanan her altın kelebek %20, her dilek (kayan yıldız ya da karahindiba) %50 olasılıkla bir harita parçası düşürür. Dört parça
   tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
   yeniden gelir). Sandık yaklaşık 10 dakikalık gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
