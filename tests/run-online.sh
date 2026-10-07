@@ -22,7 +22,7 @@ if ! curl -s -o /dev/null http://127.0.0.1:8787/api/feed; then
   (cd .. && $W dev --port 8787 --ip 127.0.0.1 --persist-to "$SP/wrangler-state" > "$SP/wrangler-dev.log" 2>&1) & DEV=$!
   for _ in $(seq 1 60); do curl -s -o /dev/null http://127.0.0.1:8787/api/feed && break; sleep 1; done
 fi
-for f in mp chat wave caravan popmodal; do
+for f in mp chat wave caravan popmodal forge; do
   echo "== $f"
   timeout 200 node "$f.js" 2>&1 | grep -vE "^\s+at |^\s*$" | tail -6
 done
