@@ -219,7 +219,7 @@ IT.addLang('en', {
     'j.trip': 'Journey', 'j.thisTrip': 'This journey', 'j.total': 'Total distance', 'j.credits': 'Total credits', 'j.clicks': 'Steps taken',
     'j.time': 'Time on the road', 'j.best': 'Top speed', 'j.gifts': 'Butterflies caught', 'j.crits': 'Lucky steps', 'j.rainbows': 'Rainbows seen',
     'j.wishes': 'Wishes made', 'j.photos': 'Postcards taken',
-    'j.map': 'Treasure map', 'j.mapSub': '{n}/{m} pieces · treasures found: {t}', 'j.mapHint': 'Pieces drop from golden butterflies and shooting stars.', 'j.mapReady': 'Map complete! Tap the glowing chest by the road.',
+    'j.map': 'Treasure map', 'j.mapSub': '{n}/{m} pieces · treasures found: {t}', 'j.mapHint': "Pieces drop from golden butterflies and from the wishes you make.", 'j.mapReady': 'Map complete! Tap the glowing chest by the road.',
     'j.streak': 'Days in a row', 'j.streakVal': '{n} (best {best})',
     'j.life': 'All journeys', 'j.memories': 'Memories', 'j.memVal': '{n} · speed +{p}', 'j.lifeVal': '{d} · journey {n}',
     'j.stamps': 'Passport stamps',
@@ -241,7 +241,7 @@ IT.addLang('en', {
     'badge.home.name': 'Homeward', 'badge.home.desc': { one: 'Return home {v} time.', other: 'Return home {v} times.' },
     'badge.memory.name': 'Memory Box', 'badge.memory.desc': 'Collect {v} memories.',
     'badge.photo.name': 'Postcard Writer', 'badge.photo.desc': { one: 'Take {v} postcard.', other: 'Take {v} postcards.' },
-    'badge.wish.name': 'Make a Wish', 'badge.wish.desc': { one: 'Catch {v} shooting star.', other: 'Catch {v} shooting stars.' },
+    'badge.wish.name': 'Make a Wish', 'badge.wish.desc': { one: "Make {v} wish.", other: "Make {v} wishes." },
     'badge.streak.name': 'On the Road Every Day', 'badge.streak.desc': 'Hit the road {v} days in a row.',
     'badge.treasure.name': 'Treasure Hunter', 'badge.treasure.desc': { one: 'Find {v} treasure chest.', other: 'Find {v} treasure chests.' },
     'j.ms': 'Stops passed', 'j.msNone': 'No stops passed yet. The first hundred metres are close.',
@@ -312,5 +312,8 @@ IT.addLang('en', {
     // Yakınlaştırma (v1.30)
     "zoom.label": "Zoom", "zoom.in": "Zoom in", "zoom.out": "Zoom out",
     "tr.earlier": "On the road earlier",
+    // Karahindiba tohumu (v1.31)
+    "gift.seed.name": "Wind Wish", "gift.seed.text": 'credits ×10',
+    "toast.seed": "<b>Dandelion! You blew a wish: {name}</b> · {text} for {dur}",
   },
 });

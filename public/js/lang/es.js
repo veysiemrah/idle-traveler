@@ -219,7 +219,7 @@ IT.addLang('es', {
     'j.trip': 'Viaje', 'j.thisTrip': 'Este viaje', 'j.total': 'Distancia total', 'j.credits': 'Créditos totales', 'j.clicks': 'Pasos dados',
     'j.time': 'Tiempo en camino', 'j.best': 'Velocidad máxima', 'j.gifts': 'Mariposas atrapadas', 'j.crits': 'Pasos de la suerte', 'j.rainbows': 'Arcoíris vistos',
     'j.wishes': 'Deseos pedidos', 'j.photos': 'Postales hechas',
-    'j.map': 'Mapa del tesoro', 'j.mapSub': '{n}/{m} trozos · tesoros encontrados: {t}', 'j.mapHint': 'Los trozos caen de las mariposas doradas y las estrellas fugaces.', 'j.mapReady': '¡Mapa completo! Toca el cofre que brilla junto al camino.',
+    'j.map': 'Mapa del tesoro', 'j.mapSub': '{n}/{m} trozos · tesoros encontrados: {t}', 'j.mapHint': "Los trozos caen de las mariposas doradas y de los deseos que pides.", 'j.mapReady': '¡Mapa completo! Toca el cofre que brilla junto al camino.',
     'j.streak': 'Días seguidos', 'j.streakVal': '{n} (mejor {best})',
     'j.life': 'Todos los viajes', 'j.memories': 'Recuerdos', 'j.memVal': '{n} · velocidad +{p}', 'j.lifeVal': '{d} · viaje {n}',
     'j.stamps': 'Sellos del pasaporte',
@@ -241,7 +241,7 @@ IT.addLang('es', {
     'badge.home.name': 'De vuelta a casa', 'badge.home.desc': { one: 'Vuelve a casa {v} vez.', other: 'Vuelve a casa {v} veces.' },
     'badge.memory.name': 'Caja de recuerdos', 'badge.memory.desc': 'Reúne {v} recuerdos.',
     'badge.photo.name': 'Postal enviada', 'badge.photo.desc': { one: 'Haz {v} postal.', other: 'Haz {v} postales.' },
-    'badge.wish.name': 'Pide un deseo', 'badge.wish.desc': { one: 'Atrapa {v} estrella fugaz.', other: 'Atrapa {v} estrellas fugaces.' },
+    'badge.wish.name': 'Pide un deseo', 'badge.wish.desc': { one: "Pide {v} deseo.", other: "Pide {v} deseos." },
     'badge.streak.name': 'En camino cada día', 'badge.streak.desc': 'Sal al camino {v} días seguidos.',
     'badge.treasure.name': 'Cazatesoros', 'badge.treasure.desc': { one: 'Encuentra {v} cofre del tesoro.', other: 'Encuentra {v} cofres del tesoro.' },
     'j.ms': 'Paradas superadas', 'j.msNone': 'Aún no has superado ninguna parada. Los primeros cien metros están cerca.',
@@ -312,5 +312,8 @@ IT.addLang('es', {
     // Yakınlaştırma (v1.30)
     "zoom.label": "Zoom", "zoom.in": "Acercar", "zoom.out": "Alejar",
     "tr.earlier": "En camino antes",
+    // Karahindiba tohumu (v1.31)
+    "gift.seed.name": "Deseo al viento", "gift.seed.text": 'créditos ×10',
+    "toast.seed": "<b>¡Diente de león! Soplaste un deseo: {name}</b> · {text} durante {dur}",
   },
 });

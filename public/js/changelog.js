@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.30';
+  IT.VERSION = '1.31';
 
   IT.CHANGELOG = [
+    { v: '1.31', date: '2026-10-07', items: {
+      tr: ['Dilekler yalnızca geceye ait değil… Güneşli bir günde rüzgârın getirdiklerine dikkat et.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Wishes don\u2019t belong to the night alone… On a sunny day, keep an eye on what the wind carries.',
+        'A few small touches along the road.'],
+      de: ['Wünsche gehören nicht nur der Nacht … Achte an sonnigen Tagen darauf, was der Wind herbeiträgt.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Los deseos no son solo cosa de la noche… En un día soleado, fíjate en lo que trae el viento.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Les vœux n\u2019appartiennent pas qu\u2019à la nuit… Par une journée ensoleillée, guette ce que le vent emporte.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.30', date: '2026-10-06', items: {
       tr: ['Sahneye yakınlaş ya da uzaklaş: sağ alttaki ＋ ve − düğmeleriyle (bilgisayarda fare tekerleği ya da + / − tuşlarıyla) yolcuna yaklaş ya da manzaranın genişine bak.',
         'Bisiklet daha canlı: pedallar zincirle dişliye bağlı dönüyor, sürücü her pedal vuruşunda hafifçe sallanıyor.',

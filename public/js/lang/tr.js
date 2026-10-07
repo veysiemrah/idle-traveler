@@ -230,7 +230,7 @@ IT.addLang('tr', {
     'j.trip': 'Yolculuk', 'j.thisTrip': 'Bu yolculuk', 'j.total': 'Toplam yol', 'j.credits': 'Toplam kredi', 'j.clicks': 'Atılan adım',
     'j.time': 'Yolda geçen süre', 'j.best': 'Rekor hız', 'j.gifts': 'Yakalanan kelebek', 'j.crits': 'Şanslı adım', 'j.rainbows': 'Görülen gökkuşağı',
     'j.wishes': 'Tutulan dilek', 'j.photos': 'Çekilen kartpostal',
-    'j.map': 'Hazine haritası', 'j.mapSub': '{n}/{m} parça · bulunan hazine: {t}', 'j.mapHint': 'Parçalar altın kelebeklerden ve kayan yıldızlardan düşer.', 'j.mapReady': 'Harita tamam! Yol kenarında parlayan sandığa dokun.',
+    'j.map': 'Hazine haritası', 'j.mapSub': '{n}/{m} parça · bulunan hazine: {t}', 'j.mapHint': "Parçalar altın kelebeklerden ve tuttuğun dileklerden düşer.", 'j.mapReady': 'Harita tamam! Yol kenarında parlayan sandığa dokun.',
     'j.streak': 'Üst üste gün', 'j.streakVal': '{n} (en iyi {best})',
     'j.life': 'Tüm yolculuklar', 'j.memories': 'Hatıralar', 'j.memVal': '{n} · hız +{p}', 'j.lifeVal': '{d} · {n}. yolculuk',
     'j.stamps': 'Pasaport damgaları', 'j.stampsSub': '{n} bölge · her biri kalıcı +{p} hız', 'j.start': 'Başlangıç',
@@ -250,7 +250,7 @@ IT.addLang('tr', {
     'badge.home.name': 'Evin Yolu', 'badge.home.desc': '{v} kez eve dön.',
     'badge.memory.name': 'Hatıra Kutusu', 'badge.memory.desc': '{v} hatıra biriktir.',
     'badge.photo.name': 'Kartpostalcı', 'badge.photo.desc': '{v} kartpostal çek.',
-    'badge.wish.name': 'Dilek Tut', 'badge.wish.desc': '{v} kayan yıldız yakala.',
+    'badge.wish.name': 'Dilek Tut', 'badge.wish.desc': "{v} dilek tut.",
     'badge.streak.name': 'Her Gün Yolda', 'badge.streak.desc': '{v} gün üst üste yola çık.',
     'badge.treasure.name': 'Hazine Avcısı', 'badge.treasure.desc': { one: '{v} hazine sandığı bul.', other: '{v} hazine sandığı bul.' },
     'j.ms': 'Geçilen duraklar', 'j.msNone': 'Henüz bir durak geçilmedi. İlk yüz metre çok yakın.',
@@ -321,5 +321,8 @@ IT.addLang('tr', {
     // Yakınlaştırma (v1.30)
     "zoom.label": "Yakınlaştırma", "zoom.in": "Yakınlaştır", "zoom.out": "Uzaklaştır",
     "tr.earlier": "Daha önce yoldaydı",
+    // Karahindiba tohumu (v1.31)
+    "gift.seed.name": "Rüzgâr Dileği", "gift.seed.text": 'kredi ×10',
+    "toast.seed": "<b>Karahindiba! Tohumu üfledin, dilek tuttun: {name}</b> · {dur} boyunca {text}",
   },
 });
