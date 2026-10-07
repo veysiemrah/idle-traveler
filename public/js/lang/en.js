@@ -321,5 +321,10 @@ IT.addLang('en', {
     "tr.scopeAll": "All time",
     "tr.totalAll": "All travelers",
     "tr.leadAll": "Every traveler who has ever hit the road, ranked by the total distance of all their trips. A green dot marks those on the road right now.",
+    // Büyük birimlerin açıklaması (v1.34)
+    "unit.auHint": "1 AU (astronomical unit) is the average distance between Earth and the Sun: about {d}.",
+    "unit.lyHint": "1 light-year is the distance light travels in a year: about {d} (≈ {au} AU).",
+    "toast.unitAu": "<b>Distances are now in AU</b> · 1 AU ≈ {d}, from Earth to the Sun. Tap the distance to see this again.",
+    "toast.unitLy": "<b>Distances are now in light-years</b> · 1 light-year ≈ {d}. Tap the distance to see this again.",
   },
 });

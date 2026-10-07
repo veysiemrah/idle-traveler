@@ -157,6 +157,14 @@ button { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 .hud-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--muted); font-size: 14px; }
+/* AB ya da ışık yılıyla yazılan mesafe dokunulabilir: yanında küçük bir "i" işareti, dokununca birimin açıklaması */
+.dist.unit-tip { pointer-events: auto; cursor: help; display: inline-flex; align-items: flex-start; gap: 6px; }
+.dist.unit-tip::after {
+  content: 'i'; flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 11px/1 var(--font-body); color: var(--muted); border: 1.5px solid currentColor; opacity: .8; transition: opacity .2s, transform .15s;
+}
+.dist.unit-tip:hover::after { opacity: 1; color: var(--teal); }
+.dist.unit-tip:active::after { transform: scale(0.9); }
 .speed { color: var(--teal); font-weight: 700; font-variant-numeric: tabular-nums; }
 .dotsep { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); opacity: 0.6; }
 .iconbtn {
@@ -200,7 +208,7 @@ button { font: inherit; color: inherit; }
   position: absolute; top: 16px; right: 16px;
   width: min(360px, calc(100% - 32px));
   display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-  pointer-events: none; z-index: 3;
+  pointer-events: none; z-index: 4; /* yakınlaştırma denetiminin üstünde okunur (dokunuşları engellemez) */
 }
 @container (max-width: 760px) {
   .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; transition: top .4s; }

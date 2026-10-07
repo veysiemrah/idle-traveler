@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.33';
+  IT.VERSION = '1.34';
 
   IT.CHANGELOG = [
+    { v: '1.34', date: '2026-10-07', items: {
+      tr: ['Yol uzayın derinliklerine uzandığında mesafeler AB ve ışık yılıyla yazılır. Artık bu birimlerin ne olduğunu oyun anlatıyor: mesafenin yanındaki küçük "i" işaretine dokun.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['When your road reaches deep space, distances switch to AU and light-years. The game now explains what these units mean: tap the small "i" next to the distance.',
+        'A few small touches along the road.'],
+      de: ['Wenn dein Weg tief ins All führt, werden Strecken in AE und Lichtjahren angegeben. Jetzt erklärt das Spiel diese Einheiten: Tippe auf das kleine „i“ neben der Entfernung.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Cuando tu camino llega al espacio profundo, las distancias pasan a UA y años luz. Ahora el juego explica qué son estas unidades: toca la pequeña «i» junto a la distancia.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Quand ta route atteint l’espace lointain, les distances passent en UA et en années-lumière. Le jeu explique désormais ces unités : touche le petit « i » à côté de la distance.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.33', date: '2026-10-07', items: {
       tr: ['Yolda birkaç küçük rötuş.'],
       en: ['A few small touches along the road.'],

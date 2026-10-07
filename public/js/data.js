@@ -448,6 +448,8 @@
     if (m < 0.1 * LY) return nf(2).format(m / AU) + ' ' + unit('au');
     return nf(2).format(m / LY) + ' ' + unit('ly');
   }
+  // Mesafe hangi büyük birimle yazılıyor: 'au' (astronomi birimi), 'ly' (ışık yılı) ya da null (m, km, mil)
+  function distUnit(m) { return m >= 0.1 * LY ? 'ly' : m >= 0.5 * AU ? 'au' : null; }
   // Tıklama başına mesafe gibi küçük kazançlar
   function fmtGain(m) {
     // bir metreden (yarddan) kısa adımlar santimetre ya da inç olarak
@@ -473,6 +475,6 @@
 
   root.IT = Object.assign(root.IT || {}, {
     VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, KEEPSAKES, KEEP, keepCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
-    fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours,
+    fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -43,7 +43,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip',
     'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -63,6 +63,7 @@
       route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
       mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
       keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
+      unitTip: 0, // büyük birim açıklaması gösterildi mi: 1 AB, 2 ışık yılı (bir kez)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -113,7 +114,7 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
-    s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6);
+    s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2);
     const keeps = isObj(d.keeps) ? d.keeps : {};
     s.keeps = Object.fromEntries(IT.KEEPSAKES.filter(x => keeps[x.id] === 1 || keeps[x.id] === true).map(x => [x.id, 1]));
     // rota açık değilse (bozuk kayıt) ilk rotaya dönülür
@@ -1196,6 +1197,29 @@
         // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz; kervandaki gezginin etiketinde 🐫 durur
         ahead: diff > 0, diff, sub: (caravan.has(p.pub) ? '🐫 ' : '') + (Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff))) }));
   }
+  // Büyük mesafe birimlerinin açıklaması (AB, ışık yılı); sayılar oyuncunun birim sistemiyle (km ya da mil) yazılır
+  function unitVars() {
+    const cf = new Intl.NumberFormat(IT.locale(), { notation: 'compact', maximumFractionDigits: 1 });
+    const imp = IT.units() === 'imperial', per = imp ? IT.MI : 1000, u = IT.unitLabel(imp ? 'mi' : 'km');
+    return { au: cf.format(IT.LY / IT.AU), dAu: cf.format(IT.AU / per) + ' ' + u, dLy: cf.format(IT.LY / per) + ' ' + u };
+  }
+  const unitHint = k => { const v = unitVars(); return t(k === 'ly' ? 'unit.lyHint' : 'unit.auHint', { d: k === 'ly' ? v.dLy : v.dAu, au: v.au }); };
+  // Mesafe ilk kez AB'ye (sonra ışık yılına) geçince bir kez anlatılır; sahnedeki mesafeye dokununca yeniden görünür
+  let unitShown = '';
+  function syncUnitTip() {
+    const u = IT.distUnit(S.distance), el = $('#hudDist'), key = (u || '') + IT.lang() + IT.units();
+    if (key !== unitShown) {
+      unitShown = key;
+      el.classList.toggle('unit-tip', !!u);
+      el.title = u ? unitHint(u) : '';
+      if (u) el.setAttribute('aria-label', el.textContent + ' · ' + unitHint(u)); else el.removeAttribute('aria-label');
+    }
+    const want = u === 'ly' ? 2 : u === 'au' ? 1 : 0;
+    if (want > S.unitTip) {
+      S.unitTip = want; const v = unitVars();
+      toast(t(want === 2 ? 'toast.unitLy' : 'toast.unitAu', { d: want === 2 ? v.dLy : v.dAu }), 'teal'); Sound.chat();
+    }
+  }
   // Bütün yolculuklarda gidilen toplam yol (Yol Defteri'ndeki "toplam yol" ile aynı)
   const myLife = () => Math.max((S.lifeDist || 0) + S.distance, S.legacyDist || 0);
   /* ---------- Hazır mesajlar ---------- */
@@ -1448,6 +1472,7 @@
     const region = IT.regionAt(S.regionIdx);
     setText('#hudRegion', region.name);
     setText('#hudDist', fmtDist(S.distance));
+    syncUnitTip();
     setText('#hudSpeed', fmtSpeed(Math.max(rateEma, cur.idle)));
     setText('#hudVehicle', VEH[S.active].name);
     if (!$('#pane-garage').hidden) {
@@ -1522,6 +1547,8 @@
     }
     if (!$('#pane-journal').hidden) {
       setText('#jDist', fmtDist(S.distance)); setText('#jCred', fmtNum(S.totalCredits));
+      // defterdeki büyük mesafelerde de üstüne gelince birimin açıklaması
+      for (const [sel, m] of [['#jDist', S.distance], ['#jLife', S.lifeDist + S.distance]]) { const el = $(sel), u = el && IT.distUnit(m); if (el) el.title = u ? unitHint(u) : ''; }
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
@@ -1577,6 +1604,8 @@
     stage.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button > 0) return;
       if (e.target.closest('button, a, .chat-pop')) return;
+      // AB ya da ışık yılıyla yazılan mesafeye dokununca birimin açıklaması (adım sayılmaz)
+      if (e.target.closest('#hudDist.unit-tip')) { Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal'); return; }
       if (chatJustClosed()) return;
       const r = scene.canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
