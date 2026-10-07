@@ -323,5 +323,10 @@ IT.addLang('fr', {
     "tr.scopeAll": "Depuis toujours",
     "tr.totalAll": "Tous les voyageurs",
     "tr.leadAll": "Tous les voyageurs qui ont pris la route un jour, classés selon la distance totale de tous leurs voyages. Un point vert signale ceux qui sont sur la route en ce moment.",
+    // Büyük birimlerin açıklaması (v1.34)
+    "unit.auHint": "1 UA (unité astronomique) est la distance moyenne entre la Terre et le Soleil : environ {d}.",
+    "unit.lyHint": "1 année-lumière est la distance parcourue par la lumière en un an : environ {d} (≈ {au} UA).",
+    "toast.unitAu": "<b>Les distances se mesurent désormais en UA</b> · 1 UA ≈ {d}, de la Terre au Soleil. Touche la distance pour revoir ceci.",
+    "toast.unitLy": "<b>Les distances se mesurent désormais en années-lumière</b> · 1 année-lumière ≈ {d}. Touche la distance pour revoir ceci.",
   },
 });

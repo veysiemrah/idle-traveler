@@ -337,5 +337,10 @@ IT.addLang('de', {
     "tr.scopeAll": "Alle Zeiten",
     "tr.totalAll": "Alle Reisenden",
     "tr.leadAll": "Alle Reisenden, die je aufgebrochen sind, sortiert nach der Gesamtstrecke all ihrer Reisen. Ein grüner Punkt zeigt, wer gerade unterwegs ist.",
+    // Büyük birimlerin açıklaması (v1.34)
+    "unit.auHint": "1 AE (Astronomische Einheit) ist die mittlere Entfernung zwischen Erde und Sonne: etwa {d}.",
+    "unit.lyHint": "1 Lichtjahr ist die Strecke, die Licht in einem Jahr zurücklegt: etwa {d} (≈ {au} AE).",
+    "toast.unitAu": "<b>Strecken jetzt in AE</b> · 1 AE ≈ {d}, von der Erde zur Sonne. Tippe auf die Entfernung, um das erneut zu sehen.",
+    "toast.unitLy": "<b>Strecken jetzt in Lichtjahren</b> · 1 Lichtjahr ≈ {d}. Tippe auf die Entfernung, um das erneut zu sehen.",
   },
 });

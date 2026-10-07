@@ -330,5 +330,10 @@ IT.addLang('tr', {
     "tr.scopeAll": "Tüm zamanlar",
     "tr.totalAll": "Tüm gezginler",
     "tr.leadAll": "Şimdiye kadar yola çıkmış bütün gezginler, bütün yolculuklarında gittikleri toplam yola göre sıralı. Şu an yolda olanların yanında yeşil bir nokta yanar.",
+    // Büyük birimlerin açıklaması (v1.34)
+    "unit.auHint": "1 AB (astronomi birimi), Dünya ile Güneş arasındaki ortalama uzaklıktır: yaklaşık {d}.",
+    "unit.lyHint": "1 ışık yılı, ışığın bir yılda gittiği yoldur: yaklaşık {d} (≈ {au} AB).",
+    "toast.unitAu": "<b>Yol artık AB ile ölçülüyor</b> · 1 AB ≈ {d}, Dünya ile Güneş arası. Mesafeye dokunup yeniden bakabilirsin.",
+    "toast.unitLy": "<b>Yol artık ışık yılıyla ölçülüyor</b> · 1 ışık yılı ≈ {d}. Mesafeye dokunup yeniden bakabilirsin.",
   },
 });

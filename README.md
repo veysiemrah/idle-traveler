@@ -297,6 +297,11 @@ tanıtım penceresinden ya da başlık çubuğundaki Ayarlar'dan değiştirilebi
 - **Sayılar** her dilin kendi biçimiyle gösterilir: `3,24 Mn`, `3.24 M`, `3,24 Mio.`; yüzdeler `%25`, `25%`, `25 %`.
 - **Birimler**: ABD ve Birleşik Krallık'ta mesafe mil, hız mph ile; diğer ülkelerde km ve km/sa (km/h) ile gösterilir.
   Ayarlardan elle seçilebilir.
+- **Büyük birimler**: Mesafe 0,5 AB'yi geçince AB (astronomi birimi: Dünya ile Güneş arası, ≈149,6 milyon km), 0,1 ışık yılını
+  geçince ışık yılı ile yazılır. İlk geçişte birimi anlatan bir bildirim gelir (AB ve ışık yılı için birer kez; eve dönüşte
+  tekrarlamaz). Bu birimler gösterilirken sahnedeki mesafenin yanında küçük bir "i" belirir: dokununca (ya da üstüne gelince)
+  açıklama yeniden görünür, dokunuş adım sayılmaz. Yol Defteri'ndeki mesafelerde de üstüne gelince açıklama vardır. Açıklamadaki
+  sayılar oyuncunun birim sistemiyle yazılır (≈149,6 Mn km ya da ≈93 M mil).
 - **Gerçek dünya durakları** ülkeye göre yerelleşir: Türkçede "İstanbul – Ankara", Fransızcada "Paris – Lyon",
   Almancada "Berlin – Frankfurt" gibi benzer uzunlukta rotalar.
 

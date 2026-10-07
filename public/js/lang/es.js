@@ -321,5 +321,10 @@ IT.addLang('es', {
     "tr.scopeAll": "Histórico",
     "tr.totalAll": "Todos los viajeros",
     "tr.leadAll": "Todos los viajeros que alguna vez se pusieron en camino, ordenados por la distancia total de todos sus viajes. Un punto verde marca a quienes están en camino ahora.",
+    // Büyük birimlerin açıklaması (v1.34)
+    "unit.auHint": "1 UA (unidad astronómica) es la distancia media entre la Tierra y el Sol: unos {d}.",
+    "unit.lyHint": "1 año luz es la distancia que recorre la luz en un año: unos {d} (≈ {au} UA).",
+    "toast.unitAu": "<b>Ahora las distancias se miden en UA</b> · 1 UA ≈ {d}, de la Tierra al Sol. Toca la distancia para volver a verlo.",
+    "toast.unitLy": "<b>Ahora las distancias se miden en años luz</b> · 1 año luz ≈ {d}. Toca la distancia para volver a verlo.",
   },
 });
