@@ -17,8 +17,8 @@ npx playwright install chromium  # tarayıcı
 ## Çalıştırmak
 
 ```bash
-tests/run-all.sh       # tam regresyon seti (~25 dk); oyunu 8765 portunda kendisi açar, özet out/regress.out
-tests/run-all.sh quick # hızlı mod: aynı set, fuzz hariç (kayıt, döngü ya da genel arayüz değişmediyse yeter)
+tests/run-all.sh       # tam regresyon seti (~22 dk); oyunu 8765 portunda kendisi açar, özet out/regress.out
+tests/run-all.sh quick # hızlı mod: aynı set, fuzz hariç (~18 dk; fuzz ~3,5 dk sürer; kayıt, döngü ya da genel arayüz değişmediyse yeter)
 tests/run-online.sh    # çok oyunculu testler; Worker'ı yerel D1 ile 8787 portunda kendisi başlatır
 node tests/keys.js     # beş dil sözlüğünü karşılaştırır: eksik/fazla anahtar, yer tutucu ve etiket farkları
 ```
