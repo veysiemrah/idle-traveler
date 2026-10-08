@@ -123,6 +123,18 @@
         o.start(t); o.stop(t + 0.4);
       });
     },
+    // kâğıt uçak: yanından süzülen yumuşak bir hışırtı ve iki ince nota
+    plane() {
+      if (!this.ctx || !this.sfxOn) return;
+      this.noise(0.12, 0.7, 2400, 0.8);
+      [4, 6].forEach((n, i) => this.tone(PENTA[n] * 2, 0.025, 0.8, 'sine', this.sfx, true, 0.15 + i * 0.14));
+    },
+    // mektup açılır: kâğıt hışırtısı, ardından sıcak, yukarı çıkan bir dizi
+    letter() {
+      if (!this.ctx || !this.sfxOn) return;
+      this.noise(0.3, 0.12, 1800, 1.2); setTimeout(() => this.noise(0.22, 0.1, 2600, 1.2), 90);
+      [0, 2, 4, 6].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.045, 1.2, 'sine', this.sfx, true, 0.15 + i * 0.08));
+    },
     region() {
       if (!this.ctx) return;
       [261.63, 329.63, 392.0, 493.88, 587.33].forEach((f, i) => this.tone(f, 0.05, 3.5, 'sine', this.sfx, true, i * 0.12));

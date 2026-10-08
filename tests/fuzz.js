@@ -10,7 +10,7 @@ const { chromium } = require('./lib/pw');
   for (let si = 0; si < seeds.length; si++) for (const [locale, vw] of [['tr-TR', [1280, 860]], ['fr-FR', [390, 844]]]) {
     const p = await b.newPage({ locale, viewport: { width: vw[0], height: vw[1] } });
     p.on('pageerror', e => errs.add(`${si}/${locale}: ${e.message}`));
-    p.on('console', m => { if (m.type() === 'error' && !/ERR_CERT|net::/.test(m.text())) errs.add(`${si}/${locale}: ${m.text()}`); });
+    p.on('console', m => { if (m.type() === 'error' && !/ERR_CERT|net::|501 \(Unsupported/.test(m.text())) errs.add(`${si}/${locale}: ${m.text()}`); });
     await p.addInitScript(s => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)); } }, seeds[si]);
     await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(500);
     let bad = new Set();

@@ -129,23 +129,28 @@ npx wrangler dev   # http://localhost:8787
   rozetler, güçlendirmeler) saniye saniye işler. Simülasyondaki oyuncu kredi başına en çok kalıcı gelir getiren alımı yapar;
   Kelebek Dostu, Rüya ve Kamp'ı fiyatları son 60 saniyelik gelirini aşmayınca alır (v1.38'e kadar bunları hiç almıyor, Şans'ı
   da yanlışlıkla değersiz sayıyordu; önceki sürümlerde yazan tempolar bu yüzden gerçekte olduğundan 2,5–10 kat yavaştı).
-  Tek yolculukta araçlara ulaşma, ortanca (8 deneme; parantezde en hızlı–en yavaş), v1.38:
+  Tek yolculukta araçlara ulaşma, ortanca (8 deneme), v1.39. Hedefler v1.27'den beri belgelenenlerdir; v1.39'da gerçek tempo
+  bu hedeflere geri çekildi (bkz. aşağıda):
   - **Şanslı + aktif** (2,5 dokunuş/sn ritimle, her olayı yakalar, her zar iki denemenin iyisi), gün döngüsünde (%44 gece):
-    tren ~8 dk, uçak ~15 dk, jet ~30 dk, roket ~74 dk (66–80), Güneş Yelkeni ~3 saat (156–180 dk), Kuyruklu Yıldız ~8,3 saat.
-    Hep gece (koyu tema): Güneş Yelkeni ~171 dk; hep gündüz (açık tema): ~184 dk. Yıldız Gemisi 24 saatte ulaşılamaz;
-    hatıralarla hızlanan sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu Kuyruklu Yıldız'a 14. yolculukta ulaşır).
-  - **Aktif** (aynı, normal şans): tren ~10 dk, uçak ~25 dk, roket ~94 dk, Güneş Yelkeni ~3,6 saat, Kuyruklu Yıldız ~8,2 saat.
-  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~18 dk, tren ~44 dk, uçak ~2,1 saat, jet ~4,6 saat, roket ~10 saat.
-  Karşılaştırma (aynı simülasyonla): v1.36 kurallarında Güneş Yelkeni şanslı oyuncuda ~37 dk, aktifte ~93 dk; sıradan oyuncuda
-  roket ~10 saat. v1.37 (kalıcı gelirle ödüller) aktif oyuncuları yavaşlattı, sıradan oyuncuyu neredeyse değiştirmedi.
-- **Gelire bağlı ödüller (v1.37)**: Bölge (40 sn), durak (30 sn), kelebekten anında kredi (600 sn), hazine sandığı (6000 sn)
+    tren ~10 dk, uçak ~29 dk, jet ~76 dk, roket ~3,1 saat (181–195 dk), Güneş Yelkeni ~8 saat (462–490 dk), Kuyruklu Yıldız
+    ~23 saat. Hep gece (koyu tema): Güneş Yelkeni ~450 dk; hep gündüz (açık tema): ~504 dk. Yıldız Gemisi tek yolculukta
+    30 saatte ulaşılamaz; hatıralarla hızlanan sonraki yolculukların hedefidir (`sim_trips.js 14 0.5`: olaysız oyuncu
+    Kuyruklu Yıldız'a 14. yolculukta ulaşır).
+  - **Aktif** (aynı, normal şans): tren ~15 dk, uçak ~46 dk, roket ~4,6 saat, Güneş Yelkeni ~12,7 saat.
+  - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, uçak ~3,9 saat, roket ~20,6 saat.
+  **Ölçüm geçmişi:** v1.38'e kadar simülasyon Kelebek Dostu'nu hiç almıyor, Şans'ı da yanlışlıkla değersiz sayıyordu. Gerçek
+  tempo bu yüzden yazılandan çok hızlıydı (aynı düzeltilmiş simülasyonla Güneş Yelkeni: v1.36 kurallarında şanslı oyuncu ~37 dk,
+  aktif ~93 dk; v1.38'de ~177 ve ~214 dk). Asıl hızlandırıcı Kelebek Dostu'ydu: 10. seviyede kelebekler iki kat sık, etkileri
+  2,5 kat uzun geliyor, üst üste binen etkiler katlanıyordu (Rüzgâr Hortumu ×3 → ×21). v1.39'da Kelebek Dostu seviye başına
+  +%5 sıklık ve +%5 süreye indi (10. seviyede +%50 / +%50), gelire bağlı ödüller de yeniden seçildi.
+- **Gelire bağlı ödüller**: Bölge (120 sn), durak (90 sn), kelebekten anında kredi (250 sn), hazine sandığı (2200 sn)
   ve günün hediyesi (120 sn × gün) **kalıcı gelirin** o kadar saniyesini verir (`game.js` → `REWARD`, `sim_game.js` → `RW`).
   Kalıcı gelir, geçici çarpanlar (kelebek etkileri, gökkuşağı, dilek, kervan) olmadan hesaplanan kredi/sn'dir (`baseEma`).
-  Önceden ödüller şişmiş gelirle hesaplanıyordu: dilekle (kredi ×10) düşen dördüncü harita parçasının sandığı on kat,
-  gökkuşağı ile Rüzgâr Hortumu'nun (×30 hız) üst üste geldiği anlardaki bölge ödülleri otuz kat veriyordu. Tempo bu rastlantıya
-  bağlıydı (sıradan oyuncu trene 4 ile 72 dk arasında ulaşıyordu). Süreler `sim_game.js` ızgarasıyla seçildi; şansa bağlı
-  yayılım daraldı. (Izgara o sırada Kelebek Dostu'nu almayan simülasyonla yapıldı; düzeltilmiş ölçüm için yukarıdaki Tempo'ya bak.)
-  Olaylar yine güçlüdür: hazine sandığı aktif oyuncunun en büyük gelir kaynağıdır (saatte ~12 sandık).
+  v1.37'den önce ödüller şişmiş gelirle hesaplanıyordu: dilekle (kredi ×10) düşen dördüncü harita parçasının sandığı on kat,
+  gökkuşağı ile Rüzgâr Hortumu'nun (×30 hız) üst üste geldiği anlardaki bölge ödülleri otuz kat veriyordu; tempo bu rastlantıya
+  bağlıydı (sıradan oyuncu trene 4 ile 72 dk arasında ulaşıyordu). Süreler v1.39'da `sim_game.js` ızgarasıyla, yukarıdaki
+  hedefleri üç profilde birden tutturacak biçimde seçildi (bölge ve durak ödülleri erken oyunu, sandık geç oyunu taşır).
+  Simülasyonda denemek için: `'{"rw":{"chest":3000},"bf":{"bfFreq":0.1}}'`; v1.37 öncesi kural için `'{"boost":1}'`.
   `sim_switch.js` ve `sim_trips.js` olayları saymaz, yalnızca garaj dengesini karşılaştırmak içindir.
 - **Yolcular (çok oyunculu)**: Giriş penceresinin son maddesi diğer gezginleri, el sallamayı ve mesaj balonunu tanıtır.
   Oyuna başlarken gezgine adı sorulur (2–20 karakter; harf, rakam, boşluk ve . _ ' -).
@@ -220,7 +225,8 @@ npx wrangler dev   # http://localhost:8787
   İlk üçü tavansızdır (her seviye 2,2–2,6 kat pahalanır, alınabilen seviye gelirin logaritmasıyla artar: 24 saatte ~25–30 seviye).
   Tavanlı olanlar v1.38'de dikleşti (büyüme: Ritim ×4, Şans ve Rüya ×4,5, Kamp ×2,3, Kelebek Dostu ×5, Yol Arkadaşı ×6). Son
   seviyeleri artık minibüs ile uçak arasındaki fiyatlarda (Ritim ~79 Mn, Kelebek Dostu ~3,5 Mr, Yol Arkadaşı ~50 Mr); önceden
-  hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar, tempo neredeyse aynı kaldı.
+  hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar.
+  Kelebek Dostu seviye başına kelebekleri %5 sık getirir ve etkilerini %5 uzatır (v1.39'a kadar %10 ve %15).
 - **Bölgeler**: Sabah Köyü, Lavanta Tarlaları, Çam Ormanı, Altın Buğday Ovası, Ege Sahil Yolu, Kızıl Kanyon,
   Kiraz Çiçeği Vadisi, Sonbahar Korusu, Vaha Yolu, Karlı Geçit, Kuzey Işıkları, Rize Çay Bahçeleri, Peri Bacaları,
   Lale Bahçeleri (yel değirmenleri), Zeytin Bahçeleri (deniz kıyısında zeytinlikler)… Liste bitince bölgeler ikinci tura girer;
@@ -246,7 +252,7 @@ npx wrangler dev   # http://localhost:8787
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Hazine haritası**: Yakalanan her altın kelebek %20, her dilek (kayan yıldız ya da karahindiba) %50 olasılıkla bir harita parçası düşürür. Dört parça
   tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
-  yeniden gelir). Sandık yaklaşık 100 dakikalık kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
+  yeniden gelir). Sandık yaklaşık 37 dakikalık (2200 sn) kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
 - **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,
@@ -257,6 +263,19 @@ npx wrangler dev   # http://localhost:8787
   bölgenin renginde durur (dokununca küçük bir sallanma ve ses), bulunmayanlar "?" ve bölgenin adıyla bekler. Bazı bölgelere ilk
   yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
   *Kâşif* kıyafeti açılır. Sürüm notunda yalnızca ipucu verilir.
+- **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
+  sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
+  gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
+  sırayla gelir; her biri oyunun bir sırrına ipucu verir (ritim, kelebekler ve harita, dilekler, yağmur, yadigârlar, kervan, eve
+  dönüş, rotalar, garaj). Sıradaki mektup ancak eşiğine gelince yola çıkar: ilk sekizi ömür boyu yolla (başta, 400 m, 5 km,
+  maraton, 1000 km, 9000 km, dünya turu, 60.000 km: eve dönüşü anlatan mektup dönüş açılmadan önce gelsin diye), son dördü eve
+  dönüş sayısıyla (1, 2, 3, 3) açılır (`data.js` → `LETTERS`).
+  İlk uçak açılıştan 70–110 sn sonra gelir; kaçırılırsa aynı arayla yeniden gelir. Okunan mektuptan sonra sıradaki en erken
+  4–7 dakikada gelir (birikmiş mektuplar 2,5–3,5 dakikada bir); o sırada eşiğine gelinmemişse eşiği geçtikten ~1,5 dakika sonra. Yağmurda ve pencere açıkken gelmez; ilk iki uçakta
+  "Gökyüzüne bak!" bildirimi gelir. Okunan mektuplar Yol Defteri'nde (ilk mektuptan sonra görünen *Mektuplar* bölümünde) zarf
+  olarak durur, dokununca yeniden açılır; gelmemiş olanlar "?" bekler. Mektuplar eve dönüşte kaybolmaz. Son mektup yazarın
+  kim olduğunu söyler (imza yolcunun kendi adıyla: "yıllar sonra") ve *Zamansız Gezgin* kıyafetini açar. Ekonomiye etkisi
+  yoktur. Sürüm notunda yalnızca ipucu verilir.
 - **Eve Dönüş ve Hatıralar**: Yolculuk 100.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin; bu eşik her eve dönüşte
   3 katına çıkar (300.000 km, 900.000 km…). Hatıraların verdiği hız yolculukları kısaltmasın diye büyüme 3 kat
   seçildi (`tests/sim_trips.js`): ikinci yolculuk birincisinden biraz kısa sürer, sonrakilerin her biri %10–15 uzar ve oyuncu araç zincirinde
@@ -295,7 +314,7 @@ npx wrangler dev   # http://localhost:8787
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
-  Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  *Zamansız Gezgin* son mektupla (12 mektup) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
@@ -317,7 +336,8 @@ npx wrangler dev   # http://localhost:8787
   (seçim kaydedilir, döngü yeniden seçilince sayfa yine tarayıcı temasını izlemeye başlar).
   Akşam ve sabah olduğunda kısa bir bildirim gelir; Ayarlar penceresi o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
-İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
+İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir. Kayıt okunamazsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa)
+yeni bir oyunla ezilmeden önce `idle-traveler-save-v1-bak` anahtarına yedeklenir.
 
 ## Diller ve ülkeler
 

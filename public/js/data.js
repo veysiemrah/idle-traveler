@@ -55,7 +55,7 @@
     { id: 'luck',     base: 500,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
     { id: 'dream',    base: 800,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
     { id: 'camp',     base: 1200,  growth: 2.3, max: 20,  vals: l => ({ h: fmtHours(8 + 2 * l) }),               step: () => ({ h: fmtHours(2) }) },
-    { id: 'butterfly', base: 1800, growth: 5.0, max: 10,  vals: l => ({ p: fmtPct(10 * l), q: fmtPct(15 * l) }), step: () => ({}) },
+    { id: 'butterfly', base: 1800, growth: 5.0, max: 10,  vals: l => ({ p: fmtPct(100 * Econ.bfFreq * l), q: fmtPct(100 * Econ.bfDur * l) }), step: () => ({}) },
     // Yol arkadaşı Karabaş: 10 seviye, eve dönüşte de kalır; 2, 4, 7 ve 10. seviyede görünümü gelişir
     { id: 'pal',      base: 5000, growth: 6.0, max: 10,  vals: l => ({ p: fmtPct(Econ.palBonus(l) * 100) }),   step: () => ({}) },
   ];
@@ -284,6 +284,16 @@
   const badgeCount = state => BADGES.reduce((a, b) => a + ((state.badges || {})[b.id] || 0), 0);
   const badgeBonus = state => BADGES.reduce((a, b) => { const k = (state.badges || {})[b.id] || 0; for (let i = 0; i < k; i++) a += TIERS[i].bonus; return a; }, 0);
 
+  /* ---------- Mektuplar: yolda arada bir kâğıt uçakla gelen, gizemli bir gezginin mektupları ----------
+     Her mektup bir eşikte hazır olur (ömür boyu yol ya da eve dönüş sayısı) ve sırayla gelir. Eve dönüşü anlatan sekizincisi
+     dönüş açılmadan (100.000 km) biraz önce hazır olur ki dönüşten önce okunsun. Okunanlar Yol Defteri'nde
+     saklanır, eve dönüşte kaybolmaz. Sonuncusu mektupları kimin yazdığını söyler ve bir kıyafet açar. */
+  const LETTERS = [
+    { life: 0 }, { life: 400 }, { life: 5000 }, { life: 42195 }, { life: 1e6 }, { life: 9e6 }, { life: 4.0075e7 }, { life: 6e7 },
+    { trips: 1 }, { trips: 2 }, { trips: 3 }, { trips: 3 },
+  ];
+  LETTERS.forEach(l => { l.ready = s => lifeDist(s) >= (l.life || 0) && (s.trips || 0) >= (l.trips || 0); });
+
   /* ---------- Yolcunun kıyafetleri: rozet topladıkça açılır ---------- */
   // need: gereken rozet kademesi sayısı. Ceket rengi araçların vurgu renklerinde de kullanılır.
   const OUTFITS = [
@@ -296,6 +306,8 @@
     { id: 'gold',     need: 60, jacket: '#e8b93c', jacketDark: '#c4962a', hat: '#fbf4e6', hatDark: '#d9cfbb', pack: '#c9553d' },
     // rozetle değil, yadigâr rafını doldurunca açılır
     { id: 'explorer', need: 0, keeps: 15, jacket: '#8a6440', jacketDark: '#6e4f31', hat: '#e9dcb8', hatDark: '#c9b98f', pack: '#3f8a83' },
+    // son mektupla açılır
+    { id: 'timeless', need: 0, letters: 12, jacket: '#2f7d8f', jacketDark: '#236272', hat: '#f3e3b6', hatDark: '#d4c08e', pack: '#c86f8f' },
   ];
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
   const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
@@ -356,6 +368,12 @@
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.01 * lvl; },
     luckMult: 5, // şanslı adım kaç kat uzun
+    // Kelebek Dostu: seviye başına altın kelebeklerin sıklığı ve etkilerin süresi şu kadar artar.
+    // (v1.39'a kadar +%10 ve +%15'ti: 10. seviyede iki kat sık ve 2,5 kat uzun etkiler üst üste binip katlanıyor, tempoyu
+    //  belgelenen hedeflerin 2,5–4 katına çıkarıyordu.)
+    bfFreq: 0.05, bfDur: 0.05,
+    butterflyFreq(lvl) { return 1 + Econ.bfFreq * (lvl || 0); },
+    butterflyDur(lvl) { return 1 + Econ.bfDur * (lvl || 0); },
     // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–6).
     // 150: arkasında yıldız tozu izi, 200: gökkuşağı kuyruğu (v1.28, yeni ekonomide bu seviyelere ulaşılabiliyor)
     looks: [10, 25, 50, 100, 150, 200],
@@ -481,7 +499,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, KEEPSAKES, KEEP, keepCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

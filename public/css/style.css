@@ -618,6 +618,28 @@ button { font: inherit; color: inherit; }
 .keep.on:active { transform: scale(.96); }
 .keep.wiggle .e { animation: keepWiggle .55s ease; }
 @keyframes keepWiggle { 25% { transform: rotate(-14deg) scale(1.15); } 60% { transform: rotate(10deg) scale(1.1); } }
+/* Mektuplar: Yol Defteri'nde zarflar (yadigâr yuvalarıyla aynı yapı, mühür rengi) */
+.keep.env { --c: #d9a85b; min-height: 70px; }
+.keep.env.on b { font-size: 11.5px; }
+/* Mektup penceresi: iki temada da krem bir kâğıt, köşesinde mum mühür; açılırken hafifçe yayılır */
+.letter {
+  position: relative; margin: 4px 2px 2px; padding: 18px 18px 14px; border-radius: 6px;
+  background: radial-gradient(120% 90% at 100% 0%, rgba(214, 180, 120, .18), transparent 60%), linear-gradient(180deg, #fffaf0, #f5ead3);
+  color: #3b3226; font: 500 15px/1.55 var(--font-body);
+  box-shadow: inset 0 0 0 1px rgba(120, 95, 60, .14), 0 10px 26px rgba(0, 0, 0, .2);
+  transform: rotate(-.5deg); transform-origin: 50% 0;
+  animation: letterOpen .7s cubic-bezier(.2, .9, .3, 1.05);
+}
+.letter p { margin: 0 0 8px; overflow-wrap: anywhere; }
+.letter .letter-to { font: 700 16px/1.3 var(--font-display); color: #5a4630; }
+.letter .letter-from { margin: 10px 0 0; text-align: right; font-style: italic; color: #7a654a; }
+.letter.last .letter-from { color: #a8432f; font-weight: 700; }
+.letter::after {
+  content: ""; position: absolute; top: -9px; right: 16px; width: 24px; height: 24px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #e0705a, #b2402c 70%);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .18), 0 2px 4px rgba(0, 0, 0, .25);
+}
+@keyframes letterOpen { from { opacity: 0; transform: rotate(-.5deg) scaleY(.55) translateY(-8px); } 60% { opacity: 1; } }
 /* Hazine haritası: dört parçalı parşömen, ortada X işareti */
 .tmap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-md); padding: 10px 12px; }
 .tmap-grid { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 64px; height: 50px; }
@@ -801,7 +823,7 @@ button { font: inherit; color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hint, .banner.show, .toast, .modal-card, .fx, .keep .e { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
+  .hint, .banner.show, .toast, .modal-card, .fx, .keep .e, .letter { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
 }
 /* Yeni sürüm: sayfa yenilenmeden önce yumuşakça solar */
 html.reloading body { opacity: 0; transition: opacity .6s ease; }

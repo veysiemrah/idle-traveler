@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Tam regresyon seti: oyunu statik sunucuda (8765) açar, her betiğin hata satırlarını out/regress.out'a yazar.
-# Kullanım: tests/run-all.sh   (Python 3 ve Playwright gerekir; bkz. tests/README.md)
+# Kullanım: tests/run-all.sh         tam set (~22 dk)
+#           tests/run-all.sh quick   hızlı mod: fuzz hariç (~18 dk); kayıt, döngü ya da genel arayüz değişmediyse yeter
+# (Python 3 ve Playwright gerekir; bkz. tests/README.md)
 set -u
+QUICK=""; [ "${1:-}" = "quick" ] && QUICK=1
 # başlatılan sunucuyu alt süreçleriyle (npx → wrangler → workerd) birlikte kapatır
 killtree() {
   # Windows (Git Bash): pgrep yok; süreç ağacı Windows kimliğiyle taskkill /T ile kapatılır
@@ -24,12 +27,13 @@ if ! curl -s -o /dev/null http://localhost:8765/; then
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
 export NODE_OPTIONS="-r $HERE/pw_name.js"
-for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward; do
+for f in func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters; do
   echo "== $f" >> "$OUT"
   timeout 300 node "$f.js" 2>&1 | grep -iE "error|KAYDI|şüpheli|∞|NaN|sıçradı|adım attı" | grep -v ERR_CERT | grep -v "501 (Unsupported" | head -6 >> "$OUT"
 done
 echo "== i18n" >> "$OUT"; timeout 200 node i18n.js de-DE,es-ES,fr-FR 2>&1 | grep -E "çevrilmemiş|errors" | sort | uniq -c >> "$OUT"
-echo "== fuzz" >> "$OUT"; timeout 1200 node fuzz.js 2>&1 | grep -v "501 (Unsupported" | tail -8 >> "$OUT"
+if [ -n "$QUICK" ]; then echo "== fuzz (hızlı mod: atlandı)" >> "$OUT"
+else echo "== fuzz" >> "$OUT"; timeout 1200 node fuzz.js 2>&1 | grep -v "501 (Unsupported" | tail -8 >> "$OUT"; fi
 echo "== mp_off (ön yüklemesiz)" >> "$OUT"; NODE_OPTIONS= timeout 120 node mp_off.js 2>&1 | tail -3 >> "$OUT"
 echo "== anahtarlar" >> "$OUT"; NODE_OPTIONS= node keys.js 2>&1 | tail -5 >> "$OUT"
 echo "== BİTTİ" >> "$OUT"

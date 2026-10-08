@@ -30,7 +30,9 @@ const RAINBOW = { id: 'rainbow', dur: 20, speed: 10 }, WISH = { id: 'wish', dur:
 // Gelire bağlı ödüllerin süresi (sn; game.js'teki REWARD ile aynı). Denemek için: '{"rw":{"chest":1800}}'
 // Güçlendirme fiyatlarını dosyaya dokunmadan denemek için: '{"buffs":{"pal":{"growth":9.7}}}'
 for (const [id, o] of Object.entries(A.buffs || {})) Object.assign(BUFFS.find(b => b.id === id), o);
-const RW = Object.assign({ region: 40, ms: 30, instant: 600, chest: 6000 }, A.rw || {});
+// Kelebek Dostu'nun seviye başına sıklık/süre artışını denemek için: '{"bf":{"bfFreq":0.05,"bfDur":0.05}}'
+Object.assign(Econ, A.bf || {});
+const RW = Object.assign({ region: 120, ms: 90, instant: 250, chest: 2200 }, A.rw || {});
 const STACK_AFTER = 300, STACK_MAX = 10, MAP_DROP = { gift: 0.2, star: 0.5 };
 const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
 
@@ -82,7 +84,7 @@ function run(seed) {
     if (!s.keeps[biome] && --keepIn <= 0) { if (rnd0() < P.catch) s.keeps[biome] = 1; keepIn = 80 + roll('low') * 70; }
     // altın kelebek
     if (--giftIn <= 0) {
-      giftIn = (40 + roll('low') * 45) / (1 + 0.1 * s.buffs.butterfly);
+      giftIn = (40 + roll('low') * 45) / Econ.butterflyFreq(s.buffs.butterfly);
       if (rnd0() < P.catch) {
         s.gifts++;
         if (s.mapPieces === undefined) s.mapPieces = 0;
@@ -91,9 +93,9 @@ function run(seed) {
         const pick = () => { let r = rnd0() * 10; for (const g of GIFTS) { r -= g.w; if (r <= 0) return g; } return GIFTS[0]; };
         // etkinin süresi boyunca getirdiği ek kredi: hız ve kredi bütün geliri, Coşku yalnızca dokunuşların payını büyütür
         const value = g => g.instant ? Math.max(40, income() * RW.instant)
-          : g.dur * (1 + 0.15 * s.buffs.butterfly) * income() * (g.click ? (dClick / d) * (g.click - 1) : (g.speed || g.credit) - 1);
+          : g.dur * Econ.butterflyDur(s.buffs.butterfly) * income() * (g.click ? (dClick / d) * (g.click - 1) : (g.speed || g.credit) - 1);
         let g = pick(); if (P.luck) { const h = pick(); if (value(h) > value(g)) g = h; }
-        if (g.instant) grant(Math.max(40, income() * RW.instant)); else addFx(g, g.dur * (1 + 0.15 * s.buffs.butterfly), t, true);
+        if (g.instant) grant(Math.max(40, income() * RW.instant)); else addFx(g, g.dur * Econ.butterflyDur(s.buffs.butterfly), t, true);
       }
     }
     // yağmur ve gökkuşağı (gökkuşağı yalnızca gündüz)
