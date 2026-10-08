@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tam regresyon seti: oyunu statik sunucuda (8765) açar, her betiğin hata satırlarını out/regress.out'a yazar.
-# Kullanım: tests/run-all.sh         tam set (~25 dk)
-#           tests/run-all.sh quick   hızlı mod: fuzz hariç; kayıt, döngü ya da genel arayüz değişmediyse yeter
+# Kullanım: tests/run-all.sh         tam set (~22 dk)
+#           tests/run-all.sh quick   hızlı mod: fuzz hariç (~18 dk); kayıt, döngü ya da genel arayüz değişmediyse yeter
 # (Python 3 ve Playwright gerekir; bkz. tests/README.md)
 set -u
 QUICK=""; [ "${1:-}" = "quick" ] && QUICK=1
