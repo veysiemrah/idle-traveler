@@ -30,6 +30,17 @@ Her adımın sonunda neyin değiştiğini kısaca özetle. `README.md` dosyasın
 Yayına çıkan her değişiklikte `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin
 başına o sürümün notlarını beş dilde (tr, en, de, es, fr) ekle; oyuncular bunları Yenilikler penceresinde görür.
 
+Testleri ne zaman çalıştıracağın (tam regresyon uzun sürer, gereksiz yere tekrarlama):
+- **Oturum başında** tam regresyon çalıştırma; yalnızca saniyeler süren denetimler yeter: `node tests/keys.js` ve değişen
+  dosyalarda `node --check`. Gerçek bir hatadan şüpheleniyorsan yalnızca ilgili tek betiği çalıştır. Yarım kalmış, yayınlanmamış
+  bir sürüm devralsan da ayrıca test etme; yayından önceki son çalıştırma o kodu da kapsar.
+- **Geliştirirken** yalnızca değişen yerin betiğini çalıştır (yeni özellik için yeni bir betik yaz ve `run-all.sh` listesine ekle).
+- **Yayından hemen önce, bir kez**, son kod üzerinde regresyonu çalıştır. Kayıt/yükleme, ana döngü ya da genel arayüz akışı
+  değiştiyse tam set (`tests/run-all.sh`); değişmediyse hızlı mod (`tests/run-all.sh quick`, `fuzz` hariç). Yolcular, Worker
+  ya da çok oyunculu arayüz değiştiyse ayrıca `tests/run-online.sh`.
+- Testler canlı `public/` klasörünü kullanır: bir çalıştırma sürerken oyun dosyalarını düzenleme, iki çalıştırmayı aynı anda
+  başlatma (yük zamanlamaya bağlı testleri bozar). Bir çalıştırmayı durdurursan alt süreçlerinin de kapandığını denetle.
+
 Sürüm notlarını yazarken:
 - Oyunun balans ayarlarındaki değişiklikleri açıkça yazma
 - Hata düzeltmelerini açıkça yazma ("X bozuktu, düzeldi" gibi). Gerekirse yalnızca "küçük rötuşlar" gibi genel bir satırla geç.

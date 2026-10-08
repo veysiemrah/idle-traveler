@@ -18,6 +18,7 @@ npx playwright install chromium  # tarayıcı
 
 ```bash
 tests/run-all.sh       # tam regresyon seti (~25 dk); oyunu 8765 portunda kendisi açar, özet out/regress.out
+tests/run-all.sh quick # hızlı mod: aynı set, fuzz hariç (kayıt, döngü ya da genel arayüz değişmediyse yeter)
 tests/run-online.sh    # çok oyunculu testler; Worker'ı yerel D1 ile 8787 portunda kendisi başlatır
 node tests/keys.js     # beş dil sözlüğünü karşılaştırır: eksik/fazla anahtar, yer tutucu ve etiket farkları
 ```
@@ -32,6 +33,9 @@ node tests/routes.js
 Eski kayıtlarla açılan testlerde ad penceresi araya girmesin diye `run-all.sh` her betiğe `pw_name.js` ön yüklemesini
 ekler (`node -r tests/pw_name.js …`); kaydında gezgin adı yoksa "Test" adı verilir.
 
+Ne zaman hangisi: oturum başında tam set gerekmez (`keys.js` ve `node --check` yeter); geliştirirken yalnızca değişen yerin
+betiği; yayından hemen önce bir kez tam set ya da hızlı mod. Ayrıntı için kökteki `CLAUDE.md`.
+
 `run-all.sh` çıktısında beklenen birkaç bilgi satırı vardır, hata değildir: `boşluk (select odaklı) adım attı mı: false`,
 `döngü kapanınca saat sıçradı mı: false`, hazine defteri satırları, `çevrimiçi anahtar: yok`, `mp_off` testinin
 "ulaşılamıyor" durumu ve `toast.badge` yer tutucu farkı (Almanca dışı dillerde kademe adı küçük harfle kullanılır).
@@ -40,7 +44,7 @@ ekler (`node -r tests/pw_name.js …`); kaydında gezgin adı yoksa "Test" adı 
 
 | Grup | Betikler |
 | --- | --- |
-| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj: ipucusuz kartlar, Sv. eşikleri), `keeps` (yadigârlar), `looks200` (Sv. 150/200 görünümleri, Fener Yolu), `zoom` (sahne yakınlaştırma), `seed` (karahindiba tohumu: gündüz belirir, gece belirmez), `unittip` (AB ve ışık yılı açıklaması), `cranes` (Turna Yolu: turna sürüsü, onuncu rota), `newveh` (Kuyruklu Yıldız ve Yıldız Gemisi; telefonda kesilmeyen yükseltme adları), `reward` (sandık ödülü kalıcı gelirle: dilek ve gökkuşağı ödülü şişirmez), `update` (yeni sürümde kendiliğinden yenilenme), `i18n`, `fuzz` |
+| Temel oyun | `func` (ilk dakikalar), `stress`, `persist` (kayıt), `feat`, `home` (eve dönüş), `off` (çevrimdışı), `star`, `daily`, `outfit`, `stable` (düğmeler kaymaz), `header`, `cycle`, `cyctheme`, `scale`, `settings`, `tiers`, `lookgame`, `fxpill`, `routes`, `routes7`, `pals`, `stack`, `dismiss`, `treasure`, `trade` (garaj: ipucusuz kartlar, Sv. eşikleri), `keeps` (yadigârlar), `looks200` (Sv. 150/200 görünümleri, Fener Yolu), `zoom` (sahne yakınlaştırma), `seed` (karahindiba tohumu: gündüz belirir, gece belirmez), `unittip` (AB ve ışık yılı açıklaması), `cranes` (Turna Yolu: turna sürüsü, onuncu rota), `newveh` (Kuyruklu Yıldız ve Yıldız Gemisi; telefonda kesilmeyen yükseltme adları), `reward` (sandık ödülü kalıcı gelirle: dilek ve gökkuşağı ödülü şişirmez), `letters` (mektuplar: kâğıt uçak, mektup penceresi, defterdeki zarflar, son mektup ve kıyafeti), `update` (yeni sürümde kendiliğinden yenilenme), `i18n`, `fuzz` |
 | Çok oyunculu (8787) | `mp` (ad, Yolcular, sıralama, tüm zamanlar), `mp_off` (sunucusuz), `chat` (hazır mesajlar), `wave` (el sallama), `caravan` (Kervan, canlı mesafe), `forge` (tüm zamanlar sahteciliğine karşı makullük sınırı), `trains`, `ghosts`, `ghost_tap`, `tabs`, `land` (yatay telefon), `popmodal`, `audit` (gece/koyu tema) |
 | Araçlar | `keys` (sözlükler), `sim_switch` (verimli oyuncu: hangi seviyede araç değiştirir), `sim_tempo` / `sim_static` / `sim_price` (ekonomi), `extent` (araç çizim sınırlarını ölçer), `horse` (araç animasyonundan film şeridi: `node tests/horse.js bike`), `sim_trips` (art arda yolculukların süresi), `sim_game` (bütün olaylarla gerçek tempo: `node tests/sim_game.js '{"profile":"lucky","runs":20}'`), `gull` (kuş kanadı kareleri) |
 

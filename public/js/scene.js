@@ -1249,6 +1249,8 @@
       this.gift = null; this.star = null; this.seed = null; this.chest = null;
       // Turna sürüsü (Turna Yolu): V düzeninde soldan sağa, yolcuyla aynı yöne uçar
       this.cranes = null;
+      // Kâğıt uçak (mektup): soldan gelir, ortalarda bir takla atıp sağdan çıkar
+      this.plane = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
       this.keep = null; this.keepOk = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
@@ -1444,6 +1446,31 @@
         // üflenen tohumun telleri dört bir yana savrulur
         for (let i = 0; i < 26; i++) { const a = Math.random() * TAU, sp = rand(30, 120); this.parts.push({ type: 'spark', x: s.x, y: s.y, vx: Math.cos(a) * sp - 30, vy: Math.sin(a) * sp - 40, life: 0, max: rand(0.8, 1.6), size: rand(1.4, 2.8), color: pick(['#ffffff', '#fbf8ee', '#fff8d6']), rot: 0 }); }
         this.seed = null;
+        return true;
+      }
+      return false;
+    }
+    // Kâğıt uçak: yolcunun arkasından (soldan) süzülür, ortalarda yumuşak bir takla atar, sağdan çıkar
+    spawnPlane() {
+      this.plane = { t: 0, dur: 16, y0: this.H * rand(0.3, 0.4), ph: Math.random() * TAU, loopAt: rand(0.36, 0.5), x: -60, y: 0, ang: 0 };
+      this.planeMove(this.plane);
+    }
+    planeAt(p, t) {
+      const k = Math.max(this.k, 0.8), u = t / p.dur, R = 30 * k;
+      const lu = clamp((u - p.loopAt) / 0.14, 0, 1), a = TAU * lu * lu * (3 - 2 * lu);
+      return { x: lerp(-50 * k, this.W + 50 * k, u) + R * Math.sin(a), y: p.y0 + Math.sin(t * 1.1 + p.ph) * 9 * k - R * (1 - Math.cos(a)) };
+    }
+    planeMove(p) {
+      const a = this.planeAt(p, p.t), b = this.planeAt(p, p.t + 0.05);
+      p.x = a.x; p.y = a.y; p.ang = Math.atan2(b.y - a.y, b.x - a.x);
+    }
+    hitPlane(px, py) {
+      const p = this.plane;
+      if (!p || p.t > p.dur) return false;
+      if (Math.hypot(px - p.x, py - p.y) < 46 * Math.max(this.k, 0.8)) {
+        // kâğıt açılır: krem ve altın kırpıntılar
+        this.burst(p.x, p.y, 28, ['#fffdf6', '#f1e6c8', '#ffd56b', '#ffffff']);
+        this.plane = null;
         return true;
       }
       return false;
@@ -1853,6 +1880,12 @@
         if (Math.random() < dt * 2.5) this.parts.push({ type: 'spark', x: s.x + rand(-6, 6) * k, y: s.y - rand(4, 10) * k, vx: rand(10, 30), vy: rand(-12, 6), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: '#ffffff', rot: 0 });
         if (s.t > s.dur) this.seed = null;
       }
+      if (this.plane) {
+        const p = this.plane, k = this.k;
+        p.t += dt; this.planeMove(p);
+        if (Math.random() < dt * 3) this.parts.push({ type: 'spark', x: p.x - Math.cos(p.ang) * 14 * k, y: p.y - Math.sin(p.ang) * 14 * k, vx: -Math.cos(p.ang) * 20, vy: rand(-6, 10), life: 0, max: rand(0.5, 1), size: rand(1, 1.8), color: pick(['#ffffff', '#fff4dc']), rot: 0 });
+        if (p.t > p.dur) this.plane = null;
+      }
       if (this.cranes) {
         const c = this.cranes;
         // dokunulunca hızlanıp yükselir ve yumuşakça solar
@@ -2184,6 +2217,7 @@
       if (this.keep) this.drawKeep(ctx, this.keep);
       if (this.seed) this.drawSeed(ctx, this.seed);
       if (this.cranes) this.drawCranes(ctx, this.cranes, night);
+      if (this.plane) this.drawPlane(ctx, this.plane, night);
       if (this.gift) this.drawButterfly(ctx, this.gift);
       this.drawFloats(ctx);
 
@@ -2547,6 +2581,30 @@
       ctx.globalCompositeOperation = 'source-over';
       // arkadakiler önce çizilir, lider en üstte
       for (let i = c.n - 1; i >= 0; i--) { const p = this.cranePos(c, i); drawCrane(ctx, p.x, p.y, p.k, c.caught ? Math.sin(c.t * 16 + i) : p.w, night); }
+      ctx.restore();
+    }
+    // Katlanmış kâğıt uçak: açık gökte ince bir kontur, gecede ve uzayda sıcak bir ışıltıyla seçilir
+    drawPlane(ctx, p, night) {
+      const k = Math.max(this.k, 0.8) * 1.45, a = clamp(p.t / 0.8, 0, 1) * clamp((p.dur - p.t) / 1, 0, 1), s = 13 * k;
+      if (a <= 0) return;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, p.x, p.y, 34 * k, hex('#fff1c8'), 0.22 + 0.25 * Math.max(night, (this.space || 0) / 0.6) + 0.08 * Math.sin(p.t * 4));
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.translate(p.x, p.y); ctx.rotate(p.ang);
+      // takla atarken ters dönmesin: uçak yön değiştirirken yumuşakça yan yatıp öbür yüzüne döner (birden sıçramaz)
+      ctx.scale(1, clamp(Math.cos(p.ang) * 4 + 0.8, -1, 1) || 0.01);
+      ctx.lineJoin = 'round'; ctx.lineWidth = 1.1 * k; ctx.strokeStyle = 'rgba(60,70,105,0.5)';
+      const flap = Math.sin(p.t * 5 + p.ph) * 0.06 * s;
+      // alt kanat (gölgeli), üst kanat (açık), orta kat çizgisi
+      ctx.fillStyle = '#e6dcc4';
+      ctx.beginPath(); ctx.moveTo(s, 0); ctx.lineTo(-0.9 * s, 0.42 * s + flap); ctx.lineTo(-0.5 * s, 0.08 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fffdf6';
+      ctx.beginPath(); ctx.moveTo(s, 0); ctx.lineTo(-s, -0.55 * s - flap); ctx.lineTo(-0.5 * s, 0.08 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(60,70,105,0.35)'; ctx.lineWidth = 0.8 * k;
+      ctx.beginPath(); ctx.moveTo(s * 0.95, 0); ctx.lineTo(-0.72 * s, -0.2 * s); ctx.stroke();
+      // kanatta küçük kırmızı bir mühür: mektup taşıdığı belli olsun
+      ctx.fillStyle = '#d0533f'; circle(ctx, -0.35 * s, -0.16 * s, 0.11 * s);
       ctx.restore();
     }
     // Karahindiba tohumu: altta küçük kahverengi tohum, ince bir sap ve tepede ışınsal beyaz teller (paraşüt)

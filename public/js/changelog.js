@@ -9,11 +9,16 @@
 
   IT.CHANGELOG = [
     { v: '1.39', date: '2026-10-08', items: {
-      tr: ['Yolda birkaç küçük rötuş.'],
-      en: ['A few small touches along the road.'],
-      de: ['Ein paar kleine Feinschliffe unterwegs.'],
-      es: ['Algunos pequeños retoques por el camino.'],
-      fr: ['Quelques petites retouches en chemin.'],
+      tr: ['Yolda arada bir rüzgâr, katlanmış bir şey getiriyor… Gözünü gökyüzünde tut; biri sana yazıyor olabilir.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Every now and then the wind carries something folded along the road… Keep an eye on the sky; someone might be writing to you.',
+        'A few small touches along the road.'],
+      de: ['Ab und zu trägt der Wind etwas Gefaltetes über den Weg … Behalte den Himmel im Blick; vielleicht schreibt dir jemand.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['De vez en cuando el viento trae algo doblado por el camino… No pierdas de vista el cielo; puede que alguien te esté escribiendo.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['De temps en temps, le vent apporte quelque chose de plié le long de la route… Garde un œil sur le ciel ; quelqu’un t’écrit peut-être.',
+        'Quelques petites retouches en chemin.'],
     } },
     { v: '1.38', date: '2026-10-08', items: {
       tr: ['Yolda birkaç küçük rötuş.'],

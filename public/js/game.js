@@ -48,7 +48,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes',
-    'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -69,6 +69,7 @@
       keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
       unitTip: 0, // büyük birim açıklaması gösterildi mi: 1 AB, 2 ışık yılı (bir kez)
       cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
+      letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -79,11 +80,16 @@
     };
   }
   function load() {
+    let raw = null;
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return null;
       return sanitize(JSON.parse(raw));
-    } catch (e) { return null; }
+    } catch (e) {
+      // Okunamayan kayıt yenisiyle ezilmeden önce bir kenara konur (ör. yayın sırasında eski ve yeni dosyalar karışırsa)
+      try { if (raw) localStorage.setItem(SAVE_KEY + '-bak', raw); } catch (e2) { /* yok say */ }
+      return null;
+    }
   }
   const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
   // Açık rota sayısı: ilk yolculukta bir, her eve dönüşte bir tane daha
@@ -119,7 +125,7 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
-    s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2);
+    s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2); s.letters = count(s.letters, IT.LETTERS.length);
     const keeps = isObj(d.keeps) ? d.keeps : {};
     s.keeps = Object.fromEntries(IT.KEEPSAKES.filter(x => keeps[x.id] === 1 || keeps[x.id] === true).map(x => [x.id, 1]));
     // rota açık değilse (bozuk kayıt) ilk rotaya dönülür
@@ -281,7 +287,7 @@
   }
 
   const nBadges = () => IT.badgeCount(S);
-  const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : nBadges() >= o.need);
+  const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : nBadges() >= o.need);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -318,7 +324,7 @@
         toast(t('toast.badge', { name: esc(g.b.name), tier: tier.name, tierLow: tier.name.toLocaleLowerCase(IT.locale()), p: fmtPct(g.bonus * 100) }), 'gold');
         Sound.milestone();
       }
-      const opened = OUTFITS.filter(o => !o.keeps && o.need > before && o.need <= nBadges());
+      const opened = OUTFITS.filter(o => !o.keeps && !o.letters && o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
     }
     return got;
@@ -471,6 +477,54 @@
     checkBadges(); save();
   }
 
+  /* ---------- Mektuplar ---------- */
+  // Sıradaki mektup hazırsa (ömür boyu yol ya da eve dönüş eşiği) bir süre sonra kâğıt uçakla gelir; kaçırılırsa yeniden gelir.
+  // Yağmurda ve pencere açıkken gelmez. Okunan mektuptan sonra sıradaki en erken 4–7 dakikada gelir (birikmiş mektuplar,
+  // ör. eski kayıtlarda, 2,5–3,5 dakikada); o sırada henüz hazır değilse hazır olduktan ~1,5 dakika sonra.
+  let letterIn = 70 + Math.random() * 40;
+  function updateLetters(dt) {
+    const next = IT.LETTERS[S.letters];
+    if (!next || scene.plane || !$('#modal').hidden || weather === 'rain') return;
+    letterIn -= dt;
+    if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
+    if (letterIn > 0) return;
+    letterIn = 70 + Math.random() * 40;
+    scene.spawnPlane(); Sound.plane();
+    // ilk mektuplarda gökyüzüne bakmayı hatırlatan bir bildirim
+    if (S.letters < 2) toast(t('toast.planeSeen'), 'teal');
+  }
+  function catchPlane() {
+    Sound.unlock(); Sound.letter();
+    const i = S.letters;
+    if (i >= IT.LETTERS.length) return;
+    S.letters = i + 1; uiDirty.journal = true;
+    const pending = IT.LETTERS.slice(S.letters).some(l => l.ready(S));
+    letterIn = pending ? 150 + Math.random() * 60 : 240 + Math.random() * 180;
+    scene.addFloat(t('float.letter'), { color: '#fff4dc', big: true });
+    save();
+    showLetter(i, true);
+  }
+  // Mektup penceresi; okunmuş mektuplar Yol Defteri'nden yeniden açılır
+  function showLetter(i, fresh) {
+    const m = IT.LETTERS.length, last = i === m - 1;
+    const onClose = fresh && last ? () => {
+      applyOutfit(); uiDirty.journal = true;
+      toast(t('toast.lettersAll', { name: esc(OUTFIT.timeless.name) }), 'gold'); Sound.region();
+    } : null;
+    openModal(() => {
+      const name = S.player.name ? esc(S.player.name) : t('letter.you');
+      const body = t(`letter.${i + 1}`).split('\n').map(x => `<p>${x}</p>`).join('');
+      return { btn: t(fresh ? 'letter.btn' : 'pc.close'), html: `
+        <p class="eyebrow">${t('letter.eyebrow', { n: i + 1, m })}</p>
+        <h2>${t(`letter.${i + 1}.t`)}</h2>
+        <div class="letter${last ? ' last' : ''}">
+          <p class="letter-to">${t('letter.dear', { name })}</p>
+          ${body}
+          <p class="letter-from">${last ? t('letter.signMe', { name }) : t('letter.sign')}</p>
+        </div>` };
+    }, onClose, null, true);
+  }
+
   /* ---------- Günün hediyesi ---------- */
   // Yerel takvime göre gün anahtarı (YYYY-AA-GG)
   const dayKey = (ts) => { const d = new Date(ts); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -559,7 +613,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -640,6 +694,12 @@
       if (!['day', 'all'].includes(id) || S.settings.trScope === id) return;
       S.settings.trScope = id; save(); uiDirty.travelers = true;
       if (id === 'all') loadTop();
+    },
+    // Yol Defteri'ndeki okunmuş bir mektubu yeniden aç
+    letter(id) {
+      const i = +id;
+      if (!(i >= 0 && i < S.letters)) return;
+      Sound.letter(); showLetter(i, false);
     },
     // Raftaki yadigâra dokununca küçük bir sallanma ve ses
     keepPeek(_, el) {
@@ -755,6 +815,7 @@
     updateWeather(dt);
     updateKeeps(dt);
     updateCranes(dt);
+    updateLetters(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -1443,6 +1504,11 @@
           : `<li><div class="keep s-${k.id}" title="${esc(t('j.keepWhere', { region: where }))}"><span class="e" aria-hidden="true">?</span><small>${esc(where)}</small></div></li>`;
       }).join('')}</ul>
       <p class="tag small">${nKeeps === IT.KEEPSAKES.length ? t('j.keepsDone') : t('j.keepsHint')}</p>
+      ${S.letters ? `<h3 class="sec">${t('j.letters')} <small>${t('j.lettersSub', { n: S.letters, m: IT.LETTERS.length })}</small></h3>
+      <ul class="keeps letters">${IT.LETTERS.map((_, i) => i < S.letters
+        ? `<li><button class="keep env on" type="button" data-act="letter" data-id="${i}"><span class="e" aria-hidden="true">✉️</span><b>${t(`letter.${i + 1}.t`)}</b></button></li>`
+        : `<li><div class="keep env" role="img" aria-label="${esc(t('j.letterSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
+      <p class="tag small">${S.letters >= IT.LETTERS.length ? t('j.lettersDone') : t('j.lettersHint')}</p>` : ''}
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
@@ -1456,7 +1522,7 @@
         const open = outfitOpen(o), on = open && (S.settings.outfit === o.id || (!outfitOpen(OUTFIT[S.settings.outfit]) && o.id === 'classic'));
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
-          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
   }
 
@@ -1645,6 +1711,7 @@
       if (scene.hitStar(x, y)) { catchStar(); return; }
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
+      if (scene.hitPlane(x, y)) { catchPlane(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }

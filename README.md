@@ -252,7 +252,7 @@ npx wrangler dev   # http://localhost:8787
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Hazine haritası**: Yakalanan her altın kelebek %20, her dilek (kayan yıldız ya da karahindiba) %50 olasılıkla bir harita parçası düşürür. Dört parça
   tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
-  yeniden gelir). Sandık yaklaşık 100 dakikalık kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
+  yeniden gelir). Sandık yaklaşık 37 dakikalık (2200 sn) kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
 - **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,
@@ -263,6 +263,19 @@ npx wrangler dev   # http://localhost:8787
   bölgenin renginde durur (dokununca küçük bir sallanma ve ses), bulunmayanlar "?" ve bölgenin adıyla bekler. Bazı bölgelere ilk
   yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
   *Kâşif* kıyafeti açılır. Sürüm notunda yalnızca ipucu verilir.
+- **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
+  sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
+  gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
+  sırayla gelir; her biri oyunun bir sırrına ipucu verir (ritim, kelebekler ve harita, dilekler, yağmur, yadigârlar, kervan, eve
+  dönüş, rotalar, garaj). Sıradaki mektup ancak eşiğine gelince yola çıkar: ilk sekizi ömür boyu yolla (başta, 400 m, 5 km,
+  maraton, 1000 km, 9000 km, dünya turu, 60.000 km: eve dönüşü anlatan mektup dönüş açılmadan önce gelsin diye), son dördü eve
+  dönüş sayısıyla (1, 2, 3, 3) açılır (`data.js` → `LETTERS`).
+  İlk uçak açılıştan 70–110 sn sonra gelir; kaçırılırsa aynı arayla yeniden gelir. Okunan mektuptan sonra sıradaki en erken
+  4–7 dakikada gelir (birikmiş mektuplar 2,5–3,5 dakikada bir); o sırada eşiğine gelinmemişse eşiği geçtikten ~1,5 dakika sonra. Yağmurda ve pencere açıkken gelmez; ilk iki uçakta
+  "Gökyüzüne bak!" bildirimi gelir. Okunan mektuplar Yol Defteri'nde (ilk mektuptan sonra görünen *Mektuplar* bölümünde) zarf
+  olarak durur, dokununca yeniden açılır; gelmemiş olanlar "?" bekler. Mektuplar eve dönüşte kaybolmaz. Son mektup yazarın
+  kim olduğunu söyler (imza yolcunun kendi adıyla: "yıllar sonra") ve *Zamansız Gezgin* kıyafetini açar. Ekonomiye etkisi
+  yoktur. Sürüm notunda yalnızca ipucu verilir.
 - **Eve Dönüş ve Hatıralar**: Yolculuk 100.000 km'yi geçince Güçlendirmeler sekmesinden eve dönebilirsin; bu eşik her eve dönüşte
   3 katına çıkar (300.000 km, 900.000 km…). Hatıraların verdiği hız yolculukları kısaltmasın diye büyüme 3 kat
   seçildi (`tests/sim_trips.js`): ikinci yolculuk birincisinden biraz kısa sürer, sonrakilerin her biri %10–15 uzar ve oyuncu araç zincirinde
@@ -301,7 +314,7 @@ npx wrangler dev   # http://localhost:8787
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
-  Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  *Zamansız Gezgin* son mektupla (12 mektup) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
@@ -323,7 +336,8 @@ npx wrangler dev   # http://localhost:8787
   (seçim kaydedilir, döngü yeniden seçilince sayfa yine tarayıcı temasını izlemeye başlar).
   Akşam ve sabah olduğunda kısa bir bildirim gelir; Ayarlar penceresi o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
-İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir.
+İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir. Kayıt okunamazsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa)
+yeni bir oyunla ezilmeden önce `idle-traveler-save-v1-bak` anahtarına yedeklenir.
 
 ## Diller ve ülkeler
 
