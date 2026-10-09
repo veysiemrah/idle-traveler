@@ -14,6 +14,7 @@
     { id: 'wish',     dur: 20, credit: 10, w: 0 }, // gece kayan yıldızla gelir: kısa ama güçlü
     { id: 'seed',     dur: 20, credit: 10, w: 0 }, // gündüz karahindiba tohumuyla gelir (açık temada oynayan da dilek tutabilsin)
     { id: 'crane',    dur: 25, speed: 3, w: 0 },   // Turna Yolu'nda geçen turna sürüsüne dokununca gelir
+    { id: 'kite',     dur: 30, credit: 3, w: 0 },  // Uçurtma Yolu'nda ipi kopmuş uçurtmayı yakalayınca gelir (süresince yolcuya bağlı uçar)
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -47,7 +48,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
     'letters', 'fox', 'consts', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -65,10 +66,12 @@
       bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
       palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir), fox (Kızıl)
       route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
+      routeMax: 0, // duyurulmuş en ileri rotanın sırası: sonradan eklenen rotalar da bir sonraki dönüşte açılır
       mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
       keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
       unitTip: 0, // büyük birim açıklaması gösterildi mi: 1 AB, 2 ışık yılı (bir kez)
       cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
+      kites: 0, // yakalanan uçurtmalar (Uçurtma Yolu, ömür boyu)
       letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
@@ -119,8 +122,10 @@
     if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
     s.v = 3;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes', 'kites']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
+    // eski kayıtta yoksa: o zamanki 10 rotadan duyurulmuş olanlar (her dönüş birini açıyordu)
+    s.routeMax = Math.min(d.routeMax === undefined ? Math.min(s.trips, 9) : count(d.routeMax, IT.ROUTES.length - 1), routesOpenFor(s.trips) - 1);
     // Bölge ve durak sayısı kat edilen yoldan fazla olamaz (bozuk kayıt hız bonusunu şişirmesin)
     s.regionIdx = Math.min(s.regionIdx, IT.regionIndexFor(s.distance));
     // Eski kayıtta durak listesi farklıydı (yeni duraklar eklendi): geçilmiş duraklar ödülsüz işaretlenir
@@ -312,11 +317,12 @@
     if (scene) { scene.setBiome(IT.regionAt(S.regionIdx).biome, true); scene.relabel(); }
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
+  let routeGrace = false; // eve dönüş penceresi açıkken rota köyden çıkılmış olsa da seçilebilir
   function routePicker() {
     const open = routesOpenFor(S.trips);
     return `<div class="routes" role="group">${IT.ROUTES.map((r, i) => {
       const on = S.route === r.id, ok = i < open;
-      return `<button class="route-btn${on ? ' on' : ''}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && S.regionIdx === 0 ? '' : 'disabled'}>
+      return `<button class="route-btn${on ? ' on' : ''}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && (S.regionIdx === 0 || routeGrace) ? '' : 'disabled'}>
         <b>${ok ? esc(r.name) : '???'}</b><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
     }).join('')}</div>`;
   }
@@ -424,7 +430,7 @@
   // Turna Yolu: gökyüzünden geçen turna sürüsüne dokununca rüzgârlarını seninle paylaşırlar (Turna Rüzgârı, hız ×3)
   let craneIn = 35 + Math.random() * 30;
   function updateCranes(dt) {
-    if (perk() !== 'cranes' || scene.cranes || scene.plane || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'cranes' || scene.cranes || scene.plane || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     craneIn -= dt;
     if (craneIn > 0) return;
     craneIn = 110 + Math.random() * 90;
@@ -439,6 +445,26 @@
     Sound.gift(); Sound.cranes();
     toast(t('toast.cranes', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
     scene.addFloat(t('float.cranes'), { color: '#e9f3ff', big: true });
+    checkBadges();
+  }
+  // Uçurtma Yolu: ipi kopmuş bir uçurtma rüzgârla süzülür; yakalanınca etki süresince yolcunun eline bağlı uçar
+  // (Uçurtma Neşesi). Turnalar gibi yağmurda, uzayda ve pencere açıkken gelmez; uçak ya da sürü gökteyken beklenir.
+  let kiteIn = 35 + Math.random() * 30;
+  function updateKites(dt) {
+    if (perk() !== 'kites' || scene.kite || scene.cranes || scene.plane || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    kiteIn -= dt;
+    if (kiteIn > 0) return;
+    kiteIn = 110 + Math.random() * 90;
+    scene.spawnKite(); Sound.kite();
+    if (S.kites < 3) toast(t('toast.kitesSeen'), 'teal');
+  }
+  function catchKite() {
+    Sound.unlock();
+    S.kites++; uiDirty.journal = true;
+    const g = GIFT.kite, dur = addEffect(g, g.dur).dur;
+    Sound.gift(); Sound.kite();
+    toast(t('toast.kites', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    scene.addFloat(t('float.kites'), { color: '#fff1c2', big: true });
     checkBadges();
   }
   function dropMapPiece(src) {
@@ -501,18 +527,23 @@
   // Gece (ya da uzayda), yağmursuz gökyüzünde arada bir sıradaki bulunmamış takımyıldızın yıldızları parlar (45 sn). Hepsine
   // dokununca gökyüzü haritasına işlenir ve ömür boyu gökyüzünde kalır; kaçırılırsa 70–110 sn sonra yeniden gelir.
   // Kuzey Yolu'nda (kayan yıldız ayrıcalığı) iki kat sık. Pencere açıkken gelmez. Ekonomiye etkisi yoktur.
-  let constIn = 60 + Math.random() * 40;
+  let constIn = 60 + Math.random() * 40, constHints = 0, stageConst = false;
+  // konum kartının sağ kenarı (sahnenin sanal px'i): takımyıldız kartın arkasında kalmasın
+  function hudEdge() {
+    const c = $('.hud-card'), r = scene.canvas.getBoundingClientRect();
+    return c ? Math.max(0, (c.getBoundingClientRect().right - r.left) / scene.zoom) : 0;
+  }
   function updateConsts(dt) {
     const next = IT.CONSTELLATIONS.find(c => !S.consts[c.id]);
-    if (!next || scene.constel || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.6) return;
+    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
     constIn -= dt;
     if (constIn > 0) return;
     constIn = (70 + Math.random() * 40) * (perk() === 'stars' ? 0.5 : 1);
-    scene.spawnConst(next);
-    if (!IT.constCount(S)) toast(t('toast.constSeen'), 'teal');
+    scene.spawnConst(next, hudEdge());
+    if (!IT.constCount(S) && constHints++ < 2) toast(t('toast.constSeen'), 'teal');
   }
   function catchConst(res) {
-    Sound.unlock(); Sound.constStar(res.i);
+    Sound.unlock(); Sound.constStar(res.n - 1);
     if (!res.done) return;
     const c = scene.constel.c;
     if (S.consts[c.id]) return;
@@ -569,7 +600,7 @@
   let letterIn = 70 + Math.random() * 40, planeHints = 0;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
-    if (!next || scene.plane || scene.cranes || !$('#modal').hidden || weather === 'rain') return;
+    if (!next || scene.plane || scene.cranes || scene.kiteFree() || scene.constel || !$('#modal').hidden || weather === 'rain') return;
     letterIn -= dt;
     if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
     if (letterIn > 0) return;
@@ -653,13 +684,14 @@
     } else {
       weatherT -= dt;
       if (weather === 'rain' && (weatherT <= 0 || !canRain)) {
-        // Gökkuşağı yalnızca gündüz ve yerdeyken çıkar
-        if (canRain && (scene.nightAmt || 0) < 0.5) {
+        // Gündüz gökkuşağı, gece ay ışığında soluk bir ay gökkuşağı çıkar (koyu temada oynayan da gökkuşağı görür)
+        if (canRain) {
+          const moon = (scene.nightAmt || 0) >= 0.5;
           weather = 'rainbow'; weatherT = 40; // gökkuşağı gökte 40 sn kalır, etkisi 20 sn sürer
-          scene.setWeather(0, 1);
+          scene.setWeather(0, 1, moon);
           addEffect(GIFT.rainbow, GIFT.rainbow.dur);
           S.rainbows++;
-          toast(t('toast.rainbow', { dur: fmtDuration(GIFT.rainbow.dur), text: effText(GIFT.rainbow, 1) }), 'gold');
+          toast(t(moon ? 'toast.moonbow' : 'toast.rainbow', { dur: fmtDuration(GIFT.rainbow.dur), text: effText(GIFT.rainbow, 1) }), 'gold');
           Sound.region();
           checkBadges();
         } else { weather = 'clear'; scene.setWeather(0, 0); }
@@ -702,7 +734,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null; scene.constel = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -775,7 +807,7 @@
     // Rota yalnızca köyden çıkmadan (ilk bölgedeyken) değiştirilebilir
     route(id) {
       const i = IT.ROUTES.findIndex(r => r.id === id);
-      if (i < 0 || i >= routesOpenFor(S.trips) || S.regionIdx > 0 || S.route === id) return;
+      if (i < 0 || i >= routesOpenFor(S.trips) || (S.regionIdx > 0 && !routeGrace) || S.route === id) return;
       S.route = id; applyRoute(); save();
     },
     // Yolcular: son 24 saat ya da tüm zamanlar
@@ -854,8 +886,15 @@
       const trip = { dist: S.distance, regions: S.regionIdx + 1, gain, before: S.memories };
       S.memories += gain; S.trips++; S.lifeDist += S.distance;
       newTrip(KEEP);
-      // Yeni yolculuk yeni rotayla başlar: henüz gezilmemiş rota açılır (hepsi açıksa sırayla dönülür)
-      S.route = IT.ROUTES[S.trips % IT.ROUTES.length].id; trip.route = S.trips < IT.ROUTES.length;
+      // Yeni yolculuk yeni rotayla başlar: henüz duyurulmamış ilk açık rota (sonradan eklenenler dahil); hepsi
+      // duyurulduysa sırayla dönülür
+      const open = routesOpenFor(S.trips);
+      trip.route = open - 1 > S.routeMax;
+      if (trip.route) S.routeMax = open - 1;
+      S.route = IT.ROUTES[trip.route ? S.routeMax : S.trips % IT.ROUTES.length].id;
+      // dönüş penceresi açıkken yol akmaya devam eder (uzun yolculuklarda köy birkaç saniyede geçilir): pencere
+      // kapanana kadar rota yine de seçilebilir
+      routeGrace = true;
       applyRoute();
       save();
       Sound.region();
@@ -892,7 +931,8 @@
     const before = S.distance;
     addDistance(cur.idle * dt, cur.cpm);
     S.playTime += dt;
-    if ((scene.nightAmt || 0) > 0.5) S.nightTime += dt;
+    // karanlık gökyüzü gece sayılır: açık temada oynayan da uzayda Gece Kuşu kademeleri kazanır
+    if (Math.max(scene.nightAmt || 0, scene.space || 0) > 0.5) S.nightTime += dt;
     // Gün döngüsünde akşam ve sabah kendiliğinden gelir
     if (scene.cycle) {
       const n = (scene.nightAmt || 0) > 0.5;
@@ -907,6 +947,7 @@
     updateLetters(dt);
     updateFox(dt);
     updateConsts(dt);
+    updateKites(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -931,18 +972,21 @@
       if (chestIn <= 0) { scene.spawnChest(); chestIn = 45; }
     }
     // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
-    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.6 && weather !== 'rain') starIn -= dt;
+    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.55 && weather !== 'rain') starIn -= dt;
     if (starIn <= 0) {
       if (!scene.star) scene.spawnStar();
       starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
     }
     // karahindiba tohumu: aydınlık, yağmursuz gündüzde (uzayda değilken)
     if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) seedIn -= dt;
-    if (seedIn <= 0) { scene.spawnSeed(); seedIn = 80 + Math.random() * 110; }
+    if (seedIn <= 0) { scene.spawnSeed(); seedIn = (80 + Math.random() * 110) * (perk() === 'stars' ? 0.5 : 1); }
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
     scene.palTier = Econ.palTier(S.buffs.pal);
     scene.constFound = Object.keys(S.consts);
+    scene.kiteOn = S.effects.some(e => e.id === 'kite' && e.until > Date.now());
+    const constOver = !!(scene.constel && scene.constel.over);
+    if (constOver !== stageConst) { stageConst = constOver; $('#stage').classList.toggle('const-on', constOver); }
     scene.vehTier = Econ.lookTier(S.levels[S.active]);
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
@@ -1104,7 +1148,7 @@
       ${trip.route ? `<p class="lead">${t('home.newRoute', { name: esc(opened.name), perk: esc(opened.perkText) })}</p>` : ''}
       ${routesOpenFor(S.trips) > 1 ? `<p class="small">${t('homecard.pick')}</p>${routePicker()}` : ''}
       <p class="small muted">${t('home.note')}</p>
-    ` }));
+    ` }), () => { routeGrace = false; uiDirty.buffs = true; });
   }
   function showIntro() {
     // Yeni oyuncu eski sürüm notlarını "yeni" olarak görmesin
@@ -1369,7 +1413,7 @@
         <div class="row"><h3>${t('homecard.title')}</h3><span class="lvl">${S.trips ? t('homecard.trips', { n: S.trips }) : t('homecard.first')}</span></div>
         <p class="tag">${t('homecard.desc', { p: fmtPct(pct) })} ${now}</p>
         <p class="tag">${t('homecard.route', { name: esc(IT.getRoute().name), perk: esc(IT.getRoute().perkText) })}
-          ${routesOpenFor(S.trips) < IT.ROUTES.length ? t('homecard.nextRoute') : ''}</p>
+          ${routesOpenFor(S.trips + 1) - 1 > S.routeMax ? t('homecard.nextRoute') : ''}</p>
         ${S.regionIdx === 0 && routesOpenFor(S.trips) > 1 ? `<p class="tag small">${t('homecard.pick')}</p>${routePicker()}` : ''}
         ${gain || S.homeReady
           ? `<p class="tag">${t('homecard.now', { gain: '<b class="mem" id="homeGain"></b>', next: '<span id="homeNext"></span>' })}</p>`
@@ -1383,7 +1427,7 @@
     const d = IT.Online.data;
     if (!S.settings.others || IT.Online.status !== 'ok' || !d) return [];
     // az önce konuşan gezgin önce gelir: balonu sahnede görünsün
-    const talking = p => { const m = lastMsg.get(p.pub); return m && Date.now() - m.at < 9e3 ? 0 : 1; };
+    const talking = p => { const at = talkAt.get(p.pub); return at && Date.now() - at < 9e3 ? 0 : 1; };
     return d.players.filter(p => p.online && !p.me && p.pub)
       .map(p => ({ p, diff: IT.Online.liveDist(p) - S.distance, talk: talking(p) }))
       .sort((a, b) => a.talk - b.talk || Math.abs(a.diff) - Math.abs(b.diff))
@@ -1423,6 +1467,7 @@
   const MSG_EMOJI = { hi: '👋', view: '🌄', go: '🚀', wait: '✋', race: '🏁', great: '⭐', thanks: '💛', rest: '☕', bye: '🌙' };
   const msgText = id => `${MSG_EMOJI[id]} ${t('msg.' + id)}`;
   const lastMsg = new Map(); // pub → { msg, at }: son bir dakikanın mesajları
+  const talkAt = new Map(); // pub → son mesaj ya da el sallama anı (sahnede öne alınır)
   // Bir gezginin son bir dakikada söylediği mesaj (yerelde gelen ya da sunucunun listesindeki)
   function said(p) {
     const m = lastMsg.get(p.pub);
@@ -1431,6 +1476,13 @@
   }
   // Mesaj ve el sallama aynı sunucu aralığını (4 sn) paylaşır: biri gönderilince öteki de bekler
   let chatCoolUntil = 0;
+  // konuşma düğmesinin çevresinde azalan halka (mesajdan ve el sallamadan sonra 5 sn)
+  function startCool() {
+    chatCoolUntil = Date.now() + 5000;
+    const btn = $('#btnChat');
+    btn.classList.remove('cool'); void btn.offsetWidth; btn.classList.add('cool');
+    setTimeout(() => btn.classList.remove('cool'), 5000);
+  }
   function chatOpen(open) {
     const pop = $('#chatPop'), btn = $('#btnChat');
     if (open === undefined) open = pop.hidden;
@@ -1445,10 +1497,7 @@
     chatOpen(false);
     if (!S.player.name) { showName(); return; }
     if (Date.now() < chatCoolUntil) { Sound.deny(); return; }
-    chatCoolUntil = Date.now() + 5000;
-    const btn = $('#btnChat');
-    btn.classList.remove('cool'); void btn.offsetWidth; btn.classList.add('cool');
-    setTimeout(() => btn.classList.remove('cool'), 5000);
+    startCool();
     // kendi balonun hemen görünür; diğer gezginler birkaç saniye içinde görür
     scene.sayMine(msgText(id)); Sound.chat();
     const r = await IT.Online.say(id, S.player.id, S.player.key);
@@ -1457,12 +1506,15 @@
   }
   // Bir gezgine el salla: 👋 senin başında belirir ve o gezgine iletilir (onun ekranında senin başında görünür)
   function waveAt(g) {
-    Sound.unlock(); Sound.wave();
+    Sound.unlock();
+    // az önce mesaj ya da el sallama gönderildiyse sunucu kabul etmez: halka dolana kadar bekletilir
+    if (S.player.name && Date.now() < chatCoolUntil) { Sound.deny(); return; }
+    Sound.wave();
     scene.sayMine('👋', 3.5);
     const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
     toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-    if (!S.player.name || Date.now() < chatCoolUntil) return;
-    chatCoolUntil = Date.now() + 4000;
+    if (!S.player.name) return;
+    startCool();
     IT.Online.say('wave', S.player.id, S.player.key, g.pub);
   }
   // Başka bir gezginden mesaj geldi: başının üstünde balon (gezgin sahnede değilse ya da gizliyse kısa bir bildirim)
@@ -1471,10 +1523,10 @@
     const mine = IT.Online.myPub();
     if (m.pub === mine) return;
     const d = IT.Online.data, p = d && d.players.find(x => x.pub === m.pub);
-    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir;
-    // listede o gezginin son bir dakikadaki mesajını silmez (sahnede öne alınması için yine kaydedilir)
-    const prev = lastMsg.get(m.pub);
-    if (m.msg !== 'wave' || !prev || prev.msg === 'wave' || Date.now() - prev.at > 60e3) lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
+    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir; listedeki son mesajı
+    // silmez, ama gezgin mesajdaki gibi sahnede öne alınır
+    talkAt.set(m.pub, Date.now() - m.age);
+    if (m.msg !== 'wave') lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
     if (m.msg === 'wave') {
       scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
       if (m.to && m.to === mine) {
@@ -1591,6 +1643,7 @@
         <div><dt>${t('j.wishes')}</dt><dd id="jWishes"></dd></div>
         <div><dt>${t('j.photos')}</dt><dd id="jPhotos"></dd></div>
         ${S.cranes ? `<div><dt>${t('j.cranes')}</dt><dd>${fmtNum(S.cranes)}</dd></div>` : ''}
+        ${S.kites ? `<div><dt>${t('j.kites')}</dt><dd>${fmtNum(S.kites)}</dd></div>` : ''}
         <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
@@ -1822,6 +1875,7 @@
       if (cs) { catchConst(cs); return; }
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
+      if (scene.hitKite(x, y)) { catchKite(); return; }
       if (scene.hitPlane(x, y)) { catchPlane(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       if (scene.hitFox(x, y)) { catchFox(); return; }
@@ -1928,7 +1982,12 @@
 
     // Kayıt bu kodla okunamadıysa (yayın sırasında karışan dosyalar): tanıtım ve ad sorulmaz, oturum kaydedilmez,
     // oyuncuya söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir
-    if (saveLocked) { toast(t('toast.saveLocked'), 'teal'); setTimeout(checkUpdate, 2000); }
+    if (saveLocked) {
+      toast(t('toast.saveLocked'), 'teal');
+      let tried = false;
+      try { tried = sessionStorage.getItem('idle-traveler-locked') === IT.VERSION; sessionStorage.setItem('idle-traveler-locked', IT.VERSION); } catch (e) { tried = true; }
+      setTimeout(() => (tried ? checkUpdate() : location.reload()), tried ? 2000 : 2500);
+    }
     // İlk açılış ya da çevrimdışı dönüş
     if (!S.intro && !saveLocked) showIntro();
     // Adı olmayan oyuncuya (yeni ya da eski) bir kez sorulur; çevrimdışı özeti bundan sonra gelir

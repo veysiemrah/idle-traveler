@@ -15,8 +15,8 @@
     const n = [...s].length;
     if (n < 2 || n > 20) return null;
     if (!/^[\p{L}\p{M}\p{N} ._'-]+$/u.test(s) || !/[\p{L}\p{N}]/u.test(s)) return null;
-    // birleşen işaretler harf sayısını aşamaz (tek harfin üstüne yığılan işaretler etiketi taşırır)
-    if ((s.match(/\p{M}/gu) || []).length > (s.match(/\p{L}/gu) || []).length) return null;
+    // tek harfin üstüne en çok 3 birleşen işaret (Hintçe vb. adlar geçer; yığılan işaretler etiketi taşıramaz)
+    if (/\p{M}{4,}/u.test(s)) return null;
     return s;
   }
   const hex = bytes => [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
