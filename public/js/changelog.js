@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.39';
+  IT.VERSION = '1.40';
 
   IT.CHANGELOG = [
+    { v: '1.40', date: '2026-10-09', items: {
+      tr: ['Ormanlık yollarda biri seni çalıların arasından izliyor… Yol arkadaşın yanındayken gözünü yolun ilerisinden ayırma; belki bir gün o da sana güvenir.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['On wooded roads, someone is watching you from the bushes… While your travel buddy is with you, keep an eye on the road ahead; one day it might learn to trust you.',
+        'A few small touches along the road.'],
+      de: ['Auf Waldwegen beobachtet dich jemand aus dem Gebüsch … Wenn dein Reisebegleiter bei dir ist, behalte den Weg vor dir im Blick; vielleicht fasst er eines Tages Vertrauen zu dir.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['En los caminos del bosque, alguien te observa entre los arbustos… Cuando tu compañero esté contigo, no pierdas de vista el camino; quizá algún día confíe en ti.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Sur les routes boisées, quelqu’un t’observe depuis les buissons… Quand ton compagnon est avec toi, garde un œil sur la route devant toi ; un jour, il te fera peut-être confiance.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.39', date: '2026-10-08', items: {
       tr: ['Yolda arada bir rüzgâr, katlanmış bir şey getiriyor… Gözünü gökyüzünde tut; biri sana yazıyor olabilir.',
         'Yolda birkaç küçük rötuş.'],

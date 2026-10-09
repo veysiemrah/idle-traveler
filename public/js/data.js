@@ -382,8 +382,11 @@
     palBonus(lvl) { return lvl > 0 ? 0.1 + 0.05 * (lvl - 1) : 0; },
     palLooks: [2, 4, 7, 10],
     palTier(lvl) { return Econ.palLooks.filter(t => (lvl || 0) >= t).length; },
-    // Seçilebilir yol arkadaşları ve açıldıkları Yol Arkadaşı seviyesi
-    pals: [{ id: 'dog', need: 1 }, { id: 'bird', need: 3 }, { id: 'cat', need: 5 }],
+    // Seçilebilir yol arkadaşları ve açıldıkları Yol Arkadaşı seviyesi. Kızıl (tilki) seviyeyle değil, ormanlık bölgelerde
+    // yolda karşılaşılıp foxNeed kez dokunulunca açılır (state.fox).
+    pals: [{ id: 'dog', need: 1 }, { id: 'bird', need: 3 }, { id: 'cat', need: 5 }, { id: 'fox', need: 1, fox: true }],
+    foxNeed: 3,
+    palOpen(state, p) { return (state.buffs.pal || 0) >= p.need && (!p.fox || (state.fox || 0) >= Econ.foxNeed); },
     badgeMult(state) { return 1 + badgeBonus(state); },
     // Hızı belirleyen araç: garajdaki en güçlü araç. Hangi araca binildiği yalnızca görünümü değiştirir.
     lead(state) {

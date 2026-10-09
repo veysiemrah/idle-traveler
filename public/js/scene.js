@@ -718,6 +718,69 @@
     if (T >= 2) { ctx.fillStyle = T >= 4 ? GOLD : P.hat; ctx.beginPath(); ctx.moveTo(x - 4 * k, y + 3.6 * k); ctx.lineTo(x + 4 * k, y + 3.6 * k); ctx.lineTo(x, y + 8.5 * k); ctx.closePath(); ctx.fill(); }
     if (T >= 1) { ctx.fillStyle = T >= 4 ? GOLD : '#d9534f'; rrect(ctx, x - 4 * k, y + 3 * k, 8 * k, 1.8 * k, 0.9 * k); ctx.fill(); ctx.fillStyle = '#ffd56b'; circle(ctx, x, y + 5 * k, 1.2 * k); }
   }
+  // Kızıl: kızıl tilki; Karabaş gibi yanında koşar, araçlarda camdan bakar. Gür kuyruğunun ucu beyaz, ayakları kara çoraplı.
+  // tier: 1 tasma, 2 boyunluk, 3 sırtta minik fener, 4 altın süsler ve parıltı. look: başını geriye çevirme (0–1, yabani tilki)
+  const FOX = { fur: '#df7a34', shade: '#b65b24', cream: '#fbf1e2', sock: '#3a2a24' };
+  function drawFox(ctx, x, y, k, ph, t, tier, look) {
+    const bob = Math.abs(Math.sin(ph)) * 1.5 * k, T = tier || 0;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // bacağın üstü kızıl, alt yarısı kara çorap
+    const leg = (lx, off, col) => {
+      const a = Math.sin(ph + off) * 0.7, top = y - 10 * k - bob;
+      const fx = lx + Math.sin(a) * 7 * k, fy = y - 1 * k - Math.max(0, Math.cos(ph + off)) * 2.2 * k;
+      line(ctx, [lx, top, fx, fy], 2.3 * k, col);
+      line(ctx, [lerp(lx, fx, 0.5), lerp(top, fy, 0.5), fx, fy], 2.3 * k, FOX.sock);
+    };
+    leg(x - 7 * k, 0.5, FOX.shade); leg(x + 6 * k, 2.1, FOX.shade);
+    // gür kuyruk: geriye ve hafifçe yukarı uzanır, koşarken salınır; ucu beyaz
+    const sw = Math.sin(t * 4.2) * 1.8 * k + Math.sin(ph) * 1.2 * k, by = y - 13 * k - bob;
+    ctx.fillStyle = FOX.shade; ctx.beginPath();
+    ctx.moveTo(x - 8 * k, by - 3 * k);
+    ctx.quadraticCurveTo(x - 19 * k, by - 10 * k + sw, x - 29 * k, by - 6 * k + sw);
+    ctx.quadraticCurveTo(x - 22 * k, by + 4 * k + sw * 0.5, x - 8 * k, by + 3 * k);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = FOX.fur; ctx.beginPath();
+    ctx.moveTo(x - 8 * k, by - 2.6 * k);
+    ctx.quadraticCurveTo(x - 18 * k, by - 9 * k + sw, x - 26 * k, by - 6.4 * k + sw);
+    ctx.quadraticCurveTo(x - 20 * k, by + 1.5 * k + sw * 0.5, x - 8 * k, by + 1.5 * k);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = FOX.cream; ellipse(ctx, x - 27 * k, by - 5.6 * k + sw, 3.4 * k, 2.6 * k, -0.3);
+    // gövde: sırtı kızıl, karnı krem
+    ctx.fillStyle = FOX.fur; ellipse(ctx, x, y - 13 * k - bob, 11 * k, 5.2 * k);
+    ctx.fillStyle = FOX.cream; ellipse(ctx, x + 3 * k, y - 10 * k - bob, 7 * k, 2.2 * k);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ellipse(ctx, x - 2 * k, y - 16.5 * k - bob, 7 * k, 1.6 * k);
+    if (T >= 3) { // sırtında minik fener: gece yolunu aydınlatır
+      ctx.strokeStyle = '#6d4c35'; ctx.lineWidth = 0.9 * k; ctx.beginPath(); ctx.moveTo(x - 3 * k, y - 18 * k - bob); ctx.lineTo(x - 3 * k, y - 21 * k - bob); ctx.stroke();
+      ctx.fillStyle = '#6d4c35'; rrect(ctx, x - 5.5 * k, y - 21 * k - bob, 5 * k, 6 * k, 1.2 * k); ctx.fill();
+      ctx.fillStyle = '#ffd56b'; rrect(ctx, x - 4.6 * k, y - 20 * k - bob, 3.2 * k, 4 * k, 0.8 * k); ctx.fill();
+      ctx.globalCompositeOperation = 'lighter'; glow(ctx, x - 3 * k, y - 18 * k - bob, 9 * k, hex('#ffd56b'), 0.35 + 0.1 * Math.sin(t * 3)); ctx.globalCompositeOperation = 'source-over';
+    }
+    foxHead(ctx, x + 11 * k, y - 19 * k - bob, k, t, T, look);
+    leg(x - 4 * k, 3.7, FOX.fur); leg(x + 9 * k, 5.3, FOX.fur);
+    if (T >= 4) sparkles(ctx, x - 2 * k, y - 15 * k, k, t, 5, 40 * k, 22 * k);
+  }
+  // Tilki başı (sağa bakar); look > 0.5 iken başını geriye, yolcuya çevirir
+  function foxHead(ctx, x, y, k, t, tier, look) {
+    const T = tier || 0;
+    ctx.save(); ctx.translate(x, y);
+    if (look > 0.5) ctx.scale(-1, 1);
+    const tw = Math.sin(t * 0.9) > 0.92 ? 0.25 : 0; // kulak ara sıra seğirir
+    const ear = (ex, lean) => {
+      ctx.fillStyle = FOX.fur; ctx.beginPath(); ctx.moveTo(ex - 2.8 * k, -2.5 * k); ctx.lineTo(ex + lean * k, -10 * k); ctx.lineTo(ex + 2.8 * k, -2.5 * k); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = FOX.sock; ctx.beginPath(); ctx.moveTo(ex + (lean - 1.2) * k, -7.4 * k); ctx.lineTo(ex + lean * k, -10 * k); ctx.lineTo(ex + (lean + 1.2) * k, -7.4 * k); ctx.closePath(); ctx.fill();
+    };
+    ctx.save(); ctx.rotate(-tw); ear(-2.2 * k, -1.2); ctx.restore();
+    ear(2.6 * k, 0.8);
+    ctx.fillStyle = FOX.fur; ellipse(ctx, 0, 0, 5.4 * k, 4.6 * k);
+    // sivri burun ve beyaz yanak
+    ctx.beginPath(); ctx.moveTo(2 * k, -2.6 * k); ctx.quadraticCurveTo(7 * k, -1.2 * k, 10 * k, 0.8 * k); ctx.lineTo(3 * k, 3.6 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = FOX.cream; ctx.beginPath(); ctx.moveTo(-3 * k, 1.8 * k); ctx.quadraticCurveTo(2 * k, 1 * k, 9.6 * k, 1.2 * k); ctx.quadraticCurveTo(4 * k, 5.4 * k, -1.5 * k, 4.2 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#1d1716'; circle(ctx, 10 * k, 0.7 * k, 1.1 * k);
+    ctx.beginPath(); ctx.ellipse(3.2 * k, -1.4 * k, 1.3 * k, 0.8 * k, 0.35, 0, TAU); ctx.fill(); // badem göz
+    if (T >= 2) { ctx.fillStyle = T >= 4 ? GOLD : P.hat; ctx.beginPath(); ctx.moveTo(-4.4 * k, 3.4 * k); ctx.lineTo(3.4 * k, 3.8 * k); ctx.lineTo(-1 * k, 8.6 * k); ctx.closePath(); ctx.fill(); }
+    if (T >= 1) { ctx.fillStyle = T >= 4 ? GOLD : '#2f8f83'; rrect(ctx, -4.6 * k, 2.8 * k, 8 * k, 1.8 * k, 0.9 * k); ctx.fill(); ctx.fillStyle = '#ffd56b'; circle(ctx, -0.6 * k, 5 * k, 1.2 * k); }
+    ctx.restore();
+  }
   // Kanat: beyaz martı; uçan araçlar dahil her araçta yolcunun yanında süzülür
   function drawGull(ctx, x, y, k, t, tier) {
     const T = tier || 0, flap = Math.sin(t * 7), wy = flap * 6 * k;
@@ -768,7 +831,13 @@
     wing(0, w, '#d3d7df', '#24252c'); // ön kanat
   }
   // Araç penceresinden ya da balon sepetinden başını uzatan yol arkadaşı
-  function petHead(ctx, kind, x, y, k, t, tier) { if (kind === 'cat') catHead(ctx, x, y, k, t, tier); else dogHead(ctx, x, y, k, t, tier); }
+  function petHead(ctx, kind, x, y, k, t, tier) {
+    if (kind === 'cat') catHead(ctx, x, y, k, t, tier);
+    else if (kind === 'fox') foxHead(ctx, x - 1 * k, y + 1 * k, k * 0.95, t, tier);
+    else dogHead(ctx, x, y, k, t, tier);
+  }
+  // Yerde yanında koşan yol arkadaşları (Kanat uçar)
+  const RUNNER = { dog: drawDog, cat: drawCat, fox: drawFox };
   // Araçta pencereden ya da sepetten başını uzatan Karabaş (tier: drawDog ile aynı)
   function dogHead(ctx, x, y, k, t, tier) {
     const body = '#ecdcb6', dark = '#3b2d27', flap = Math.sin(t * 12) * 0.25;
@@ -1043,14 +1112,14 @@
   const VEH_EXT = { walk: [-23, 15], skates: [-23, 21], board: [-26, 25], bike: [-42, 37], horse: [-35, 41], moto: [-44, 43], car: [-46, 45],
     van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72], comet: [-117, 47], warp: [-76, 55] };
   const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34 };
-  // Karabaş ve Tekir'in yavaş araçlarda koştuğu yer (aracın gerisinde)
+  // Karabaş, Tekir ve Kızıl'ın yavaş araçlarda koştuğu yer (aracın gerisinde)
   const PAL_BACK = { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 };
   const GHOST_SCALE = 0.8;
   const MSG_LIFE = 8; // konuşma balonu saniye
   function vehExtent(veh, tier, pal, short) {
     let [l, r] = VEH_EXT[veh] || [-30, 30];
     if (veh === 'train') l = short ? -148 : tier >= 3 ? -436 : -340;
-    const back = (pal === 'dog' || pal === 'cat') && PAL_BACK[veh];
+    const back = RUNNER[pal] && PAL_BACK[veh];
     if (back) l = Math.min(l, -(back + 16));
     return [l, r];
   }
@@ -1253,6 +1322,8 @@
       this.plane = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
       this.keep = null; this.keepOk = null;
+      // Yabani tilki: ormanlık bölgelerde yolcunun önünde tırısla koşar (game.js sayar)
+      this.fox = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1451,8 +1522,11 @@
       return false;
     }
     // Kâğıt uçak: yolcunun arkasından (soldan) süzülür, ortalarda yumuşak bir takla atar, sağdan çıkar
+    // Dar telefonlarda takla konum kartının (sol üst) sağında ve biraz aşağıda atılır: kartın arkasında kalmasın
     spawnPlane() {
-      this.plane = { t: 0, dur: 16, y0: this.H * rand(0.3, 0.4), ph: Math.random() * TAU, loopAt: rand(0.36, 0.5), x: -60, y: 0, ang: 0 };
+      const narrow = this.RW < 480;
+      this.plane = { t: 0, dur: 16, y0: this.H * (narrow ? rand(0.4, 0.45) : rand(0.3, 0.4)), ph: Math.random() * TAU,
+        loopAt: narrow ? rand(0.56, 0.62) : rand(0.36, 0.5), x: -60, y: 0, ang: 0 };
       this.planeMove(this.plane);
     }
     planeAt(p, t) {
@@ -1501,6 +1575,32 @@
           this.burst(p.x, p.y, 26, ['#ffffff', '#e9f3ff', '#d3d7df', '#ffd56b']);
           return true;
         }
+      }
+      return false;
+    }
+    // Yabani tilki: çalılardan çıkar (gece önce gözleri parlar), bir süre yolcunun önünde koşup arada dönüp bakar,
+    // sonra çalılara dalar. Dokununca sevinçle sıçrar ve uzaklaşır.
+    spawnFox() { this.fox = { t: 0, dur: 15, ph: 0, happy: 0, out: 0 }; }
+    foxPos() {
+      const k = this.k, f = this.fox;
+      const r = FLYING[this.vehicle] ? 40 : vehExtent(this.vehicle, this.vehTier || 0, null, false)[1];
+      const run = f && f.out ? f.out * f.out * 260 * k : 0;
+      const x = clamp(this.travelerX + (r + 120) * k, 60 * k, this.W - 50 * k) + run;
+      // yolcuyla aynı şeritte (telefonda alt kutular yolun yakın kenarını örter)
+      const gy = this.groundY() + 3 * k;
+      // belirirken çalılardan hafifçe yükselir, sevinince sıçrar
+      const rise = f ? (1 - clamp(f.t / 1.4, 0, 1)) * 8 * k : 0;
+      const hop = f && f.happy ? Math.abs(Math.sin(Math.min(f.happy, 1.2) / 1.2 * Math.PI * 2)) * 14 * k : 0;
+      return { x, y: gy + rise - hop, gy, k: k * 1.05 };
+    }
+    hitFox(px, py) {
+      const f = this.fox;
+      if (!f || f.happy || f.out || f.t < 0.8) return false;
+      const p = this.foxPos(), k = Math.max(this.k, 0.8);
+      if (Math.hypot(px - (p.x - 4 * k), py - (p.y - 14 * k)) < 42 * k) {
+        f.happy = 0.001;
+        this.burst(p.x + 8 * k, p.y - 24 * k, 22, ['#ffb27a', '#ffd56b', '#ffffff', '#fbf1e2']);
+        return true;
       }
       return false;
     }
@@ -1609,11 +1709,8 @@
         // uzaktaki gezgin: biraz saydam ve küçük
         ctx.globalAlpha = g.alpha * 0.72;
         if (!FLYING[o.veh]) { ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, p.x, p.y + 1, 22 * ks, 3 * ks); }
-        const back = (o.pal === 'dog' || o.pal === 'cat') && PAL_BACK[o.veh];
-        if (back) {
-          if (o.pal === 'cat') drawCat(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
-          else drawDog(ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
-        }
+        const back = RUNNER[o.pal] && PAL_BACK[o.veh];
+        if (back) RUNNER[o.pal](ctx, p.x - back * ks, p.y + 4 * ks, ks * 0.95, g.phase, this.t, 0);
         // tren kısa çizilir (lokomotif ve bir vagon): beş kişi trende olsa da yol kalabalıklaşmaz
         const st = { phase: g.phase, wheel: this.wheel, t: this.t + g.seed, night, tier: o.tier || 0, pal: 0, palKind: null, cars: o.veh === 'train' ? 1 : undefined };
         withOutfit(o.outfit, () => drawVehicle(ctx, o.veh, p.x, p.y, ks, st));
@@ -1870,6 +1967,13 @@
         const c = this.keep; c.t += dt;
         if (Math.random() < dt * 5) { const p = this.keepPos(), a = Math.random() * TAU; this.parts.push({ type: 'spark', x: p.x + Math.cos(a) * 22 * this.k, y: p.y + Math.sin(a) * 22 * this.k, vx: rand(-8, 8), vy: rand(-26, -8), life: 0, max: rand(0.6, 1.1), size: rand(1.1, 2.2), color: pick(['#fff1c2', '#ffffff', '#cfe0ff']), rot: 0 }); }
         if (c.t > c.dur) this.keep = null;
+      }
+      if (this.fox) {
+        const f = this.fox;
+        f.t += dt; f.ph += dt * (f.out ? 16 : 9);
+        if (f.happy) f.happy += dt;
+        if (!f.out && (f.t > f.dur || f.happy > 1.3)) f.out = 0.001;
+        if (f.out) { f.out += dt; if (f.out > 1.3) this.fox = null; }
       }
       if (this.seed) {
         const s = this.seed, k = this.k;
@@ -2144,7 +2248,7 @@
 
       // yolcu
       // pal: Karabaş araçta yolculuk ediyorsa görünüm aşaması + 1 (0 = yok)
-      const rider = this.companion === 'dog' || this.companion === 'cat';
+      const rider = !!RUNNER[this.companion];
       const st0 = { phase: this.phase, wheel: this.wheel, t: this.t, night, tier: this.vehTier || 0, pal: rider ? (this.palTier || 0) + 1 : 0, palKind: this.companion };
       const ry = this.riderY() - this.stepKick * 2.5 * k;
       ctx.save();
@@ -2158,13 +2262,12 @@
         ctx.fillStyle = `rgba(30,30,50,${(0.18 - 0.1 * f).toFixed(3)})`;
         ellipse(ctx, this.travelerX + 6 * k, this.groundY() + 1, (40 + 18 * f) * k, (4 + 2 * f) * k);
       }
-      // Karabaş ve Tekir yerde, yavaş araçlarda yanında koşar (hızlı araçlarda pencereden bakar)
-      const dogBack = (this.companion === 'dog' || this.companion === 'cat') && { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 }[this.vehicle];
+      // Karabaş, Tekir ve Kızıl yerde, yavaş araçlarda yanında koşar (hızlı araçlarda pencereden bakar)
+      const dogBack = RUNNER[this.companion] && PAL_BACK[this.vehicle];
       if (dogBack && this.flyT() === 0) {
         const dx = this.travelerX - dogBack * k, gy = this.groundY() + 4 * k;
         ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, dx, gy + 1, 15 * k, 2.6 * k);
-        if (this.companion === 'cat') drawCat(ctx, dx, gy, k * 0.95, this.dogPhase, this.t, this.palTier || 0);
-        else drawDog(ctx, dx, gy, k * 0.95, this.dogPhase, this.t, this.palTier || 0);
+        RUNNER[this.companion](ctx, dx, gy, k * 0.95, this.dogPhase, this.t, this.palTier || 0);
       }
       drawVehicle(ctx, this.vehicle, this.travelerX, ry, k, st0);
       // Kanat (martı) her araçta yanında süzülür: yerde yolcunun üstünde, uçarken aracın yanında
@@ -2175,6 +2278,8 @@
         drawGull(ctx, bx, by, k * 1.1, this.t, this.palTier || 0);
       }
       ctx.restore();
+      // yabani tilki: yolcunun önünde, ön plan çimlerinin arkasında
+      if (this.fox) this.drawWildFox(ctx, night);
 
       // ön plan
       const offFg = this.scroll * this.layers.fg.par;
@@ -2213,6 +2318,7 @@
       this.drawTags(ctx, night);
       this.drawBubbles(ctx);
       this.drawParts(ctx, true);
+      if (this.fox) this.drawFoxEyes(ctx, night);
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.keep) this.drawKeep(ctx, this.keep);
       if (this.seed) this.drawSeed(ctx, this.seed);
@@ -2527,6 +2633,37 @@
       }
     }
 
+    // Yabani tilki: gece önce yalnızca gözleri görünür, gövdesi sonra yavaşça belirir; çalılara dalarken solar.
+    // Arada başını çevirip yolcuya bakar.
+    drawWildFox(ctx, night) {
+      const f = this.fox, p = this.foxPos(), k = p.k;
+      const lag = night > 0.4 ? 1.2 : 0;
+      const a = clamp((f.t - lag) / 1.2, 0, 1) * (f.out ? clamp(1 - f.out / 1.1, 0, 1) : 1);
+      if (a <= 0) return;
+      const look = f.happy ? 1 : f.out ? 0 : Math.sin(f.t * 0.75 + 1) > 0.55 ? 1 : 0;
+      ctx.save(); ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(30,30,50,0.16)'; ellipse(ctx, p.x, p.gy + 1, 15 * k, 2.6 * k);
+      drawFox(ctx, p.x, p.y, k, f.ph, this.t, 0, look);
+      ctx.restore();
+    }
+    // Gece tilkinin gözleri ışığı yansıtır: önce karanlıkta bir çift göz, sonra tek gözde hafif bir ışıltı
+    drawFoxEyes(ctx, night) {
+      const f = this.fox;
+      if (night < 0.4) return;
+      const p = this.foxPos(), k = p.k;
+      const pre = 1 - clamp((f.t - 1.2) / 1.2, 0, 1);
+      const a = night * clamp(f.t / 0.5, 0, 1) * (f.out ? clamp(1 - f.out / 0.6, 0, 1) : 1) * ((f.t % 3.1) < 0.12 ? 0.1 : 1);
+      if (a <= 0.01) return;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      if (pre > 0.01) for (const dx of [-2.4, 2.4]) {
+        glow(ctx, p.x + (12 + dx) * k, p.y - 19 * k, 4.2 * k, hex('#ffe08a'), 0.6 * pre * a);
+        ctx.fillStyle = css(hex('#fff4c8'), 0.9 * pre * a); circle(ctx, p.x + (12 + dx) * k, p.y - 19 * k, 0.9 * k);
+      }
+      const look = f.happy ? 1 : f.out ? 0 : Math.sin(f.t * 0.75 + 1) > 0.55 ? 1 : 0;
+      const bob = Math.abs(Math.sin(f.ph)) * 1.5 * k;
+      glow(ctx, p.x + (11 + (look ? -3.2 : 3.2)) * k, p.y - 20.4 * k - bob, 4 * k, hex('#ffe08a'), 0.45 * (1 - pre) * a);
+      ctx.restore();
+    }
     drawChest(ctx, c) {
       const k = this.k, p = this.chestPos(), a = clamp(c.t / 0.5, 0, 1) * clamp((c.dur - c.t) / 1.5, 0, 1);
       const bob = Math.abs(Math.sin(c.t * 3)) * 4 * k, x = p.x, y = p.y - bob;

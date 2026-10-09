@@ -270,7 +270,8 @@ npx wrangler dev   # http://localhost:8787
   dönüş, rotalar, garaj). Sıradaki mektup ancak eşiğine gelince yola çıkar: ilk sekizi ömür boyu yolla (başta, 400 m, 5 km,
   maraton, 1000 km, 9000 km, dünya turu, 60.000 km: eve dönüşü anlatan mektup dönüş açılmadan önce gelsin diye), son dördü eve
   dönüş sayısıyla (1, 2, 3, 3) açılır (`data.js` → `LETTERS`).
-  İlk uçak açılıştan 70–110 sn sonra gelir; kaçırılırsa aynı arayla yeniden gelir. Okunan mektuptan sonra sıradaki en erken
+  İlk uçak açılıştan 70–110 sn sonra gelir (turna sürüsü gökyüzündeyken gelmez, uçak varken de sürü gelmez; dar telefonlarda takla
+  konum kartının sağında atılır); kaçırılırsa aynı arayla yeniden gelir. Okunan mektuptan sonra sıradaki en erken
   4–7 dakikada gelir (birikmiş mektuplar 2,5–3,5 dakikada bir); o sırada eşiğine gelinmemişse eşiği geçtikten ~1,5 dakika sonra. Yağmurda ve pencere açıkken gelmez; ilk iki uçakta
   "Gökyüzüne bak!" bildirimi gelir. Okunan mektuplar Yol Defteri'nde (ilk mektuptan sonra görünen *Mektuplar* bölümünde) zarf
   olarak durur, dokununca yeniden açılır; gelmemiş olanlar "?" bekler. Mektuplar eve dönüşte kaybolmaz. Son mektup yazarın
@@ -304,11 +305,20 @@ npx wrangler dev   # http://localhost:8787
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
   sonraki her seviye +%5 ekler (10. seviyede +%55). Seviye 2, 4, 7 ve 10'da görünümü değişir: tasma ve künye, boyunluk, sırtta
-  heybe, altın süsler ve parıltı. Üç yol arkadaşı var; kartından seçilir:
+  heybe, altın süsler ve parıltı. Dört yol arkadaşı var (biri gizli); kartından seçilir:
   - **Karabaş** (çoban köpeği, 1. seviye): yürürken, patende, kaykayda, bisiklette ve at sırtında yanında koşar; arabada,
     karavanda ve trende camdan, balonda sepetin kenarından bakar.
   - **Kanat** (martı, 3. seviye): her araçta yanında süzülür; uçan araçlarda aracın yanında, yerde yolcunun üstünde uçar.
   - **Tekir** (kedi, 5. seviye): Karabaş gibi yanında koşar ve araçlarda camdan bakar.
+  - **Kızıl** (tilki, gizli): seviyeyle açılmaz. Yol arkadaşıyla (en az 1. seviye) ormanlık bölgelerde (Çam Ormanı, Sonbahar
+    Korusu, Karlı Geçit, Kuzey Işıkları) gezerken arada bir yolcunun önünde, aynı şeritte yabani bir tilki tırısla koşar
+    (ilki bölgede 50–90 sn sonra, sonra 140–240 sn arayla; 15 sn kalır; yağmurda, uzayda, sandık varken ve pencere açıkken gelmez).
+    Gece önce karanlıkta bir çift göz parlar, gövde sonra belirir; tilki arada başını çevirip yolcuya bakar. İlk tilkide
+    "Çalıların arasında bir şey kıpırdadı…" bildirimi gelir. Dokununca sevinçle sıçrar ve çalılara dalar; her karşılaşma bir kez
+    sayılır. Üçüncü karşılaşmada (`Econ.foxNeed`, `state.fox`, ömür boyu) güvenir, Kızıl adıyla yol arkadaşı olur ve hemen seçilir.
+    Yol Arkadaşı kartında kilitliyken "???" ve "Ormanda biri seni izliyor…" yazar; ilk karşılaşmadan sonra dolan üç pati izi
+    görünür. Kızıl'ın görünüm aşamaları: tasma, boyunluk, sırtta minik bir fener (gece yolunu aydınlatır), altın süsler ve parıltı.
+    Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
   Yol arkadaşı eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
@@ -336,8 +346,13 @@ npx wrangler dev   # http://localhost:8787
   (seçim kaydedilir, döngü yeniden seçilince sayfa yine tarayıcı temasını izlemeye başlar).
   Akşam ve sabah olduğunda kısa bir bildirim gelir; Ayarlar penceresi o bölgenin mevsimini ve gündüz/gece sürelerini gösterir.
 
-İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir. Kayıt okunamazsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa)
-yeni bir oyunla ezilmeden önce `idle-traveler-save-v1-bak` anahtarına yedeklenir.
+İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir. Kayıt okunamazsa yeni bir oyunla ezilmez: JSON sağlam ama kod
+okuyamıyorsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa) o oturumda kayda hiç yazılmaz, sayfa yenilenince kayıt aynen açılır.
+JSON bozuksa ilk bozuk kopya `idle-traveler-save-v1-bak` anahtarına konur (sonraki hatalar onu ezmez) ve orada sağlam bir yedek varsa
+oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir.
+Oyun açıkken 10 saniyeye kadarki aralar (uygulama değiştirme, takılan bir kare) sessizce çevrimdışı hızla sayılır; daha uzun aralarda
+hız ortalamaları sıfırlanır, böylece dönüşte verilen bölge, durak ve günlük ödülleri sekme gizlenmeden önceki tıklama hızıyla değil
+otomatik gelirle ölçülür (sayfayı kapatıp açmakla aynı).
 
 ## Diller ve ülkeler
 
