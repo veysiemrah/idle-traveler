@@ -48,7 +48,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes',
-    'letters', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -63,13 +63,14 @@
       day: { last: '', streak: 0, best: 0 }, seenVer: '',
       // Ömür boyu rekorlar: rozetler eve dönüşte kaybolmasın diye
       bestCombo: 0, bestRegion: 0, bestGarage: 1, bestLevel: 0, legacyDist: 0,
-      palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir)
+      palPick: 'dog', // seçili yol arkadaşı: dog (Karabaş), bird (Kanat), cat (Tekir), fox (Kızıl)
       route: 'anatolia', // bu yolculuğun rotası; her eve dönüş yeni bir rota açar
       mapPieces: 0, treasures: 0, // hazine haritası parçaları (0–4) ve bulunan hazineler
       keeps: {}, // bulunan yadigârlar: { biyom: 1 } (ömür boyu)
       unitTip: 0, // büyük birim açıklaması gösterildi mi: 1 AB, 2 ışık yılı (bir kez)
       cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
       letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
+      fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -79,17 +80,28 @@
       player: { id: IT.newId(), key: IT.newKey(), name: '' },
     };
   }
+  // Okunamayan kayıt yenisiyle ezilmez. JSON sağlam ama kod okuyamıyorsa (ör. yayın sırasında eski ve yeni dosyalar
+  // karışırsa) bu oturumda kayda hiç yazılmaz (saveLocked); sayfa yenilenince kayıt aynen açılır. JSON bozuksa ilk bozuk
+  // kopya yedeğe (-bak) konur ve sağlam bir yedek varsa oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir.
+  const BAK_KEY = SAVE_KEY + '-bak';
+  let saveLocked = false;
   function load() {
-    let raw = null;
-    try {
-      raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return null;
-      return sanitize(JSON.parse(raw));
-    } catch (e) {
-      // Okunamayan kayıt yenisiyle ezilmeden önce bir kenara konur (ör. yayın sırasında eski ve yeni dosyalar karışırsa)
-      try { if (raw) localStorage.setItem(SAVE_KEY + '-bak', raw); } catch (e2) { /* yok say */ }
-      return null;
+    let raw = null, d;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return null; }
+    if (raw) {
+      try { d = JSON.parse(raw); } catch (e) { d = undefined; }
+      if (d !== undefined) {
+        try {
+          const s = sanitize(d);
+          if (s) { try { localStorage.removeItem(BAK_KEY); } catch (e) { /* yok say */ } return s; }
+        } catch (e) { saveLocked = true; }
+      }
+      // ilk yedek korunur: art arda gelen hatalar yedeği yeni oyunla ezmesin
+      try { if (!localStorage.getItem(BAK_KEY)) localStorage.setItem(BAK_KEY, raw); } catch (e) { /* yok say */ }
+      if (saveLocked) return null;
     }
+    try { const b = localStorage.getItem(BAK_KEY); if (b) return sanitize(JSON.parse(b)); } catch (e) { /* yok say */ }
+    return null;
   }
   const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
   // Açık rota sayısı: ilk yolculukta bir, her eve dönüşte bir tane daha
@@ -124,7 +136,9 @@
     }
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
-    if (!Econ.pals.some(x => x.id === s.palPick)) s.palPick = 'dog';
+    s.fox = count(s.fox, Econ.foxNeed);
+    const pk = Econ.pals.find(x => x.id === s.palPick);
+    if (!pk || (pk.fox && s.fox < Econ.foxNeed)) s.palPick = 'dog';
     s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2); s.letters = count(s.letters, IT.LETTERS.length);
     const keeps = isObj(d.keeps) ? d.keeps : {};
     s.keeps = Object.fromEntries(IT.KEEPSAKES.filter(x => keeps[x.id] === 1 || keeps[x.id] === true).map(x => [x.id, 1]));
@@ -167,6 +181,7 @@
     return s;
   }
   function save() {
+    if (saveLocked) return;
     S.lastSeen = Date.now();
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* depolama kapalı: oyun yine çalışır */ }
   }
@@ -326,6 +341,7 @@
       }
       const opened = OUTFITS.filter(o => !o.keeps && !o.letters && o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
+      if (opened.length) applyOutfit(); // sıfırlamadan sonra yeniden açılan seçili kıyafet hemen giyilir
     }
     return got;
   }
@@ -405,7 +421,7 @@
   // Turna Yolu: gökyüzünden geçen turna sürüsüne dokununca rüzgârlarını seninle paylaşırlar (Turna Rüzgârı, hız ×3)
   let craneIn = 35 + Math.random() * 30;
   function updateCranes(dt) {
-    if (perk() !== 'cranes' || scene.cranes || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'cranes' || scene.cranes || scene.plane || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     craneIn -= dt;
     if (craneIn > 0) return;
     craneIn = 110 + Math.random() * 90;
@@ -470,11 +486,44 @@
     toast(t('toast.keep', { name: esc(k.name), p: fmtPct(Econ.keepBonus * 100), n, m }), 'gold');
     scene.addFloat(`${k.e} ${k.name}`, { color: '#fff1c2', big: true });
     if (n === m) {
+      applyOutfit();
       const o = OUTFITS.find(x => x.keeps);
       setTimeout(() => { toast(t('toast.keepsAll', { name: esc(o.name) }), 'gold'); Sound.region(); }, 900);
     }
     uiDirty.journal = uiDirty.garage = true;
     checkBadges(); save();
+  }
+
+  /* ---------- Tilki ---------- */
+  // Ormanlık bölgelerde (çam, sonbahar, kar, kuzey ışıkları) yol arkadaşıyla gezenin önünde arada bir yabani bir tilki koşar.
+  // Her karşılaşmada bir kez dokunulabilir; Econ.foxNeed karşılaşmadan sonra güvenir ve Kızıl adıyla yol arkadaşı olur.
+  // Yağmurda, uzayda ve pencere açıkken gelmez. Ekonomiye etkisi yoktur.
+  const FOX_BIOMES = { pine: 1, autumn: 1, snow: 1, aurora: 1 };
+  let foxIn = 50 + Math.random() * 40;
+  function updateFox(dt) {
+    if (S.fox >= Econ.foxNeed || !(S.buffs.pal > 0) || scene.fox || scene.chest || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
+    if (!FOX_BIOMES[IT.regionAt(S.regionIdx).biome]) return;
+    foxIn -= dt;
+    if (foxIn > 0) return;
+    foxIn = 140 + Math.random() * 100;
+    scene.spawnFox(); Sound.fox();
+    if (!S.fox) toast(t('toast.foxSeen'), 'teal');
+  }
+  function catchFox() {
+    Sound.unlock(); Sound.fox();
+    if (S.fox >= Econ.foxNeed) return;
+    S.fox++; uiDirty.buffs = true;
+    const pal = t(`pal.${S.palPick}.name`);
+    if (S.fox < Econ.foxNeed) {
+      toast(t(`toast.fox${S.fox}`, { name: pal }), 'teal');
+      scene.addFloat('🐾', { color: '#ffd9b8', big: true });
+    } else {
+      // güvenen tilki hemen yola katılır; kart üzerinden eski yol arkadaşına dönülebilir
+      S.palPick = 'fox';
+      setTimeout(() => { toast(t('toast.foxFriend', { name: t('pal.fox.name') }), 'gold'); Sound.region(); }, 700);
+      scene.addFloat(`🦊 ${t('pal.fox.name')}`, { color: '#ffd9b8', big: true });
+    }
+    save();
   }
 
   /* ---------- Mektuplar ---------- */
@@ -484,7 +533,7 @@
   let letterIn = 70 + Math.random() * 40;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
-    if (!next || scene.plane || !$('#modal').hidden || weather === 'rain') return;
+    if (!next || scene.plane || scene.cranes || !$('#modal').hidden || weather === 'rain') return;
     letterIn -= dt;
     if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
     if (letterIn > 0) return;
@@ -599,8 +648,12 @@
   }
 
   // Uzak kalınan süreyi say ve bildir: kısa aralar bildirimle, uzunlar pencereyle
+  // 10 saniyeye kadarki aralar (uygulama değiştirme, takılan bir kare) sessizce çevrimdışı hızla sayılır.
+  // Uzun aralarda hız ortalamaları sıfırlanır: ödüller gizli sekmeden önceki tıklama hızıyla değil otomatik gelirle ölçülür.
   function resume(gap) {
-    if (gap <= 10) return;
+    if (gap <= 0.3) return;
+    if (gap <= 10) { const b = Econ.base(S); addDistance(b.idle * Econ.offlineRate(S.buffs.dream) * gap, b.cpm); return; }
+    rateEma = creditEma = baseEma = 0;
     const off = applyOffline(gap);
     if (gap > 60) showOffline(off); else if (off.d > 0) toast(t('toast.away', { d: fmtGain(off.d) }), 'teal');
   }
@@ -613,7 +666,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -708,7 +761,7 @@
     },
     palPick(id) {
       const p = Econ.pals.find(x => x.id === id);
-      if (!p || (S.buffs.pal || 0) < p.need || S.palPick === id) return;
+      if (!p || !Econ.palOpen(S, p) || S.palPick === id) return;
       S.palPick = id; save(); uiDirty.buffs = true;
       scene.burst(scene.travelerX - 30 * scene.k, scene.riderY() - 30 * scene.k, 14, ['#ffd56b', '#ffffff', '#ecdcb6']);
     },
@@ -780,7 +833,7 @@
         disarm(el, t('ui.reset'));
         return;
       }
-      try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* yok say */ }
+      try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro', 'player', 'seenVer']);
       applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
@@ -794,8 +847,8 @@
     const dt = Math.min(0.25, Math.max(0, (now - lastFrame) / 1000));
     lastFrame = now;
 
-    // Sekme gizliyken ya da cihaz uykudayken geçen süre: çevrimdışı hızla say
-    resume((Date.now() - S.lastSeen) / 1000);
+    // Sekme gizliyken ya da cihaz uykudayken geçen süre (bu karenin dt'si dışında): çevrimdışı hızla say
+    resume((Date.now() - S.lastSeen) / 1000 - dt);
     S.lastSeen = Date.now();
 
     const cur = current();
@@ -816,6 +869,7 @@
     updateKeeps(dt);
     updateCranes(dt);
     updateLetters(dt);
+    updateFox(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -932,8 +986,11 @@
     el.className = 'toast ' + (tone || '');
     el.innerHTML = html;
     box.appendChild(el);
-    while (box.children.length > 3) box.removeChild(box.firstChild);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 3600);
+    // en çok üç bildirim: fazlası ve süresi dolanlar solup yerini yumuşakça bırakır
+    const out = x => { if (x.classList.contains('out')) return; x.classList.add('out'); setTimeout(() => x.remove(), 550); };
+    const live = [...box.children].filter(x => !x.classList.contains('out'));
+    live.slice(0, Math.max(0, live.length - 3)).forEach(out);
+    setTimeout(() => out(el), 3600);
   }
   let bannerTimer = 0;
   function showBanner(name, sub) {
@@ -996,6 +1053,8 @@
   }
   function showHome(trip) {
     const pct = m => fmtPct(HOME.bonus * m * 100);
+    // yeni açılan rota: pencerede başka bir rota seçilse de bu satır açılan rotayı söyler
+    const opened = IT.ROUTES.find(r => r.id === IT.getRoute().id);
     openModal(() => ({ btn: t('home.btn'), html: `
       <p class="eyebrow">${t('home.eyebrow', { n: S.trips })}</p>
       <h2>${t('home.title')}</h2>
@@ -1004,7 +1063,7 @@
         <div><span>${t('home.gain')}</span><b>+${fmtNum(trip.gain)}</b></div>
         <div><span>${t('home.bonus')}</span><b class="cr">${pct(trip.before)} → ${pct(S.memories)}</b></div>
       </div>
-      ${trip.route ? `<p class="lead">${t('home.newRoute', { name: esc(IT.getRoute().name), perk: esc(IT.getRoute().perkText) })}</p>` : ''}
+      ${trip.route ? `<p class="lead">${t('home.newRoute', { name: esc(opened.name), perk: esc(opened.perkText) })}</p>` : ''}
       ${routesOpenFor(S.trips) > 1 ? `<p class="small">${t('homecard.pick')}</p>${routePicker()}` : ''}
       <p class="small muted">${t('home.note')}</p>
     ` }));
@@ -1236,6 +1295,8 @@
     return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p, t: next });
   }
 
+  // Kızıl'ın kilitli kartındaki pati izi
+  const PAW = '<svg viewBox="0 0 16 16" aria-hidden="true"><ellipse cx="8" cy="11" rx="4.2" ry="3.4"/><circle cx="3.2" cy="6.6" r="1.7"/><circle cx="6.2" cy="3.8" r="1.8"/><circle cx="9.8" cy="3.8" r="1.8"/><circle cx="12.8" cy="6.6" r="1.7"/></svg>';
   function renderBuffs() {
     const pane = $('#pane-buffs');
     pane.innerHTML = BUFFS.map(b => {
@@ -1246,9 +1307,12 @@
         const opens = Econ.pals.find(x => x.need === lvl + 1);
         next = t(opens ? 'buff.pal.moreNew' : Econ.palLooks.includes(lvl + 1) ? 'buff.pal.moreLook' : 'buff.pal.more', { p: fmtPct(5) });
         extra = `<div class="pals" role="group" aria-label="${t('buff.pal.name')}">${Econ.pals.map(x => {
-          const open = lvl >= x.need, on = S.palPick === x.id;
-          return `<button class="pal-btn${on ? ' on' : ''}" data-act="palPick" data-id="${x.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}>
-            <b>${open ? t(`pal.${x.id}.name`) : '???'}</b><small>${open ? t(`pal.${x.id}.desc`) : t('ui.lvl', { n: x.need })}</small></button>`;
+          const open = Econ.palOpen(S, x), on = S.palPick === x.id;
+          // Kızıl kilitliyken seviye yerine bir ipucu: önce "biri seni izliyor", karşılaştıkça pati izleri dolar
+          const lock = !x.fox ? t('ui.lvl', { n: x.need }) : S.fox ? `<span class="paws" aria-label="${S.fox} / ${Econ.foxNeed}">${
+            Array.from({ length: Econ.foxNeed }, (_, i) => `<i${i < S.fox ? ' class="on"' : ''}>${PAW}</i>`).join('')}</span>` : t('pal.fox.hint');
+          return `<button class="pal-btn${on ? ' on' : ''}${x.fox && open ? ' fox' : ''}" data-act="palPick" data-id="${x.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}>
+            <b>${open ? t(`pal.${x.id}.name`) : '???'}</b><small>${open ? t(`pal.${x.id}.desc`) : lock}</small></button>`;
         }).join('')}</div>`;
       }
       return `<article class="card buff">
@@ -1713,6 +1777,7 @@
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
       if (scene.hitPlane(x, y)) { catchPlane(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
+      if (scene.hitFox(x, y)) { catchFox(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }
       const g = scene.hitGhost(x, y);
@@ -1738,7 +1803,8 @@
       Sound.unlock();
       actions[el.dataset.act](el.dataset.id, el);
       // Fareyle/dokunarak basıldıysa odağı bırak: yoksa Boşluk tuşu adım yerine aynı düğmeye tekrar basar
-      if (e.detail > 0 && document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      // (yalnızca odak hâlâ paneldeyse: eylem bir pencere açtıysa odak pencerenin düğmesinde kalsın)
+      if (e.detail > 0 && $('#panel').contains(document.activeElement)) document.activeElement.blur();
       refreshUI();
     });
     IT.onLang(onLanguage);

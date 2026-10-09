@@ -123,6 +123,21 @@
         o.start(t); o.stop(t + 0.4);
       });
     },
+    // tilki: çalı hışırtısı ve uzaktan iki kısa, yukarı kalkıp inen yumuşak "yip"
+    fox() {
+      if (!this.ctx || !this.sfxOn) return;
+      const c = this.ctx;
+      this.noise(0.1, 0.35, 900, 0.9);
+      [[0.18, 1], [0.42, 1.12]].forEach(([w, r]) => {
+        const t = c.currentTime + w, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(880 * r, t); o.frequency.linearRampToValueAtTime(1240 * r, t + 0.05); o.frequency.exponentialRampToValueAtTime(700 * r, t + 0.16);
+        f.type = 'lowpass'; f.frequency.value = 2400;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.035, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        o.connect(f); f.connect(g); g.connect(this.sfx); g.connect(this.delay);
+        o.start(t); o.stop(t + 0.25);
+      });
+    },
     // kâğıt uçak: yanından süzülen yumuşak bir hışırtı ve iki ince nota
     plane() {
       if (!this.ctx || !this.sfxOn) return;
