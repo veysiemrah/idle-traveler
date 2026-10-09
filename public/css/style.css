@@ -345,6 +345,8 @@ button { font: inherit; color: inherit; }
   .banner-on .hud-card, .banner-on .effects { opacity: 0.12; }
 }
 .hud-card, .effects { transition: opacity .5s; }
+/* Telefonda konum kartı gökyüzünün çoğunu kaplıyorsa takımyıldız varken kart solar (yıldızlar görünsün; dokunuşlar zaten geçer) */
+.const-on .hud-card { opacity: 0.18; }
 /* Çok dar telefonlar: bölge adı tek satırda kalır */
 @container (max-width: 420px) {
   .region { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

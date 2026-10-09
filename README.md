@@ -77,8 +77,8 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   tamamen önlenemez, ama tek istekle listenin zirvesine çıkılamaz.
 - Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen ve toplamda 1 km'ye ulaşmamış kayıtlar ara sıra silinir; yol gitmiş
   gezginler tüm zamanlar listesi için kalır.
-- Ad sunucuda da aynı kuralla temizlenir ve denetlenir; birleşen işaretler (aksan vb.) harf sayısını aşamaz, böylece tek harfin
-  üstüne yığılan işaretler sahnedeki etiketi taşıramaz.
+- Ad sunucuda da aynı kuralla temizlenir ve denetlenir; tek harfin üstüne en çok 3 birleşen işaret (aksan vb.) yığılabilir,
+  böylece Hintçe gibi yazılardaki adlar geçer ama yığılan işaretler sahnedeki etiketi taşıramaz.
 - Tüm zamanlar sorgusu `life` sütununa göre sıralar (`life ≥ dist` her zaman sağlanır: 0006 göçü, `lifeOk ≥ distOk`, `MAX`),
   böylece `players_life` dizini kullanılır.
 
@@ -189,8 +189,9 @@ npx wrangler dev   # http://localhost:8787
   açıkken iki saniyede bir tazelenir ve sıra tahmini mesafeye göre yeniden kurulur.
 - **Hazır mesajlar**: Sahnenin sağ altındaki konuşma düğmesi 9 hazır mesaj açar (👋 Merhaba!, 🌄 Ne güzel manzara!, 🚀 Haydi,
   yola devam!, ✋ Bekle beni!, 🏁 Yarışalım mı?, ⭐ Harika gidiyorsun!, 💛 Teşekkürler!, ☕ Mola zamanı., 🌙 İyi yolculuklar!).
-  Mesaj ve el sallama sunucuda aynı 4 saniyelik aralığı paylaşır; istemci de tek bekleme kullanır, böylece mesajın hemen
-  ardından sallanan el sunucuda reddedilmez. Gelen el sallama listedeki son mesajı silmez.
+  Mesaj ve el sallama sunucuda aynı 4 saniyelik aralığı paylaşır; istemci de tek bekleme kullanır (konuşma düğmesinin
+  çevresindeki halka ikisinden sonra da 5 saniye dolar, bu sırada el sallanırsa kısa bir red sesi gelir). Gelen el sallama
+  listedeki son mesajı silmez, ama gezgin mesajdaki gibi sahnede öne alınır.
   Seçilen mesaj yolcunun başının üstünde 8 saniyelik bir konuşma balonu olur; diğer oyuncuların sahnesinde de o gezginin
   başında görünür (kısa bir ses ve küçük bir sıçrayışla). Sunucu yalnızca mesajın kimliğini saklar, her oyuncu metni kendi
   dilinde görür; serbest metin yoktur. Mesajlar arasında 5 saniye bekleme vardır (düğmenin çevresinde azalan bir halka).
@@ -261,6 +262,8 @@ npx wrangler dev   # http://localhost:8787
   yeniden gelir). Sandık yaklaşık 37 dakikalık (2200 sn) kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri
   açılan parçaları ve bulunan hazine sayısını gösterir; *Hazine Avcısı* rozet ailesi bulunan sandıkları sayar.
 - **Bahar yağmuru**: Yeşil bölgelerde ara sıra yağmur yağar. Gündüz yağmurun ardından gökkuşağı çıkar ve 20 saniye boyunca hız ×10 olur.
+  Gece yağmurdan sonra ay ışığında soluk, gümüşi bir *ay gökkuşağı* çıkar (aynı etki, gökkuşağı sayılır): v1.42'ye kadar gece
+  gökkuşağı çıkmadığı için koyu temada oynayan *Gökkuşağı* rozetlerini hiç kazanamıyordu. Sürüm notunda yalnızca ipucu verilir.
 - **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,
   eski testi, kiraz çiçeği, kızıl yaprak, kum saati, kardan adam, yıldız dürbünü, çay fincanı, minik balon, lale ve nazar boncuğu.
   Yadigârı henüz bulunmamış bir bölgede yaklaşık 45–85 saniye sonra aracın önünde, yolun biraz üstünde parıldayan bir cam kabarcık
@@ -279,7 +282,10 @@ npx wrangler dev   # http://localhost:8787
   Büyükayı, Kraliçe (Kasiopeya), Avcı (Orion), Lir, Kuğu, Kartal, Küçükayı, Akrep (`data.js` → `CONSTELLATIONS`: birim kutuda
   yıldız yerleri ve çizgiler). Yol Defteri'ndeki *Gökyüzü Haritası* bölümü (ilk takımyıldızdan sonra görünür) bulunanları küçük bir
   yıldız çizimiyle, bulunmayanları "?" ile gösterir. Sekizincisi *Yıldız Haritacısı* kıyafetini açar. Geniş ekranda takımyıldız gökyüzünün
-  sağ yarısında, dar telefonda konum kartının sağında belirir. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
+  sağ yarısında, dar telefonda konum kartının sağında belirir (kartın genişliği ölçülür); kutu her çizimde yeniden kurulduğu
+  için yakınlaştırma ya da döndürme sonrası da ekranın içinde ve uzak dağların üstünde kalır. Gün ağarırsa yıldızlar yumuşakça
+  solar. Turna sürüsü, kâğıt uçak ya da serbest uçurtma gökteyken gelmez, takımyıldız varken onlar da gelmez. Dokunuş sesleri
+  dokunma sırasıyla yükselir. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
 - **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
   sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
   gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
@@ -305,7 +311,8 @@ npx wrangler dev   # http://localhost:8787
   ama bölgeleri farklı sırayla gezer ve her birinin bir ayrıcalığı vardır:
   - **Anadolu Yolu**: ilk yolculuğun rotası, bölgeler tanıdık sırayla.
   - **Kıyı Yolu** (1. eve dönüş): Ege kıyısı ve zeytinliklerle başlar; yağmur ve gökkuşağı iki kat sık.
-  - **Kuzey Yolu** (2.): çam ormanı, karlı geçit ve kuzey ışıkları erkenden; kayan yıldızlar iki kat sık.
+  - **Kuzey Yolu** (2.): çam ormanı, karlı geçit ve kuzey ışıkları erkenden; dilek fırsatları (kayan yıldızlar ve v1.42'den beri
+    karahindiba tohumları) ve takımyıldızlar iki kat sık. Önceden yalnızca kayan yıldızlar hızlandığı için açık temada etkisizdi.
   - **Çiçek Yolu** (3.): lavanta, lale ve kiraz çiçekleri; altın kelebekler daha sık.
   - **İpek Yolu** (4.): buğday ovası, peri bacaları, kanyon ve çöl; kelebek etkileri %50 uzun, anında kredi iki katı.
   - **Kervansaray Yolu** (5.): çöl, kanyon ve peri bacalarıyla başlar; Kervan iki kat sayılır (yakındaki her gezgin +%20 hız).
@@ -318,7 +325,19 @@ npx wrangler dev   # http://localhost:8787
     bildirimi gelir. Sürüdeki bir turnaya dokununca sürü kanat çırpıp yükselerek solar ve 25 saniye *Turna Rüzgârı* (hız ×3)
     gelir. Yakalanan sürüler Yol Defteri'nde sayılır (ilk sürüden sonra görünür). Rota kartında ödül yazmaz, yalnızca
     "Turna sürüleri gökyüzünde sana eşlik eder." der; sürüm notunda da yalnızca ipucu verilir.
-  Rotalar 10 tanedir; dokuzuncu eve dönüşle sonuncusu açılır. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
+  - **Uçurtma Yolu** (10.): lale bahçeleri, buğday ovası ve kıyıyla başlar; yalnızca bu rotada gökyüzünde ara sıra ipi kopmuş
+    bir uçurtma sağdan sola, rüzgârla süzülür (ilki 35–65 sn, sonra 110–200 sn arayla, 18 sn; kopuk ipi altında sallanır;
+    iki renkli baklava gövde, fiyonklu dalgalanan kuyruk, gece ortasında küçük bir fener). Yağmurda, uzayda, pencere açıkken
+    ve turna sürüsü ya da kâğıt uçak gökteyken gelmez; uçurtma süzülürken kâğıt uçak da gelmez. İlk üç uçurtmada "Bir yerlerde
+    biri ipini kaçırmış olmalı… Gökyüzüne bak!" bildirimi gelir. Dokununca uçurtma yolcuya bağlanır ve 30 saniye *Uçurtma
+    Neşesi* (kredi ×3) gelir: uçurtma o süre boyunca yolcunun gerisinde ve yukarısında, eline hafifçe sarkan bir iple uçar
+    (uçan araçlarda aracın kuyruğunun gerisinde süzülür; telefonda yolcuya daha yakın durur). Etki bitince ipi bırakır, rüzgârla
+    geriye ve yukarıya süzülerek solar. Sayfa yeniden açıldığında etki sürüyorsa uçurtma yerinde belirir. Yakalanan uçurtmalar
+    Yol Defteri'nde sayılır. Rota kartında ödül yazmaz; sürüm notunda da yalnızca ipucu verilir.
+  Rotalar 11 tanedir; onuncu eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
+  kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
+  yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
   değiştirilebilir. Bütün rotalar açıldıktan sonra her dönüş sıradaki rotayla başlar. Pasaport o yolculuğun rotasını gösterir.
 - **Yol Arkadaşı**: Güçlendirmeler'den alınan yol arkadaşı 10 seviyeye kadar gelişir. İlk seviye kalıcı +%10 kredi verir,
   sonraki her seviye +%5 ekler (10. seviyede +%55). Seviye 2, 4, 7 ve 10'da görünümü değişir: tasma ve künye, boyunluk, sırtta
@@ -347,7 +366,10 @@ npx wrangler dev   # http://localhost:8787
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
   Gümüş, Altın, Platin, Elmas (toplam 136 kademe). Her kademe kalıcı kredi bonusu verir (plastikte +%0,5'ten elmasta +%2'ye; bir ailenin
   tamamı +%10). Rozetler ömür boyu kazanılır ve eve dönüşte kaybolmaz. Yol Defteri her ailenin kademesini, kademe noktalarını
-  ve bir sonraki hedefi gösterir. Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
+  ve bir sonraki hedefi gösterir. v1.42'de üç ailenin son kademeleri ulaşılabilir eşiklere indi (eve dönüş 16 ve 20, önce 20 ve 30;
+  bölge 20, 25, 30, önce 21, 31, 45; yükseltme 250 ve 300, önce 300 ve 500): eve dönüş eşiği her dönüşte 3 katına çıktığı için
+  30 dönüş ~24.000 saat, 45 bölge 34 dönüş sürüyordu. Kazanılmış kademeler düşmez. *Gece Kuşu* karanlık gökyüzünde geçen
+  süreyi sayar: gece ya da uzayda (v1.42'ye kadar açık temada hiç ilerlemiyordu). Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
   dizisine bir eşik eklemek yeter.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.

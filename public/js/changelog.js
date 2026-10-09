@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.41';
+  IT.VERSION = '1.42';
 
   IT.CHANGELOG = [
+    { v: '1.42', date: '2026-10-09', items: {
+      tr: ['Turna Yolu da son durak değilmiş… Eve bir kez daha dönenleri rüzgârlı tepelerden geçen yeni bir rota bekliyor. Orada gökyüzü bazen sahipsiz kalır.',
+        'Gece yağmuru dindiğinde aya doğru bakmayı unutma.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Crane Road was not the last stop after all… One more homecoming opens a new route over windy hills. Up there, the sky is sometimes left unattended.',
+        'When the night rain stops, don’t forget to look towards the moon.',
+        'A few small touches along the road.'],
+      de: ['Der Kranichweg war doch nicht die letzte Station … Wer noch einmal heimkehrt, findet eine neue Route über windige Hügel. Dort bleibt der Himmel manchmal unbeaufsichtigt.',
+        'Wenn der nächtliche Regen aufhört, vergiss nicht, zum Mond zu schauen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['La Ruta de las Grullas no era la última parada… Una vuelta más a casa abre una nueva ruta por colinas ventosas. Allí, a veces, el cielo se queda sin dueño.',
+        'Cuando pare la lluvia de la noche, no olvides mirar hacia la luna.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La Route des Grues n’était pas la dernière étape… Un retour de plus à la maison ouvre une nouvelle route sur des collines venteuses. Là-haut, le ciel reste parfois sans surveillance.',
+        'Quand la pluie de la nuit s’arrête, n’oublie pas de regarder vers la lune.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.41', date: '2026-10-09', items: {
       tr: ['Gece gökyüzüne iyi bak: bazı yıldızlar diğerlerinden parlak yanıyor… Onları birleştirenlerin gökyüzü bir daha eskisi gibi olmayacak.',
         'Yolda birkaç küçük rötuş.'],

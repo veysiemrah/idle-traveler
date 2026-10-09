@@ -8,7 +8,7 @@
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp'];
-const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane'];
+const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
@@ -54,8 +54,8 @@ export function cleanName(raw) {
   const n = [...s].length;
   if (n < 2 || n > 20) return null;
   if (!/^[\p{L}\p{M}\p{N} ._'-]+$/u.test(s) || !/[\p{L}\p{N}]/u.test(s)) return null;
-  // birleşen işaretler harf sayısını aşamaz (tek harfin üstüne yığılan işaretler etiketi taşırır)
-  if ((s.match(/\p{M}/gu) || []).length > (s.match(/\p{L}/gu) || []).length) return null;
+  // tek harfin üstüne en çok 3 birleşen işaret (Hintçe vb. adlar geçer; yığılan işaretler etiketi taşıramaz)
+  if (/\p{M}{4,}/u.test(s)) return null;
   return s;
 }
 
