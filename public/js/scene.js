@@ -837,7 +837,8 @@
     else dogHead(ctx, x, y, k, t, tier);
   }
   // Yerde yanında koşan yol arkadaşları (Kanat uçar)
-  const RUNNER = { dog: drawDog, cat: drawCat, fox: drawFox };
+  // (prototipsiz nesne: sunucudan gelen pal değeri "__proto__" gibi bir ad olsa da işlev sanılmaz)
+  const RUNNER = Object.assign(Object.create(null), { dog: drawDog, cat: drawCat, fox: drawFox });
   // Araçta pencereden ya da sepetten başını uzatan Karabaş (tier: drawDog ile aynı)
   function dogHead(ctx, x, y, k, t, tier) {
     const body = '#ecdcb6', dark = '#3b2d27', flap = Math.sin(t * 12) * 0.25;
@@ -1324,6 +1325,8 @@
       this.keep = null; this.keepOk = null;
       // Yabani tilki: ormanlık bölgelerde yolcunun önünde tırısla koşar (game.js sayar)
       this.fox = null;
+      // Takımyıldız: gece gökyüzünde parlayan yıldızlar dokunarak birleştirilir (constel); bulunanlar (constFound) hep gökyüzünde kalır
+      this.constel = null; this.constFound = [];
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1603,6 +1606,41 @@
         return true;
       }
       return false;
+    }
+    // Takımyıldız: gökyüzünün sağ üst bölgesinde (konum kartından uzak) 45 saniye boyunca parlar; yıldızları sırasız dokunulur,
+    // ikisi de yanan yıldızların arası çizgiyle bağlanır. Hepsi yanınca tamamlanır ve 4 saniye parlayıp solar.
+    spawnConst(c) {
+      const k = Math.max(this.k, 0.8), W = this.W, box = this.constBox({});
+      // dar telefonda konum kartının (sol üst, ~190 px) sağına yaslanır; geniş ekranda sağ yarıda rastgele
+      const x0 = this.RW < 480 ? W - box.w - 10 * k : Math.max(W * 0.3, W - box.w - 24 * k - Math.random() * W * 0.22);
+      this.constel = { c, fx: x0 / W, fy: 0.07 + Math.random() * 0.12, t: 0, dur: 45, lit: c.s.map(() => 0), n: 0, done: 0 };
+    }
+    constBox(a) {
+      const k = Math.max(this.k, 0.8);
+      const w = this.RW < 480 ? Math.min(220 * k, this.W - 190 / this.zoom - 12 * k) : Math.min(220 * k, this.W * 0.42);
+      return { x: (a.fx || 0) * this.W, y: (a.fy || 0) * this.H, w, h: w * 0.62 };
+    }
+    constStarPos(a, i) {
+      const b = this.constBox(a), s = a.c.s[i];
+      return { x: b.x + s[0] * b.w, y: b.y + s[1] * b.h };
+    }
+    // En yakın sönük yıldıza dokunuş: { i, done } döner; aktif takımyıldız yoksa ya da süresi dolduysa null
+    hitConst(px, py) {
+      const a = this.constel;
+      if (!a || a.done || a.t > a.dur) return null;
+      const r = 30 * Math.max(this.k, 0.8);
+      let best = -1, bd = r;
+      for (let i = 0; i < a.c.s.length; i++) {
+        if (a.lit[i]) continue;
+        const p = this.constStarPos(a, i), d = Math.hypot(px - p.x, py - p.y);
+        if (d < bd) { bd = d; best = i; }
+      }
+      if (best < 0) return null;
+      a.lit[best] = 0.001; a.n++;
+      const p = this.constStarPos(a, best);
+      this.burst(p.x, p.y, 10, ['#ffffff', '#cfe0ff', '#fff4c2']);
+      if (a.n === a.c.s.length) { a.done = 0.001; this.burst(p.x, p.y, 30, ['#ffffff', '#cfe0ff', '#b9c8ff', '#fff4c2']); }
+      return { i: best, done: !!a.done };
     }
     // Hazine sandığı: yolcunun önünde, yol kenarında 25 saniye parıldar
     spawnChest() { this.chest = { t: 0, dur: 25 }; }
@@ -1968,6 +2006,13 @@
         if (Math.random() < dt * 5) { const p = this.keepPos(), a = Math.random() * TAU; this.parts.push({ type: 'spark', x: p.x + Math.cos(a) * 22 * this.k, y: p.y + Math.sin(a) * 22 * this.k, vx: rand(-8, 8), vy: rand(-26, -8), life: 0, max: rand(0.6, 1.1), size: rand(1.1, 2.2), color: pick(['#fff1c2', '#ffffff', '#cfe0ff']), rot: 0 }); }
         if (c.t > c.dur) this.keep = null;
       }
+      if (this.constel) {
+        const a = this.constel;
+        a.t += dt;
+        for (let i = 0; i < a.lit.length; i++) if (a.lit[i]) a.lit[i] += dt;
+        if (a.done) { a.done += dt; if (a.done > 4) this.constel = null; }
+        else if (a.t > a.dur + 1.5) this.constel = null;
+      }
       if (this.fox) {
         const f = this.fox;
         f.t += dt; f.ph += dt * (f.out ? 16 : 9);
@@ -2080,6 +2125,8 @@
           ctx.fillRect(sx, s.y * H, s.r, s.r);
         }
       }
+      // gökyüzü haritası: bulunan takımyıldızlar yıldızlarla birlikte kayar
+      if (starA > 0.02 && this.constFound.length) this.drawSkyMap(ctx, starA, space);
       // kuzey ışıkları
       const auroraA = pal.aurora * night;
       if (auroraA > 0.02) this.drawAurora(ctx, auroraA);
@@ -2102,6 +2149,7 @@
       }
 
       if (this.star) this.drawStar(ctx, this.star);
+      if (this.constel) this.drawConst(ctx, this.constel, Math.max(starA, 0.35));
 
       // gökkuşağı (uzak dağların arkasında)
       const bowA = this.rainbow * (1 - night) * (1 - space);
@@ -2767,6 +2815,67 @@
         ctx.stroke();
       }
       for (const [ex, ey] of rays) { ctx.fillStyle = 'rgba(70,80,110,0.25)'; circle(ctx, ex, ey, 1.5 * k); ctx.fillStyle = '#ffffff'; circle(ctx, ex, ey, 1 * k); }
+      ctx.restore();
+    }
+    // dört köşeli yıldız parıltısı
+    spark(ctx, x, y, r) {
+      ctx.beginPath();
+      ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.quadraticCurveTo(x, y, x, y + r);
+      ctx.quadraticCurveTo(x, y, x - r, y); ctx.quadraticCurveTo(x, y, x, y - r); ctx.fill();
+    }
+    // Aktif takımyıldız: sönük yıldızlar yumuşakça nabız atar, dokunulanlar parlayıp büyür, aralarındaki çizgi uzayarak çizilir.
+    // Tamamlanınca bütün çizgiler parlar; süre dolunca solar.
+    drawConst(ctx, a, vis) {
+      const k = Math.max(this.k, 0.8), t = a.t;
+      const fade = a.done ? clamp((4 - a.done) / 1.2, 0, 1) : t > a.dur ? clamp((a.dur + 1.5 - t) / 1.5, 0, 1) : 1;
+      const al = clamp(t / 1.2, 0, 1) * fade * vis;
+      if (al <= 0.01) return;
+      const pts = a.c.s.map((_, i) => this.constStarPos(a, i));
+      const litA = i => clamp(a.lit[i] / 0.5, 0, 1);
+      ctx.save(); ctx.globalAlpha = al; ctx.globalCompositeOperation = 'lighter';
+      // çizgiler: iki ucu da yanan kenarlar, önce yanan yıldızdan ötekine doğru uzar
+      const glowL = a.done ? 0.6 + 0.4 * Math.sin(a.done * 6) : 0;
+      ctx.lineCap = 'round'; ctx.lineWidth = (1.4 + glowL) * k;
+      for (const [i, j] of a.c.e) {
+        if (!a.lit[i] || !a.lit[j]) continue;
+        const [p, q] = a.lit[i] >= a.lit[j] ? [pts[i], pts[j]] : [pts[j], pts[i]];
+        const u = Math.min(litA(i), litA(j));
+        ctx.strokeStyle = `rgba(207,224,255,${(0.75 + 0.25 * glowL).toFixed(3)})`;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(lerp(p.x, q.x, u), lerp(p.y, q.y, u)); ctx.stroke();
+      }
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i], L = litA(i);
+        if (!a.lit[i]) {
+          const pulse = 0.5 + 0.5 * Math.sin(t * 2.4 + i * 1.3);
+          glow(ctx, p.x, p.y, (12 + 6 * pulse) * k, hex('#cfe0ff'), 0.35 + 0.25 * pulse);
+          ctx.fillStyle = `rgba(255,255,255,${(0.75 + 0.25 * pulse).toFixed(3)})`; circle(ctx, p.x, p.y, 2.6 * k);
+        } else {
+          const pop = 1 + 0.9 * (1 - L);
+          glow(ctx, p.x, p.y, 22 * k * pop, hex('#dfe8ff'), 0.55 + 0.3 * glowL);
+          ctx.fillStyle = 'rgba(255,255,255,0.98)';
+          this.spark(ctx, p.x, p.y, (5 + 1.2 * Math.sin(t * 5 + i)) * k * pop);
+        }
+      }
+      ctx.restore();
+    }
+    // Bulunan takımyıldızlar: geniş bir şeritte (2 ekran) yıldızlarla aynı hızda kayar, ince çizgilerle hep gökyüzündedir
+    drawSkyMap(ctx, starA, space) {
+      const k = Math.max(this.k, 0.8), W = this.W, H = this.H, band = 2 * W;
+      const off = this.scroll * 0.004 * (1 + space * 3), bw = 84 * k, bh = 52 * k;
+      const all = IT.CONSTELLATIONS || [];
+      ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 1 * k;
+      ctx.strokeStyle = `rgba(207,224,255,${(0.3 * starA).toFixed(3)})`;
+      ctx.fillStyle = `rgba(255,255,255,${(0.85 * starA).toFixed(3)})`;
+      for (let j = 0; j < all.length; j++) {
+        const c = all[j];
+        if (!this.constFound.includes(c.id)) continue;
+        const px = (((j + 0.5) / all.length * band - off) % band + band) % band - W * 0.5, py = H * (0.05 + 0.3 * hash(j * 3.7 + 1));
+        if (px < -bw - 20 || px > W + 20) continue;
+        ctx.beginPath();
+        for (const [i, m] of c.e) { ctx.moveTo(px + c.s[i][0] * bw, py + c.s[i][1] * bh); ctx.lineTo(px + c.s[m][0] * bw, py + c.s[m][1] * bh); }
+        ctx.stroke();
+        for (const s of c.s) circle(ctx, px + s[0] * bw, py + s[1] * bh, 1.4 * k);
+      }
       ctx.restore();
     }
     drawStar(ctx, s) {

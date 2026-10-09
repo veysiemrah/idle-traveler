@@ -48,7 +48,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes',
-    'letters', 'fox', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -71,6 +71,7 @@
       cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
       letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
+      consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -137,6 +138,8 @@
     if (!VEH[s.active] || !s.owned[s.active]) s.active = 'walk';
     for (const k of ['bestCombo', 'bestRegion', 'bestGarage', 'bestLevel']) s[k] = count(s[k], 1e6);
     s.fox = count(s.fox, Econ.foxNeed);
+    const consts = isObj(d.consts) ? d.consts : {};
+    s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
     const pk = Econ.pals.find(x => x.id === s.palPick);
     if (!pk || (pk.fox && s.fox < Econ.foxNeed)) s.palPick = 'dog';
     s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2); s.letters = count(s.letters, IT.LETTERS.length);
@@ -302,7 +305,7 @@
   }
 
   const nBadges = () => IT.badgeCount(S);
-  const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : nBadges() >= o.need);
+  const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : o.consts ? IT.constCount(S) >= o.consts : nBadges() >= o.need);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -339,7 +342,7 @@
         toast(t('toast.badge', { name: esc(g.b.name), tier: tier.name, tierLow: tier.name.toLocaleLowerCase(IT.locale()), p: fmtPct(g.bonus * 100) }), 'gold');
         Sound.milestone();
       }
-      const opened = OUTFITS.filter(o => !o.keeps && !o.letters && o.need > before && o.need <= nBadges());
+      const opened = OUTFITS.filter(o => !o.keeps && !o.letters && !o.consts && o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
       if (opened.length) applyOutfit(); // sıfırlamadan sonra yeniden açılan seçili kıyafet hemen giyilir
     }
@@ -470,7 +473,7 @@
   let keepIn = 45 + Math.random() * 40;
   function updateKeeps(dt) {
     const id = IT.regionAt(S.regionIdx).biome;
-    if (S.keeps[id] || !IT.KEEP[id] || scene.keep || !$('#modal').hidden) return;
+    if (S.keeps[id] || !IT.KEEP[id] || scene.keep || scene.fox || !$('#modal').hidden) return;
     keepIn -= dt;
     if (keepIn > 0) return;
     keepIn = 80 + Math.random() * 70;
@@ -492,6 +495,39 @@
     }
     uiDirty.journal = uiDirty.garage = true;
     checkBadges(); save();
+  }
+
+  /* ---------- Takımyıldızlar ---------- */
+  // Gece (ya da uzayda), yağmursuz gökyüzünde arada bir sıradaki bulunmamış takımyıldızın yıldızları parlar (45 sn). Hepsine
+  // dokununca gökyüzü haritasına işlenir ve ömür boyu gökyüzünde kalır; kaçırılırsa 70–110 sn sonra yeniden gelir.
+  // Kuzey Yolu'nda (kayan yıldız ayrıcalığı) iki kat sık. Pencere açıkken gelmez. Ekonomiye etkisi yoktur.
+  let constIn = 60 + Math.random() * 40;
+  function updateConsts(dt) {
+    const next = IT.CONSTELLATIONS.find(c => !S.consts[c.id]);
+    if (!next || scene.constel || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.6) return;
+    constIn -= dt;
+    if (constIn > 0) return;
+    constIn = (70 + Math.random() * 40) * (perk() === 'stars' ? 0.5 : 1);
+    scene.spawnConst(next);
+    if (!IT.constCount(S)) toast(t('toast.constSeen'), 'teal');
+  }
+  function catchConst(res) {
+    Sound.unlock(); Sound.constStar(res.i);
+    if (!res.done) return;
+    const c = scene.constel.c;
+    if (S.consts[c.id]) return;
+    S.consts[c.id] = 1; uiDirty.journal = true;
+    constIn = (150 + Math.random() * 100) * (perk() === 'stars' ? 0.5 : 1);
+    const n = IT.constCount(S), m = IT.CONSTELLATIONS.length;
+    Sound.constDone();
+    toast(t('toast.const', { name: esc(c.name), n, m }), 'gold');
+    scene.addFloat(t('float.const'), { color: '#cfe0ff', big: true });
+    if (n === m) {
+      applyOutfit();
+      const o = OUTFITS.find(x => x.consts);
+      setTimeout(() => { toast(t('toast.constsAll', { name: esc(o.name) }), 'gold'); Sound.region(); }, 900);
+    }
+    save();
   }
 
   /* ---------- Tilki ---------- */
@@ -530,7 +566,7 @@
   // Sıradaki mektup hazırsa (ömür boyu yol ya da eve dönüş eşiği) bir süre sonra kâğıt uçakla gelir; kaçırılırsa yeniden gelir.
   // Yağmurda ve pencere açıkken gelmez. Okunan mektuptan sonra sıradaki en erken 4–7 dakikada gelir (birikmiş mektuplar,
   // ör. eski kayıtlarda, 2,5–3,5 dakikada); o sırada henüz hazır değilse hazır olduktan ~1,5 dakika sonra.
-  let letterIn = 70 + Math.random() * 40;
+  let letterIn = 70 + Math.random() * 40, planeHints = 0;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
     if (!next || scene.plane || scene.cranes || !$('#modal').hidden || weather === 'rain') return;
@@ -540,7 +576,7 @@
     letterIn = 70 + Math.random() * 40;
     scene.spawnPlane(); Sound.plane();
     // ilk mektuplarda gökyüzüne bakmayı hatırlatan bir bildirim
-    if (S.letters < 2) toast(t('toast.planeSeen'), 'teal');
+    if (S.letters < 2 && planeHints++ < 2) toast(t('toast.planeSeen'), 'teal');
   }
   function catchPlane() {
     Sound.unlock(); Sound.letter();
@@ -666,7 +702,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null; scene.constel = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -870,6 +906,7 @@
     updateCranes(dt);
     updateLetters(dt);
     updateFox(dt);
+    updateConsts(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -889,7 +926,7 @@
       giftIn = (40 + Math.random() * 45) / Econ.butterflyFreq(S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
     }
     // hazine sandığı: harita tamamken gelir; kaçırılırsa 45 sn sonra yeniden
-    if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest) {
+    if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest && !scene.fox) {
       chestIn -= dt;
       if (chestIn <= 0) { scene.spawnChest(); chestIn = 45; }
     }
@@ -905,6 +942,7 @@
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
     scene.palTier = Econ.palTier(S.buffs.pal);
+    scene.constFound = Object.keys(S.consts);
     scene.vehTier = Econ.lookTier(S.levels[S.active]);
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
@@ -1391,6 +1429,7 @@
     if (m && m.msg !== 'wave' && Date.now() - m.at < 60e3) return m.msg;
     return p.msg && p.msg !== 'wave' && MSG_EMOJI[p.msg] ? p.msg : '';
   }
+  // Mesaj ve el sallama aynı sunucu aralığını (4 sn) paylaşır: biri gönderilince öteki de bekler
   let chatCoolUntil = 0;
   function chatOpen(open) {
     const pop = $('#chatPop'), btn = $('#btnChat');
@@ -1417,14 +1456,13 @@
     else if (r !== 'too-soon') toast(t('chat.fail'));
   }
   // Bir gezgine el salla: 👋 senin başında belirir ve o gezgine iletilir (onun ekranında senin başında görünür)
-  let waveCoolUntil = 0;
   function waveAt(g) {
     Sound.unlock(); Sound.wave();
     scene.sayMine('👋', 3.5);
     const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
     toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-    if (!S.player.name || Date.now() < waveCoolUntil) return;
-    waveCoolUntil = Date.now() + 4000;
+    if (!S.player.name || Date.now() < chatCoolUntil) return;
+    chatCoolUntil = Date.now() + 4000;
     IT.Online.say('wave', S.player.id, S.player.key, g.pub);
   }
   // Başka bir gezginden mesaj geldi: başının üstünde balon (gezgin sahnede değilse ya da gizliyse kısa bir bildirim)
@@ -1433,8 +1471,10 @@
     const mine = IT.Online.myPub();
     if (m.pub === mine) return;
     const d = IT.Online.data, p = d && d.players.find(x => x.pub === m.pub);
-    lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
-    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir
+    // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir;
+    // listede o gezginin son bir dakikadaki mesajını silmez (sahnede öne alınması için yine kaydedilir)
+    const prev = lastMsg.get(m.pub);
+    if (m.msg !== 'wave' || !prev || prev.msg === 'wave' || Date.now() - prev.at > 60e3) lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
     if (m.msg === 'wave') {
       scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
       if (m.to && m.to === mine) {
@@ -1526,7 +1566,7 @@
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
-    const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S);
+    const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S), nConsts = IT.constCount(S);
     // Her aile tek kart: madalya o anki kademenin renginde, altında 8 kademe noktası ve bir sonraki hedef
     const badges = BADGES.map(b => {
       const k = S.badges[b.id] || 0, tier = k ? TIERS[k - 1] : null;
@@ -1573,6 +1613,11 @@
         ? `<li><button class="keep env on" type="button" data-act="letter" data-id="${i}"><span class="e" aria-hidden="true">✉️</span><b>${t(`letter.${i + 1}.t`)}</b></button></li>`
         : `<li><div class="keep env" role="img" aria-label="${esc(t('j.letterSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${S.letters >= IT.LETTERS.length ? t('j.lettersDone') : t('j.lettersHint')}</p>` : ''}
+      ${nConsts ? `<h3 class="sec">${t('j.consts')} <small>${t('j.constsSub', { n: nConsts, m: IT.CONSTELLATIONS.length })}</small></h3>
+      <ul class="keeps consts">${IT.CONSTELLATIONS.map(c => S.consts[c.id]
+        ? `<li><div class="keep const on" title="${esc(c.name)}"><svg viewBox="0 0 44 30" aria-hidden="true">${c.e.map(([i, j]) => `<line x1="${(c.s[i][0] * 44).toFixed(1)}" y1="${(c.s[i][1] * 30).toFixed(1)}" x2="${(c.s[j][0] * 44).toFixed(1)}" y2="${(c.s[j][1] * 30).toFixed(1)}"/>`).join('')}${c.s.map(p => `<circle cx="${(p[0] * 44).toFixed(1)}" cy="${(p[1] * 30).toFixed(1)}" r="1.6"/>`).join('')}</svg><b>${esc(c.name)}</b></div></li>`
+        : `<li><div class="keep const" role="img" aria-label="${esc(t('j.constSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
+      <p class="tag small">${nConsts >= IT.CONSTELLATIONS.length ? t('j.constsDone') : t('j.constsHint')}</p>` : ''}
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
@@ -1586,7 +1631,7 @@
         const open = outfitOpen(o), on = open && (S.settings.outfit === o.id || (!outfitOpen(OUTFIT[S.settings.outfit]) && o.id === 'classic'));
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
-          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+          <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : o.consts ? t('ui.outfitConsts', { n: o.consts }) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
   }
 
@@ -1773,6 +1818,8 @@
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
+      const cs = scene.hitConst(x, y);
+      if (cs) { catchConst(cs); return; }
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
       if (scene.hitPlane(x, y)) { catchPlane(); return; }
@@ -1879,10 +1926,13 @@
     try { tab = localStorage.getItem('idle-traveler-tab') || 'garage'; } catch (e) { /* yok say */ }
     actions.tab(['garage', 'buffs', 'journal', 'travelers'].includes(tab) ? tab : 'garage');
 
+    // Kayıt bu kodla okunamadıysa (yayın sırasında karışan dosyalar): tanıtım ve ad sorulmaz, oturum kaydedilmez,
+    // oyuncuya söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir
+    if (saveLocked) { toast(t('toast.saveLocked'), 'teal'); setTimeout(checkUpdate, 2000); }
     // İlk açılış ya da çevrimdışı dönüş
-    if (!S.intro) showIntro();
+    if (!S.intro && !saveLocked) showIntro();
     // Adı olmayan oyuncuya (yeni ya da eski) bir kez sorulur; çevrimdışı özeti bundan sonra gelir
-    if (!S.player.name) showName();
+    if (!S.player.name && !saveLocked) showName();
     if (S.intro) resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Date.now();
     checkDaily();
@@ -1906,7 +1956,7 @@
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
     // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
     const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
-    IT.Online.start(() => S.player.name ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
+    IT.Online.start(() => S.player.name && !saveLocked ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
       tier: Econ.lookTier(S.levels[S.active]), outfit: wornOutfit(), pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;

@@ -9,7 +9,7 @@
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane'];
-const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless'];
+const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
 // 'wave': bir gezgine el sallamak (yalnızca o gezgine bildirilir, diğerleri balonu görür)
@@ -33,13 +33,14 @@ const REACH = [[60, 7.7e6], [300, 1.4e9], [900, 2.3e10], [1800, 3.8e11], [3600, 
   [28800, 6.0e14], [57600, 2.4e15], [86400, 4.6e15], [172800, 1.3e16]];
 const LIFE_SLACK = 100;
 function reachCap(ageMs) {
-  const t = Math.max(REACH[0][0], ageMs / 1000);
+  const t = Math.max(REACH[0][0], ageMs / 1000), last = REACH[REACH.length - 1];
+  // son noktanın ötesinde son noktadan cömert bir eğimle (yol ∝ süre²) uzar
+  if (t > last[0]) return LIFE_SLACK * last[1] * Math.pow(t / last[0], 2);
   let i = 1;
   while (i < REACH.length - 1 && REACH[i][0] < t) i++;
   const [t0, d0] = REACH[i - 1], [t1, d1] = REACH[i];
-  // log-log aralarında doğrusal; son noktanın ötesinde cömert bir eğimle (yol ∝ süre²) uzar
-  const slope = t > REACH[REACH.length - 1][0] ? 2 : Math.log(d1 / d0) / Math.log(t1 / t0);
-  return LIFE_SLACK * d0 * Math.pow(t / t0, slope);
+  // log-log aralarında doğrusal
+  return LIFE_SLACK * d0 * Math.pow(t / t0, Math.log(d1 / d0) / Math.log(t1 / t0));
 }
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), {
@@ -53,6 +54,8 @@ export function cleanName(raw) {
   const n = [...s].length;
   if (n < 2 || n > 20) return null;
   if (!/^[\p{L}\p{M}\p{N} ._'-]+$/u.test(s) || !/[\p{L}\p{N}]/u.test(s)) return null;
+  // birleşen işaretler harf sayısını aşamaz (tek harfin üstüne yığılan işaretler etiketi taşırır)
+  if ((s.match(/\p{M}/gu) || []).length > (s.match(/\p{L}/gu) || []).length) return null;
   return s;
 }
 
@@ -103,7 +106,7 @@ async function listPlayers(db, id, now) {
 async function topPlayers(db, id, now) {
   const onlineSince = now - ONLINE_MS;
   const [rows, counts] = await db.batch([
-    db.prepare(`SELECT ${COLS} FROM players ORDER BY MAX(life, dist) DESC LIMIT ?1`).bind(LIST_MAX),
+    db.prepare(`SELECT ${COLS} FROM players ORDER BY life DESC LIMIT ?1`).bind(LIST_MAX), // life ≥ dist her zaman; players_life dizini kullanılır
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?1) AS online FROM players').bind(onlineSince),
   ]);
   const map = async r => ({
@@ -115,7 +118,7 @@ async function topPlayers(db, id, now) {
   if (!me && id) {
     const r = await db.prepare(`SELECT ${COLS} FROM players WHERE id = ?1`).bind(id).first();
     if (r) {
-      const above = await db.prepare('SELECT COUNT(*) AS n FROM players WHERE MAX(life, dist) > ?1').bind(Math.max(r.life || 0, r.dist)).first();
+      const above = await db.prepare('SELECT COUNT(*) AS n FROM players WHERE life > ?1').bind(Math.max(r.life || 0, r.dist)).first();
       me = Object.assign(await map(r), { rank: (above ? above.n : 0) + 1 });
     }
   }
@@ -147,13 +150,15 @@ async function hello(request, env) {
   const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 6 ? b.tier : 0;
   const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
   const pal = PALS.includes(b.pal) ? b.pal : '';
-  // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder
-  const spd = Number(b.spd), speed = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
+  const spd = Number(b.spd), spdIn = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
   const now = Date.now(), hash = await sha256(key);
   // makullük sınırı: kaydın yaşına göre (yeni kayıt: yaşı sıfır)
   const born = await env.DB.prepare('SELECT created FROM players WHERE id = ?1').bind(id).first();
   const cap = reachCap(now - (born && born.created ? born.created : now));
   const distOk = Math.min(dist, cap), lifeOk = Math.max(distOk, Math.min(life, cap));
+  // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder; aynı tavana bağlıdır (tek bildirimde
+  // tavanın 1/30'u: yeni kayıtta ~2,6e7 m/sn, en hızlı dürüst araç ~2,2e7), yoksa sahte bir hızla 3 dakika liste başı olunurdu
+  const speed = Math.min(spdIn, cap / 30);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
   const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14)
     ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
@@ -164,7 +169,7 @@ async function hello(request, env) {
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);
   }
   // Ara sıra eski kayıtları temizle
-  if (Math.random() < 0.01) await env.DB.prepare('DELETE FROM players WHERE seen < ?1 AND MAX(life, dist) < ?2').bind(now - PRUNE_MS, PRUNE_LIFE).run();
+  if (Math.random() < 0.01) await env.DB.prepare('DELETE FROM players WHERE seen < ?1 AND life < ?2').bind(now - PRUNE_MS, PRUNE_LIFE).run();
   return json(await listPlayers(env.DB, id, now));
 }
 

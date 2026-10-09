@@ -123,6 +123,9 @@
         o.start(t); o.stop(t + 0.4);
       });
     },
+    // takımyıldız: dokunulan her yıldız için yükselen tek bir çan notası; tamamlanınca yukarı doğru parıltılı bir dizi
+    constStar(i) { if (!this.ctx) return; this.tone(PENTA[i % PENTA.length] * (i >= PENTA.length ? 4 : 2), 0.045, 1.4, 'sine', this.sfx, true); },
+    constDone() { if (!this.ctx) return; [0, 2, 4, 6, 4, 6].forEach((n, i) => this.tone(PENTA[n] * 2, 0.04, 1.8, 'sine', this.sfx, true, i * 0.1)); },
     // tilki: çalı hışırtısı ve uzaktan iki kısa, yukarı kalkıp inen yumuşak "yip"
     fox() {
       if (!this.ctx || !this.sfxOn) return;

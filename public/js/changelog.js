@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.40';
+  IT.VERSION = '1.41';
 
   IT.CHANGELOG = [
+    { v: '1.41', date: '2026-10-09', items: {
+      tr: ['Gece gökyüzüne iyi bak: bazı yıldızlar diğerlerinden parlak yanıyor… Onları birleştirenlerin gökyüzü bir daha eskisi gibi olmayacak.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Look closely at the night sky: some stars burn brighter than the rest… For those who connect them, the sky will never look quite the same again.',
+        'A few small touches along the road.'],
+      de: ['Schau genau in den Nachthimmel: Manche Sterne leuchten heller als die anderen … Wer sie verbindet, sieht den Himmel nie wieder wie zuvor.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Mira bien el cielo nocturno: algunas estrellas brillan más que las demás… Para quien las une, el cielo nunca volverá a ser el mismo.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Regarde bien le ciel nocturne : certaines étoiles brillent plus que les autres… Pour qui les relie, le ciel ne sera plus jamais tout à fait le même.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.40', date: '2026-10-09', items: {
       tr: ['Ormanlık yollarda biri seni çalıların arasından izliyor… Yol arkadaşın yanındayken gözünü yolun ilerisinden ayırma; belki bir gün o da sana güvenir.',
         'Yolda birkaç küçük rötuş.'],

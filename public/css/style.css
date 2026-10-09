@@ -629,6 +629,13 @@ button { font: inherit; color: inherit; }
 /* Mektuplar: Yol Defteri'nde zarflar (yadigâr yuvalarıyla aynı yapı, mühür rengi) */
 .keep.env { --c: #d9a85b; min-height: 70px; }
 .keep.env.on b { font-size: 11.5px; }
+/* Takımyıldızlar: Yol Defteri'ndeki gökyüzü haritası (bulunanlar küçük bir yıldız çizimiyle) */
+.keep.const { --c: #8fa9e8; min-height: 74px; }
+.keep.const svg { width: 44px; height: 30px; overflow: visible; }
+.keep.const svg line { stroke: #cfe0ff; stroke-width: 1.2; stroke-linecap: round; opacity: .7; }
+.keep.const svg circle { fill: #fff; }
+.keep.const.on { background: radial-gradient(circle at 50% 30%, rgba(60, 80, 160, .35), transparent 70%), #1b2550; color: #e8eeff; }
+.keep.const.on:hover svg line { opacity: 1; }
 /* Mektup penceresi: iki temada da krem bir kâğıt, köşesinde mum mühür; açılırken hafifçe yayılır */
 .letter {
   position: relative; margin: 4px 2px 2px; padding: 18px 18px 14px; border-radius: 6px;

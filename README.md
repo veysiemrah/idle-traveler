@@ -77,7 +77,10 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   tamamen önlenemez, ama tek istekle listenin zirvesine çıkılamaz.
 - Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen ve toplamda 1 km'ye ulaşmamış kayıtlar ara sıra silinir; yol gitmiş
   gezginler tüm zamanlar listesi için kalır.
-- Ad sunucuda da aynı kuralla temizlenir ve denetlenir.
+- Ad sunucuda da aynı kuralla temizlenir ve denetlenir; birleşen işaretler (aksan vb.) harf sayısını aşamaz, böylece tek harfin
+  üstüne yığılan işaretler sahnedeki etiketi taşıramaz.
+- Tüm zamanlar sorgusu `life` sütununa göre sıralar (`life ≥ dist` her zaman sağlanır: 0006 göçü, `lifeOk ≥ distOk`, `MAX`),
+  böylece `players_life` dizini kullanılır.
 
 Yerelde API ile denemek için:
 
@@ -180,11 +183,14 @@ npx wrangler dev   # http://localhost:8787
   gezgin (+%30). Sahnenin sol üstünde süresiz bir "🐫 Kervan" etkisi görünür, kervandaki gezginlerin isim etiketinde de 🐫 durur; kervana ilk katılınca bildirim gelir (en sık
   2 dakikada bir). Kervandan ayrılmak için pencerenin %25 dışına çıkmak gerekir, böylece sınırdaki gezgin yüzünden etki
   yanıp sönmez. Yalnızca canlı oyunda geçerlidir, çevrimdışı ilerlemeye eklenmez. Sürüm notunda yalnızca ipucu verilir.
-- **Canlı mesafeler**: Her oyuncu bildirimde hızını da (`spd`, m/sn) gönderir. İki bildirim arasında diğer gezginlerin
-  mesafesi bu hızla tahmin edilir (en çok 3 dakika), böylece sahnedeki etiketler ve Yolcular listesi canlı akar; liste
+- **Canlı mesafeler**: Her oyuncu bildirimde hızını da (`spd`, m/sn) gönderir; sunucu hızı da makullük tavanına bağlar (tek
+  bildirimde tavanın 1/30'u, yeni kayıtta ≈2,6e7 m/sn; en hızlı dürüst araç ≈2,2e7), yoksa sahte bir hızla 3 dakika liste başı olunurdu.
+  İki bildirim arasında diğer gezginlerin mesafesi bu hızla tahmin edilir (en çok 3 dakika), böylece sahnedeki etiketler ve Yolcular listesi canlı akar; liste
   açıkken iki saniyede bir tazelenir ve sıra tahmini mesafeye göre yeniden kurulur.
 - **Hazır mesajlar**: Sahnenin sağ altındaki konuşma düğmesi 9 hazır mesaj açar (👋 Merhaba!, 🌄 Ne güzel manzara!, 🚀 Haydi,
   yola devam!, ✋ Bekle beni!, 🏁 Yarışalım mı?, ⭐ Harika gidiyorsun!, 💛 Teşekkürler!, ☕ Mola zamanı., 🌙 İyi yolculuklar!).
+  Mesaj ve el sallama sunucuda aynı 4 saniyelik aralığı paylaşır; istemci de tek bekleme kullanır, böylece mesajın hemen
+  ardından sallanan el sunucuda reddedilmez. Gelen el sallama listedeki son mesajı silmez.
   Seçilen mesaj yolcunun başının üstünde 8 saniyelik bir konuşma balonu olur; diğer oyuncuların sahnesinde de o gezginin
   başında görünür (kısa bir ses ve küçük bir sıçrayışla). Sunucu yalnızca mesajın kimliğini saklar, her oyuncu metni kendi
   dilinde görür; serbest metin yoktur. Mesajlar arasında 5 saniye bekleme vardır (düğmenin çevresinde azalan bir halka).
@@ -263,6 +269,17 @@ npx wrangler dev   # http://localhost:8787
   bölgenin renginde durur (dokununca küçük bir sallanma ve ses), bulunmayanlar "?" ve bölgenin adıyla bekler. Bazı bölgelere ilk
   yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
   *Kâşif* kıyafeti açılır. Sürüm notunda yalnızca ipucu verilir.
+- **Takımyıldızlar (gökyüzü haritası)**: Gece (ya da uzayda), yağmursuz gökyüzünde arada bir sıradaki bulunmamış takımyıldızın
+  yıldızları diğerlerinden parlak, yumuşakça nabız atarak belirir (ilki 60–100 sn sonra, 45 sn kalır; kaçırılırsa 70–110 sn sonra
+  yeniden; bulunduktan sonra sıradaki 150–250 sn sonra; Kuzey Yolu'nda iki kat sık; pencere açıkken gelmez). İlk kez "Gökyüzünde
+  birkaç yıldız diğerlerinden parlak…" bildirimi gelir. Yıldızlara sırasız dokunulur: dokunulan yıldız parlar ve ikisi de yanan
+  yıldızların arası ince bir çizgiyle (önce yanandan ötekine uzayarak) bağlanır; her dokunuşta yükselen bir çan notası çalar.
+  Hepsi yanınca takımyıldız tamamlanır, bütün çizgiler parlar ve "gökyüzü haritana işlendi" bildirimi gelir. Bulunan takımyıldızlar
+  ömür boyu (eve dönüşte de) gece gökyüzünde ince çizgilerle çizilir ve yıldızlarla aynı hızda kayar. Sekiz takımyıldız sırayla gelir:
+  Büyükayı, Kraliçe (Kasiopeya), Avcı (Orion), Lir, Kuğu, Kartal, Küçükayı, Akrep (`data.js` → `CONSTELLATIONS`: birim kutuda
+  yıldız yerleri ve çizgiler). Yol Defteri'ndeki *Gökyüzü Haritası* bölümü (ilk takımyıldızdan sonra görünür) bulunanları küçük bir
+  yıldız çizimiyle, bulunmayanları "?" ile gösterir. Sekizincisi *Yıldız Haritacısı* kıyafetini açar. Geniş ekranda takımyıldız gökyüzünün
+  sağ yarısında, dar telefonda konum kartının sağında belirir. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
 - **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
   sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
   gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
@@ -324,7 +341,7 @@ npx wrangler dev   # http://localhost:8787
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
-  *Zamansız Gezgin* son mektupla (12 mektup) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
@@ -349,7 +366,8 @@ npx wrangler dev   # http://localhost:8787
 İlerleme tarayıcının `localStorage` alanına otomatik kaydedilir. Kayıt okunamazsa yeni bir oyunla ezilmez: JSON sağlam ama kod
 okuyamıyorsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa) o oturumda kayda hiç yazılmaz, sayfa yenilenince kayıt aynen açılır.
 JSON bozuksa ilk bozuk kopya `idle-traveler-save-v1-bak` anahtarına konur (sonraki hatalar onu ezmez) ve orada sağlam bir yedek varsa
-oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir.
+oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir. Kilitli oturumda tanıtım ve ad sorulmaz, Yolcular'a kayıt gönderilmez;
+oyuncuya kaydın korunduğu söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir.
 Oyun açıkken 10 saniyeye kadarki aralar (uygulama değiştirme, takılan bir kare) sessizce çevrimdışı hızla sayılır; daha uzun aralarda
 hız ortalamaları sıfırlanır, böylece dönüşte verilen bölge, durak ve günlük ödülleri sekme gizlenmeden önceki tıklama hızıyla değil
 otomatik gelirle ölçülür (sayfayı kapatıp açmakla aynı).
