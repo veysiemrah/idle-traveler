@@ -308,7 +308,26 @@
     { id: 'explorer', need: 0, keeps: 15, jacket: '#8a6440', jacketDark: '#6e4f31', hat: '#e9dcb8', hatDark: '#c9b98f', pack: '#3f8a83' },
     // son mektupla açılır
     { id: 'timeless', need: 0, letters: 12, jacket: '#2f7d8f', jacketDark: '#236272', hat: '#f3e3b6', hatDark: '#d4c08e', pack: '#c86f8f' },
+    // gökyüzü haritası dolunca (bütün takımyıldızlar) açılır
+    { id: 'stargazer', need: 0, consts: 8, jacket: '#2b3a6b', jacketDark: '#1f2b52', hat: '#cfe0ff', hatDark: '#a9bde6', pack: '#e8b93c' },
   ];
+
+  /* ---------- Takımyıldızlar: gece gökyüzünde birleştirilen parlak yıldızlar ----------
+     s: yıldızların birim kutudaki yerleri [x, y] (y aşağı), e: çizgiler (yıldız indeksleri). Bulunanlar ömür boyu gökyüzünde kalır.
+     Sıra: ilk ikisi en tanıdık ve kolay olanlar; yıldız sayısı giderek artar. */
+  const CONSTELLATIONS = [
+    { id: 'ursa',       s: [[0, 0.55], [0.04, 0.3], [0.22, 0.26], [0.24, 0.52], [0.44, 0.2], [0.66, 0.14], [0.9, 0]], e: [[0, 1], [1, 2], [2, 3], [3, 0], [2, 4], [4, 5], [5, 6]] },
+    { id: 'cassiopeia', s: [[0, 0.3], [0.25, 0.75], [0.5, 0.35], [0.75, 0.8], [1, 0.2]],                                e: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+    { id: 'orion',      s: [[0.2, 0], [0.75, 0.05], [0.4, 0.45], [0.5, 0.48], [0.6, 0.5], [0.15, 0.95], [0.85, 0.9]], e: [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6]] },
+    { id: 'lyra',       s: [[0.5, 0], [0.35, 0.3], [0.7, 0.4], [0.3, 0.75], [0.65, 0.85]],                             e: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]] },
+    { id: 'cygnus',     s: [[0.05, 0.95], [0.3, 0.72], [0.5, 0.5], [0.95, 0.05], [0.15, 0.15], [0.85, 0.85]],          e: [[0, 1], [1, 2], [2, 3], [4, 2], [2, 5]] },
+    { id: 'aquila',     s: [[0.5, 0.4], [0.45, 0.1], [0.05, 0.55], [0.95, 0.5], [0.6, 0.95], [0.3, 0.5]],              e: [[1, 0], [0, 5], [5, 2], [0, 3], [0, 4]] },
+    { id: 'minor',      s: [[0, 0.1], [0.22, 0.18], [0.42, 0.3], [0.6, 0.45], [0.82, 0.4], [0.85, 0.65], [0.63, 0.7]], e: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]] },
+    { id: 'scorpius',   s: [[0, 0.1], [0.12, 0.3], [0.28, 0.42], [0.45, 0.5], [0.62, 0.62], [0.78, 0.78], [0.92, 0.95], [1, 0.75]], e: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]] },
+  ];
+  CONSTELLATIONS.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`const.${c.id}`) }));
+  const CONST = Object.fromEntries(CONSTELLATIONS.map(c => [c.id, c]));
+  const constCount = s => CONSTELLATIONS.filter(c => s.consts && s.consts[c.id]).length;
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
   const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
 
@@ -502,7 +521,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

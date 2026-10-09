@@ -27,6 +27,11 @@ const hex = n => Array.from(crypto.getRandomValues(new Uint8Array(n)), x => x.to
   const old = { id: crypto.randomUUID(), key: hex(32), name: 'Eski', trip: 1, veh: 'walk', spd: 1 };
   await post('/api/hello', Object.assign({}, old, { dist: 5000 }));
   console.log('eski istemci toplamı:', (await post('/api/top', { id: old.id })).me.life);
-  if (!(l1 <= 7.71e8) || l2 > l1 * 1.0001 || d1.life !== 4.2e7 || d2.life < d1.life) errs.push('beklenmeyen sonuç');
+  // hız da aynı tavana bağlı: sahte 9e14 m/sn, yeni kayıtta tavanın 1/30'una (≈2,6e7) kırpılır; listede tahmini mesafe şişmez
+  const fast = { id: crypto.randomUUID(), key: hex(32), name: 'Jet', trip: 1, veh: 'walk', spd: 9e14 };
+  const fl = await post('/api/hello', Object.assign({}, fast, { dist: 1 }));
+  const fr = fl.players.find(p => p.me);
+  console.log('sahte hız 9e14 →', fr.spd.toExponential(2), '| tavanın altında mı:', fr.spd <= 7.71e8 / 30 + 1);
+  if (!(l1 <= 7.71e8) || l2 > l1 * 1.0001 || d1.life !== 4.2e7 || d2.life < d1.life || !(fr.spd <= 7.71e8 / 30 + 1)) errs.push('beklenmeyen sonuç');
   console.log(errs.join('\n') || 'no errors');
 })().catch(e => console.log('error:', e.message));

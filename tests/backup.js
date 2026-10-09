@@ -22,6 +22,7 @@ const KEY = 'idle-traveler-save-v1', BAK = KEY + '-bak';
 
   // 1) JSON sağlam, kod okuyamıyor: kayda hiç yazılmaz
   let p = await page({ [KEY]: good(123456) }, true);
+  console.log('kilitli oturum: bildirim var mı:', /okunamadı/.test(await p.textContent('#toasts')), '· pencere kapalı mı:', await p.isHidden('#modal'));
   await p.evaluate(() => { dispatchEvent(new Event('pagehide')); dispatchEvent(new Event('beforeunload')); });
   await p.waitForTimeout(5600);
   let s = await read(p);
