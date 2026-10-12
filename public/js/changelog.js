@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.48';
+  IT.VERSION = '1.49';
 
   IT.CHANGELOG = [
+    { v: '1.49', date: '2026-10-12', items: {
+      tr: ['Uçurtma Yolu da son durak değilmiş… Eve bir kez daha dönenleri kanatlarla dolu bir rota bekliyor. Orada kuşların bile bir rehberi var.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Kite Road was not the last stop either… One more homecoming opens a route full of wings. Out there, even the birds have a guide.',
+        'A few small touches along the road.'],
+      de: ['Auch der Drachenweg war nicht die letzte Station … Wer noch einmal heimkehrt, findet eine Route voller Flügel. Dort haben sogar die Vögel einen Führer.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['El Camino de las Cometas tampoco era la última parada… Una vuelta más a casa abre una ruta llena de alas. Allí, hasta las aves tienen un guía.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La Route des cerfs-volants n’était pas non plus la dernière étape… Un retour de plus à la maison ouvre une route pleine d’ailes. Là-bas, même les oiseaux ont un guide.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.48', date: '2026-10-12', items: {
       tr: ['Yolda birkaç küçük rötuş.'],
       en: ['A few small touches along the road.'],

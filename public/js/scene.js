@@ -1283,10 +1283,44 @@
     ctx.fillStyle = col('#e2483d'); circle(ctx, x + 1 * k, y + 3.1 * k, 0.8 * k);
     birdWing(ctx, x + 0.5 * k, y - 0.4 * k, k, w, 12, col('#1a7fc4'), col('#145a8a'));
   }
+  // Hüdhüd (ibibik): somon turuncusu gövde, siyah-beyaz çizgili geniş kanatlar, uzun kıvrık gaga ve ucu siyah tepe
+  // tüyleri. fan: tepenin açıklığı (0 yatık, 1 yelpaze gibi açık; dokununca açılır)
+  function drawHoopoe(ctx, x, y, k, w, night, fan) {
+    const col = tint(night), f = fan === undefined ? 0.25 : fan;
+    const bars = wg => {
+      ctx.strokeStyle = col('#f6f1e6'); ctx.lineWidth = 1.3 * k;
+      for (const u of [0.3, 0.5, 0.7]) {
+        const px = lerp(wg.sx, wg.tx, u), py = lerp(wg.sy, wg.ty, u);
+        ctx.beginPath(); ctx.moveTo(px + 2.4 * k, py + 0.4 * k); ctx.lineTo(px - 2 * k, py + 2.6 * k); ctx.stroke();
+      }
+    };
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    bars(birdWing(ctx, x - 1 * k, y, k, w * 0.85, 15, col('#24242a'), null));
+    // kuyruk: siyah, ortasında beyaz bant
+    ctx.fillStyle = col('#24242a'); ctx.beginPath();
+    ctx.moveTo(x - 5.5 * k, y - 1.2 * k); ctx.lineTo(x - 14 * k, y - 1 * k); ctx.lineTo(x - 13.6 * k, y + 2 * k); ctx.lineTo(x - 5.5 * k, y + 1.4 * k); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = col('#f6f1e6'); ctx.lineWidth = 1.2 * k;
+    ctx.beginPath(); ctx.moveTo(x - 10.5 * k, y - 1 * k); ctx.lineTo(x - 10.2 * k, y + 1.8 * k); ctx.stroke();
+    ctx.fillStyle = col('#e7a271'); ellipse(ctx, x, y, 7.6 * k, 3.3 * k);
+    ctx.fillStyle = col('#f2c29a'); ellipse(ctx, x + 1 * k, y + 1.2 * k, 5.5 * k, 1.8 * k);
+    // tepe tüyleri: başın üstünden geriye; açılınca yelpaze gibi kalkar
+    for (let i = 0; i < 5; i++) {
+      const a = lerp(-2.95 + i * 0.1, -2.75 + i * 0.42, f), L = (5.4 - Math.abs(i - 2) * 0.5) * k;
+      const bx = x + 7 * k, by = y - 3.4 * k, ex = bx + Math.cos(a) * L, ey = by + Math.sin(a) * L;
+      ctx.strokeStyle = col('#e39a5f'); ctx.lineWidth = 1.7 * k;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.fillStyle = col('#24242a'); circle(ctx, ex, ey, 0.9 * k);
+    }
+    ctx.fillStyle = col('#e7a271'); circle(ctx, x + 7.4 * k, y - 1.6 * k, 2.7 * k);
+    ctx.fillStyle = col('#1d1716'); circle(ctx, x + 8.3 * k, y - 2.1 * k, 0.6 * k);
+    ctx.strokeStyle = col('#2a2420'); ctx.lineWidth = 0.9 * k;
+    ctx.beginPath(); ctx.moveTo(x + 9.8 * k, y - 1.4 * k); ctx.quadraticCurveTo(x + 13.5 * k, y - 1.3 * k, x + 16 * k, y + 0.9 * k); ctx.stroke();
+    bars(birdWing(ctx, x + 0.5 * k, y - 0.5 * k, k, w, 16, col('#2a2a30'), null));
+  }
   const BIRD_ART = {
     stork: (c, x, y, k, w, n) => drawLongBird(c, x, y, k, w, n, LONG_BIRD.stork),
     flamingo: (c, x, y, k, w, n) => drawLongBird(c, x, y, k, w, n, LONG_BIRD.flamingo),
-    beeeater: drawBeeEater, woodpecker: drawWoodpecker, eagle: drawEagle, owl: drawOwl, kingfisher: drawKingfisher,
+    beeeater: drawBeeEater, woodpecker: drawWoodpecker, eagle: drawEagle, owl: drawOwl, kingfisher: drawKingfisher, hoopoe: drawHoopoe,
   };
   // Uçuş biçimleri: dir 1 soldan sağa (yolcuyla aynı yöne), −1 sağdan sola; dur: ekranı geçme süresi (sn), y: gökyüzünde
   // yükseklik (ekranın oranı), n: sürü [en az, en çok], s: boy, fl: kanat çırpma hızı (rad/sn), amp: çırpış genliği,
@@ -1300,11 +1334,14 @@
     eagle:      { dir: -1, dur: 21, y: [0.24, 0.33], n: [1, 1], s: 1.55, fl: 5,   amp: 0.8, glide: 0.75, gw: 0.62 },
     owl:        { dir: -1, dur: 15, y: [0.32, 0.42], n: [1, 1], s: 1.65, fl: 6.5, amp: 1.1 },
     kingfisher: { dir: -1, dur: 10, y: [0.38, 0.46], n: [1, 1], s: 1.8,  fl: 34,  amp: 0.6 },
+    // Hüdhüd: yolcuyla aynı yöne, çırpıp süzülerek, kelebek gibi dalgalanarak uçar
+    hoopoe:     { dir: 1,  dur: 16, y: [0.3, 0.4],   n: [1, 1], s: 1.75, fl: 16,  amp: 1,   bound: 1.6 },
   };
   const BIRD_SPARK = {
     stork: ['#ffffff', '#f3f2ee', '#e2483d', '#ffd56b'], beeeater: ['#36b6c4', '#f7d33c', '#a0532c', '#ffffff'],
     woodpecker: ['#ffffff', '#d6343a', '#26262c', '#ffd56b'], flamingo: ['#f7aec2', '#ef6f8e', '#ffffff', '#ffd56b'],
     eagle: ['#c99a4b', '#f2c14e', '#ffffff', '#7a5428'], owl: ['#ffffff', '#e9f3ff', '#f5c518', '#cfe0ff'], kingfisher: ['#1f9be0', '#f08a3c', '#6fdcf7', '#ffffff'],
+    hoopoe: ['#ffd56b', '#e7a271', '#fff1c2', '#ffffff'],
   };
   const KITE_COLS = [['#ff6b6b', '#ffd56b'], ['#4dabf7', '#fbf8ee'], ['#9775fa', '#6fd3c1'], ['#f2a03d', '#2f9e8f'], ['#e8638e', '#fff1c2']];
   // Uçurtma (Uçurtma Yolu): iki renkli baklava gövde, çapraz çıtalar, rüzgârda dalgalanan fiyonklu kuyruk.
@@ -3650,12 +3687,13 @@
         ctx.save(); ctx.globalAlpha = a;
         const lead = this.birdPos(b, 0);
         ctx.globalCompositeOperation = 'lighter';
-        glow(ctx, lead.x, lead.y, 60 * lead.k, hex(night > 0.5 ? '#cfe0ff' : '#fff8e0'), (b.noted ? 0.4 : 0.1 + 0.12 * night) + 0.05 * Math.sin(b.t * 3));
+        const rare = b.id === 'hoopoe';
+        glow(ctx, lead.x, lead.y, (rare ? 80 : 60) * lead.k, hex(rare ? '#ffd56b' : night > 0.5 ? '#cfe0ff' : '#fff8e0'), (b.noted ? 0.4 : (rare ? 0.22 : 0.1) + 0.12 * night) + 0.05 * Math.sin(b.t * 3));
         ctx.globalCompositeOperation = 'source-over';
         for (let i = b.n - 1; i >= 0; i--) {
           const p = this.birdPos(b, i);
           ctx.save(); ctx.translate(p.x, p.y); if (p.dir < 0) ctx.scale(-1, 1);
-          BIRD_ART[b.id](ctx, 0, 0, p.k, p.w, night);
+          BIRD_ART[b.id](ctx, 0, 0, p.k, p.w, night, b.noted ? Math.min(1, b.noted * 3) : 0.25 + 0.15 * Math.sin(b.t * 2));
           ctx.restore();
         }
         ctx.restore();
@@ -3906,7 +3944,7 @@
   // Kuş Defteri simgesi: kanatları açık kuş; bulunmamışsa yalnızca soluk silueti (kartın yazı rengiyle, temaya uyar).
   // [boy (yüksekliğe göre), x, y]: her kuş kendi biçimine göre kutuya sığdırılır
   const BIRD_ICON = { stork: [1.05, 0.47, 0.64], flamingo: [1.05, 0.47, 0.64], beeeater: [1.8, 0.55, 0.66], woodpecker: [1.9, 0.49, 0.7],
-    eagle: [0.92, 0.5, 0.86], owl: [1.75, 0.5, 0.74], kingfisher: [2.15, 0.42, 0.65] };
+    eagle: [0.92, 0.5, 0.86], owl: [1.75, 0.5, 0.74], kingfisher: [2.15, 0.42, 0.65], hoopoe: [1.9, 0.47, 0.74] };
   function drawBirdIcon(canvas, id, locked) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = canvas.clientWidth || 64, h = canvas.clientHeight || 44;
@@ -3917,7 +3955,7 @@
     const ic = BIRD_ICON[id];
     if (!ic) return;
     const k = Math.min(ic[0] * h / 44, ic[0] * w / 64);
-    BIRD_ART[id](ctx, w * ic[1], h * ic[2], k, 0.75, 0);
+    BIRD_ART[id](ctx, w * ic[1], h * ic[2], k, 0.75, 0, 1);
     if (locked) {
       ctx.globalCompositeOperation = 'source-in';
       ctx.globalAlpha = 0.42; ctx.fillStyle = getComputedStyle(canvas).color; ctx.fillRect(0, 0, w, h);

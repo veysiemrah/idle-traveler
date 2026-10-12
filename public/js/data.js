@@ -172,6 +172,8 @@
     { id: 'crane', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
     // 11. yolculuk: rüzgârlı ovalar ve kıyılar; ipi kopmuş uçurtmalar süzülür (yalnızca bu rotada), yakalanan uçurtma yolcuya bağlanır
     { id: 'kite', perk: 'kites', biomes: ['meadow', 'tulip', 'wheat', 'coast', 'lavender', 'olive', 'cappadocia', 'tea', 'sakura', 'autumn', 'pine', 'canyon', 'desert', 'snow', 'aurora'] },
+    // 12. yolculuk: kuşlar iki kat sık geçer; yalnızca bu rotada kuşlara yol gösteren Hüdhüd (ibibik) görünür
+    { id: 'migrate', perk: 'birds', biomes: ['meadow', 'wheat', 'lavender', 'coast', 'pine', 'olive', 'tea', 'tulip', 'autumn', 'sakura', 'snow', 'canyon', 'cappadocia', 'desert', 'aurora'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
@@ -356,8 +358,11 @@
     { id: 'owl',        biomes: ['snow', 'aurora'] },
     { id: 'kingfisher', biomes: ['tea'] },
   ];
-  BIRDS.forEach(b => Object.defineProperties(b, { name: { get: () => T(`bird.${b.id}`) }, hint: { get: () => T(`bird.${b.id}.hint`) } }));
-  const BIRD = Object.fromEntries(BIRDS.map(b => [b.id, b]));
+  // Nadir kuşlar: bölgeye bağlı değil, Kuş Defteri'ne gizli bir sayfa olarak eklenir (kıyafet için gerekmez).
+  // Hüdhüd yalnızca Göç Yolu'nda görünür (Mantıku't-Tayr'da kuşları Anka'ya götüren rehber kuş).
+  const RARE_BIRDS = [{ id: 'hoopoe', biomes: [] }];
+  for (const b of [...BIRDS, ...RARE_BIRDS]) Object.defineProperties(b, { name: { get: () => T(`bird.${b.id}`) }, hint: { get: () => T(`bird.${b.id}.hint`) } });
+  const BIRD = Object.fromEntries([...BIRDS, ...RARE_BIRDS].map(b => [b.id, b]));
   const BIRD_OF = Object.fromEntries(BIRDS.flatMap(b => b.biomes.map(m => [m, b])));
   const birdCount = s => BIRDS.filter(b => s.birds && s.birds[b.id] > 0).length;
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
@@ -553,7 +558,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, RARE_BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);
