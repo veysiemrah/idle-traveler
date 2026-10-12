@@ -312,6 +312,8 @@
     { id: 'timeless', need: 0, letters: 12, jacket: '#2f7d8f', jacketDark: '#236272', hat: '#f3e3b6', hatDark: '#d4c08e', pack: '#c86f8f' },
     // gökyüzü haritası dolunca (bütün takımyıldızlar) açılır
     { id: 'stargazer', need: 0, consts: 8, jacket: '#2b3a6b', jacketDark: '#1f2b52', hat: '#cfe0ff', hatDark: '#a9bde6', pack: '#e8b93c' },
+    // kıyı denizindeki yunus sürülerine yedi kez selam verince açılır (beyaz denizci şapkası, kırmızı can simidi rengi çanta)
+    { id: 'sailor', need: 0, dolphins: 7, jacket: '#1d5f8a', jacketDark: '#154766', hat: '#f4f7fa', hatDark: '#cfd8e2', pack: '#e2483d' },
   ];
 
   /* ---------- Takımyıldızlar: gece gökyüzünde birleştirilen parlak yıldızlar ----------

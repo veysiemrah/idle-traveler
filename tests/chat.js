@@ -36,7 +36,8 @@ const BASE = 'http://127.0.0.1:8787';
   await N.tap('#btnChat'); await N.waitForTimeout(400); await N.screenshot({ path: process.env.SP + '/chat_pop320.png' });
   // sahneye dokununca kapanır, adım atılmaz
   const d0 = await N.evaluate(() => IT && JSON.parse(localStorage.getItem('idle-traveler-save-v1')).clicks);
-  await N.tap('#scene', { position: { x: 8, y: 250 } }); await N.waitForTimeout(200);
+  // seçiciden uzak bir yere (gökyüzü) dokunulur: kenarına çok yakın dokunuşu Chrome dokunma düzeltmesiyle en yakın mesaja kaydırır
+  await N.tap('#scene', { position: { x: 8, y: 40 } }); await N.waitForTimeout(200);
   console.log('dokununca kapandı:', await N.isHidden('#chatPop'));
   console.log(errs.join('\n') || 'no errors'); await b.close();
 })();

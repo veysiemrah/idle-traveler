@@ -721,6 +721,26 @@
   // Kızıl: kızıl tilki; Karabaş gibi yanında koşar, araçlarda camdan bakar. Gür kuyruğunun ucu beyaz, ayakları kara çoraplı.
   // tier: 1 tasma, 2 boyunluk, 3 sırtta minik fener, 4 altın süsler ve parıltı. look: başını geriye çevirme (0–1, yabani tilki)
   const FOX = { fur: '#df7a34', shade: '#b65b24', cream: '#fbf1e2', sock: '#3a2a24' };
+  // Yunus: sağa bakan, burnu x = +11, kuyruğu x = -14 birimde; s ölçeğinde, ang açısıyla çizilir
+  function drawDolphin(ctx, x, y, s, ang, back, belly, a) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(s, s); ctx.globalAlpha *= a;
+    ctx.fillStyle = back;
+    ctx.beginPath(); // sırt yüzgeci
+    ctx.moveTo(0.8, -3.5); ctx.quadraticCurveTo(-0.4, -6.2, -3.6, -6.5); ctx.quadraticCurveTo(-2.3, -4.9, -3.2, -3.1); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); // kuyruk yüzgeci
+    ctx.moveTo(-9.6, 0); ctx.quadraticCurveTo(-12.2, -3.2, -14.4, -3); ctx.quadraticCurveTo(-12.6, -0.2, -14.4, 2.8); ctx.quadraticCurveTo(-12, 3, -9.6, 0); ctx.fill();
+    ctx.beginPath(); // gövde: gaga, alın çıkıntısı, sırt, kuyruk sapı, karın
+    ctx.moveTo(11, 0.7); ctx.quadraticCurveTo(8.6, -0.5, 6.4, -1.4); ctx.quadraticCurveTo(3.4, -4.3, -2, -3.5);
+    ctx.quadraticCurveTo(-7, -2.5, -10.4, -0.4); ctx.lineTo(-10.4, 0.5); ctx.quadraticCurveTo(-6.4, 1.8, -1.6, 2.8);
+    ctx.quadraticCurveTo(4.6, 3.1, 8.4, 1.5); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); // yan yüzgeç
+    ctx.moveTo(3.2, 1.6); ctx.quadraticCurveTo(1.6, 4.6, -0.6, 5); ctx.quadraticCurveTo(0.6, 2.8, 0.4, 1.9); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = belly; ctx.beginPath(); // açık renk karın
+    ctx.moveTo(10.2, 1); ctx.quadraticCurveTo(5, 1.3, 0.5, 1.4); ctx.quadraticCurveTo(-4, 1.5, -7, 1.3); ctx.quadraticCurveTo(-2, 2.9, 3, 2.8); ctx.quadraticCurveTo(7, 2.4, 10.2, 1); ctx.fill();
+    ctx.fillStyle = '#1d2733'; circle(ctx, 5.6, -0.5, 0.5); // göz
+    ctx.restore();
+  }
+
   function drawFox(ctx, x, y, k, ph, t, tier, look) {
     const bob = Math.abs(Math.sin(ph)) * 1.5 * k, T = tier || 0;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -1065,10 +1085,13 @@
     wheel(ctx, x + 28 * k, y - 11 * k, 11 * k, st.wheel, k, '#22262f', vrim);
     if (T >= 4) { // tavan kenarında ışık zinciri
       const cols = ['#ffd56b', '#ff8fb1', '#6fd3c1', '#b9a2f0'];
+      // diğer gezginlerde saydamlık üstten gelir: ışıklar onunla çarpılır
+      const a0 = ctx.globalAlpha;
       for (let i = 0; i < 10; i++) {
         const lx = x - 42 * k + i * 8.4 * k, a = 0.55 + 0.45 * Math.sin(st.t * 3 + i);
-        ctx.fillStyle = cols[i % 4]; ctx.globalAlpha = a; circle(ctx, lx, by - 53 * k + Math.sin(i * 1.3) * 0.8 * k, 1.5 * k); ctx.globalAlpha = 1;
+        ctx.fillStyle = cols[i % 4]; ctx.globalAlpha = a0 * a; circle(ctx, lx, by - 53 * k + Math.sin(i * 1.3) * 0.8 * k, 1.5 * k);
       }
+      ctx.globalAlpha = a0;
       sparkles(ctx, x, by - 30 * k, k, st.t, 6, 100 * k, 50 * k);
     }
   }
@@ -1175,6 +1198,7 @@
     const rear = x + (train ? 10 : (VEH_EXT[id] || [-30, 30])[0]) * k;
     const cy = train ? y - (VEH_TOP.train + 6) * k : y - (VEH_TOP[id] || 60) * 0.42 * k, L = (train ? 170 : 130) * k, t = st.t || 0;
     ctx.save();
+    const a0 = ctx.globalAlpha; // diğer gezginlerde solma saydamlığı
     if (T >= 6) {
       // gökkuşağı kuyruğu: altı ince bant, uca doğru dalgalanıp solar
       ctx.lineCap = 'round'; ctx.lineWidth = 2.6 * k;
@@ -1186,9 +1210,9 @@
         }
         const g = ctx.createLinearGradient(rear, 0, rear - L, 0);
         g.addColorStop(0, c); g.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.strokeStyle = g; ctx.globalAlpha = 0.7; ctx.stroke();
+        ctx.strokeStyle = g; ctx.globalAlpha = a0 * 0.7; ctx.stroke();
       });
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = a0;
     }
     // yıldız tozu: kıyafet renklerinde ve altın tonlarında küçük parıltılar geriye akar
     const cols = [P.hat, P.jacket, GOLD_HI, '#ffffff'];
@@ -1196,7 +1220,7 @@
       const u = ((i / 9) + t * 0.45) % 1, a = (1 - u) * (0.55 + 0.45 * Math.sin(t * 5 + i));
       if (a <= 0.05) continue;
       const px = rear - u * L, py = cy + (hash(i * 5.7) - 0.5) * 16 * k + Math.sin(u * 6 + i) * 3 * k, r = (1.2 + 2.6 * (1 - u)) * k;
-      ctx.globalAlpha = a; ctx.fillStyle = cols[i % cols.length];
+      ctx.globalAlpha = a0 * a; ctx.fillStyle = cols[i % cols.length];
       ctx.beginPath(); ctx.moveTo(px, py - r); ctx.quadraticCurveTo(px, py, px + r, py); ctx.quadraticCurveTo(px, py, px, py + r);
       ctx.quadraticCurveTo(px, py, px - r, py); ctx.quadraticCurveTo(px, py, px, py - r); ctx.fill();
     }
@@ -1370,6 +1394,9 @@
       // Uçurtma (Uçurtma Yolu): ipi kopmuş süzülür (free); dokununca yolcuya bağlanır (tied, game.js kiteOn verir);
       // etki bitince ipi bırakır ve uzaklaşarak solar (gone)
       this.kite = null; this.kiteOn = false;
+      // Yunus sürüsü: denizli bölgelerde uzak denizden sıçrayarak yolcuyla aynı yöne yüzer (game.js sayar).
+      // seaLine: deniz yüzeyinin y'si (her karede uzak katman çizilirken güncellenir)
+      this.dolphins = null; this.seaLine = 0;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1386,14 +1413,17 @@
       this.fill(true);
     }
 
+    // Boyut değişmediyse tuvale dokunmaz (width/height atamak resmi siler, bir kare boş görünürdü); değiştiyse true döner
     resize() {
-      const r = this.canvas.getBoundingClientRect();
-      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.RW = Math.max(1, r.width); this.RH = Math.max(1, r.height);
-      this.canvas.width = Math.round(this.RW * this.dpr); this.canvas.height = Math.round(this.RH * this.dpr);
+      const r = this.canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const RW = Math.max(1, r.width), RH = Math.max(1, r.height), pw = Math.round(RW * dpr), ph = Math.round(RH * dpr);
+      if (RW === this.RW && RH === this.RH && dpr === this.dpr && this.canvas.width === pw && this.canvas.height === ph) return false;
+      this.dpr = dpr; this.RW = RW; this.RH = RH;
+      this.canvas.width = pw; this.canvas.height = ph;
       // ölçek gerçek boyuttan gelir: sanal ekranda aynı kalır, ekranda zoom katı büyür
       this.k = clamp(Math.min(this.RH / 640, this.RW / 560), 0.55, 1.35);
       this.applyZoom();
+      return true;
     }
     applyZoom() {
       const z = this.zoom;
@@ -1647,6 +1677,49 @@
       if (Math.hypot(px - (p.x - 4 * k), py - (p.y - 14 * k)) < 42 * k) {
         f.happy = 0.001;
         this.burst(p.x + 8 * k, p.y - 24 * k, 22, ['#ffb27a', '#ffd56b', '#ffffff', '#fbf1e2']);
+        return true;
+      }
+      return false;
+    }
+    // Yunuslar: 1–3 yunus soldan sağa yüzer, her biri arayla denizden sıçrayıp yeniden dalar (çıkışta ve dalışta su sıçrar).
+    // Dokununca sürü sırayla yüksek bir taklayla sıçrar; selam bir kez sayılır.
+    spawnDolphins() {
+      const r = Math.random(), n = r < 0.25 ? 1 : r < 0.65 ? 2 : 3;
+      this.dolphins = { t: 0, dur: 15, n, ph: Math.random() * 0.6, happy: 0, a: 0, air: [], drops: [], rings: [] };
+    }
+    dolScale() { return Math.max(this.k * 0.75, 0.62); }
+    dolSpeed() { const d = this.dolphins, s = this.dolScale(); return (this.W + 120 * s + (d.n - 1) * 34 * s) / d.dur; }
+    // sürünün başının x'i (yolcuyla aynı yöne, ekranı dur saniyede geçer)
+    dolHead() { return -60 * this.dolScale() + this.dolSpeed() * this.dolphins.t; }
+    // i. yunusun hâli: havadaysa yeri ve açısı (sudayken yalnızca x)
+    dolPose(i) {
+      const d = this.dolphins, s = this.dolScale(), sea = this.seaLine;
+      const x0 = this.dolHead() - i * 34 * s, vx = this.dolSpeed();
+      // selam: sırayla yüksek bir sıçrayış ve havada tam bir takla
+      const hu = d.happy ? (d.happy - i * 0.18) / 1.3 : -1;
+      if (hu >= 0 && hu <= 1) {
+        const h = 46 * s, fx = 22 * s;
+        return { air: true, x: x0 + hu * fx, y: sea - Math.sin(hu * Math.PI) * h, ang: Math.atan2(-Math.PI * h * Math.cos(hu * Math.PI) / 1.3, vx + fx / 1.3) + hu * TAU };
+      }
+      const P = 2.2, A = 1.05, tt = d.t - d.ph - i * 0.42;
+      const u = tt < 0 ? -1 : (tt % P) / A;
+      // taklanın hemen ardından kısa bir dalış: olağan sıçrayışlar yeniden başlamadan önce
+      if (u < 0 || u > 1 || (hu > 1 && hu < 1.25)) return { air: false, x: x0 };
+      const h = 26 * s, fx = 14 * s;
+      return { air: true, x: x0 + u * fx, y: sea - Math.sin(u * Math.PI) * h, ang: Math.atan2(-Math.PI * h * Math.cos(u * Math.PI) / A, vx + fx / A) };
+    }
+    dolSplash(x, big) {
+      const d = this.dolphins, s = this.dolScale(), sea = this.seaLine;
+      for (let j = 0, m = big ? 12 : 7; j < m; j++) d.drops.push({ x: x + rand(-4, 4) * s, y: sea, vx: rand(-34, 34) * s, vy: -rand(36, big ? 110 : 80) * s, life: 0, max: rand(0.5, 0.85), r: rand(0.7, 1.5) * s });
+      d.rings.push({ x, t: 0, w: big ? 1.4 : 1 });
+    }
+    hitDolphins(px, py) {
+      const d = this.dolphins;
+      if (!d || d.happy || d.t < 0.8 || !this.seaLine) return false;
+      const s = this.dolScale(), head = this.dolHead(), tail = head - (d.n - 1) * 34 * s;
+      if (head < 10 * s || tail > this.W - 10 * s) return false;
+      if (px > tail - 40 * s && px < head + 46 * s && py > this.seaLine - 80 * s && py < this.seaLine + 30 * s) {
+        d.happy = 0.001;
         return true;
       }
       return false;
@@ -1922,7 +1995,7 @@
       }
       for (const g of this.ghosts.values()) {
         const m = this.msgs.get(g.o.pub);
-        if (!m || g.alpha < 0.3) continue;
+        if (!m || g.alpha <= 0.01) continue;
         const p = this.ghostPos(g), kk = Math.max(k, 0.85) * this.tz();
         // isim etiketinin üstünde (etiket yukarı kalktıysa o da kalkar)
         this.drawBubble(ctx, p.x, p.top - 6 * k - 30 * kk - (g.lift || 0) - 8 * k, m, g.alpha);
@@ -2135,6 +2208,21 @@
           if (a.t > a.dur + 1.5) this.constel = null;
         }
       }
+      if (this.dolphins && this.seaLine) {
+        const d = this.dolphins, s = this.dolScale();
+        d.t += dt; d.a = Math.min(1, d.a + dt / 0.6);
+        if (d.happy) d.happy += dt;
+        for (let i = 0; i < d.n; i++) {
+          const p = this.dolPose(i);
+          if (p.air !== !!d.air[i] && p.x > -20 * s && p.x < this.W + 20 * s) this.dolSplash(p.x, d.happy > 0);
+          d.air[i] = p.air;
+        }
+        for (const q of d.drops) { q.life += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 190 * s * dt; }
+        d.drops = d.drops.filter(q => q.life < q.max && q.y <= this.seaLine + 2);
+        for (const g of d.rings) g.t += dt;
+        d.rings = d.rings.filter(g => g.t < 1.1);
+        if (d.t > d.dur + 0.4 && !d.drops.length) this.dolphins = null;
+      }
       if (this.fox) {
         const f = this.fox;
         f.t += dt; f.ph += dt * (f.out ? 16 : 9);
@@ -2271,7 +2359,6 @@
       }
 
       if (this.star) this.drawStar(ctx, this.star);
-      if (this.constel) this.drawConst(ctx, this.constel, clamp(starA / 0.55, 0, 1));
 
       // gökkuşağı (uzak dağların arkasında)
       const bowA = this.rainbow * (this.moonbow ? night : 1 - night) * (1 - space);
@@ -2341,9 +2428,13 @@
           ctx.fillRect(sx, sy, w, 1.4);
         }
       }
+      // yunuslar uzak denizde, orta tepelerin arkasında
+      this.seaLine = farBase + H * 0.03;
+      if (this.dolphins) this.drawDolphins(ctx, pal, night, space);
 
       // orta tepeler
-      const midBase = H * 0.712 + this.shift(0.5), midAmp = H * 0.075;
+      // kıyıda orta tepeler alçalır: deniz şeridi genişler (yunuslar orada sıçrar)
+      const midBase = H * (0.712 + 0.02 * pal.sea) + this.shift(0.5), midAmp = H * 0.075 * (1 - 0.4 * pal.sea);
       const offMid = this.scroll * this.layers.mid.par;
       const midY = wx => midBase - (0.3 + 0.7 * fbm(wx * 0.0034 + 40, 3)) * midAmp;
       const midCol = lit(pal.mid, 0.18);
@@ -2360,6 +2451,8 @@
 
       // yakın bulutlar (uçarken öne geçenler)
       for (const c of this.clouds) if (c.depth >= 0.65) this.drawCloud(ctx, c, cloudCol, space);
+      // dokunulacak takımyıldız bulutların önünde (kutusu dağların üstünde kalır, tepeler onu örtmez)
+      if (this.constel) this.drawConst(ctx, this.constel, clamp(starA / 0.55, 0, 1));
 
       // yakın tarla
       const nearBase = H * 0.752 + this.shift(0.58);
@@ -2808,6 +2901,40 @@
 
     // Yabani tilki: gece önce yalnızca gözleri görünür, gövdesi sonra yavaşça belirir; çalılara dalarken solar.
     // Arada başını çevirip yolcuya bakar.
+    drawDolphins(ctx, pal, night, space) {
+      const d = this.dolphins, s = this.dolScale(), sea = this.seaLine, a = d.a * clamp(pal.sea, 0, 1) * (1 - space);
+      if (a < 0.02) return;
+      // gece: ay ışığında gümüşi siluet, suyun değdiği yerler yeşilimsi mavi ışıldar (deniz ışıması)
+      const back = css(mixc(hex('#5b81a3'), hex('#5a7596'), night)), belly = css(mixc(hex('#e3edf4'), hex('#b8c9db'), night));
+      const glow = mixc(WHITE, hex('#7ff3e1'), night);
+      ctx.save();
+      // halkalar: suya değilen yerde yayılan ince elips
+      ctx.lineWidth = 1.1 * s;
+      for (const g of d.rings) {
+        const u = g.t / 1.1;
+        ctx.strokeStyle = css(glow, a * (1 - u) * (0.55 + 0.3 * night));
+        ctx.beginPath(); ctx.ellipse(g.x, sea + 1.5 * s, (5 + 16 * u) * s * g.w, (1 + 2.2 * u) * s, 0, 0, TAU); ctx.stroke();
+      }
+      // gece suyun altında yüzen yunusun izi hafifçe ışıldar
+      if (night > 0.2) for (let i = 0; i < d.n; i++) {
+        const p = this.dolPose(i);
+        if (p.air || p.x < -30 * s || p.x > this.W + 30 * s) continue;
+        ctx.fillStyle = css(hex('#7ff3e1'), a * night * (0.16 + 0.08 * Math.sin(this.t * 6 + i)));
+        ellipse(ctx, p.x - 6 * s, sea + 2.4 * s, 13 * s, 1.6 * s, 0);
+      }
+      // gövdeler: su çizgisinin altı görünmez
+      ctx.beginPath(); ctx.rect(0, 0, this.W, sea); ctx.clip();
+      for (let i = 0; i < d.n; i++) {
+        const p = this.dolPose(i);
+        if (p.air) drawDolphin(ctx, p.x, p.y, s, p.ang, back, belly, a);
+      }
+      for (const q of d.drops) {
+        const f = 1 - q.life / q.max;
+        if (night > 0.2) { ctx.fillStyle = css(glow, a * f * 0.25 * night); circle(ctx, q.x, q.y, q.r * 2.6); }
+        ctx.fillStyle = css(glow, a * f * 0.9); circle(ctx, q.x, q.y, q.r);
+      }
+      ctx.restore();
+    }
     drawWildFox(ctx, night) {
       const f = this.fox, p = this.foxPos(), k = p.k;
       const lag = night > 0.4 ? 1.2 : 0;
@@ -3016,14 +3143,18 @@
       const off = this.scroll * 0.004 * (1 + space * 3), bw = 84 * k, bh = 52 * k;
       const all = IT.CONSTELLATIONS || [];
       ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 1 * k;
-      ctx.strokeStyle = `rgba(207,224,255,${(0.3 * starA).toFixed(3)})`;
-      ctx.fillStyle = `rgba(255,255,255,${(0.85 * starA).toFixed(3)})`;
+      const fade = this.mapFade || (this.mapFade = {});
       for (let j = 0; j < all.length; j++) {
         const c = all[j];
-        // tamamlanıp henüz solmayan takımyıldız haritaya ancak solduktan sonra işlenir (iki kez görünmesin)
-        if (!this.constFound.includes(c.id) || (this.constel && this.constel.c === c)) continue;
+        // tamamlanıp henüz solmayan takımyıldız haritaya ancak solduktan sonra işlenir (iki kez görünmesin), sonra yumuşakça belirir
+        if (this.constel && this.constel.c === c) { fade[c.id] = -1; continue; }
+        if (!this.constFound.includes(c.id)) continue;
+        if (fade[c.id] === -1) fade[c.id] = this.t;
+        const a = starA * (fade[c.id] ? clamp((this.t - fade[c.id]) / 1.5, 0, 1) : 1);
         const px = (((j + 0.5) / all.length * band - off) % band + band) % band - W * 0.5, py = H * (0.05 + 0.3 * hash(j * 3.7 + 1));
-        if (px < -bw - 20 || px > W + 20) continue;
+        if (px < -bw - 20 || px > W + 20 || a < 0.01) continue;
+        ctx.strokeStyle = `rgba(207,224,255,${(0.3 * a).toFixed(3)})`;
+        ctx.fillStyle = `rgba(255,255,255,${(0.85 * a).toFixed(3)})`;
         ctx.beginPath();
         for (const [i, m] of c.e) { ctx.moveTo(px + c.s[i][0] * bw, py + c.s[i][1] * bh); ctx.lineTo(px + c.s[m][0] * bw, py + c.s[m][1] * bh); }
         ctx.stroke();

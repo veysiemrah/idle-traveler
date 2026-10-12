@@ -367,6 +367,16 @@ IT.addLang('de', {
     "toast.kites": "<b>Du hast den Drachen gefangen: {name}</b> · {text} für {dur}",
     "float.kites": "Ein Drachen!",
     "j.kites": "Gefangene Drachen",
+    // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
+    "toast.dolphinSeen": "Weit draußen ist etwas aus dem Meer gesprungen … Schau zum Horizont!",
+    "toast.dolphin": "<b>Die Delfine haben deinen Gruß fröhlich erwidert!</b> · {n}. Gruß aus dem Meer",
+    "toast.dolphinsAll": "<b>Die Delfine kennen dich jetzt!</b> · Neues Outfit freigeschaltet: {name}",
+    "float.dolphin": "Delfine!",
+    "j.dolphins": "Delfingrüße",
+    "outfit.sailor": "Seefahrer",
+    "ui.outfitDolphins": "Delfine: {n}/{m}",
+    "ui.outfitSea": "Ein Gruß aus dem Meer …",
+    "toast.otherTab": "<b>Das Spiel ist auch in einem anderen Tab geöffnet.</b> · Dein Fortschritt wird dort gespeichert; kehrst du zu diesem Tab zurück, lädt er deinen letzten Stand.",
     // Yeni araçlar (v1.36)
     "veh.comet.name": "Komet", "veh.comet.up": "Eiskern", "veh.comet.by": "mit dem Kometen",
     "veh.comet.tagline": "Spring auf einen Kometen und zieh eine Spur aus Licht hinter dir her.",

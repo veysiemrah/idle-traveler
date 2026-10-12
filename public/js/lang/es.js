@@ -351,6 +351,16 @@ IT.addLang('es', {
     "toast.kites": "<b>Has atrapado la cometa: {name}</b> · {text} durante {dur}",
     "float.kites": "¡Una cometa!",
     "j.kites": "Cometas atrapadas",
+    // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
+    "toast.dolphinSeen": "A lo lejos, algo ha saltado en el mar… ¡Mira al horizonte!",
+    "toast.dolphin": "<b>¡Los delfines te devolvieron el saludo con alegría!</b> · Saludo n.º {n} del mar",
+    "toast.dolphinsAll": "<b>¡Los delfines ya te conocen!</b> · Nuevo atuendo desbloqueado: {name}",
+    "float.dolphin": "¡Delfines!",
+    "j.dolphins": "Saludos de delfines",
+    "outfit.sailor": "Marinero",
+    "ui.outfitDolphins": "Delfines: {n}/{m}",
+    "ui.outfitSea": "Un saludo del mar…",
+    "toast.otherTab": "<b>El juego también está abierto en otra pestaña.</b> · Tu progreso se guarda allí; al volver a esta pestaña, se actualizará donde lo dejaste.",
     // Yeni araçlar (v1.36)
     "veh.comet.name": "Cometa", "veh.comet.up": "Núcleo de Hielo", "veh.comet.by": "en cometa",
     "veh.comet.tagline": "Súbete a lomos de un cometa y deja una estela de luz tras de ti.",
