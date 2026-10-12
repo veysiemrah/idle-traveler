@@ -825,6 +825,8 @@
   function cleanNotes(n) {
     const z = { day: '', list: [], prog: [], done: [], seen: false };
     if (!isObj(n) || typeof n.day !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(n.day) || !Array.isArray(n.list)) return z;
+    // ileri saatle kaydedilmiş notlar (yarından sonrası) o güne kadar kilitli kalmasın: yeniden kurulur
+    if (n.day > dayKey(Date.now() + 864e5)) return z;
     const list = n.list.filter(x => isObj(x) && NOTE[x.id] && isFinite(+x.need) && +x.need > 0).slice(0, 3).map(x => ({ id: x.id, need: +x.need }));
     if (list.length !== 3) return z;
     return { day: n.day, list, prog: list.map((_, i) => Math.max(0, +((n.prog || [])[i]) || 0)), done: list.map((_, i) => !!(n.done || [])[i]), seen: !!n.seen };
@@ -972,10 +974,12 @@
       if (!spend(q.cost)) return;
       S.levels[id] = lvl + q.n; note('upgrade', q.n);
       S.bestLevel = Math.max(S.bestLevel, S.levels[id]);
-      const crossed = Econ.doublings.filter(t => t > lvl && t <= lvl + q.n).length;
+      const hit = Econ.doublings.filter(t => t > lvl && t <= lvl + q.n), crossed = hit.length;
+      const m = hit.reduce((a, t) => a * Econ.boostOf(t), 1);
       const looked = Econ.lookTier(lvl + q.n) > Econ.lookTier(lvl);
-      const vars = { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed };
-      if (crossed) toast(t(looked ? 'toast.doubledLook' : crossed > 1 ? 'toast.doubledN' : 'toast.doubled', vars), looked ? 'gold' : 'teal');
+      const vars = { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed, m: fmtNum(m) };
+      // tek eşikte ×2 "ikiye katlandı"; daha büyük katlar (×3–×5) ya da birden çok eşik birden: toplam kat
+      if (crossed) toast(t(looked ? 'toast.doubledLook' : m > 2 ? 'toast.doubledN' : 'toast.doubled', vars), looked ? 'gold' : 'teal');
       else if (looked) toast(t('toast.look', vars), 'gold');
       // Araç yeni bir görünüm kazandı: sahnedeyse parıltıyla göster
       if (looked && S.active === id) { scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 30, ['#ffd56b', '#fff1c2', '#ffffff', '#6fd3c1']); Sound.region(); }
@@ -1024,6 +1028,8 @@
       el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
       Sound.chat();
     },
+    // Albümdeki kartpostal büyük açılır
+    albumPeek(id) { Sound.unlock(); Sound.chat(); showAlbumPhoto(+id); },
     // Defterdeki kuşa dokununca kendi sesiyle öter ve kartında hafifçe kanat çırpar
     birdPeek(id, el) {
       if (!IT.BIRD[id] || !S.birds[id]) return;
@@ -1114,7 +1120,7 @@
       }
       // kayıt korunurken (okunamadı ya da oyun başka sekmede sürüyor) sıfırlama korunan kaydı silmesin
       if (saveLocked) { toast(t(otherTab ? 'toast.otherTab' : 'toast.saveLocked'), 'teal'); Sound.deny(); return; }
-      try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); } catch (e) { /* yok say */ }
+      try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); localStorage.removeItem(ALBUM_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro', 'player', 'seenVer']);
       applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
@@ -1257,11 +1263,42 @@
 
   /* ---------- Kartpostal ---------- */
   // Sahnenin arayüzsüz görüntüsünden kenarlıklı, yazılı, pullu bir kartpostal üretir
+  /* ---------- Kartpostal Albümü ----------
+     Çekilen son ALBUM_MAX kartpostalın küçük bir kopyası (JPEG, 360 px) ayrı bir anahtarda saklanır (ana kaydı şişirmesin).
+     Yer kalmazsa en eskiler silinir; depolama kapalıysa albüm yalnızca boş görünür. Yolculuğu sıfırlamak albümü de siler. */
+  const ALBUM_KEY = 'idle-traveler-album', ALBUM_MAX = 12;
+  function albumRead() {
+    try { const a = JSON.parse(localStorage.getItem(ALBUM_KEY) || '[]'); return Array.isArray(a) ? a.filter(p => p && typeof p.img === 'string' && p.img.startsWith('data:image/')).slice(0, ALBUM_MAX) : []; } catch (e) { return []; }
+  }
+  function albumAdd(card, region, dist) {
+    try {
+      const r = card.photo || { x: 0, y: 0, w: card.width, h: card.height };
+      const w = 360, h = Math.round(r.h * w / r.w), c = document.createElement('canvas');
+      c.width = w; c.height = h; c.getContext('2d').drawImage(card, r.x, r.y, r.w, r.h, 0, 0, w, h);
+      const list = [{ img: c.toDataURL('image/jpeg', 0.74), at: Date.now(), region, dist }, ...albumRead()].slice(0, ALBUM_MAX);
+      while (list.length) {
+        try { localStorage.setItem(ALBUM_KEY, JSON.stringify(list)); return true; } catch (e) { list.pop(); }
+      }
+    } catch (e) { /* tuval ya da depolama kullanılamıyor: albüm boş kalır */ }
+    return false;
+  }
+  function showAlbumPhoto(i) {
+    const p = albumRead()[i];
+    if (!p) return;
+    const when = new Intl.DateTimeFormat(IT.locale(), { day: 'numeric', month: 'long', year: 'numeric' }).format(p.at);
+    openModal(() => ({ btn: t('pc.close'), html: `
+      <p class="eyebrow">${t('album.eyebrow', { n: i + 1, m: albumRead().length })}</p>
+      <h2>${esc(p.region || '')}</h2>
+      <figure class="postcard album-big"><img src="${p.img}" alt="${esc(p.region || '')}">
+        <figcaption><b>${esc(p.region || '')}</b><small>${esc(when)}${p.dist ? ` · ${esc(p.dist)}` : ''}</small></figcaption></figure>
+      <div class="pc-actions"><a class="buy pc-btn" href="${p.img}" download="idle-traveler-${p.at}.jpg"><b>${t('pc.download')}</b></a></div>` }), null, null, true);
+  }
   function makePostcard() {
     const src = scene.canvas, W = src.width, H = src.height;
     const pad = Math.round(Math.min(W, H) * 0.045), capH = Math.round(Math.max(H * 0.17, pad * 3.2));
     const c = document.createElement('canvas');
     c.width = W + pad * 2; c.height = H + pad * 2 + capH;
+    c.photo = { x: pad, y: pad, w: W, h: H }; // albüm yalnızca fotoğrafı saklar
     const x = c.getContext('2d');
     x.fillStyle = '#fbf5e9'; x.fillRect(0, 0, c.width, c.height);
     x.drawImage(src, pad, pad);
@@ -1298,6 +1335,7 @@
     // Paylaşım metni fotoğrafın çekildiği anı anlatsın
     const dist = S.distance, region = IT.regionAt(S.regionIdx).name;
     S.photos++; note('photo'); checkBadges(); save();
+    const inAlbum = albumAdd(c, region, fmtDist(dist)); uiDirty.journal = true;
     openModal(() => ({ btn: t('pc.close'), html: `
       <p class="eyebrow">${t('pc.eyebrow')}</p>
       <h2>${t('pc.title')}</h2>
@@ -1305,7 +1343,8 @@
       <div class="pc-actions">
         <a class="buy pc-btn" href="${url}" download="${name}"><b>${t('pc.download')}</b></a>
         ${navigator.canShare ? `<button class="buy pc-btn" id="pcShare" type="button"><b>${t('pc.share')}</b></button>` : ''}
-      </div>` }), null, () => {
+      </div>
+      ${inAlbum ? `<p class="tag small pc-saved">${t('pc.saved')}</p>` : ''}` }), null, () => {
       const sh = $('#pcShare');
       if (sh) sh.onclick = () => c.toBlob(blob => {
         const file = new File([blob], name, { type: 'image/png' });
@@ -1615,7 +1654,7 @@
           <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
           <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span>${v.auto
-            ? `<span>${t('ui.autoTaps')} <b>${t('ui.autoRate', { n: fmtNum(Econ.autoRate(lvl)) })}</b></span>` : ''}</p>
+            ? `<span>${t('ui.autoTaps')} <b>${t('ui.autoRate', { n: new Intl.NumberFormat(IT.locale(), { maximumFractionDigits: 2 }).format(Econ.autoRate(lvl)) })}</b></span>` : ''}</p>
         </div>
         ${owned
           ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}${v.auto && Econ.autoRate(lvl) < 12 ? ` · ${t('ui.autoStep')}` : ''}</small></div>${upgradeBtn(v)}</div>`
@@ -1637,7 +1676,7 @@
     // görünüm değiştiren eşiklerde merak uyandıran ipucu (ikiye katlanmadan önce gelen görünüm ayrıca yazılır)
     if (look && (!next || look < next)) return t('ui.nextLook', { p, t: look });
     if (!next) return t('ui.perLevel', { p });
-    return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p, t: next });
+    return t(Econ.looks.includes(next) ? 'ui.doublingLook' : 'ui.doubling', { p, t: next, x: Econ.boostOf(next) });
   }
 
   // Kızıl'ın kilitli kartındaki pati izi
@@ -1898,7 +1937,7 @@
         <b>${k ? esc(b.name) : '???'}</b>${k ? `<em>${esc(tier.name)}</em>` : ''}
         <span class="pips" aria-hidden="true">${pips}</span><small>${esc(next)}</small></li>`;
     }).join('');
-    const N = S.notes, nDone = N.done.filter(Boolean).length;
+    const N = S.notes, nDone = N.done.filter(Boolean).length, album = albumRead();
     const notes = N.list.length ? `
       <h3 class="sec">${t('note.title')} <small>${t('note.sub', { n: nDone, m: N.list.length })}</small></h3>
       <ul class="notes">${N.list.map((n, i) => `<li class="note${N.done[i] ? ' done' : ''}">
@@ -1927,6 +1966,10 @@
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
+      ${album.length ? `<h3 class="sec">${t('j.album')} <small>${t('j.albumSub', { n: album.length, m: ALBUM_MAX })}</small></h3>
+      <ul class="album">${album.map((p, i) => `<li><button class="album-pc" type="button" data-act="albumPeek" data-id="${i}" style="--r:${(i % 3) - 1}deg" title="${esc(p.region || '')}">
+        <img src="${p.img}" alt="${esc(p.region || '')}" loading="lazy"><small>${esc(new Intl.DateTimeFormat(IT.locale(), { day: 'numeric', month: 'short' }).format(p.at))}</small></button></li>`).join('')}</ul>
+      <p class="tag small">${t('j.albumHint', { m: ALBUM_MAX })}</p>` : ''}
       <h3 class="sec">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>

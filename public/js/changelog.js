@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.50';
+  IT.VERSION = '1.51';
 
   IT.CHANGELOG = [
+    { v: '1.51', date: '2026-10-13', items: {
+      tr: ['Kartpostal Albümü: fotoğraf makinesiyle çektiğin son 12 kartpostal artık Yol Defteri’nde saklanıyor. Dokunup büyütebilir, yeniden indirebilirsin.',
+        'Garajdaki eski dostların henüz son sözlerini söylemedi: yükseltmeye devam edenleri Sv. 200’ün ötesinde sürprizler bekliyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Postcard Album: the last 12 postcards you take with the camera are now kept in your Journal. Tap one to enlarge it or download it again.',
+        'Your old friends in the garage have not had their last word yet: surprises await beyond Lv. 200 for those who keep upgrading.',
+        'A few small touches along the road.'],
+      de: ['Postkartenalbum: Die letzten 12 Postkarten, die du mit der Kamera machst, werden jetzt in deinem Tagebuch aufbewahrt. Tippe eine an, um sie zu vergrößern oder erneut herunterzuladen.',
+        'Deine alten Freunde in der Garage haben noch nicht ihr letztes Wort gesprochen: Wer weiter verbessert, findet jenseits von Stufe 200 Überraschungen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Álbum de postales: las últimas 12 postales que hagas con la cámara se guardan ahora en tu Diario. Toca una para ampliarla o descargarla de nuevo.',
+        'Tus viejos amigos del garaje aún no han dicho su última palabra: quien siga mejorándolos encontrará sorpresas más allá del Nv. 200.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Album de cartes postales : les 12 dernières cartes postales prises avec l’appareil photo sont désormais gardées dans ton Carnet. Touche-en une pour l’agrandir ou la télécharger à nouveau.',
+        'Tes vieux amis du garage n’ont pas dit leur dernier mot : au-delà du Niv. 200, des surprises attendent ceux qui continuent à les améliorer.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.50', date: '2026-10-13', items: {
       tr: ['Anka Kuşu’nun ötesinde, garajın en dip köşesinde tıkırdayan bir şey var… Ona sahip olanlar yolda yalnız yürümez: saat onların yerine de adım atar.',
         'Yolda birkaç küçük rötuş.'],

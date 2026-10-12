@@ -385,12 +385,14 @@
   // Sahnenin kayma hızı mesafe ölçeğinden bağımsız: eski görsel tempo korunur
   const SPEED_VIS = 10;
   const Econ = {
-    // Her seviye aracın hızına +%10 ekler; bu seviyelerde hız ikiye katlanır (en büyük sıçrama Sv. 50'de)
+    // Her seviye aracın hızına +%10 ekler; bu seviyelerde hız katlanır: Sv. 25–200'de ×2 (en büyük sıçrama Sv. 50'de),
+    // v1.51'den beri Sv. 250 ve 300'de ×3, 350 ve 400'de ×4, 450 ve 500'de ×5 (geç oyunda eski araçları geliştirmeye yeni hedefler)
     levelGain: 0.1,
-    doublings: [25, 50, 100, 150, 200],
+    doublings: [25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500],
+    boostOf(t) { return t >= 450 ? 5 : t >= 350 ? 4 : t >= 250 ? 3 : 2; },
     vehicleMult(lvl) {
       let m = 1 + Econ.levelGain * lvl;
-      for (const t of Econ.doublings) if (lvl >= t) m *= 2;
+      for (const t of Econ.doublings) if (lvl >= t) m *= Econ.boostOf(t);
       return m;
     },
     // Araçların satın alma ve yükseltme fiyatları sabittir. Yükseltmeler yavaş pahalanır (seviye başına %9,5); sıradaki araç,
