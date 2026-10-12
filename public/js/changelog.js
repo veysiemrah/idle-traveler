@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.42';
+  IT.VERSION = '1.43';
 
   IT.CHANGELOG = [
+    { v: '1.43', date: '2026-10-12', items: {
+      tr: ['Kıyı yollarında arada bir denize de bak: ufukta seninle yarışmak isteyen birileri var. Selamını eksik etme; onlar da seni unutmaz.',
+        'Telefonda sahne artık düğmelerden ayrı, garaj ve güçlendirme kartları daha derli toplu; telefonu yan çevirince panel sahnenin yanında durur.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['On coastal roads, glance at the sea now and then: someone out there wants to race you. Don’t forget to wave; they won’t forget you either.',
+        'On phones, the scene now sits apart from the buttons and the garage and boost cards are tidier; turn your phone sideways and the panel stays next to the scene.',
+        'A few small touches along the road.'],
+      de: ['Wirf auf Küstenstraßen ab und zu einen Blick aufs Meer: Dort draußen will jemand mit dir um die Wette schwimmen. Vergiss nicht zu grüßen; sie vergessen dich auch nicht.',
+        'Auf dem Handy ist die Szene jetzt von den Knöpfen getrennt, die Karten für Garage und Verstärkungen sind aufgeräumter; im Querformat steht das Menü neben der Szene.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['En las carreteras de la costa, mira de vez en cuando al mar: alguien allí quiere echarte una carrera. No olvides saludar; ellos tampoco te olvidarán.',
+        'En el móvil, la escena ya no queda tapada por los botones y las tarjetas del garaje y de mejoras son más compactas; con el móvil en horizontal, el panel queda junto a la escena.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Sur les routes côtières, jette de temps en temps un œil à la mer : quelqu’un là-bas veut faire la course avec toi. N’oublie pas de saluer ; eux non plus ne t’oublieront pas.',
+        'Sur téléphone, la scène est désormais séparée des boutons et les cartes du garage et des bonus sont plus compactes ; en mode paysage, le panneau reste à côté de la scène.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.42', date: '2026-10-09', items: {
       tr: ['Turna Yolu da son durak değilmiş… Eve bir kez daha dönenleri rüzgârlı tepelerden geçen yeni bir rota bekliyor. Orada gökyüzü bazen sahipsiz kalır.',
         'Gece yağmuru dindiğinde aya doğru bakmayı unutma.',

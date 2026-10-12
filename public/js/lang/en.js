@@ -351,6 +351,16 @@ IT.addLang('en', {
     "toast.kites": "<b>You caught the kite: {name}</b> · {text} for {dur}",
     "float.kites": "Kite!",
     "j.kites": "Kites caught",
+    // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
+    "toast.dolphinSeen": "Something leapt out at sea, far away… Look to the horizon!",
+    "toast.dolphin": "<b>The dolphins happily greeted you back!</b> · Greeting {n} from the sea",
+    "toast.dolphinsAll": "<b>The dolphins know you now!</b> · A new outfit is unlocked: {name}",
+    "float.dolphin": "Dolphins!",
+    "j.dolphins": "Dolphin greetings",
+    "outfit.sailor": "Sailor",
+    "ui.outfitDolphins": "Dolphins: {n}/{m}",
+    "ui.outfitSea": "A greeting from the sea…",
+    "toast.otherTab": "<b>The game is also open in another tab.</b> · Your progress is being saved there; when you come back to this tab, it refreshes to where you left off.",
     // Yeni araçlar (v1.36)
     "veh.comet.name": "Comet", "veh.comet.up": "Ice Core", "veh.comet.by": "by comet",
     "veh.comet.tagline": "Hop on a comet's back and leave a trail of light behind you.",

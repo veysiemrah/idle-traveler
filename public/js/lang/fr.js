@@ -353,6 +353,16 @@ IT.addLang('fr', {
     "toast.kites": "<b>Tu as attrapé le cerf-volant : {name}</b> · {text} pendant {dur}",
     "float.kites": "Un cerf-volant !",
     "j.kites": "Cerfs-volants attrapés",
+    // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
+    "toast.dolphinSeen": "Au loin, quelque chose a sauté hors de la mer… Regarde l’horizon !",
+    "toast.dolphin": "<b>Les dauphins t’ont joyeusement rendu ton salut !</b> · {n}ᵉ salut de la mer",
+    "toast.dolphinsAll": "<b>Les dauphins te reconnaissent !</b> · Nouvelle tenue débloquée : {name}",
+    "float.dolphin": "Des dauphins !",
+    "j.dolphins": "Saluts de dauphins",
+    "outfit.sailor": "Marin",
+    "ui.outfitDolphins": "Dauphins : {n}/{m}",
+    "ui.outfitSea": "Un salut de la mer…",
+    "toast.otherTab": "<b>Le jeu est aussi ouvert dans un autre onglet.</b> · Ta progression y est enregistrée ; en revenant sur cet onglet, il reprendra là où tu en étais.",
     // Yeni araçlar (v1.36)
     "veh.comet.name": "Comète", "veh.comet.up": "Noyau de glace", "veh.comet.by": "à dos de comète",
     "veh.comet.tagline": "Grimpe sur le dos d’une comète et laisse derrière toi un sillage de lumière.",

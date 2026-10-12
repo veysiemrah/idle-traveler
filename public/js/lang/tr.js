@@ -363,6 +363,16 @@ IT.addLang('tr', {
     "toast.kites": "<b>Uçurtmayı yakaladın: {name}</b> · {dur} boyunca {text}",
     "float.kites": "Uçurtma!",
     "j.kites": "Yakalanan uçurtma",
+    // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
+    "toast.dolphinSeen": "Uzakta, denizde bir şey sıçradı… Ufka bak!",
+    "toast.dolphin": "<b>Yunuslar selamına sevinçle karşılık verdi!</b> · Denizden {n}. selam",
+    "toast.dolphinsAll": "<b>Yunuslar seni tanıdı!</b> · Yeni bir kıyafet açıldı: {name}",
+    "float.dolphin": "Yunuslar!",
+    "j.dolphins": "Yunus selamı",
+    "outfit.sailor": "Denizci",
+    "ui.outfitDolphins": "Yunuslar: {n}/{m}",
+    "ui.outfitSea": "Denizden bir selam…",
+    "toast.otherTab": "<b>Oyun başka bir sekmede de açık.</b> · İlerlemen orada kaydediliyor; bu sekmeye dönünce oyun kaldığın yerden yenilenir.",
     // Yeni araçlar (v1.36)
     "veh.comet.name": "Kuyruklu Yıldız", "veh.comet.up": "Buz Çekirdeği", "veh.comet.by": "kuyruklu yıldızla",
     "veh.comet.tagline": "Bir kuyruklu yıldızın sırtına atla, ardında ışıktan bir yol bırak.",

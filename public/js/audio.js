@@ -151,6 +151,22 @@
         o.start(t); o.stop(t + 0.25);
       });
     },
+    // yunus: uzaktan bir dalga şıpırtısı ve inip kalkan ince bir ıslık; selam verilince iki neşeli, yükselen ıslık daha
+    dolphin(happy) {
+      if (!this.ctx || !this.sfxOn) return;
+      const c = this.ctx;
+      this.noise(happy ? 0.12 : 0.07, 0.45, 700, 0.7);
+      const calls = happy ? [[0.12, 1], [0.34, 1.2], [0.52, 1.35]] : [[0.2, 1]];
+      calls.forEach(([w, r]) => {
+        const t = c.currentTime + w, o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1500 * r, t); o.frequency.exponentialRampToValueAtTime(2300 * r, t + 0.07);
+        o.frequency.exponentialRampToValueAtTime(1700 * r, t + 0.13); o.frequency.exponentialRampToValueAtTime(2600 * r, t + 0.2);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(happy ? 0.022 : 0.014, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+        o.connect(g); g.connect(this.sfx); g.connect(this.delay);
+        o.start(t); o.stop(t + 0.28);
+      });
+    },
     // kâğıt uçak: yanından süzülen yumuşak bir hışırtı ve iki ince nota
     plane() {
       if (!this.ctx || !this.sfxOn) return;

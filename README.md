@@ -112,6 +112,20 @@ npx wrangler dev   # http://localhost:8787
   uzaklaşınca daha geniş bir manzara ve daha çok gezgin görünür. İsim etiketleri, balonlar ve uçan yazılar uzaklaşınca küçülmez.
   Dokunuşlar sanal koordinata çevrildiği için kelebek, yıldız, sandık ve yadigâr her kademede yakalanır. Ortadaki noktalar seçili
   kademeyi gösterir; seçim kaydedilir. Geniş ekranda denetim konuşma düğmesinin üstünde dikey, telefonda solunda yataydır.
+  Yatay telefonda bu iki düğme sahnenin üstünde, yolun şeridinde durur: tilki, hazine sandığı ya da yadigâr onların altına
+  düşerse düğmeler yumuşakça solar ve dokunuşu sahneye geçirir (dokunuş düğmeye değil yakalanacak şeye gider); o kalkınca geri gelirler.
+- **Telefon yerleşimi (v1.43)**:
+  - *Dikey* (genişlik ≤ 860 px, dikey yön): sahnenin üstünde düğme kalmaz. Ritim, sıradaki durak, yakınlaştırma ve konuşma düğmesi
+    sahnenin hemen altındaki bir şeride iner (sahne tuvali şeridin üstünde biter; şerit sayfa renginde, kutular düz zeminli).
+    Şeride dokunmak adım saymaz, yalnızca sahneye dokunmak sayar. Konuşma seçici şeridin üstünde açılır. 480 pikselin altında
+    ritim kutusu etiketsiz (çarpan ve çubuk), yakınlaştırma noktaları gizli: durak adına yer kalır.
+  - *Yatay* (yükseklik ≤ 480 px, genişlik ≤ 860 px): sahne solda, panel sağda (en az 320 px, %42) yan yana durur. Önceden alt alta
+    dizildiği için alçak ekranda panele ~40 piksel kalıyor, sayfa da kaydırılamıyordu. Cüzdan küçülür, bildirimler gökyüzünün
+    üstünde (yolun değil) belirir; sahne daralınca durak kutusunda yalnızca durağın adı kalır (kapsayıcı sorgusu, ≤ 520 px).
+  - *Sıkı kartlar* (≤ 860 px): kart iç boşlukları, simgeler (60×47) ve başlıklar küçülür. Sahip olunan araçların tanıtım cümlesi
+    gizlenir (sıradaki aracın merak uyandıran cümlesi kalır). Güçlendirme kartında düğme kartın sağında dikey ortada durur; ad,
+    açıklama ve sonraki seviye solunda (kart ~150 px'ten ~95–110 px'e indi). Garajın kural açıklaması "i" işaretiyle tek satırdır,
+    sonu solar; dokununca yumuşakça açılır. Bütün bunları `tests/layout.js` denetler.
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
@@ -286,6 +300,16 @@ npx wrangler dev   # http://localhost:8787
   için yakınlaştırma ya da döndürme sonrası da ekranın içinde ve uzak dağların üstünde kalır. Gün ağarırsa yıldızlar yumuşakça
   solar. Turna sürüsü, kâğıt uçak ya da serbest uçurtma gökteyken gelmez, takımyıldız varken onlar da gelmez. Dokunuş sesleri
   dokunma sırasıyla yükselir. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
+- **Yunuslar**: Denizli bölgelerde (Ege Sahil Yolu, Zeytin Bahçeleri) arada bir uzak denizden bir yunus sürüsü (1–3 yunus) yolcuyla
+  aynı yöne yüzer: her yunus arayla sudan sıçrar, havada bir yay çizip yeniden dalar; çıkışta ve dalışta su damlaları sıçrar,
+  suyun yüzünde ince halkalar yayılır (ilki bölgeye girişten 30–60 sn sonra, sonra 90–170 sn arayla; sürü ekranı 15 sn'de geçer;
+  yağmurda, uzayda ve pencere açıkken gelmez). Gece yunuslar ay ışığında gümüşi görünür; sıçradıkları yerde ve suyun altında
+  yüzdükleri izde deniz yeşilimsi mavi ışıldar (deniz ışıması). İlk iki sürüde "Uzakta, denizde bir şey sıçradı… Ufka bak!"
+  bildirimi gelir. Sürüye dokununca yunuslar sırayla yüksek bir sıçrayışla havada takla atar, neşeli ıslıklar duyulur; her sürü
+  bir kez sayılır ("Denizden n. selam"). Denizin yunuslara yer açması için kıyı bölgelerinde orta tepeler (kumsal) alçalır, deniz
+  şeridi genişler. Yol Defteri'nde *Yunus selamı* sayılır; yedinci selam *Denizci* kıyafetini (deniz mavisi ceket, beyaz denizci
+  şapkası, kırmızı çanta) açar. Kıyafet kilitliyken ilk selamdan önce yalnızca "Denizden bir selam…", sonra "Yunuslar: n/7" yazar.
+  Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
 - **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
   sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
   gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
@@ -360,7 +384,8 @@ npx wrangler dev   # http://localhost:8787
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
-  *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
+  yunus selamıyla açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
@@ -389,7 +414,16 @@ npx wrangler dev   # http://localhost:8787
 okuyamıyorsa (ör. yayın sırasında eski ve yeni dosyalar karışırsa) o oturumda kayda hiç yazılmaz, sayfa yenilenince kayıt aynen açılır.
 JSON bozuksa ilk bozuk kopya `idle-traveler-save-v1-bak` anahtarına konur (sonraki hatalar onu ezmez) ve orada sağlam bir yedek varsa
 oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir. Kilitli oturumda tanıtım ve ad sorulmaz, Yolcular'a kayıt gönderilmez;
-oyuncuya kaydın korunduğu söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir.
+oyuncuya kaydın korunduğu söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir. Kilitli oturumda (depolama hiç
+okunamadığında da) *Yolculuğu sıfırla* korunan kayda dokunmaz.
+**İki sekme**: Oyun iki sekmede açıksa bir sekme kaydı yazınca öteki (`storage` olayıyla) kaydetmeyi ve Yolcular'a haber vermeyi
+bırakır; görünürse "Oyun başka bir sekmede de açık" bildirimi gelir. O sekmeye dönülünce sayfa yumuşakça yenilenir ve son kayıtla
+sürer. Böylece arka planda bekleyen eski bir sekme, ötekinde yapılan alımları ve ilerlemeyi ezmez.
+**Saat oynatma**: `lastSeen` yalnızca ileri gider. Saat geri alınmışsa (kayıt gelecekte) çevrimdışı ilerleme gerçek zaman o ana
+yetişince sürer (bozuk bir saat sonsuza kilitlemesin diye en çok 2 gün ileride tutulur); saati ileri alıp geri getirerek aynı
+çevrimdışı ilerleme tekrar tekrar alınamaz. Oyun açıkken saat geri alınırsa (duvar saati `performance.now`'dan 2 sn'den fazla geri
+kalırsa) etkiler kalan sürelerini korur. Kayan yıldız dileği ile karahindiba dileği aynı anda sürerse kredi ×100 değil ×10 olur
+(ikisi aynı dilektir). Çevrimdışı özet, sessizce verilen bölge ve durak ödüllerini de kazanılan krediye katar.
 Oyun açıkken 10 saniyeye kadarki aralar (uygulama değiştirme, takılan bir kare) sessizce çevrimdışı hızla sayılır; daha uzun aralarda
 hız ortalamaları sıfırlanır, böylece dönüşte verilen bölge, durak ve günlük ödülleri sekme gizlenmeden önceki tıklama hızıyla değil
 otomatik gelirle ölçülür (sayfayı kapatıp açmakla aynı).
