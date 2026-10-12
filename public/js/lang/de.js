@@ -485,5 +485,14 @@ IT.addLang('de', {
     "toast.hoopoeNew": "<b>Der Wiedehopf zeigt dir den Weg!</b> · Deinem Vogelbuch wurde eine geheime Seite hinzugefügt · {text} · {dur}",
     "toast.hoopoe": "<b>{name}</b> · {text} · {dur}",
     "float.hoopoe": "Wiedehopf!",
+    // Zaman Makinesi (v1.50)
+    "veh.chrono.name": "Zeitmaschine",
+    "veh.chrono.up": "Goldene Zahnräder",
+    "veh.chrono.by": "mit der Zeitmaschine",
+    "veh.chrono.tagline": "Jedes Ticken der Uhr ist ein Schritt: Sie geht, während du dich ausruhst.",
+    "ui.autoTaps": "Auto-Schritte",
+    "ui.autoRate": "{n}/s",
+    "ui.autoStep": "auch die Schritte werden schneller",
+    "j.autoSteps": "Auto-Schritte",
   },
 });

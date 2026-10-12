@@ -7,7 +7,7 @@
    POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
-const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp', 'whale', 'startrain', 'anka'];
+const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp', 'whale', 'startrain', 'anka', 'chrono'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite', 'migrate'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer', 'sailor', 'birder'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];

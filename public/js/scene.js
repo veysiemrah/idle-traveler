@@ -875,6 +875,80 @@
     ctx.restore();
   }
 
+  // Zaman Makinesi: pirinç kızaklar, kadife koltuk ve arkada büyük, dönen kadranlı bir saat diski; ucu kristal kol her "tık"ta
+  // hafifçe oynar (otomatik adımlar). tick: son otomatik adımdan beri geçen süre (sn; oyun verir, simgede yok).
+  // Aşamalar: 1 pirinç fener ve kıyafet renginde koltuk minderi, 2 diskin altında dönen ikinci çark, 3 arkada dönen zaman
+  // girdabı, 4 altın süsler ve parıltı
+  function drawChrono(ctx, x, y, k, st) {
+    const T = st.tier || 0, t = st.t || 0, ic = st.icon;
+    const tick = ic ? 1 : Math.min(1, (st.tick === undefined ? 1 : st.tick) / 0.18);
+    const brass = T >= 4 ? GOLD : '#c9a24a', brassDk = '#8f6e2c';
+    ctx.save(); ctx.translate(x, y + (ic ? 0 : Math.sin(t * 1.2) * 1.5 * k));
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // zaman girdabı (3. aşama): diskin arkasında dönen yarı saydam yaylar
+    if (T >= 3) {
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 3; i++) {
+        ctx.strokeStyle = `rgba(${i % 2 ? '143,240,255' : '196,160,255'},${0.35 - i * 0.08})`; ctx.lineWidth = (3 - i * 0.6) * k;
+        ctx.beginPath(); ctx.arc(-30 * k, -14 * k, (34 + i * 8) * k, t * (1.4 - i * 0.3) + i, t * (1.4 - i * 0.3) + i + 2.2); ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // ikinci çark (2. aşama)
+    const gear = (cx, cy, r, n, a, col) => {
+      ctx.fillStyle = col; ctx.beginPath();
+      for (let i = 0; i < n * 2; i++) { const aa = a + i * Math.PI / n, rr = i % 2 ? r : r * 0.82; ctx.lineTo(cx + Math.cos(aa) * rr, cy + Math.sin(aa) * rr); }
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = brassDk; circle(ctx, cx, cy, r * 0.3);
+    };
+    if (T >= 2) gear(-48 * k, 4 * k, 9 * k, 9, ic ? 0.3 : -t * 1.6, brass);
+    // saat diski: pirinç çember, krem kadran, saat işaretleri, dönen akrep ve yelkovan
+    const cx = -30 * k, cy = -14 * k, R = 25 * k;
+    ctx.fillStyle = brassDk; circle(ctx, cx, cy, R + 2.4 * k);
+    ctx.fillStyle = brass; circle(ctx, cx, cy, R);
+    ctx.fillStyle = '#f3e6c4'; circle(ctx, cx, cy, R * 0.84);
+    ctx.strokeStyle = '#6b5326'; ctx.lineWidth = 1.2 * k;
+    for (let i = 0; i < 12; i++) {
+      const a = i / 12 * TAU, r1 = R * (i % 3 ? 0.72 : 0.64), r2 = R * 0.8;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2); ctx.stroke();
+    }
+    const hand = (a, L, w) => { ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * L, cy + Math.sin(a) * L); ctx.stroke(); };
+    ctx.strokeStyle = '#3a2c1a';
+    hand(ic ? -2.1 : t * 0.25 - 1.6, R * 0.45, 2 * k);
+    hand(ic ? -0.6 : t * 3 - 1.6, R * 0.66, 1.3 * k);
+    ctx.fillStyle = brass; circle(ctx, cx, cy, 2.4 * k);
+    // kızaklar ve dikmeler
+    ctx.strokeStyle = brass; ctx.lineWidth = 2.6 * k;
+    ctx.beginPath(); ctx.moveTo(-50 * k, 16 * k); ctx.lineTo(34 * k, 16 * k); ctx.quadraticCurveTo(44 * k, 16 * k, 46 * k, 8 * k); ctx.stroke();
+    ctx.strokeStyle = brassDk; ctx.lineWidth = 2 * k;
+    ctx.beginPath(); ctx.moveTo(-46 * k, 12 * k); ctx.lineTo(30 * k, 12 * k); ctx.stroke();
+    ctx.strokeStyle = brass; ctx.lineWidth = 1.8 * k;
+    for (const sx of [-34, -8, 22]) { ctx.beginPath(); ctx.moveTo(sx * k, 16 * k); ctx.lineTo(sx * k, 4 * k); ctx.stroke(); }
+    // koltuk: pirinç çerçeve, kadife minder (1. aşamada kıyafet renginde)
+    ctx.fillStyle = '#7a2f3a'; rrect(ctx, -16 * k, -26 * k, 8 * k, 30 * k, 3 * k); ctx.fill();
+    ctx.fillStyle = T >= 4 ? GOLD : T >= 1 ? P.jacket : '#9a3b48'; rrect(ctx, -14 * k, -2 * k, 26 * k, 7 * k, 3 * k); ctx.fill();
+    ctx.fillStyle = brass; ctx.fillRect(-16 * k, 4 * k, 30 * k, 2.4 * k); ctx.fillRect(-17 * k, -28 * k, 10 * k, 2.4 * k);
+    // kol ve kristal topuz: her tıkta geriye yatıp yerine döner
+    const la = -0.35 - 0.35 * (1 - tick);
+    const kx = 26 * k + Math.sin(la) * 22 * k, ky = 8 * k - Math.cos(la) * 22 * k;
+    ctx.strokeStyle = brass; ctx.lineWidth = 2.2 * k;
+    ctx.beginPath(); ctx.moveTo(26 * k, 8 * k); ctx.lineTo(kx, ky); ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, kx, ky, 12 * k, hex('#8ff0ff'), 0.4 + 0.5 * (1 - tick)); ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#bff6ff'; circle(ctx, kx, ky, 3 * k);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'; circle(ctx, kx - 1 * k, ky - 1 * k, 1 * k);
+    // fener (1. aşama)
+    if (T >= 1) {
+      ctx.strokeStyle = brass; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.moveTo(40 * k, 10 * k); ctx.lineTo(40 * k, -6 * k); ctx.stroke();
+      ctx.globalCompositeOperation = 'lighter'; glow(ctx, 40 * k, -10 * k, 14 * k, hex('#ffcf7a'), 0.7); ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = brass; rrect(ctx, 37 * k, -14 * k, 6 * k, 8 * k, 1.5 * k); ctx.fill();
+      ctx.fillStyle = '#fff3c4'; rrect(ctx, 38.2 * k, -12.6 * k, 3.6 * k, 5 * k, 1 * k); ctx.fill();
+    }
+    // yolcu: koltukta oturur, eli kolun üstünde
+    rider(ctx, k, t, [-4 * k, -4 * k], [2 * k, -25 * k], [14 * k, 10 * k], [Math.min(kx, 22 * k), Math.max(ky + 3 * k, -16 * k)]);
+    if (T >= 4) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, -10 * k, -10 * k, 70 * k, hex('#ffd56b'), 0.15); ctx.globalCompositeOperation = 'source-over'; sparkles(ctx, -10 * k, -10 * k, k, t, 9, 120 * k, 60 * k); }
+    ctx.restore();
+  }
+
   // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar.
   // tier: görünüm aşaması (1 tasma ve künye, 2 boyunluk, 3 sırtta heybe, 4 altın tasma ve parıltı)
   function drawDog(ctx, x, y, k, ph, t, tier) {
@@ -1661,18 +1735,18 @@
     ctx.restore();
   }
 
-  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true, comet: true, warp: true, whale: true, startrain: true, anka: true };
+  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true, comet: true, warp: true, whale: true, startrain: true, anka: true, chrono: true };
   // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
   // uzayda uzak halkalı gezegenin göründüğü araçlar
-  const RINGED = { sail: 1, comet: 1, warp: 1, whale: 1, startrain: 1, anka: 1 };
-  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3, comet: 0.33, warp: 0.34, whale: 0.36, startrain: 0.36, anka: 0.34 };
+  const RINGED = { sail: 1, comet: 1, warp: 1, whale: 1, startrain: 1, anka: 1, chrono: 1 };
+  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3, comet: 0.33, warp: 0.34, whale: 0.36, startrain: 0.36, anka: 0.34, chrono: 0.36 };
   // Araçların çizim sınırları (k = 1, çizim noktasına göre; görünüm aşamalarının en genişi): [sol, sağ] ve üst yükseklik.
   // Değerler araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
   const VEH_EXT = { walk: [-23, 15], skates: [-23, 21], board: [-26, 25], bike: [-42, 37], horse: [-35, 41], moto: [-44, 43], car: [-46, 45],
     van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72], comet: [-117, 47], warp: [-76, 55],
     // trenin ışık rayı ve Anka'nın kuyruk uçları solarak biter: yerleşimde vagonun ve kuyruğun gövdeye yakın kısmı sayılır
-    whale: [-87, 61], startrain: [-104, 66], anka: [-120, 62] };
-  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34, whale: 66, startrain: 56, anka: 72 };
+    whale: [-87, 61], startrain: [-104, 66], anka: [-120, 62], chrono: [-60, 52] };
+  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34, whale: 66, startrain: 56, anka: 72, chrono: 52 };
   // Karabaş, Tekir ve Kızıl'ın yavaş araçlarda koştuğu yer (aracın gerisinde)
   const PAL_BACK = { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 };
   const GHOST_SCALE = 0.8;
@@ -1745,6 +1819,7 @@
       case 'whale': return drawWhale(ctx, x, y, k, st);
       case 'startrain': return drawStarTrain(ctx, x, y, k, st);
       case 'anka': return drawAnka(ctx, x, y, k, st);
+      case 'chrono': return drawChrono(ctx, x, y, k, st);
     }
   }
 
@@ -3125,7 +3200,7 @@
       // yolcu
       // pal: Karabaş araçta yolculuk ediyorsa görünüm aşaması + 1 (0 = yok)
       const rider = !!RUNNER[this.companion];
-      const st0 = { phase: this.phase, wheel: this.wheel, t: this.t, night, tier: this.vehTier || 0, pal: rider ? (this.palTier || 0) + 1 : 0, palKind: this.companion };
+      const st0 = { phase: this.phase, wheel: this.wheel, t: this.t, tick: this.t - (this.autoTick || -9), night, tier: this.vehTier || 0, pal: rider ? (this.palTier || 0) + 1 : 0, palKind: this.companion };
       const ry = this.riderY() - this.stepKick * 2.5 * k;
       ctx.save();
       // gölge
@@ -3896,7 +3971,7 @@
     const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], board: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], horse: [0.5, 0.44, 0.96],
       moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85], van: [0.46, 0.5, 0.88], train: [0.36, 0.5, 0.86], balloon: [0.46, 0.5, 0.62],
       plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62], comet: [0.5, 0.66, 0.66], warp: [0.48, 0.5, 0.56],
-      whale: [0.48, 0.52, 0.66], startrain: [0.4, 0.66, 0.66], anka: [0.46, 0.62, 0.68] };
+      whale: [0.48, 0.52, 0.66], startrain: [0.4, 0.66, 0.66], anka: [0.46, 0.62, 0.68], chrono: [0.58, 0.6, 0.66] };
     const [k, xf, yf] = sizes[id];
     const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0, tier: tier || 0, icon: true };
     // Sv. 200: aracın arkasında minik bir gökkuşağı yayı (sahnedeki iz simgeye sığmaz)

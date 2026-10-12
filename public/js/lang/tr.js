@@ -481,5 +481,14 @@ IT.addLang('tr', {
     "toast.hoopoeNew": "<b>Hüdhüd sana yol gösteriyor!</b> · Kuş Defteri’ne gizli bir sayfa eklendi · {text} · {dur}",
     "toast.hoopoe": "<b>{name}</b> · {text} · {dur}",
     "float.hoopoe": "Hüdhüd!",
+    // Zaman Makinesi (v1.50)
+    "veh.chrono.name": "Zaman Makinesi",
+    "veh.chrono.up": "Altın Çarklar",
+    "veh.chrono.by": "zaman makinesiyle",
+    "veh.chrono.tagline": "Saatin her tıkı bir adım: sen dinlenirken o yürür.",
+    "ui.autoTaps": "Otomatik adım",
+    "ui.autoRate": "{n}/sn",
+    "ui.autoStep": "adımlar da hızlanır",
+    "j.autoSteps": "Otomatik adımlar",
   },
 });

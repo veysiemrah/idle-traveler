@@ -50,7 +50,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -79,6 +79,7 @@
       dolphins: 0, // selam verilen yunus sürüleri (kıyı denizi, ömür boyu; DOLPHIN_NEED olunca Denizci kıyafeti açılır)
       // Günün Notları: o günün üç küçük hedefi (her gün herkese aynı), ilerlemeleri ve tamamlananlar; seen: defterde görüldü mü
       notes: { day: '', list: [], prog: [], done: [], seen: false },
+      autoSteps: 0, // Zaman Makinesi'nin attığı otomatik adımlar (ömür boyu)
       harvestDay: '', // hasat payının en son alındığı gün (YYYY-AA-GG; günde bir kez)
       birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
@@ -128,7 +129,7 @@
     if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
     s.v = 3;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
-    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes', 'kites', 'dolphins']) s[k] = count(s[k]);
+    for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes', 'kites', 'dolphins', 'autoSteps']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
     // eski kayıtta yoksa: o zamanki 10 rotadan duyurulmuş olanlar (her dönüş birini açıyordu)
     s.routeMax = Math.min(d.routeMax === undefined ? Math.min(s.trips, 9) : count(d.routeMax, IT.ROUTES.length - 1), routesOpenFor(s.trips) - 1);
@@ -949,7 +950,7 @@
       if (S.owned[id] || !spend(v.cost)) return;
       S.owned[id] = true; S.levels[id] = 0;
       S.bestGarage = Math.max(S.bestGarage, VEHICLES.filter(x => S.owned[x.id]).length);
-      uiDirty.garage = true;
+      uiDirty.garage = true; if (v.auto) uiDirty.journal = true; // defterde otomatik adım satırı belirsin
       // Yeni araca hemen binilir (hız garajdaki en güçlü araca göre hesaplandığı için düşmez).
       // Sonradan eklenen ara bir araç, daha ileri bir araçtayken alınırsa yalnızca garaja katılır.
       const forward = v.index > VEH[S.active].index;
@@ -1191,6 +1192,12 @@
     if (rateEma > S.best) S.best = rateEma;
 
     // altın kelebek (pencere açıkken yakalanamayacağı için gelmez)
+    // Zaman Makinesi garajdaysa (hangi araca binilirse binilsin) saatin her tıkı bir adımdır; oyun açıkken çalışır
+    if (S.owned.chrono && dt > 0) {
+      autoAcc += dt * Econ.autoRate(S.levels.chrono);
+      for (let n = 0; autoAcc >= 1 && n < 4; n++) { autoAcc -= 1; autoStep(); }
+      autoAcc = Math.min(autoAcc, 1);
+    }
     if ($('#modal').hidden) giftIn -= dt;
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
@@ -1233,7 +1240,20 @@
     requestAnimationFrame(frame);
   }
   // Tıklamalarla gelen mesafe, hız ortalamasına bir sonraki karede eklenir
-  let clickBuffer = 0, clickBase = 0;
+  let clickBuffer = 0, clickBase = 0, autoAcc = 0, autoSum = 0, autoFloatAt = 0, autoSoundAt = 0;
+  // Otomatik adım: dokunuşun yolunu verir ama ritmi doldurmaz, şanslı adım atmaz ve adım sayılmaz (rozet, not, istatistik);
+  // yazısı birikip saniyede bir uçar, saat tıkırtısı en sık 0,3 sn'de bir duyulur
+  function autoStep() {
+    const cur = current(), d = cur.click;
+    addDistance(d, cur.cpm);
+    clickBase += cur.base.click;
+    S.autoSteps++;
+    scene.autoTick = scene.t;
+    autoSum += d;
+    const now = performance.now();
+    if (now - autoFloatAt > 1100) { autoFloatAt = now; scene.addFloat(`⏱ +${fmtGain(autoSum)}`, { color: '#bff6ff' }); autoSum = 0; }
+    if (now - autoSoundAt > 300) { autoSoundAt = now; Sound.chronoTick(); }
+  }
 
   /* ---------- Kartpostal ---------- */
   // Sahnenin arayüzsüz görüntüsünden kenarlıklı, yazılı, pullu bir kartpostal üretir
@@ -1594,10 +1614,11 @@
         <div class="body">
           <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
-          <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span></p>
+          <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span>${v.auto
+            ? `<span>${t('ui.autoTaps')} <b>${t('ui.autoRate', { n: fmtNum(Econ.autoRate(lvl)) })}</b></span>` : ''}</p>
         </div>
         ${owned
-          ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}</small></div>${upgradeBtn(v)}</div>`
+          ? `<div class="up"><div><p class="upline"><span class="upname" title="${esc(v.upName)}">${v.upName}</span><span class="lvl">${t('ui.lvl', { n: lvl })}</span></p><small>${nextDoubling(lvl)}${v.auto && Econ.autoRate(lvl) < 12 ? ` · ${t('ui.autoStep')}` : ''}</small></div>${upgradeBtn(v)}</div>`
           : `<div class="up">${costBtn('buyVeh', v.id, v.cost, t('ui.buy'))}</div><div class="progress"><i data-prog="${v.cost}"></i></div>`}
         </article>`;
     }
@@ -1901,6 +1922,7 @@
         ${S.cranes ? `<div><dt>${t('j.cranes')}</dt><dd>${fmtNum(S.cranes)}</dd></div>` : ''}
         ${S.kites ? `<div><dt>${t('j.kites')}</dt><dd>${fmtNum(S.kites)}</dd></div>` : ''}
         ${S.dolphins ? `<div><dt>${t('j.dolphins')}</dt><dd>${fmtNum(S.dolphins)}</dd></div>` : ''}
+        ${S.owned.chrono || S.autoSteps ? `<div><dt>${t('j.autoSteps')}</dt><dd id="jAuto">${fmtNum(S.autoSteps)}</dd></div>` : ''}
         <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
@@ -2088,6 +2110,7 @@
       // defterdeki büyük mesafelerde de üstüne gelince birimin açıklaması
       for (const [sel, m] of [['#jDist', S.distance], ['#jLife', myLife()]]) { const el = $(sel), u = el && IT.distUnit(m); if (el) el.title = u ? unitHint(u) : ''; }
       setText('#jClicks', fmtNum(S.clicks)); setText('#jTime', fmtDuration(S.playTime));
+      setText('#jAuto', fmtNum(S.autoSteps));
       setText('#jBest', fmtSpeed(S.best)); setText('#jGifts', fmtNum(S.gifts));
       setText('#jCrits', fmtNum(S.crits)); setText('#jRainbows', fmtNum(S.rainbows));
       setText('#jWishes', fmtNum(S.wishes)); setText('#jPhotos', fmtNum(S.photos));

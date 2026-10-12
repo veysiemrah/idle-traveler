@@ -471,5 +471,14 @@ IT.addLang('fr', {
     "toast.hoopoeNew": "<b>La huppe te montre le chemin !</b> · Une page secrète a été ajoutée à ton carnet d’oiseaux · {text} · {dur}",
     "toast.hoopoe": "<b>{name}</b> · {text} · {dur}",
     "float.hoopoe": "Huppe !",
+    // Zaman Makinesi (v1.50)
+    "veh.chrono.name": "Machine à remonter le temps",
+    "veh.chrono.up": "Rouages dorés",
+    "veh.chrono.by": "en machine à remonter le temps",
+    "veh.chrono.tagline": "Chaque tic de l’horloge est un pas : elle marche pendant que tu te reposes.",
+    "ui.autoTaps": "Pas automatiques",
+    "ui.autoRate": "{n}/s",
+    "ui.autoStep": "les pas accélèrent aussi",
+    "j.autoSteps": "Pas automatiques",
   },
 });

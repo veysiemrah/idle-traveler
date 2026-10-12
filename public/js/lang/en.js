@@ -469,5 +469,14 @@ IT.addLang('en', {
     "toast.hoopoeNew": "<b>The hoopoe is showing you the way!</b> · A secret page was added to your Bird Journal · {text} · {dur}",
     "toast.hoopoe": "<b>{name}</b> · {text} · {dur}",
     "float.hoopoe": "Hoopoe!",
+    // Zaman Makinesi (v1.50)
+    "veh.chrono.name": "Time Machine",
+    "veh.chrono.up": "Golden Gears",
+    "veh.chrono.by": "by time machine",
+    "veh.chrono.tagline": "Every tick of the clock is a step: it walks while you rest.",
+    "ui.autoTaps": "Auto steps",
+    "ui.autoRate": "{n}/s",
+    "ui.autoStep": "steps speed up too",
+    "j.autoSteps": "Auto steps",
   },
 });

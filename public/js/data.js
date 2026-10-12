@@ -34,6 +34,8 @@
     { id: 'whale',     cost: 5.8e16, idle: 81250,  click: 16250,  road: 'asphalt', alt: 1.15 },
     { id: 'startrain', cost: 6.4e17, idle: 203000, click: 40600,  road: 'asphalt', alt: 1.15 },
     { id: 'anka',      cost: 7.1e18, idle: 508000, click: 101500, road: 'asphalt', alt: 1.15 },
+    // (v1.50) Zaman Makinesi: zincirin sonunda aynı oranlar; garajdayken yolcunun yerine adım atar (auto: Econ.autoRate)
+    { id: 'chrono',    cost: 7.8e19, idle: 1270000, click: 254000, road: 'asphalt', alt: 1.15, auto: true },
   ];
   VEHICLES.forEach((v, i) => {
     v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.01);
@@ -423,6 +425,8 @@
     offlineRate(lvl) { return Math.min(0.9, 0.3 + 0.06 * lvl); },
     offlineCapHours(lvl) { return 8 + 2 * lvl; },
     luckChance(lvl) { return 0.01 * lvl; },
+    // Zaman Makinesi'nin otomatik adımları (adım/sn): Sv. 0'da 1, her seviye +0,05, en çok 12 (Sv. 220)
+    autoRate(lvl) { return Math.min(12, 1 + 0.05 * (lvl || 0)); },
     luckMult: 5, // şanslı adım kaç kat uzun
     // Kelebek Dostu: seviye başına altın kelebeklerin sıklığı ve etkilerin süresi şu kadar artar.
     // (v1.39'a kadar +%10 ve +%15'ti: 10. seviyede iki kat sık ve 2,5 kat uzun etkiler üst üste binip katlanıyor, tempoyu

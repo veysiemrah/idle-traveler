@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.49';
+  IT.VERSION = '1.50';
 
   IT.CHANGELOG = [
+    { v: '1.50', date: '2026-10-13', items: {
+      tr: ['Anka Kuşu’nun ötesinde, garajın en dip köşesinde tıkırdayan bir şey var… Ona sahip olanlar yolda yalnız yürümez: saat onların yerine de adım atar.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Beyond the Emerald Anka, something is ticking in the farthest corner of the garage… Those who own it never walk alone: the clock takes steps for them.',
+        'A few small touches along the road.'],
+      de: ['Hinter der Smaragd-Anka tickt etwas in der hintersten Ecke der Garage … Wer es besitzt, geht nie allein: Die Uhr macht Schritte für ihn.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Más allá del Anka esmeralda, algo hace tictac en el rincón más profundo del garaje… Quien lo tiene nunca camina solo: el reloj da pasos por él.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Au-delà de l’Anka d’émeraude, quelque chose fait tic-tac au fond du garage… Qui le possède ne marche jamais seul : l’horloge fait des pas à sa place.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.49', date: '2026-10-12', items: {
       tr: ['Uçurtma Yolu da son durak değilmiş… Eve bir kez daha dönenleri kanatlarla dolu bir rota bekliyor. Orada kuşların bile bir rehberi var.',
         'Yolda birkaç küçük rötuş.'],
