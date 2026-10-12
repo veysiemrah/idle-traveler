@@ -249,6 +249,8 @@ npx wrangler dev   # http://localhost:8787
   Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
   Uçan araç konum kartının altında kalır (`scene.flyY`; game.js kartın alt kenarını verir, araç yumuşakça izler): v1.46'ya kadar
   dikey telefonda kart gökyüzünün üst yarısını kapladığı için uçan araçlar ve uçan gezginler kartın arkasında kalıyordu.
+  Kartın alt kenarı açılışta da ölçülür (araç ilk karede doğru yerde belirir). Uçan bir gezgin kartın altına denk gelirse
+  etiketi ve balonuyla birlikte kartın altına iner; kartın kenarında yumuşakça geçiş yapar.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
   Garajın üstündeki iki özet kutusu en güçlü aracı ve diğer araçlardan gelen hızı canlı gösterir.
@@ -289,6 +291,14 @@ npx wrangler dev   # http://localhost:8787
 - **Günün hediyesi**: Her yeni günün ilk ziyaretinde kredi hediyesi gelir (yaklaşık 2 dakikalık gelir). Üst üste gelinen her gün
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
+- **Günün Notları (v1.47)**: Her gün herkese aynı üç küçük hedef verilir (tarihten türetilen tohumla seçilir; `game.js` →
+  `NOTES`): adım atmak (150), altın kelebek yakalamak (2), gökyüzündeki bir kuşa dokunmak, kartpostal çekmek, dilek tutmak
+  (kayan yıldız ya da karahindiba), yükseltme almak (5), oyun açıkken otomatik hızla ~10 dakikalık yol gitmek ve hasat
+  mevsiminde bir balkabağına dokunmak. Kuş notu uzaydayken (kuşlar gelmez), balkabağı notu mevsim dışında seçilmez. Notlar Yol
+  Defteri'nin başında ilerleme çubuklarıyla durur; tamamlanan not yeşil bir tikle işaretlenir. Her not kalıcı gelirin 60 sn'sini
+  (en az 20 kredi), üçü birden 240 sn'sini daha (en az 60 kredi) verir. Yalnızca oyun açıkken sayılır, çevrimdışı yol sayılmaz.
+  Yeni günün notları defterde görülene kadar Yol Defteri sekmesinde turuncu nokta yanar. Notlar `notes` alanında tutulur, eve
+  dönüşte de kalır; bozuk ya da dünkü notlar yeniden kurulur. Testi: `tests/notes.js`.
 - **Hazine haritası**: Yakalanan her altın kelebek %20, her dilek (kayan yıldız ya da karahindiba) %50 olasılıkla bir harita parçası düşürür. Dört parça
   tamamlanınca yolcunun önünde, yol kenarında parlayan bir hazine sandığı belirir (25 saniye kalır; kaçırılırsa 45 saniye sonra
   yeniden gelir). Sandık yaklaşık 37 dakikalık (2200 sn) kalıcı gelir kadar kredi verir (İpek Yolu'nda iki katı), harita sıfırlanır. Yol Defteri

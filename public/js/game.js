@@ -27,7 +27,7 @@
   const MAP_PIECES = 4, MAP_DROP = { gift: 0.2, star: 0.5 };
   // Gelire bağlı ödüller: kaç saniyelik kalıcı gelir verdikleri (tests/sim_game.js'teki RW ile aynı tutulur)
   // v1.39: belgelenen tempo hedeflerine göre yeniden seçildi (sim_game ızgarası; bkz. README > Tempo)
-  const REWARD = { region: 120, ms: 90, instant: 250, chest: 2200, harvest: 120 };
+  const REWARD = { region: 120, ms: 90, instant: 250, chest: 2200, harvest: 120, note: 60, notes: 240 };
   // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
   const effMult = (g, stack) => {
     const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
@@ -49,7 +49,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -76,6 +76,8 @@
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
       dolphins: 0, // selam verilen yunus sürüleri (kıyı denizi, ömür boyu; DOLPHIN_NEED olunca Denizci kıyafeti açılır)
+      // Günün Notları: o günün üç küçük hedefi (her gün herkese aynı), ilerlemeleri ve tamamlananlar; seen: defterde görüldü mü
+      notes: { day: '', list: [], prog: [], done: [], seen: false },
       harvestDay: '', // hasat payının en son alındığı gün (YYYY-AA-GG; günde bir kez)
       birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
@@ -148,6 +150,7 @@
     s.fox = count(s.fox, Econ.foxNeed);
     const consts = isObj(d.consts) ? d.consts : {};
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
+    s.notes = cleanNotes(d.notes);
     if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
     s.birds = Object.fromEntries(IT.BIRDS.filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
@@ -381,7 +384,7 @@
     const d = cur.click * comboMult() * (crit ? Econ.luckMult : 1);
     addDistance(d, cur.cpm);
     clickBase += cur.base.click * comboMult() * (crit ? Econ.luckMult : 1); // ödüller için: geçici çarpanlar olmadan
-    S.clicks++;
+    S.clicks++; note('steps');
     if (crit) S.crits++;
     scene.onStep(crit);
     // Hızlı art arda adımlar üst üste binmesin: hâlâ taze olan yazıya eklenir, toplam büyür
@@ -401,7 +404,7 @@
 
   function catchGift() {
     Sound.unlock();
-    S.gifts++;
+    S.gifts++; note('gift');
     dropMapPiece('gift');
     const pool = GIFTS.filter(x => x.w > 0);
     const total = pool.reduce((a, x) => a + x.w, 0);
@@ -424,7 +427,7 @@
   // Gece kayan yıldızı yakalamak bir dilek tutmaktır: Yıldız Tozu etkisi
   function catchStar() {
     Sound.unlock();
-    S.wishes++;
+    S.wishes++; note('wish');
     dropMapPiece('star');
     const g = GIFT.wish, dur = addEffect(g, g.dur).dur;
     Sound.wish();
@@ -435,7 +438,7 @@
   // Gündüz rüzgârda süzülen karahindiba tohumunu üflemek de bir dilektir: Rüzgâr Dileği etkisi
   function catchSeed() {
     Sound.unlock();
-    S.wishes++;
+    S.wishes++; note('wish');
     dropMapPiece('star');
     const g = GIFT.seed, dur = addEffect(g, g.dur).dur;
     Sound.wish();
@@ -665,7 +668,7 @@
     if (!b) return;
     Sound.unlock(); Sound.bird(id, true);
     const fresh = !S.birds[id];
-    S.birds[id] = (S.birds[id] || 0) + 1; uiDirty.journal = true;
+    S.birds[id] = (S.birds[id] || 0) + 1; uiDirty.journal = true; note('bird');
     const n = IT.birdCount(S), m = IT.BIRDS.length;
     scene.addFloat(fresh ? t('float.birdNew', { name: b.name }) : `🪶 ${b.name}`, { color: '#fff4d6', big: fresh });
     if (fresh) {
@@ -691,7 +694,7 @@
     setTimeout(() => toast(t('toast.harvestSeen'), 'gold'), 2500);
   }
   function catchPumpkin() {
-    Sound.unlock(); Sound.pumpkin();
+    Sound.unlock(); Sound.pumpkin(); note('pumpkin');
     const today = dayKey(Date.now());
     if (scene.festival === 'harvest' && S.harvestDay !== today) {
       S.harvestDay = today;
@@ -757,6 +760,7 @@
   // Her yeni günün ilk ziyaretinde küçük bir hediye; üst üste gelinen günler hediyeyi 7 güne kadar büyütür.
   // Saat geri alınırsa (bugün < son gün) hediye verilmez.
   function checkDaily(silent) {
+    ensureNotes();
     const today = dayKey(Date.now());
     if (S.day.last && today <= S.day.last) return;
     const y = new Date(); y.setDate(y.getDate() - 1); // yaz saati geçişlerinde de doğru dün
@@ -775,6 +779,63 @@
       Sound.gift();
     }
     checkBadges(silent);
+  }
+
+  /* ---------- Günün Notları ----------
+     Her gün herkese aynı üç küçük hedef (tarihten türetilen tohumla seçilir). Her biri tamamlanınca kalıcı gelirin
+     REWARD.note saniyesi, üçü birden tamamlanınca REWARD.notes saniyesi daha. Yalnızca oyun açıkken sayılır (çevrimdışı yol
+     sayılmaz). Kuş notu uzaydayken (kuşlar gelmez), balkabağı notu hasat mevsimi dışında seçilmez. Yeni günün notları
+     defterde görülene kadar Yol Defteri sekmesinde nokta yanar. */
+  const NOTES = [
+    { id: 'steps', e: '👣', need: () => 150 },
+    { id: 'gift', e: '🦋', need: () => 2 },
+    { id: 'bird', e: '🪶', need: () => 1, when: () => (scene.space || 0) < 0.3 },
+    { id: 'photo', e: '📷', need: () => 1 },
+    { id: 'wish', e: '🌠', need: () => 1 },
+    { id: 'upgrade', e: '🔧', need: () => 5 },
+    // otomatik hızla ~10 dakikalık yol (en az 10 m)
+    { id: 'dist', e: '🧭', need: () => Math.max(10, current().idle * 600) },
+    { id: 'pumpkin', e: '🎃', need: () => 1, when: () => IT.festival() === 'harvest' },
+  ];
+  const NOTE = Object.fromEntries(NOTES.map(n => [n.id, n]));
+  function cleanNotes(n) {
+    const z = { day: '', list: [], prog: [], done: [], seen: false };
+    if (!isObj(n) || typeof n.day !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(n.day) || !Array.isArray(n.list)) return z;
+    const list = n.list.filter(x => isObj(x) && NOTE[x.id] && isFinite(+x.need) && +x.need > 0).slice(0, 3).map(x => ({ id: x.id, need: +x.need }));
+    if (list.length !== 3) return z;
+    return { day: n.day, list, prog: list.map((_, i) => Math.max(0, +((n.prog || [])[i]) || 0)), done: list.map((_, i) => !!(n.done || [])[i]), seen: !!n.seen };
+  }
+  function ensureNotes() {
+    const today = dayKey(Date.now());
+    if (S.notes.day === today) return;
+    // tarihten tohum: aynı gün herkese aynı notlar
+    let h = 2166136261;
+    for (const ch of today) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+    const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+    const pool = NOTES.filter(n => !n.when || n.when()), list = [];
+    while (list.length < 3 && pool.length) list.push(pool.splice((rnd() * pool.length) | 0, 1)[0]);
+    S.notes = { day: today, list: list.map(n => ({ id: n.id, need: n.need() })), prog: [0, 0, 0], done: [false, false, false], seen: false };
+    uiDirty.journal = true;
+  }
+  const noteText = n => t(`note.${n.id}`, { n: n.need, c: fmtNum(Math.ceil(n.need)), d: fmtDist(n.need) });
+  function note(id, amount) {
+    const N = S && S.notes;
+    if (!N || N.day !== dayKey(Date.now())) return;
+    N.list.forEach((n, i) => {
+      if (n.id !== id || N.done[i]) return;
+      N.prog[i] = Math.min(n.need, N.prog[i] + (amount === undefined ? 1 : amount));
+      if (N.prog[i] < n.need) return;
+      N.done[i] = true; uiDirty.journal = true;
+      const bonus = Math.max(20, incomeRate() * REWARD.note);
+      grant(bonus);
+      toast(t('toast.note', { text: esc(noteText(n)), c: fmtNum(bonus) }), 'teal');
+      Sound.milestone();
+      if (N.done.every(Boolean)) {
+        const all = Math.max(60, incomeRate() * REWARD.notes);
+        grant(all);
+        setTimeout(() => { toast(t('toast.notesAll', { c: fmtNum(all) }), 'gold'); Sound.gift(); scene.addFloat(t('ui.credits', { c: fmtNum(all) }), { color: '#ffd56b', big: true }); }, 900);
+      }
+    });
   }
 
   /* ---------- Hava ---------- */
@@ -884,7 +945,7 @@
       if (!S.owned[id]) return;
       const q = Econ.upgradeQuote(v, lvl, S.settings.bulk, S.credits);
       if (!spend(q.cost)) return;
-      S.levels[id] = lvl + q.n;
+      S.levels[id] = lvl + q.n; note('upgrade', q.n);
       S.bestLevel = Math.max(S.bestLevel, S.levels[id]);
       const crossed = Econ.doublings.filter(t => t > lvl && t <= lvl + q.n).length;
       const looked = Econ.lookTier(lvl + q.n) > Econ.lookTier(lvl);
@@ -1095,6 +1156,7 @@
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
+    if (gained > 0) note('dist', gained);
     if (dt > 0) {
       const a = 1 - Math.exp(-dt / 0.9);
       rateEma += (gained / dt - rateEma) * a;
@@ -1141,7 +1203,7 @@
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 
     uiTimer += dt;
-    if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); scene.hudBottom = hudBottom(); }
+    if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); scene.hudBottom = hudBottom(); scene.hudRight = hudEdge(); }
     saveTimer += dt;
     if (saveTimer > 5) { saveTimer = 0; save(); scene.festival = IT.festival(); }
     requestAnimationFrame(frame);
@@ -1191,7 +1253,7 @@
     const name = `idle-traveler-${Date.now()}.png`;
     // Paylaşım metni fotoğrafın çekildiği anı anlatsın
     const dist = S.distance, region = IT.regionAt(S.regionIdx).name;
-    S.photos++; checkBadges(); save();
+    S.photos++; note('photo'); checkBadges(); save();
     openModal(() => ({ btn: t('pc.close'), html: `
       <p class="eyebrow">${t('pc.eyebrow')}</p>
       <h2>${t('pc.title')}</h2>
@@ -1788,7 +1850,15 @@
         <b>${k ? esc(b.name) : '???'}</b>${k ? `<em>${esc(tier.name)}</em>` : ''}
         <span class="pips" aria-hidden="true">${pips}</span><small>${esc(next)}</small></li>`;
     }).join('');
-    pane.innerHTML = `
+    const N = S.notes, nDone = N.done.filter(Boolean).length;
+    const notes = N.list.length ? `
+      <h3 class="sec">${t('note.title')} <small>${t('note.sub', { n: nDone, m: N.list.length })}</small></h3>
+      <ul class="notes">${N.list.map((n, i) => `<li class="note${N.done[i] ? ' done' : ''}">
+        <span class="note-e" aria-hidden="true">${N.done[i] ? '✓' : NOTE[n.id].e}</span>
+        <span class="note-t">${esc(noteText(n))}</span>
+        <span class="note-bar" aria-hidden="true"><i id="noteBar${i}" style="transform:scaleX(${Math.min(1, N.prog[i] / n.need)})"></i></span></li>`).join('')}</ul>
+      <p class="tag small">${nDone === N.list.length ? t('note.allDone') : t('note.hint')}</p>` : '';
+    pane.innerHTML = `${notes}
       <h3 class="sec">${t('j.trip')}</h3>
       <dl class="statgrid">
         <div><dt>${S.trips ? t('j.thisTrip') : t('j.total')}</dt><dd id="jDist"></dd></div>
@@ -1976,6 +2046,9 @@
     const canBuffs = !!document.querySelector('#pane-buffs [data-cost]:not(:disabled)');
     $('.tab[data-id="garage"]').classList.toggle('dot', canGarage);
     $('.tab[data-id="buffs"]').classList.toggle('dot', canBuffs);
+    if (!$('#pane-journal').hidden) S.notes.seen = true; // yeni günün notları defter açılınca görülmüş sayılır
+    $('.tab[data-id="journal"]').classList.toggle('dot', !!(S.notes.list.length && !S.notes.seen));
+    if (!$('#pane-journal').hidden) S.notes.list.forEach((n, i) => { const el = document.getElementById(`noteBar${i}`); if (el) el.style.transform = `scaleX(${Math.min(1, S.notes.prog[i] / n.need)})`; });
     if (!$('#pane-buffs').hidden) {
       const gain = Econ.memoryGain(S.distance, S.trips);
       setText('#homeGain', t('homecard.gain', { n: gain, c: fmtNum(gain) }));
@@ -2035,6 +2108,8 @@
       return { title: n.name, sub: fmtDist(Math.max(0, n.at - S.distance)) };
     };
     scene.fill(true);
+    // uçan araç ilk kareden itibaren konum kartının altında çizilsin (sonradan zıplamasın)
+    scene.hudBottom = hudBottom(); scene.hudRight = hudEdge();
     Sound.sfxOn = S.settings.sfx; Sound.musicOn = S.settings.music;
     syncSoundBtn(); syncSkyBtn();
     if (S.clicks >= 6) $('#hint').classList.add('gone');

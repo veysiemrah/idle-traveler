@@ -459,5 +459,20 @@ IT.addLang('de', {
     // Hasat mevsimi (v1.45)
     "toast.harvestSeen": "Am Wegesrand ist alles bereit für die Ernte … Tippe einen Kürbis an!",
     "toast.harvest": "<b>Dein Anteil an der Ernte!</b> · +{c} Credits · Komm morgen wieder",
+    // Günün Notları (v1.47)
+    "note.title": "Notizen des Tages",
+    "note.sub": "{n}/{m} · morgen gibt es neue",
+    "note.hint": "Jeden Tag dieselben drei Notizen für alle. Jede bringt eine kleine Belohnung, alle drei zusammen ein Geschenk.",
+    "note.allDone": "Die Notizen von heute sind erledigt! Morgen warten neue auf dich.",
+    "note.steps": "Mach {c} Schritte",
+    "note.gift": { one: "Fang einen goldenen Schmetterling", other: "Fang {c} goldene Schmetterlinge" },
+    "note.bird": "Tippe einen Vogel am Himmel an",
+    "note.photo": "Mach eine Postkarte",
+    "note.wish": "Wünsch dir etwas (Sternschnuppe oder Pusteblume)",
+    "note.upgrade": { one: "Kauf ein Upgrade", other: "Kauf {c} Upgrades" },
+    "note.dist": "Leg bei offenem Spiel {d} zurück",
+    "note.pumpkin": "Tippe einen Kürbis an",
+    "toast.note": "<b>Notiz erledigt:</b> {text} · +{c} Credits",
+    "toast.notesAll": "<b>Die Notizen von heute sind erledigt!</b> · +{c} Credits · Morgen gibt es neue",
   },
 });

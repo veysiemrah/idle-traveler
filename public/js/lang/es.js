@@ -443,5 +443,20 @@ IT.addLang('es', {
     // Hasat mevsimi (v1.45)
     "toast.harvestSeen": "Los bordes del camino están listos para la cosecha… ¡Toca una calabaza!",
     "toast.harvest": "<b>¡Tu parte de la cosecha!</b> · +{c} créditos · Vuelve mañana",
+    // Günün Notları (v1.47)
+    "note.title": "Notas del día",
+    "note.sub": "{n}/{m} · mañana habrá nuevas",
+    "note.hint": "Las mismas tres notas para todos, cada día. Cada una trae un pequeño premio; las tres juntas, un regalo.",
+    "note.allDone": "¡Las notas de hoy están hechas! Mañana te esperan otras nuevas.",
+    "note.steps": "Da {c} pasos",
+    "note.gift": { one: "Atrapa una mariposa dorada", other: "Atrapa {c} mariposas doradas" },
+    "note.bird": "Toca un ave que cruce el cielo",
+    "note.photo": "Haz una postal",
+    "note.wish": "Pide un deseo (estrella fugaz o diente de león)",
+    "note.upgrade": { one: "Compra una mejora", other: "Compra {c} mejoras" },
+    "note.dist": "Recorre {d} con el juego abierto",
+    "note.pumpkin": "Toca una calabaza",
+    "toast.note": "<b>Nota hecha:</b> {text} · +{c} créditos",
+    "toast.notesAll": "<b>¡Notas del día hechas!</b> · +{c} créditos · Mañana habrá nuevas",
   },
 });

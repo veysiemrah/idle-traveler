@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.46';
+  IT.VERSION = '1.47';
 
   IT.CHANGELOG = [
+    { v: '1.47', date: '2026-10-12', items: {
+      tr: ['Günün Notları: Yol Defteri’nin başında her gün herkese aynı üç küçük not seni bekliyor. Her biri küçük bir ödül, üçü birden bir hediye daha getirir.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Today’s Notes: every day, the same three small notes await everyone at the top of the Journal. Each brings a small reward, and all three together bring a gift.',
+        'A few small touches along the road.'],
+      de: ['Notizen des Tages: Ganz oben im Reisetagebuch warten jeden Tag dieselben drei kleinen Notizen auf alle. Jede bringt eine kleine Belohnung, alle drei zusammen ein Geschenk.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Notas del día: cada día, las mismas tres pequeñas notas esperan a todos al principio del Diario. Cada una trae un pequeño premio, y las tres juntas, un regalo.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Notes du jour : chaque jour, les trois mêmes petites notes attendent tout le monde en haut du Carnet de route. Chacune rapporte une petite récompense, et les trois ensemble un cadeau.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.46', date: '2026-10-12', items: {
       tr: ['Garaj kapısının ardında üç yeni araç bekliyor. Yıldız Gemisi bile yolun sonu değilmiş: yıldızların ötesine gidenler masallardaki yaratıklarla karşılaşabilir.',
         'Telefonda uçan araçlar artık gökyüzünde tam görünüyor.',
