@@ -743,6 +743,23 @@ button { font: inherit; color: inherit; }
 }
 .intro-lang { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
 .intro-lang .lang-select { max-width: none; }
+/* Kartpostal Albümü: Yol Defteri'nde hafifçe eğik duran küçük kartpostallar; dokununca düzelip öne çıkar */
+.album { list-style: none; margin: 0; padding: 4px 2px 2px; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.album-pc {
+  width: 100%; display: flex; flex-direction: column; gap: 3px; padding: 4px 4px 3px; border: 0; border-radius: 4px; cursor: pointer;
+  background: #fbf5e9; color: #5b5470; box-shadow: 0 3px 10px rgba(20, 20, 50, .22); transform: rotate(var(--r, 0deg));
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.album-pc img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 2px; display: block; }
+.album-pc small { font-size: 10px; line-height: 1.2; text-align: center; font-weight: 600; }
+.album-pc:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 6px 16px rgba(20, 20, 50, .28); }
+.album-pc:active { transform: scale(.96); }
+.album-big { background: #fbf5e9; padding: 10px 10px 8px; margin: 4px 0 10px; }
+.album-big img { width: 100%; display: block; border-radius: 2px; }
+.album-big figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-top: 7px; color: #2b2a45; }
+.album-big figcaption b { font: 800 15px/1.2 var(--font-display); }
+.album-big figcaption small { font-size: 11.5px; color: #6b6585; white-space: nowrap; }
+.pc-saved { text-align: center; margin-top: 6px; color: var(--teal); }
 .postcard { width: 100%; max-width: 100%; border-radius: 6px; box-shadow: 0 10px 28px rgba(20, 20, 50, 0.28); transform: rotate(-1.2deg); margin: 4px 0 6px; }
 .pc-actions { display: flex; gap: 10px; justify-content: center; }
 .pc-btn { text-decoration: none; align-items: center; min-width: 120px; padding: 10px 16px; }

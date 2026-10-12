@@ -147,7 +147,12 @@ npx wrangler dev   # http://localhost:8787
   3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son kademesi (Elmas) v1.48'de
   19 araca çıktı (v1.36'da 13 ve 14'ten 14 ve 16'ya yükselmişti); kazanılmış kademeler düşmez.
   Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
-  (en büyük sıçrama Sv. 50'de). Yükseltme satırı sıradaki eşiği söyler: yeni görünüm (Sv. 10) ya da hız ×2.
+  (en büyük sıçrama Sv. 50'de). v1.51'den beri geç oyun için daha büyük eşikler de var: Sv. 250 ve 300'de ×3, 350 ve 400'de ×4,
+  450 ve 500'de ×5 (`Econ.boostOf`). Aracın hız çarpanı (1 + 0,1 × seviye) × eşik katlarının çarpımıdır: Sv. 200'de 672,
+  Sv. 300'de 8.928 (×13,3), Sv. 400'de 188.928, Sv. 500'de ~5,9 milyon (Sv. 200'ün ~8.700 katı). Yükseltmeler seviye başına %9,5
+  pahalandığı için bu eşikler orta oyunun temposunu değiştirmez (araçlar yine Sv. 50 civarında değiştirilir); zincirin sonuna
+  gelen oyuncuya eski araçlarını geliştirmek için yeni hedefler verir. Yükseltme satırı sıradaki eşiği ve katını söyler
+  (yeni görünüm, hız ×2 … ×5); birden çok eşik birden ya da ×3 ve üstü bir eşik geçilince bildirim toplam katı yazar.
 - **Fiyat dengesi (v1.27)**: Kilit yoktur, sıradaki araç her zaman alınabilir; oyuncuyu fiyatlar yönlendirir. Araçların satın alma
   ve yükseltme fiyatları sabittir; bir aracı yükseltmek başka bir aracın fiyatını değiştirmez. Yükseltmeler aracın fiyatının
   %1'inden başlar ve her seviyede yalnızca %9,5 pahalanır. Araç hızları 2,5 katlık, fiyatları ~6 katlık ve giderek dikleşen bir
@@ -456,6 +461,11 @@ npx wrangler dev   # http://localhost:8787
   Yol arkadaşı eve dönüşte de yolcuyla kalır.
 - **Kartpostal**: HUD'daki fotoğraf makinesi düğmesi o anki manzarayı arayüzsüz, kenarlıklı bir kartpostala çevirir
   (bölge adı, yol, araç, tarih ve pul). Kartpostal indirilebilir; destekleyen cihazlarda doğrudan paylaşılabilir.
+  **Kartpostal Albümü (v1.51)**: Çekilen son 12 kartpostalın fotoğrafı (360 px JPEG) ayrı bir anahtarda (`idle-traveler-album`,
+  ana kaydı şişirmez; 12 kartpostal ~240 kB) saklanır; yer kalmazsa en eskiler silinir, depolama kapalıysa albüm boş kalır.
+  Kartpostal penceresi "Albümüne eklendi · Yol Defteri" der. Yol Defteri'nde ilk kartpostaldan sonra *Kartpostal Albümü* bölümü
+  görünür: en yenisi başta, hafifçe eğik duran küçük kartpostallar (dokununca düzelir); dokununca fotoğraf altında bölge adı,
+  tarih ve yolla büyük açılır, yeniden indirilebilir. Yolculuğu sıfırlamak albümü de siler. Testi: `tests/album.js`.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
