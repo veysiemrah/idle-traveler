@@ -100,6 +100,7 @@ npx wrangler dev   # http://localhost:8787
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
   Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
   Yenilikler, Ayarlar ve Kartpostal pencereleri dışına basınca ya da Esc tuşuyla kapanır (tanıtım penceresi düğmeyle kapanır).
+  Pencere açıkken arkadaki sayfa (`.app`, `inert`) klavyeyle de ulaşılamaz.
 - **Kendiliğinden güncelleme**: Oyun yayındaki sürümü açılıştan 30 saniye sonra, sonra 3 dakikada bir ve sekmeye dönünce
   yoklar (`js/changelog.js` önbelleksiz okunur, `IT.VERSION` karşılaştırılır). Yeni sürüm varsa "Yeni sürüm hazır" bildirimi
   gelir, 4 saniye sonra ilerleme kaydedilir ve sayfa yumuşakça solarak yenilenir. Sekme arka plandaysa hemen yenilenir. Açık bir
@@ -258,7 +259,8 @@ npx wrangler dev   # http://localhost:8787
   Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
   aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
 - **Geçici etkiler**: Kelebek, gökkuşağı ve kayan yıldız etkileri sahnenin solunda kalan süreleriyle durur; son 10 saniyede
-  yumuşakça nabız atar. Bir kelebek etkisinin 5 dakikadan fazla süresi kalmışken aynı kelebek yeniden yakalanırsa süre değil
+  yumuşakça nabız atar, süresi bitince solup daralarak kaybolur (alttakiler birden yukarı zıplamaz). Telefonda bildirimler
+  etkilerin altında belirir; yatay telefonda sahnenin sağ üstüne yaslanır, konum kartını örtmez. Bir kelebek etkisinin 5 dakikadan fazla süresi kalmışken aynı kelebek yeniden yakalanırsa süre değil
   çarpan artar: her kat temel artışı bir kez daha ekler (Rüzgâr Hortumu hız ×3 → ×5 → ×7, Bereket kredi ×2 → ×3 → ×4),
   en çok 10 kat. Kalan süre 5 dakikanın altındaysa yakalanan kelebek süreyi uzatır.
 - **Altın kelebek**: Arada bir gökyüzünden geçer. Yakalarsan hız ×3, kredi ×2, tıklama ×5 ya da anında kredi verir.
@@ -309,7 +311,26 @@ npx wrangler dev   # http://localhost:8787
   bir kez sayılır ("Denizden n. selam"). Denizin yunuslara yer açması için kıyı bölgelerinde orta tepeler (kumsal) alçalır, deniz
   şeridi genişler. Yol Defteri'nde *Yunus selamı* sayılır; yedinci selam *Denizci* kıyafetini (deniz mavisi ceket, beyaz denizci
   şapkası, kırmızı çanta) açar. Kıyafet kilitliyken ilk selamdan önce yalnızca "Denizden bir selam…", sonra "Yunuslar: n/7" yazar.
-  Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir.
+  Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir. Selam verilen yunus o anda havadaysa önce o sıçrayışını bitirir,
+  selamdan sonra sıçrayışlar sudan yeniden başlar (v1.44'e kadar suya birden düşüyor, sonra havada beliriyordu). Deniz solarken
+  (denizsiz bölgeye geçiş, uzay) görünmeyen sürüye dokunulmaz; denizli bir bölgeye her girişte ilk sürü 30–60 sn içinde gelir.
+- **Kuş Defteri (v1.44)**: Her bölgenin kendine has bir kuşu var (`data.js` → `BIRDS`): Leylek (Sabah Köyü, Buğday Ovası),
+  Arıkuşu (Lavanta, Lale, Kiraz), Alaca Ağaçkakan (Çam Ormanı, Sonbahar Korusu), Flamingo (Ege Sahil Yolu, Zeytin Bahçeleri),
+  Kaya Kartalı (Kızıl Kanyon, Peri Bacaları, Çöl), Kar Baykuşu (Karlı Geçit, Kuzey Işıkları) ve Yalıçapkını (Çay Bahçeleri).
+  Arada bir o bölgenin kuşu (ya da küçük sürüsü: leylek 1–2, flamingo 3–5, arıkuşu 2–3) gökyüzünden geçer: ilki 40–70 sn sonra,
+  sonra 120–200 sn arayla. Her kuşun kendi uçuşu ve sesi vardır: leylek ve kartal arada süzülür (kartalın kanat uçları parmak
+  gibi ayrıktır), arıkuşu ve ağaçkakan çırpıp süzülerek dalgalı uçar, yalıçapkını hızlı ve alçaktan geçer, leylekle flamingo
+  yolcuyla aynı yöne, diğerleri karşıdan uçar; leylek gaga takırdatır, ağaçkakan tıklatır, baykuş öter. Gece de gelirler (açık ve
+  koyu temada eşit); gece hafifçe kararır ve çevrelerinde soluk bir ışık olur, baykuşun gözleri ışıldar. Konum kartının altından
+  uçarlar (telefonda da kartın arkasında kalmazlar). Yağmurda, uzayda, pencere açıkken ve gökyüzünde turna, uçurtma, kâğıt uçak
+  ya da takımyıldız varken gelmezler; kuş gökteyken bunlar da beklenir. Kuşa dokununca dokunulan yerde dürbün biçiminde iki
+  halka belirip solar, kuş sevinçle hızlanıp yükselerek kaybolur ve deftere yazılır (her geçiş bir kez sayılır). İlk iki kuşta
+  "Gökyüzünde tanımadığın bir kuş var…" bildirimi gelir; yeni bir kuş "Kuş Defteri'ne yeni bir kuş: … (n/7)" der. İlk kuştan
+  sonra Yol Defteri'nde *Kuş Defteri* bölümü görünür: bulunan kuşlar renkli çizimi, adı ve kaç kez görüldüğüyle, bulunmayanlar
+  soluk siluet ve yaşadığı yeri sezdiren bir ipucuyla ("Kanyonların çok üstünde süzülür"). Defterdeki kuşa dokununca kendi
+  sesiyle öter ve kartında hafifçe sıçrar. Yedi kuşun hepsini tanıyınca *Kuş Gözlemcisi* kıyafeti (haki ceket, hasır şapka,
+  tuğla kırmızısı çanta) açılır; kilitliyken "Gökyüzüne bak…", ilk kuştan sonra "Kuşlar: n/7" yazar. Sayılar `birds` alanında
+  ömür boyu tutulur. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir. Testi: `tests/birds.js`.
 - **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
   sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
   gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve
@@ -385,7 +406,7 @@ npx wrangler dev   # http://localhost:8787
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
-  yunus selamıyla açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  yunus selamıyla, *Kuş Gözlemcisi* Kuş Defteri dolunca (7 kuş) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
@@ -397,7 +418,9 @@ npx wrangler dev   # http://localhost:8787
   süreyi sayar: gece ya da uzayda (v1.42'ye kadar açık temada hiç ilerlemiyordu). Yeni kademe eklemek için `data.js` içindeki `TIERS` listesine bir satır ve her ailenin `at`
   dizisine bir eşik eklemek yeter.
 - **Çevrimdışı ilerleme**: Oyun kapalıyken ya da sekme arka plandayken yolcu, otomatik hızın %30'u ile
-  (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder.
+  (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder. Son görülme zamanını (`lastSeen`) yalnızca
+  çalışan döngü ve açılış ilerletir, kayıt ilerletmez: gizli sekmede gelen bir kayıt (ör. yeni sürümle yenilenme) sekmenin gizli
+  kaldığı süreyi silmez (v1.44'e kadar her yayın arka plandaki sekmelerin çevrimdışı ilerlemesini o ana kadar siliyordu).
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı
   yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
   tarayıcı temasından bağımsız olarak sabitlenebilir. Değişimde gün batımı ya da gün doğumuyla yumuşak bir geçiş olur.
