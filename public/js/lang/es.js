@@ -469,5 +469,14 @@ IT.addLang('es', {
     "toast.hoopoeNew": "<b>¡La abubilla te muestra el camino!</b> · Se añadió una página secreta a tu Cuaderno de aves · {text} · {dur}",
     "toast.hoopoe": "<b>{name}</b> · {text} · {dur}",
     "float.hoopoe": "¡Abubilla!",
+    // Zaman Makinesi (v1.50)
+    "veh.chrono.name": "Máquina del tiempo",
+    "veh.chrono.up": "Engranajes de Oro",
+    "veh.chrono.by": "en máquina del tiempo",
+    "veh.chrono.tagline": "Cada tic del reloj es un paso: camina mientras tú descansas.",
+    "ui.autoTaps": "Pasos automáticos",
+    "ui.autoRate": "{n}/s",
+    "ui.autoStep": "los pasos también se aceleran",
+    "j.autoSteps": "Pasos automáticos",
   },
 });

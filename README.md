@@ -136,8 +136,14 @@ npx wrangler dev   # http://localhost:8787
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni → Kuyruklu Yıldız → Yıldız Gemisi → Yıldız Balinası →
-  Samanyolu Treni → Anka Kuşu (19 araç). Kuyruklu Yıldız ve Yıldız Gemisi v1.36'da, son üçü v1.46'da zincirin sonuna eklendi
-  (her biri hız ×2,5, fiyat ~×11); erken ve orta oyunun dengesi değişmedi. Uzun yolculuklarda (eve dönüş eşiği her dönüşte
+  Samanyolu Treni → Anka Kuşu → Zaman Makinesi (20 araç). Kuyruklu Yıldız ve Yıldız Gemisi v1.36'da, balina, tren ve Anka v1.46'da,
+  Zaman Makinesi v1.50'de zincirin sonuna eklendi (her biri hız ×2,5, fiyat ~×11); erken ve orta oyunun dengesi değişmedi.
+  **Zaman Makinesi** garajdayken (hangi araca binilirse binilsin) yolcunun yerine otomatik adım atar: saniyede `Econ.autoRate`
+  kadar (Sv. 0'da 1, her seviye +0,05, Sv. 220'de en çok 12). Her otomatik adım bir dokunuşun yolunu verir (ritim çarpanı
+  ve şanslı adım olmadan); elle atılan adım, ritim, rozet ya da Günün Notları için sayılmaz. Yalnızca oyun açıkken çalışır
+  (çevrimdışı ilerleme ayrı hesaplanır). Yazısı birikip saniyede bir "⏱ +…" olarak uçar, ince bir saat tıkırtısı duyulur ve
+  makinenin kristal kolu her tıkta oynar. Garaj kartında "Otomatik adım n/sn" satırı, Yol Defteri'nde *Otomatik adımlar*
+  sayacı (`autoSteps`) görünür. Uzun yolculuklarda (eve dönüş eşiği her dönüşte
   3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son kademesi (Elmas) v1.48'de
   19 araca çıktı (v1.36'da 13 ve 14'ten 14 ve 16'ya yükselmişti); kazanılmış kademeler düşmez.
   Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
@@ -243,7 +249,8 @@ npx wrangler dev   # http://localhost:8787
   tozu tüter, yolcu kabin penceresinden bakar) vagonda kıyafet renginde kuşak, vagon damında renkli fener dizisi, ışıldayan
   tekerlekler ve daha parlak ray; Anka kuşunda (Zümrüdüanka: zümrüt tüyler, altın karın, ışıktan uzun kuyruk telleri, ağır
   ağır çırpan kanatlar) eyer örtüsü ve altın dizgin, kuyruk tüylerinde göz benekleri ve iki tel daha, kanat kenarlarında
-  ışıldayan alev. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
+  ışıldayan alev; zaman makinesinde (pirinç kızaklar, kadife koltuk, arkada dönen kadranlı saat diski, ucu kristal kol) pirinç
+  fener ve kıyafet renginde minder, diskin altında dönen ikinci çark ve arkada dönen zaman girdabı. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
   At dörtnal (kanter) koşar: her bacak yere basar (toynak yerde kalır) ve havada katlanıp öne gelir; ön dizler öne, arka diz
   eklemleri geriye bükülür. Gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele telleri ve kuyruk rüzgârda
   dalgalanır, kulak ara sıra seğirir. Binici atı biraz gecikmeyle izler, dizgin başa uzanır; toynaklar yere vurdukça toz kalkar.

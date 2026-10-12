@@ -191,6 +191,12 @@
       else { chirp(0.1, 2600, 3200, 0.09, 0.012); chirp(0.24, 2800, 3400, 0.09, 0.011); chirp(0.4, 2400, 3000, 0.12, 0.01); }
       if (noted) [2, 4].forEach((n, i) => this.tone(PENTA[n] * 2, 0.03, 0.9, 'sine', this.sfx, true, 0.5 + i * 0.13));
     },
+    // Zaman Makinesi: ince, kuru bir saat tıkırtısı (otomatik adım)
+    chronoTick() {
+      if (!this.ctx || !this.sfxOn) return;
+      this.noise(0.035, 0.025, 3200, 6);
+      this.tone(2637, 0.006, 0.05, 'triangle');
+    },
     // balkabağı: içi boş, tok bir "tok" ve hoplarken iki küçük, sıcak nota
     pumpkin() {
       if (!this.ctx || !this.sfxOn) return;
