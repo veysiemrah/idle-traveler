@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.45';
+  IT.VERSION = '1.46';
 
   IT.CHANGELOG = [
+    { v: '1.46', date: '2026-10-12', items: {
+      tr: ['Garaj kapısının ardında üç yeni araç bekliyor. Yıldız Gemisi bile yolun sonu değilmiş: yıldızların ötesine gidenler masallardaki yaratıklarla karşılaşabilir.',
+        'Telefonda uçan araçlar artık gökyüzünde tam görünüyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Three new vehicles are waiting behind the garage door. Even the Starship was not the end of the road: those who travel beyond the stars may meet creatures from the old tales.',
+        'On phones, flying vehicles are now fully visible in the sky.',
+        'A few small touches along the road.'],
+      de: ['Hinter dem Garagentor warten drei neue Fahrzeuge. Selbst das Sternenschiff war nicht das Ende des Weges: Wer über die Sterne hinausreist, begegnet vielleicht Wesen aus alten Märchen.',
+        'Auf dem Handy sind fliegende Fahrzeuge jetzt ganz am Himmel zu sehen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Tras la puerta del garaje esperan tres vehículos nuevos. Ni siquiera la Nave estelar era el final del camino: quien viaje más allá de las estrellas quizá se cruce con criaturas de los cuentos antiguos.',
+        'En el móvil, los vehículos voladores ya se ven enteros en el cielo.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Trois nouveaux véhicules attendent derrière la porte du garage. Même le Vaisseau stellaire n’était pas le bout de la route : qui voyage au-delà des étoiles croisera peut-être des créatures des vieux contes.',
+        'Sur téléphone, les véhicules volants se voient désormais en entier dans le ciel.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.45', date: '2026-10-12', items: {
       tr: ['Ekim geldi; tarlaların kenarında bir hazırlık var… Gün batınca da yola bakmayı unutma, ay bile kılık değiştirdi.',
         'Yolda birkaç küçük rötuş.'],

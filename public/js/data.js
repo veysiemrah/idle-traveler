@@ -30,6 +30,10 @@
     // (v1.36) zincir aynı oranlarla uzadı: hız ×2,5, fiyat ~×10,7 ve ×11 (uzun yolculuklarda yeni hedefler)
     { id: 'comet',   cost: 4.7e14, idle: 13000, click: 2600,  road: 'asphalt', alt: 1.15 },
     { id: 'warp',    cost: 5.2e15, idle: 32500, click: 6500,  road: 'asphalt', alt: 1.15 },
+    // (v1.46) zincir yine aynı oranlarla uzadı: hız ×2,5, fiyat ~×11 (yalnızca uzun yolculukların hedefleri; erken ve orta oyun aynı)
+    { id: 'whale',     cost: 5.8e16, idle: 81250,  click: 16250,  road: 'asphalt', alt: 1.15 },
+    { id: 'startrain', cost: 6.4e17, idle: 203000, click: 40600,  road: 'asphalt', alt: 1.15 },
+    { id: 'anka',      cost: 7.1e18, idle: 508000, click: 101500, road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
     v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.01);

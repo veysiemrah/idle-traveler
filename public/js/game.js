@@ -1141,7 +1141,7 @@
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
 
     uiTimer += dt;
-    if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); }
+    if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); scene.hudBottom = hudBottom(); }
     saveTimer += dt;
     if (saveTimer > 5) { saveTimer = 0; save(); scene.festival = IT.festival(); }
     requestAnimationFrame(frame);
@@ -2062,9 +2062,10 @@
       if (scene.hitPlane(x, y)) { catchPlane(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       if (scene.hitFox(x, y)) { catchFox(); return; }
-      if (scene.hitPumpkin(x, y)) { catchPumpkin(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }
+      // yol kenarı süsü en son: yanındaki yadigâra ya da sandığa dokunuşu kapmasın
+      if (scene.hitPumpkin(x, y)) { catchPumpkin(); return; }
       const g = scene.hitGhost(x, y);
       if (g) { waveAt(g); return; }
       const before = S.distance;

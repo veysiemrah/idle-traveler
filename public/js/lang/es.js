@@ -366,6 +366,12 @@ IT.addLang('es', {
     "veh.comet.tagline": "Súbete a lomos de un cometa y deja una estela de luz tras de ti.",
     "veh.warp.name": "Nave estelar", "veh.warp.up": "Anillos de Curvatura", "veh.warp.by": "en nave estelar",
     "veh.warp.tagline": "Pliega el espacio y toma el atajo entre las estrellas.",
+    "veh.whale.name": "Ballena estelar", "veh.whale.up": "Canto de Ballena", "veh.whale.by": "en ballena estelar",
+    "veh.whale.tagline": "Acomódate a lomos de un gigante amable que canta en lo profundo del espacio.",
+    "veh.startrain.name": "Tren de la Vía Láctea", "veh.startrain.up": "Carbón de Polvo Estelar", "veh.startrain.by": "en el tren de la Vía Láctea",
+    "veh.startrain.tagline": "Recorre la galaxia de estación en estación sobre raíles de luz.",
+    "veh.anka.name": "Anka esmeralda", "veh.anka.up": "Plumas de Esmeralda", "veh.anka.by": "a lomos del Anka esmeralda",
+    "veh.anka.tagline": "Vuela más allá del legendario monte Qaf a lomos de una leyenda.",
     // Mektuplar (v1.39): kâğıt uçakla gelen 12 mektup
     "letter.eyebrow": "Carta {n}/{m}",
     "letter.dear": "Hola, {name}:",
