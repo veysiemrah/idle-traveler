@@ -366,6 +366,12 @@ IT.addLang('en', {
     "veh.comet.tagline": "Hop on a comet's back and leave a trail of light behind you.",
     "veh.warp.name": "Starship", "veh.warp.up": "Warp Rings", "veh.warp.by": "by starship",
     "veh.warp.tagline": "Fold space and take the shortcut between the stars.",
+    "veh.whale.name": "Star Whale", "veh.whale.up": "Whale Song", "veh.whale.by": "by star whale",
+    "veh.whale.tagline": "Settle on the back of a gentle giant that sings in the depths of space.",
+    "veh.startrain.name": "Milky Way Train", "veh.startrain.up": "Stardust Coal", "veh.startrain.by": "by Milky Way train",
+    "veh.startrain.tagline": "Ride rails of light across the galaxy, from station to station.",
+    "veh.anka.name": "Emerald Anka", "veh.anka.up": "Emerald Plumes", "veh.anka.by": "on the Emerald Anka",
+    "veh.anka.tagline": "Fly beyond the fabled Mount Qaf on the wings of a legend.",
     // Mektuplar (v1.39): kâğıt uçakla gelen 12 mektup
     "letter.eyebrow": "Letter {n}/{m}",
     "letter.dear": "Dear {name},",

@@ -368,6 +368,12 @@ IT.addLang('fr', {
     "veh.comet.tagline": "Grimpe sur le dos d’une comète et laisse derrière toi un sillage de lumière.",
     "veh.warp.name": "Vaisseau stellaire", "veh.warp.up": "Anneaux de distorsion", "veh.warp.by": "en vaisseau stellaire",
     "veh.warp.tagline": "Plie l’espace et prends le raccourci entre les étoiles.",
+    "veh.whale.name": "Baleine stellaire", "veh.whale.up": "Chant de baleine", "veh.whale.by": "à dos de baleine stellaire",
+    "veh.whale.tagline": "Installe-toi sur le dos d’un doux géant qui chante dans les profondeurs de l’espace.",
+    "veh.startrain.name": "Train de la Voie lactée", "veh.startrain.up": "Charbon d’étoiles", "veh.startrain.by": "en train de la Voie lactée",
+    "veh.startrain.tagline": "Parcours la galaxie de gare en gare sur des rails de lumière.",
+    "veh.anka.name": "Anka d’émeraude", "veh.anka.up": "Plumes d’émeraude", "veh.anka.by": "à dos d’Anka d’émeraude",
+    "veh.anka.tagline": "Envole-toi au-delà du légendaire mont Qaf sur les ailes d’une légende.",
     // Mektuplar (v1.39): kâğıt uçakla gelen 12 mektup
     "letter.eyebrow": "Lettre {n}/{m}",
     "letter.dear": "Bonjour {name},",

@@ -378,6 +378,12 @@ IT.addLang('tr', {
     "veh.comet.tagline": "Bir kuyruklu yıldızın sırtına atla, ardında ışıktan bir yol bırak.",
     "veh.warp.name": "Yıldız Gemisi", "veh.warp.up": "Bükülme Halkaları", "veh.warp.by": "yıldız gemisiyle",
     "veh.warp.tagline": "Uzayı katla, yıldızların arasından kestirmeden git.",
+    "veh.whale.name": "Yıldız Balinası", "veh.whale.up": "Balina Şarkısı", "veh.whale.by": "yıldız balinasıyla",
+    "veh.whale.tagline": "Uzayın derinliklerinde şarkı söyleyen nazik bir devin sırtına kurul.",
+    "veh.startrain.name": "Samanyolu Treni", "veh.startrain.up": "Yıldız Kömürü", "veh.startrain.by": "Samanyolu treniyle",
+    "veh.startrain.tagline": "Işıktan raylarda galaksiyi istasyon istasyon dolaş.",
+    "veh.anka.name": "Anka Kuşu", "veh.anka.up": "Zümrüt Tüyler", "veh.anka.by": "Anka kuşuyla",
+    "veh.anka.tagline": "Masallardaki Kaf Dağı'nın ötesine, bir efsanenin kanatlarında uç.",
     // Mektuplar (v1.39): kâğıt uçakla gelen 12 mektup
     "letter.eyebrow": "Mektup {n}/{m}",
     "letter.dear": "Sevgili {name},",

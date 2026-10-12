@@ -132,10 +132,11 @@ npx wrangler dev   # http://localhost:8787
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
-  Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni → Kuyruklu Yıldız → Yıldız Gemisi (16 araç).
-  Son ikisi v1.36'da zincirin sonuna eklendi (hız ×2,5, fiyat ~×10,7 ve ×11); erken ve orta oyunun dengesi değişmedi.
-  Uzun yolculuklarda (eve dönüş eşiği her dönüşte 3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin
-  son iki kademesi 14 ve 16 araç oldu (önce 13 ve 14; kazanılmış kademeler düşmez).
+  Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni → Kuyruklu Yıldız → Yıldız Gemisi → Yıldız Balinası →
+  Samanyolu Treni → Anka Kuşu (19 araç). Kuyruklu Yıldız ve Yıldız Gemisi v1.36'da, son üçü v1.46'da zincirin sonuna eklendi
+  (her biri hız ×2,5, fiyat ~×11); erken ve orta oyunun dengesi değişmedi. Uzun yolculuklarda (eve dönüş eşiği her dönüşte
+  3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son iki kademesi 14 ve 16 araç olarak kaldı (v1.36'da
+  13 ve 14'ten yükseldi); son üç araç rozet için gerekmez.
   Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
   (en büyük sıçrama Sv. 50'de). Yükseltme satırı sıradaki eşiği söyler: yeni görünüm (Sv. 10) ya da hız ×2.
 - **Fiyat dengesi (v1.27)**: Kilit yoktur, sıradaki araç her zaman alınabilir; oyuncuyu fiyatlar yönlendirir. Araçların satın alma
@@ -233,13 +234,21 @@ npx wrangler dev   # http://localhost:8787
   kanat şeridi ve art yakıcı; rokette şeritler, yan iticiler ve anten; güneş yelkeninde yıldız arması, yanardöner kenar ve
   ikinci yelken; kuyruklu yıldızda (yolcu buzlu kaya çekirdeğin sırtında oturup dizgin tutar) eyer örtüsü ve dizgin, buz
   kristalleri ve ikinci (toz) kuyruk; yıldız gemisinde (üstte ve altta pilonlu motor bölmeleri, kubbe kokpit, bir bükülme
-  halkası) gövde şeridi ve lomboz ışıkları, ikinci ve üçüncü bükülme halkası ve konum ışıkları. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
+  halkası) gövde şeridi ve lomboz ışıkları, ikinci ve üçüncü bükülme halkası ve konum ışıkları; yıldız balinasında (sırtı
+  yıldız benekli, kuyruğu yavaşça iner kalkar, yolcu sırtında oturur) eyer örtüsü, sırttaki delikten yıldız tozu fıskiyesi ve
+  yanlarında ışıldayan benek sırası; Samanyolu treninde (ışıktan rayda giden buharlı lokomotif ve bir vagon, bacadan yıldız
+  tozu tüter, yolcu kabin penceresinden bakar) vagonda kıyafet renginde kuşak, vagon damında renkli fener dizisi, ışıldayan
+  tekerlekler ve daha parlak ray; Anka kuşunda (Zümrüdüanka: zümrüt tüyler, altın karın, ışıktan uzun kuyruk telleri, ağır
+  ağır çırpan kanatlar) eyer örtüsü ve altın dizgin, kuyruk tüylerinde göz benekleri ve iki tel daha, kanat kenarlarında
+  ışıldayan alev. Garaj simgeleri aracın o anki görünümünü gösterir; yükseltme satırı yeni görünümün geleceği seviyeyi söyler.
   At dörtnal (kanter) koşar: her bacak yere basar (toynak yerde kalır) ve havada katlanıp öne gelir; ön dizler öne, arka diz
   eklemleri geriye bükülür. Gövde adım başına bir kez yükselir, baş ve boyun adımla sallanır, yele telleri ve kuyruk rüzgârda
   dalgalanır, kulak ara sıra seğirir. Binici atı biraz gecikmeyle izler, dizgin başa uzanır; toynaklar yere vurdukça toz kalkar.
   Bisiklette pedallar krank kollarıyla aynakol dişlisine bağlı döner (dişliden arka göbeğe zincir uzanır), ayaklar pedallara basar;
   binicinin omuzları ve başı her pedal vuruşunda hafifçe iner ve yana salınır, sepetteki çiçekler sallanır.
   Uçan araçlar yolun üstünde gökyüzünde süzülür, yol ve manzara görünmeye devam eder. Roket ve güneş yelkeninde gökyüzü koyulaşır, yıldızlar belirir.
+  Uçan araç konum kartının altında kalır (`scene.flyY`; game.js kartın alt kenarını verir, araç yumuşakça izler): v1.46'ya kadar
+  dikey telefonda kart gökyüzünün üst yarısını kapladığı için uçan araçlar ve uçan gezginler kartın arkasında kalıyordu.
 - **Yol tecrübesi**: Hızını garajdaki en güçlü araç belirler, diğer araçlar hızlarının yarısını katar. Yeni araca her zaman
   hemen binilir. Hangi araca bindiğin yalnızca görünümü değiştirir; hız asla düşmez, eski yükseltmeler boşa gitmez.
   Garajın üstündeki iki özet kutusu en güçlü aracı ve diğer araçlardan gelen hızı canlı gösterir.

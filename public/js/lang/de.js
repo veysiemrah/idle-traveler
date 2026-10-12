@@ -382,6 +382,12 @@ IT.addLang('de', {
     "veh.comet.tagline": "Spring auf einen Kometen und zieh eine Spur aus Licht hinter dir her.",
     "veh.warp.name": "Sternenschiff", "veh.warp.up": "Warp-Ringe", "veh.warp.by": "mit dem Sternenschiff",
     "veh.warp.tagline": "Falte den Raum und nimm die Abkürzung zwischen den Sternen.",
+    "veh.whale.name": "Sternenwal", "veh.whale.up": "Walgesang", "veh.whale.by": "mit dem Sternenwal",
+    "veh.whale.tagline": "Mach es dir auf dem Rücken eines sanften Riesen bequem, der in den Tiefen des Alls singt.",
+    "veh.startrain.name": "Milchstraßenzug", "veh.startrain.up": "Sternenstaubkohle", "veh.startrain.by": "mit dem Milchstraßenzug",
+    "veh.startrain.tagline": "Fahr auf Schienen aus Licht von Station zu Station durch die Galaxie.",
+    "veh.anka.name": "Smaragd-Anka", "veh.anka.up": "Smaragdfedern", "veh.anka.by": "auf der Smaragd-Anka",
+    "veh.anka.tagline": "Flieg auf den Flügeln einer Legende über den sagenhaften Berg Kaf hinaus.",
     // Mektuplar (v1.39): kâğıt uçakla gelen 12 mektup
     "letter.eyebrow": "Brief {n}/{m}",
     "letter.dear": "Hallo {name},",
