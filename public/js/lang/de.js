@@ -442,7 +442,7 @@ IT.addLang('de', {
     "j.birdsSub": "{n}/{m}",
     "j.birdsHint": "Jede Region hat ihren eigenen Vogel; tippe ihn an, wenn er vorbeifliegt, und trag ihn ein.",
     "j.birdsDone": "Vogelbuch komplett! Du kennst alle gefiederten Nachbarn des Weges.",
-    "j.birdSeen": "{name} · {n}-mal gesehen",
+    "j.birdSeen": { one: "{name} · einmal gesehen", other: "{name} · {c}-mal gesehen" },
     "toast.birdSeen": "Am Himmel fliegt ein Vogel, den du nicht kennst … Tippe ihn an und trag ihn ein!",
     "toast.birdNew": "<b>Neuer Vogel im Vogelbuch: {name}</b> · {n}/{m}",
     "toast.birdsAll": "<b>Vogelbuch komplett!</b> · Neues Outfit freigeschaltet: {name}",
@@ -450,5 +450,8 @@ IT.addLang('de', {
     "outfit.birder": "Vogelkundler",
     "ui.outfitBirds": "Vögel: {n}/{m}",
     "ui.outfitSky": "Schau zum Himmel …",
+    // Hasat mevsimi (v1.45)
+    "toast.harvestSeen": "Am Wegesrand ist alles bereit für die Ernte … Tippe einen Kürbis an!",
+    "toast.harvest": "<b>Dein Anteil an der Ernte!</b> · +{c} Credits · Komm morgen wieder",
   },
 });

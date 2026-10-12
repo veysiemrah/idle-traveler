@@ -96,6 +96,8 @@ npx wrangler dev   # http://localhost:8787
 - **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile ayarlar (dişli), kartpostal,
   tema (gündüz/gece) ve ses düğmeleri durur. Ayarlar penceresinde dil, birimler, ses efektleri, ortam sesi, gökyüzü ve
   yolculuğu sıfırlama bulunur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
+  Efektlerin yankısı ana çıkışa gider (ortam sesi kapalıyken de duyulur); iOS'ta bir kesintiden (arama, kilit ekranı) sonra ses
+  ilk dokunuşta yeniden başlar.
 - **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
   Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
@@ -213,6 +215,11 @@ npx wrangler dev   # http://localhost:8787
   Yatay telefonlarda (alçak sahne) mesaj seçici beş sütunlu iki sıraya geçer, böylece taşmaz.
   Az önce konuşan gezgin sahnede öncelikle gösterilir; Yolcular listesinde son bir dakikanın mesajı adının altında yazar.
   Yolda başka gezgin varken ve sekme açıkken mesajlar 6 saniyede bir yoklanır; yalnızken hiç istek atılmaz.
+  Mesaj sesi yalnızca konuşan gezgin sahnedeyse (ya da gezginler gizliyken bildirim gösterilince) çalar; gizli sekmede gelen
+  mesaj ve el sallama sesleri birikip sekmeye dönünce hep birden çalmaz. Adı olmayan yolcu el sallamak isteyince önce ad
+  penceresi açılır (önceden el sallandı gibi görünüp sunucuya hiç gitmiyordu). Yolcular sekmesinde klavye odağı varken liste
+  iki saniyede bir yeniden kurulmaz (odak kaybolmasın). Tüm zamanlar listesinde kendi satırın sunucudaki toplamla bu kaydınkinin
+  büyüğünü gösterir: sunucu toplam yolu hiç azaltmadığı için yolculuğu sıfırlayan oyuncu listede 0 m görünmez.
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50, 100, 150 ve 200'de her araç yeni
   bir görünüm kazanır (25'ten sonrakiler aynı zamanda hızın ikiye katlandığı eşikler); 100. seviyede altın süsler ve parıltı gelir.
   150. seviyede aracın arkasından kıyafet renklerinde yıldız tozu izi akar, 200. seviyede buna dalgalanan bir gökkuşağı kuyruğu
@@ -331,6 +338,15 @@ npx wrangler dev   # http://localhost:8787
   sesiyle öter ve kartında hafifçe sıçrar. Yedi kuşun hepsini tanıyınca *Kuş Gözlemcisi* kıyafeti (haki ceket, hasır şapka,
   tuğla kırmızısı çanta) açılır; kilitliyken "Gökyüzüne bak…", ilk kuştan sonra "Kuşlar: n/7" yazar. Sayılar `birds` alanında
   ömür boyu tutulur. Ekonomiye etkisi yoktur. Sürüm notunda yalnızca ipucu verilir. Testi: `tests/birds.js`.
+- **Hasat mevsimi (v1.45)**: Oyun gerçek takvime bakar (`data.js` → `festival()`). Ekim ve kasımda tarla bölgelerinin
+  (Sabah Köyü, Lavanta, Buğday Ovası, Ege Sahil Yolu, Kiraz, Sonbahar Korusu, Çay Bahçeleri, Lale, Zeytin; `HARVEST_BIOMES`) yol
+  kenarında arada bir balkabağı öbekleri, üstünde balkabağı duran saman balyaları ve (ova ve korularda) rüzgârda hafifçe sallanan,
+  hasır şapkalı korkuluklar durur. Çoğu öbeğin en büyük balkabağı oyulmuştur: gündüz koyu oyuklar, gece içten yanan sıcak bir
+  fener ve çevresinde titreyen bir ışık. Gece ay turuncuya çalar ve biraz irileşir (hasat ayı). Balkabağına dokununca öbek
+  sevinçle hoplar, tok bir ses ve kıvılcımlar çıkar (adım sayılmaz); günün ilk dokunuşu *hasat payı* verir (kalıcı gelirin
+  120 sn'si, en az 30 kredi; `harvestDay` alanı). Pay alınmamışken ilk balkabağı göründüğünde oturumda bir kez "Yol kenarları
+  hasada hazırlanmış…" bildirimi gelir. Mevsim dışında ve çöl, kanyon, kar gibi tarla dışı bölgelerde balkabağı çıkmaz. Sayfa
+  açıkken ay değişirse 5 sn içinde fark edilir. Testi: `tests/harvest.js`.
 - **Mektuplar**: Yolda arada bir yolcunun arkasından (soldan) katlanmış bir kâğıt uçak süzülür, ortalarda yumuşak bir takla atıp
   sağdan çıkar (16 sn; kanadında küçük kırmızı bir mühür, gece ve uzayda sıcak bir ışıltı). Dokununca kâğıt açılır ve "eski bir
   gezgin"in mektubu krem renkli bir kâğıtta (köşesinde mum mühür) okunur; mektup yolcuya adıyla seslenir. 12 mektup vardır ve

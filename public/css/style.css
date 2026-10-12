@@ -203,7 +203,7 @@ button { font: inherit; color: inherit; }
 .fx-rainbow b { background: var(--rainbow-ink); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
 .fx { max-height: 80px; transition: opacity .4s, max-height .4s, padding .4s, margin .4s, border-width .4s; }
-.fx.out { animation: none; opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; margin-top: -6px; }
+.fx.out, .fx.out.ending { animation: none; overflow: hidden; opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; margin-top: -6px; }
 /* Süresi biten etki son 10 saniyede yumuşakça nabız atar */
 .fx.ending { animation: fxPulse 1.2s ease-in-out infinite; }
 @keyframes fxPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

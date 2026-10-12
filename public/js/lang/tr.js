@@ -438,7 +438,7 @@ IT.addLang('tr', {
     "j.birdsSub": "{n}/{m}",
     "j.birdsHint": "Her bölgenin kendine has bir kuşu var; gökyüzünden geçerken dokun, deftere yaz.",
     "j.birdsDone": "Defter tamam! Yolun bütün kanatlı komşularını tanıyorsun.",
-    "j.birdSeen": "{name} · {n} kez görüldü",
+    "j.birdSeen": "{name} · {c} kez görüldü",
     "toast.birdSeen": "Gökyüzünde tanımadığın bir kuş var… Dokun, deftere yaz!",
     "toast.birdNew": "<b>Kuş Defteri'ne yeni bir kuş: {name}</b> · {n}/{m}",
     "toast.birdsAll": "<b>Kuş Defteri tamam!</b> · Yeni bir kıyafet açıldı: {name}",
@@ -446,5 +446,8 @@ IT.addLang('tr', {
     "outfit.birder": "Kuş Gözlemcisi",
     "ui.outfitBirds": "Kuşlar: {n}/{m}",
     "ui.outfitSky": "Gökyüzüne bak…",
+    // Hasat mevsimi (v1.45)
+    "toast.harvestSeen": "Yol kenarları hasada hazırlanmış… Bir balkabağına dokun!",
+    "toast.harvest": "<b>Hasat payı!</b> · +{c} kredi · Yarın yine uğra",
   },
 });

@@ -334,6 +334,12 @@
   CONSTELLATIONS.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`const.${c.id}`) }));
   const CONST = Object.fromEntries(CONSTELLATIONS.map(c => [c.id, c]));
   const constCount = s => CONSTELLATIONS.filter(c => s.consts && s.consts[c.id]).length;
+  /* ---------- Takvim: gerçek mevsime göre yol kenarı süsleri ----------
+     Ekim–kasım "hasat": tarla bölgelerinin yol kenarında balkabakları, saman balyaları ve korkuluklar durur; gece oyulmuş
+     balkabakları fener gibi yanar, ay turuncuya çalar. Günde bir kez bir balkabağına dokunmak hasat payı verir. */
+  const HARVEST_BIOMES = { meadow: 1, lavender: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
+  const festival = (d = new Date()) => (d.getMonth() === 9 || d.getMonth() === 10 ? 'harvest' : null);
+
   /* ---------- Kuş Defteri: her bölgenin kendine has bir kuşu gökyüzünden geçer ----------
      biomes: kuşun görüldüğü bölgeler (her biyomda tek kuş). Dokunulan kuş deftere yazılır; hepsi tanınınca Kuş Gözlemcisi
      kıyafeti açılır. Sıra: ilk yolculukta karşılaşılma sırası. */
@@ -543,7 +549,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, BIRD, BIRD_OF, birdCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

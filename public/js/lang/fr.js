@@ -355,7 +355,7 @@ IT.addLang('fr', {
     "j.kites": "Cerfs-volants attrapés",
     // Yunuslar (v1.43): kıyı denizinde sıçrayan sürüler
     "toast.dolphinSeen": "Au loin, quelque chose a sauté hors de la mer… Regarde l’horizon !",
-    "toast.dolphin": "<b>Les dauphins t’ont joyeusement rendu ton salut !</b> · {n}ᵉ salut de la mer",
+    "toast.dolphin": "<b>Les dauphins t’ont joyeusement rendu ton salut !</b> · salut de la mer n° {n}",
     "toast.dolphinsAll": "<b>Les dauphins te reconnaissent !</b> · Nouvelle tenue débloquée : {name}",
     "float.dolphin": "Des dauphins !",
     "j.dolphins": "Saluts de dauphins",
@@ -428,7 +428,7 @@ IT.addLang('fr', {
     "j.birdsSub": "{n}/{m}",
     "j.birdsHint": "Chaque région a son propre oiseau ; touche-le quand il passe et note-le.",
     "j.birdsDone": "Carnet complet ! Tu connais tous les voisins ailés de la route.",
-    "j.birdSeen": "{name} · vu {n} fois",
+    "j.birdSeen": { one: "{name} · 1 observation", other: "{name} · {c} observations" },
     "toast.birdSeen": "Un oiseau que tu ne connais pas traverse le ciel… Touche-le et note-le !",
     "toast.birdNew": "<b>Nouvel oiseau dans ton carnet : {name}</b> · {n}/{m}",
     "toast.birdsAll": "<b>Carnet d’oiseaux complet !</b> · Nouvelle tenue débloquée : {name}",
@@ -436,5 +436,8 @@ IT.addLang('fr', {
     "outfit.birder": "Ornithologue",
     "ui.outfitBirds": "Oiseaux : {n}/{m}",
     "ui.outfitSky": "Regarde le ciel…",
+    // Hasat mevsimi (v1.45)
+    "toast.harvestSeen": "Le bord de la route est prêt pour la récolte… Touche une citrouille !",
+    "toast.harvest": "<b>Ta part de la récolte !</b> · +{c} crédits · Reviens demain",
   },
 });

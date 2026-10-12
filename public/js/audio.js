@@ -9,7 +9,8 @@
     sfxOn: true, musicOn: true, chimeTimer: 0, wind: null, rain: null,
 
     unlock() {
-      if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+      // iOS kesintiden (arama, kilit ekranı) sonra 'interrupted' der; onu da yeniden başlat
+      if (this.ctx) { if (this.ctx.state !== 'running' && this.ctx.state !== 'closed') this.ctx.resume(); return; }
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
       try { this.ctx = new AC(); } catch (e) { return; }
@@ -21,13 +22,14 @@
       this.delay = c.createDelay(1); this.delay.delayTime.value = 0.36;
       const fb = c.createGain(); fb.gain.value = 0.38;
       const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
-      this.delay.connect(lp); lp.connect(fb); fb.connect(this.delay); lp.connect(this.music);
+      // yankı ana çıkışa gider: müzik kapalıyken efektlerin yankısı da susmasın
+      this.delay.connect(lp); lp.connect(fb); fb.connect(this.delay); lp.connect(this.master);
       this.noiseBuf = this.makeNoise(2);
       this.startWind();
     },
     // Sekme gizlenince rüzgâr ve yağmur susar, geri gelince kaldığı yerden sürer
     pause() { if (this.ctx && this.ctx.state === 'running') this.ctx.suspend(); },
-    resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+    resume() { if (this.ctx && this.ctx.state !== 'running' && this.ctx.state !== 'closed') this.ctx.resume(); },
     setSfx(on) { this.sfxOn = on; if (this.sfx) this.sfx.gain.setTargetAtTime(on ? 1 : 0, this.ctx.currentTime, 0.05); },
     setMusic(on) { this.musicOn = on; if (this.music) this.music.gain.setTargetAtTime(on ? 1 : 0, this.ctx.currentTime, 0.4); },
 
@@ -188,6 +190,16 @@
       else if (id === 'woodpecker') { for (let i = 0; i < 9; i++) this.noise(0.06, 0.02, 2600, 4, undefined, 0.1 + i * 0.045); chirp(0.6, 2200, 1800, 0.1, 0.012); }
       else { chirp(0.1, 2600, 3200, 0.09, 0.012); chirp(0.24, 2800, 3400, 0.09, 0.011); chirp(0.4, 2400, 3000, 0.12, 0.01); }
       if (noted) [2, 4].forEach((n, i) => this.tone(PENTA[n] * 2, 0.03, 0.9, 'sine', this.sfx, true, 0.5 + i * 0.13));
+    },
+    // balkabağı: içi boş, tok bir "tok" ve hoplarken iki küçük, sıcak nota
+    pumpkin() {
+      if (!this.ctx || !this.sfxOn) return;
+      const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(230, t); o.frequency.exponentialRampToValueAtTime(120, t + 0.12);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.09, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + 0.25);
+      this.noise(0.08, 0.05, 500, 1.2);
+      [3, 5].forEach((n, i) => this.tone(PENTA[n], 0.03, 0.6, 'triangle', this.sfx, true, 0.12 + i * 0.11));
     },
     // kâğıt uçak: yanından süzülen yumuşak bir hışırtı ve iki ince nota
     plane() {

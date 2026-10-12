@@ -852,6 +852,61 @@
     ctx.beginPath(); ctx.moveTo(x + 23 * k, y - 3.1 * k); ctx.lineTo(x + 28 * k, y - 2.4 * k); ctx.stroke();
     wing(0, w, '#d3d7df', '#24252c'); // ön kanat
   }
+  /* ---------- Hasat mevsimi: balkabakları, saman balyası, korkuluk ----------
+     Balkabağı: dilimli turuncu gövde, kıvrık sap. face: oyulmuş yüz (gündüz koyu oyuklar, gece içten yanar; glowA 0–1) */
+  function drawPumpkin(ctx, x, y, r, lit, glowA, face) {
+    ctx.fillStyle = css(lit(hex('#c4621c'))); ellipse(ctx, x - r * 0.45, y - r * 0.8, r * 0.6, r * 0.78); ellipse(ctx, x + r * 0.45, y - r * 0.8, r * 0.6, r * 0.78);
+    ctx.fillStyle = css(lit(hex('#e8832e'))); ellipse(ctx, x, y - r * 0.82, r * 0.62, r * 0.82);
+    ctx.fillStyle = css(lit(hex('#f7ad5a')), 0.55); ellipse(ctx, x - r * 0.2, y - r * 1.12, r * 0.15, r * 0.32, -0.2);
+    ctx.strokeStyle = css(lit(hex('#6b7d35'))); ctx.lineWidth = Math.max(1, r * 0.22); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y - r * 1.5); ctx.quadraticCurveTo(x + r * 0.1, y - r * 1.85, x + r * 0.38, y - r * 1.9); ctx.stroke();
+    if (!face) return;
+    ctx.fillStyle = glowA > 0.05 ? css(mixc(hex('#4a2410'), hex('#ffd36b'), glowA)) : css(lit(hex('#5a2e10')));
+    for (const sd of [-1, 1]) {
+      const ex = x + sd * 0.3 * r;
+      ctx.beginPath(); ctx.moveTo(ex - 0.14 * r, y - 0.92 * r); ctx.lineTo(ex + 0.14 * r, y - 0.92 * r); ctx.lineTo(ex, y - 1.16 * r); ctx.closePath(); ctx.fill();
+    }
+    ctx.beginPath(); ctx.moveTo(x - 0.44 * r, y - 0.68 * r); ctx.quadraticCurveTo(x, y - 0.2 * r, x + 0.44 * r, y - 0.68 * r);
+    for (const [dx, dy] of [[0.26, 0.56], [0.13, 0.68], [0, 0.56], [-0.13, 0.68], [-0.26, 0.56]]) ctx.lineTo(x + dx * r, y - dy * r);
+    ctx.closePath(); ctx.fill();
+  }
+  // Yuvarlak saman balyası: altın sarısı, saman çizgileri ve iki ip
+  function drawBale(ctx, x, y, w, h, lit) {
+    ctx.fillStyle = css(lit(hex('#d9b65c'))); rrect(ctx, x - w / 2, y - h, w, h, h * 0.28); ctx.fill();
+    ctx.fillStyle = css(lit(hex('#ecd387')), 0.7); rrect(ctx, x - w / 2 + h * 0.12, y - h + h * 0.1, w - h * 0.24, h * 0.28, h * 0.14); ctx.fill();
+    ctx.strokeStyle = css(lit(hex('#b8933e'))); ctx.lineWidth = Math.max(0.8, h * 0.05);
+    for (let i = 0; i < 4; i++) { const yy = y - h * (0.25 + i * 0.17); ctx.beginPath(); ctx.moveTo(x - w * 0.42, yy); ctx.lineTo(x + w * 0.42, yy + h * 0.03); ctx.stroke(); }
+    ctx.strokeStyle = css(lit(hex('#8a6a30'))); ctx.lineWidth = Math.max(1, h * 0.08);
+    for (const f of [-0.22, 0.22]) { ctx.beginPath(); ctx.moveTo(x + f * w, y - h); ctx.lineTo(x + f * w, y); ctx.stroke(); }
+  }
+  // Korkuluk: tahta direk, ekoseli gömlek, saman kollar, çuval baş ve hasır şapka; rüzgârda hafifçe sallanır
+  function drawScarecrow(ctx, x, y, s, lit, sway) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(sway);
+    const wood = css(lit(hex('#8a6440'))), straw = css(lit(hex('#e6c56a')));
+    ctx.strokeStyle = wood; ctx.lineCap = 'round'; ctx.lineWidth = 2.4 * s;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -46 * s); ctx.moveTo(-15 * s, -33 * s); ctx.lineTo(15 * s, -33 * s); ctx.stroke();
+    ctx.strokeStyle = straw; ctx.lineWidth = 1.1 * s;
+    for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(sd * 15 * s, -33 * s); ctx.lineTo(sd * (19 + i) * s, (-36 + i * 3) * s); ctx.stroke(); }
+    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * 2 * s, -19 * s); ctx.lineTo(i * 3 * s, -14 * s); ctx.stroke(); }
+    // gömlek: kırmızı ekose, kollar direk boyunca
+    ctx.fillStyle = css(lit(hex('#c8553d')));
+    ctx.beginPath(); ctx.moveTo(-14 * s, -36 * s); ctx.lineTo(14 * s, -36 * s); ctx.lineTo(14 * s, -30 * s); ctx.lineTo(7 * s, -30 * s);
+    ctx.lineTo(8 * s, -19 * s); ctx.lineTo(-8 * s, -19 * s); ctx.lineTo(-7 * s, -30 * s); ctx.lineTo(-14 * s, -30 * s); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = css(lit(hex('#8f3526')), 0.6); ctx.lineWidth = 0.9 * s;
+    for (const xx of [-9, -3, 3, 9]) { ctx.beginPath(); ctx.moveTo(xx * s, -36 * s); ctx.lineTo(xx * s * 0.8, -19 * s); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(-14 * s, -33 * s); ctx.lineTo(14 * s, -33 * s); ctx.moveTo(-8 * s, -25 * s); ctx.lineTo(8 * s, -25 * s); ctx.stroke();
+    ctx.fillStyle = css(lit(hex('#6f8fb8'))); rrect(ctx, -3 * s, -31 * s, 6 * s, 4 * s, 1 * s); ctx.fill(); // yama
+    // çuval baş: dikişli gülümseme
+    ctx.fillStyle = css(lit(hex('#d9c49a'))); circle(ctx, 0, -42 * s, 5.6 * s);
+    ctx.fillStyle = css(lit(hex('#3d2a1c'))); circle(ctx, -2 * s, -43 * s, 0.8 * s); circle(ctx, 2 * s, -43 * s, 0.8 * s);
+    ctx.strokeStyle = css(lit(hex('#3d2a1c'))); ctx.lineWidth = 0.7 * s;
+    ctx.beginPath(); ctx.moveTo(-2.6 * s, -40.2 * s); ctx.quadraticCurveTo(0, -38.4 * s, 2.6 * s, -40.2 * s); ctx.stroke();
+    // hasır şapka
+    ctx.fillStyle = css(lit(hex('#c9a04e'))); ellipse(ctx, 0, -46.5 * s, 9.5 * s, 2 * s);
+    ctx.fillStyle = css(lit(hex('#b88c3c'))); rrect(ctx, -4.6 * s, -52 * s, 9.2 * s, 5.6 * s, 2 * s); ctx.fill();
+    ctx.fillStyle = css(lit(hex('#c8553d'))); ctx.fillRect(-4.6 * s, -48.2 * s, 9.2 * s, 1.4 * s);
+    ctx.restore();
+  }
   /* ---------- Kuş Defteri kuşları ----------
      Hepsi sağa bakar; sola uçanlar dışarıda aynalanır. w: kanadın konumu (1 yukarıda, −0,6 aşağıda), night: gece karartması (0–1) */
   const tint = night => c => css(mixc(hex(c), hex('#3a4266'), night * 0.45));
@@ -1576,6 +1631,8 @@
       this.dolphins = null; this.seaLine = 0;
       // Kuş Defteri: bölgenin kuşu (ya da küçük sürüsü) gökyüzünden geçer; dokununca deftere yazılır (game.js sayar)
       this.bird = null;
+      // Takvim: 'harvest' (ekim–kasım) olunca tarla bölgelerinin yol kenarında balkabakları belirir (game.js verir)
+      this.festival = IT.festival(); this.pumpkinSeen = false;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1702,6 +1759,16 @@
             if (txt) return { type: 'sign', txt, seed, gap: rand(200, 300) };
           }
           if (r < 0.62) return { type: pick(b.trees), tree: true, s: rand(0.82, 1.08), seed, gap: rand(70, 260) };
+          // hasat mevsimi: balkabağı öbeği, üstünde balkabağı olan saman balyası ya da (ova ve korularda) korkuluk.
+          // pk: balkabakları [x, y, yarıçap] (birim); ilki oyulmuştur (lamp: gece yanar)
+          if (r < 0.74 && this.festival === 'harvest' && IT.HARVEST_BIOMES[this.biome]) {
+            const q = Math.random(), farm = this.biome === 'wheat' || this.biome === 'meadow' || this.biome === 'autumn';
+            const kind = q < 0.22 && farm ? 'scare' : q < 0.55 ? 'bale' : 'patch';
+            const pk = kind === 'scare' ? [[13, 0, 5.5]] : kind === 'bale' ? [[3, -15, 6.5], [21, 0, 5]]
+              : [[0, 0, 7.5], [13, 0, 5.2]].concat(Math.random() < 0.5 ? [[-11, 0, 4.4]] : []);
+            this.pumpkinSeen = true;
+            return { type: 'pumpkin', kind, pk, s: rand(1.05, 1.3), seed, lamp: Math.random() < 0.75, hopAt: -9, gap: rand(150, 260) };
+          }
           if (r < 0.78 && b.houses) return { type: 'fence', s: 1, seed, gap: rand(80, 140) };
           return { type: 'flowers', deco: true, s: 1.2, seed, colors: b.flowers, gap: rand(40, 120) };
         }
@@ -1864,13 +1931,33 @@
     hitBird(px, py) {
       const b = this.bird;
       if (!b || b.noted || b.t < 0.5) return null;
-      const r = 34 * Math.max(this.k, 0.8);
+      // büyük kuşlarda (kartal, baykuş) kanat uçlarına dokunmak da sayılır
+      const r = 34 * Math.max(this.k, 0.8) * Math.max(1, BIRD_FLY[b.id].s * 0.8);
       for (let i = 0; i < b.n; i++) {
         const p = this.birdPos(b, i), cx = p.x + p.dir * 4 * p.k, cy = p.y - 2 * p.k;
         if (Math.hypot(px - cx, py - cy) < r) {
           b.noted = 0.001; b.ring = { x: cx, y: cy, t: 0, k: p.k };
           this.burst(cx, cy, 22, BIRD_SPARK[b.id]);
           return b.id;
+        }
+      }
+      return null;
+    }
+    // Hasat mevsimi: oyulmuş balkabağının yeri (gece ışığı için) ve dokunuş
+    pumpkinFace(it, x, y, k) {
+      const s = it.s * k, p = it.pk[0];
+      return { x: x + p[0] * s, y: y + p[1] * s - this.pumpkinHop(it) * s, r: p[2] * s };
+    }
+    pumpkinHop(it) { const u = (this.t - it.hopAt) / 0.7; return u >= 0 && u < 1 ? Math.abs(Math.sin(u * Math.PI * 2)) * 6 * (1 - u) : 0; }
+    hitPumpkin(px, py) {
+      const k = this.k, y = this.H * 0.79 + this.shift(0.66) + 2;
+      for (const it of this.layers.road.items) {
+        if (it.type !== 'pumpkin') continue;
+        const x = it.x - this.scroll, s = it.s * k, tall = it.kind === 'scare';
+        if (Math.hypot(px - (x + 6 * s), py - (y - (tall ? 24 : 10) * s)) < Math.max(tall ? 34 : 26, 22) * Math.max(s, 0.8)) {
+          it.hopAt = this.t;
+          this.burst(x + it.pk[0][0] * s, y - 8 * s, 16, ['#ffb347', '#ffd36b', '#e8832e', '#fff1c2']);
+          return it;
         }
       }
       return null;
@@ -2596,8 +2683,10 @@
       const moonU = ((this.tod + 0.25) % 1) / 0.5;
       if (moonU > -0.1 && moonU < 1.1) {
         const mx = W * (0.12 + 0.76 * moonU), my = horizon - Math.sin(clamp(moonU, 0, 1) * Math.PI) * H * 0.5 + 20;
-        glow(ctx, mx, my, 70 * k, hex('#dfe8ff'), 0.25 * night + 0.05);
-        ctx.fillStyle = '#f1f0e6'; circle(ctx, mx, my, 15 * k);
+        // hasat ayı (ekim–kasım): turuncuya çalan, biraz daha iri bir dolunay
+        const hm = this.festival === 'harvest';
+        glow(ctx, mx, my, (hm ? 84 : 70) * k, hex(hm ? '#ffc98a' : '#dfe8ff'), (hm ? 0.3 : 0.25) * night + 0.05);
+        ctx.fillStyle = hm ? '#ffe2b0' : '#f1f0e6'; circle(ctx, mx, my, (hm ? 17 : 15) * k);
         ctx.fillStyle = 'rgba(180,184,200,0.45)'; circle(ctx, mx - 5 * k, my - 3 * k, 3.4 * k); circle(ctx, mx + 4 * k, my + 5 * k, 2.4 * k);
       }
 
@@ -2725,6 +2814,7 @@
         if (x < -140 || x > W + 140) continue;
         if (it.type === 'sign') this.drawSign(ctx, x, roadTop + 2, k, it.txt, lit);
         else if (it.type === 'fence') this.drawFence(ctx, x, roadTop + 1, k, lit);
+        else if (it.type === 'pumpkin') this.drawPumpkins(ctx, it, x, roadTop + 2, k, lit, night);
         else if (it.tree) drawTree(ctx, it.type, x, roadTop + 3, it.s * k, this.treeCols(it.type, 0, lit, pal), it.seed, night);
         else this.drawDeco(ctx, it, x, roadTop + 2, k, lit, pal);
       }
@@ -2810,6 +2900,14 @@
           const x = it.x - offRoad;
           if (x < -100 || x > W + 100) continue;
           glow(ctx, x + 9 * k, roadTop - 56 * k, 70 * k, hex('#ffcf7a'), 0.32 * night);
+        }
+        // oyulmuş balkabakları fener gibi yanar
+        for (const it of this.layers.road.items) {
+          if (it.type !== 'pumpkin' || !it.lamp) continue;
+          const x = it.x - offRoad;
+          if (x < -100 || x > W + 100) continue;
+          const f = this.pumpkinFace(it, x, roadTop + 2, k);
+          glow(ctx, f.x, f.y - f.r * 0.85, f.r * 4.2, hex('#ffb347'), (0.4 + 0.06 * Math.sin(this.t * 7 + it.seed)) * night);
         }
         for (const it of this.layers.near.items) {
           if (it.type !== 'house' && it.type !== 'windmill') continue;
@@ -3291,6 +3389,17 @@
       // arkadakiler önce çizilir, lider en üstte
       for (let i = c.n - 1; i >= 0; i--) { const p = this.cranePos(c, i); drawCrane(ctx, p.x, p.y, p.k, c.caught ? Math.sin(c.t * 16 + i) : p.w, night); }
       ctx.restore();
+    }
+    drawPumpkins(ctx, it, x, y, k, lit, night) {
+      const s = it.s * k, hop = this.pumpkinHop(it) * s, ga = it.lamp ? clamp((night - 0.2) / 0.5, 0, 1) : 0;
+      if (it.kind === 'scare') drawScarecrow(ctx, x, y, s, lit, Math.sin(this.t * 0.9 + it.seed) * 0.035 + (hop ? Math.sin(this.t * 30) * 0.02 : 0));
+      if (it.kind === 'bale') drawBale(ctx, x + 2 * s, y, 30 * s, 15 * s, lit);
+      // küçükler önce (geride), oyulmuş büyük balkabağı en önde; dokununca hepsi sevinçle hoplar
+      for (let i = it.pk.length - 1; i >= 0; i--) {
+        const p = it.pk[i];
+        if (i > 0 || it.pk.length === 1) { ctx.fillStyle = css(lit(hex('#5f8a3a'))); ellipse(ctx, x + (p[0] - p[2] * 0.9) * s, y + p[1] * s - 1 * s, p[2] * 0.5 * s, p[2] * 0.22 * s, -0.4); }
+        drawPumpkin(ctx, x + p[0] * s, y + p[1] * s - hop * (i ? 0.7 : 1), p[2] * s, lit, ga, i === 0 && it.lamp);
+      }
     }
     drawBirds(ctx, b, night) {
       const a = clamp(b.t / 1, 0, 1) * (b.noted ? clamp(1 - b.noted / 1.6, 0, 1) : 1);

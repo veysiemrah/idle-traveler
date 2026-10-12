@@ -426,7 +426,7 @@ IT.addLang('es', {
     "j.birdsSub": "{n}/{m}",
     "j.birdsHint": "Cada región tiene su propia ave; tócala cuando pase volando y apúntala.",
     "j.birdsDone": "¡Cuaderno completo! Conoces a todos los vecinos alados del camino.",
-    "j.birdSeen": "{name} · vista {n} veces",
+    "j.birdSeen": { one: "{name} · 1 avistamiento", other: "{name} · {c} avistamientos" },
     "toast.birdSeen": "Hay un ave que no conoces en el cielo… ¡Tócala y apúntala!",
     "toast.birdNew": "<b>Nueva ave en tu cuaderno: {name}</b> · {n}/{m}",
     "toast.birdsAll": "<b>¡Cuaderno de aves completo!</b> · Nuevo atuendo desbloqueado: {name}",
@@ -434,5 +434,8 @@ IT.addLang('es', {
     "outfit.birder": "Observador de aves",
     "ui.outfitBirds": "Aves: {n}/{m}",
     "ui.outfitSky": "Mira al cielo…",
+    // Hasat mevsimi (v1.45)
+    "toast.harvestSeen": "Los bordes del camino están listos para la cosecha… ¡Toca una calabaza!",
+    "toast.harvest": "<b>¡Tu parte de la cosecha!</b> · +{c} créditos · Vuelve mañana",
   },
 });
