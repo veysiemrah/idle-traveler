@@ -268,7 +268,7 @@
     { id: 'night',     at: [5, 10, 30, 60, 180, 600, 1440, 4320],              stat: s => (s.nightTime || 0) / 60 },
     { id: 'region',    at: [3, 5, 8, 11, 15, 20, 25, 30],                    stat: s => Math.max(s.bestRegion || 0, s.regionIdx || 0) + 1 },
     { id: 'dist',      at: [5000, 42195, 1e6, 4.0075e7, 3.844e8, 1.496e11, 4.5e12, 9.4607e15], stat: lifeDist, fmt: 'dist' },
-    { id: 'garage',    at: [2, 4, 6, 8, 10, 12, 14, 16],                     stat: s => Math.max(s.bestGarage || 0, VEHICLES.filter(v => s.owned && s.owned[v.id]).length) },
+    { id: 'garage',    at: [2, 4, 6, 8, 10, 12, 14, 19],                     stat: s => Math.max(s.bestGarage || 0, VEHICLES.filter(v => s.owned && s.owned[v.id]).length) },
     { id: 'tuned',     at: [10, 25, 50, 100, 150, 200, 250, 300],             stat: s => Math.max(s.bestLevel || 0, ...Object.values(s.levels || {})) },
     { id: 'home',      at: [1, 2, 3, 5, 8, 12, 16, 20],                      stat: s => s.trips },
     { id: 'memory',    at: [10, 30, 100, 300, 1000, 3000, 10000, 30000],        stat: s => s.memories },

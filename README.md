@@ -68,12 +68,15 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   özetini saklar. Başka biri aynı kimlikle kaydı değiştiremez (403).
 - `pub`, gizli kimlikten türetilen kısa ve kalıcı bir anahtardır; sahne aynı gezgini bununla tanır, kimliği açık etmez.
 - **Makullük sınırı (tüm zamanlar sahteciliğine karşı):** Bildirilen yol (bu yolculuk ve toplam), kaydın yaşında en hızlı dürüst
-  oyuncunun ulaşabileceği yolun 100 katını aşamaz; aşan değer reddedilmez, sınıra kırpılır. Sınır isteklerin sıklığıyla değil kaydın
-  yaşıyla büyür (yeni kayıt en çok ~770.000 km, 1 saatlik kayıt ~10¹⁵ m, 1 günlük ~5×10¹⁷ m), böylece kısa aralıklı isteklerle
+  oyuncunun ulaşabileceği yolun 10 katını aşamaz (v1.48'e kadar 100 katı); aşan değer reddedilmez, sınıra kırpılır. Sınır isteklerin
+  sıklığıyla değil kaydın yaşıyla büyür (yeni kayıt en çok ~77.000 km, 1 saatlik kayıt ~10¹⁴ m, 1 günlük ~5×10¹⁶ m), böylece kısa aralıklı isteklerle
   tavan aşılamaz. Eğri `tests/sim_game.js '{"profile":"lucky","reach":1,"cps":5,"night":1,"hours":48}'` ile ölçüldü
   (Worker'daki `REACH`). v1.38'de simülasyon Kelebek Dostu'nu da almaya başlayınca eğrinin önceki ölçümden çok daha yüksek
   olduğu görüldü (v1.37 öncesi kurallarla 1. saatte ~2000 katı); tablo, bugünkü ve v1.37 öncesi kuralların büyüğüne göre
-  yenilendi, böylece o kurallarla ilerlemiş dürüst kayıtlar da kırpılmaz. Canlıda kırpılmış bir kayıt görülmedi. Oyun tarayıcıda çalıştığı için sahtecilik
+  yenilendi, böylece o kurallarla ilerlemiş dürüst kayıtlar da kırpılmaz. Canlıda kırpılmış bir kayıt görülmedi. v1.48'de pay 10 kata
+  indi: bugünkü kurallarla en hızlı dürüst oyuncu (`sim_game` reach, 168 saat) 1. saatte ~1,1×10¹⁰ m, 48. saatte ~2,8×10¹³ m,
+  bir haftada ~2,9×10¹⁴ m gider; tavan bunun hâlâ çok üstündedir. Eski kurallarla ilerlemiş kayıtlar artık günlerce yaşlı olduğu
+  için tavanları (yol ∝ süre²) onları da kapsar. Oyun tarayıcıda çalıştığı için sahtecilik
   tamamen önlenemez, ama tek istekle listenin zirvesine çıkılamaz.
 - Aynı kaydı en sık 5 saniyede bir yazar. 30 gün görünmeyen ve toplamda 1 km'ye ulaşmamış kayıtlar ara sıra silinir; yol gitmiş
   gezginler tüm zamanlar listesi için kalır.
@@ -135,8 +138,8 @@ npx wrangler dev   # http://localhost:8787
   Sıcak Hava Balonu → Uçak → Süpersonik Jet → Roket → Güneş Yelkeni → Kuyruklu Yıldız → Yıldız Gemisi → Yıldız Balinası →
   Samanyolu Treni → Anka Kuşu (19 araç). Kuyruklu Yıldız ve Yıldız Gemisi v1.36'da, son üçü v1.46'da zincirin sonuna eklendi
   (her biri hız ×2,5, fiyat ~×11); erken ve orta oyunun dengesi değişmedi. Uzun yolculuklarda (eve dönüş eşiği her dönüşte
-  3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son iki kademesi 14 ve 16 araç olarak kaldı (v1.36'da
-  13 ve 14'ten yükseldi); son üç araç rozet için gerekmez.
+  3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son kademesi (Elmas) v1.48'de
+  19 araca çıktı (v1.36'da 13 ve 14'ten 14 ve 16'ya yükselmişti); kazanılmış kademeler düşmez.
   Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
   (en büyük sıçrama Sv. 50'de). Yükseltme satırı sıradaki eşiği söyler: yeni görünüm (Sv. 10) ya da hız ×2.
 - **Fiyat dengesi (v1.27)**: Kilit yoktur, sıradaki araç her zaman alınabilir; oyuncuyu fiyatlar yönlendirir. Araçların satın alma
