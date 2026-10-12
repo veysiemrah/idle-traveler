@@ -296,8 +296,10 @@ npx wrangler dev   # http://localhost:8787
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
 - **Günün Notları (v1.47)**: Her gün herkese aynı üç küçük hedef verilir (tarihten türetilen tohumla seçilir; `game.js` →
   `NOTES`): adım atmak (150), altın kelebek yakalamak (2), gökyüzündeki bir kuşa dokunmak, kartpostal çekmek, dilek tutmak
-  (kayan yıldız ya da karahindiba), yükseltme almak (5), oyun açıkken otomatik hızla ~10 dakikalık yol gitmek ve hasat
-  mevsiminde bir balkabağına dokunmak. Kuş notu uzaydayken (kuşlar gelmez), balkabağı notu mevsim dışında seçilmez. Notlar Yol
+  (kayan yıldız ya da karahindiba), yükseltme almak (5), oyun açıkken 10 dakika yolculuk etmek (süre sayılır; v1.49'a kadar
+  o anki hızla ~10 dakikalık yoldu, eve dönüşten sonra o gün tamamlanamıyordu) ve hasat mevsiminde bir balkabağına dokunmak. Kuş
+  notu uzaya çıkan bir araçla (roket ve sonrası; kuşlar gelmez), balkabağı notu mevsim dışında ya da tarla dışı bir bölgede seçilmez.
+  Saat geri alınınca notlar yeniden kurulmaz (ödüller tekrarlanmaz). Notlar Yol
   Defteri'nin başında ilerleme çubuklarıyla durur; tamamlanan not yeşil bir tikle işaretlenir. Her not kalıcı gelirin 60 sn'sini
   (en az 20 kredi), üçü birden 240 sn'sini daha (en az 60 kredi) verir. Yalnızca oyun açıkken sayılır, çevrimdışı yol sayılmaz.
   Yeni günün notları defterde görülene kadar Yol Defteri sekmesinde turuncu nokta yanar. Notlar `notes` alanında tutulur, eve
@@ -417,7 +419,13 @@ npx wrangler dev   # http://localhost:8787
     (uçan araçlarda aracın kuyruğunun gerisinde süzülür; telefonda yolcuya daha yakın durur). Etki bitince ipi bırakır, rüzgârla
     geriye ve yukarıya süzülerek solar. Sayfa yeniden açıldığında etki sürüyorsa uçurtma yerinde belirir. Yakalanan uçurtmalar
     Yol Defteri'nde sayılır. Rota kartında ödül yazmaz; sürüm notunda da yalnızca ipucu verilir.
-  Rotalar 11 tanedir; onuncu eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  - **Göç Yolu** (11., v1.49): buğday ovası, lavanta ve kıyıyla başlar; kuşlar (Kuş Defteri) iki kat sık geçer. Yalnızca bu
+    rotada arada bir (ilki 45–75 sn, sonra 150–240 sn arayla) altın bir ışıkla seçilen tepeli bir kuş, Hüdhüd (ibibik) yolcuyla
+    aynı yöne çırpıp süzülerek uçar; Mantıku't-Tayr'da kuşları Anka'ya götüren rehber kuş. İlk üç Hüdhüd'de "Gökyüzünde tepeli,
+    altın ışıklı bir kuş…" bildirimi gelir. Dokununca tepesini yelpaze gibi açar ve 30 saniye *Hüdhüd'ün Rehberliği* (hız ×2,
+    kredi ×2) gelir; ilk karşılaşmada Kuş Defteri'ne altın kenarlı gizli bir sayfa eklenir (yedi kuşun sayısını ve Kuş Gözlemcisi
+    kıyafetini etkilemez; `data.js` → `RARE_BIRDS`). Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+  Rotalar 12 tanedir; on birinci eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
   yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden

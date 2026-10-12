@@ -65,7 +65,7 @@ const { chromium } = require('./lib/pw');
 
   // 4) Koyu tema ve telefon (beş dil): taşan yazı yok
   for (const [loc, vp, dark] of [['tr-TR', { width: 320, height: 640 }, false], ['de-DE', { width: 320, height: 640 }, true], ['fr-FR', { width: 320, height: 640 }, false], ['es-ES', { width: 360, height: 740 }, false], ['en-US', null, true]]) {
-    const ph = await open({ settings: { sky: dark ? 'night' : 'day', zoom: 1 }, notes: Object.assign({}, NOTES, { list: [{ id: 'wish', need: 1 }, { id: 'upgrade', need: 5 }, { id: 'dist', need: 1234.5 }], prog: [0, 2, 300], done: [true, false, false] }) },
+    const ph = await open({ settings: { sky: dark ? 'night' : 'day', zoom: 1 }, notes: Object.assign({}, NOTES, { list: [{ id: 'wish', need: 1 }, { id: 'upgrade', need: 5 }, { id: 'time', need: 600 }], prog: [0, 2, 300], done: [true, false, false] }) },
       vp, { locale: loc, colorScheme: dark ? 'dark' : 'light', isMobile: !!vp, hasTouch: !!vp });
     await ph.click('.tab[data-id="journal"]'); await ph.waitForTimeout(300);
     const over = await ph.$$eval('.note-t', l => l.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent));

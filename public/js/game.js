@@ -15,6 +15,7 @@
     { id: 'seed',     dur: 20, credit: 10, w: 0 }, // gündüz karahindiba tohumuyla gelir (açık temada oynayan da dilek tutabilsin)
     { id: 'crane',    dur: 25, speed: 3, w: 0 },   // Turna Yolu'nda geçen turna sürüsüne dokununca gelir
     { id: 'kite',     dur: 30, credit: 3, w: 0 },  // Uçurtma Yolu'nda ipi kopmuş uçurtmayı yakalayınca gelir (süresince yolcuya bağlı uçar)
+    { id: 'hoopoe',   dur: 30, speed: 2, credit: 2, w: 0 }, // Göç Yolu'nda Hüdhüd'e dokununca gelir
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -153,7 +154,7 @@
     s.notes = cleanNotes(d.notes);
     if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
-    s.birds = Object.fromEntries(IT.BIRDS.filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
+    s.birds = Object.fromEntries([...IT.BIRDS, ...IT.RARE_BIRDS].filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
     const pk = Econ.pals.find(x => x.id === s.palPick);
     if (!pk || (pk.fox && s.fox < Econ.foxNeed)) s.palPick = 'dog';
     s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2); s.letters = count(s.letters, IT.LETTERS.length);
@@ -652,12 +653,23 @@
   // sonra, sonra 120–200 sn arayla. Dokununca deftere yazılır; yeni bir kuşsa defterde silueti renklenir. Bütün kuşları
   // tanıyınca Kuş Gözlemcisi kıyafeti açılır. Gece de gelir (tema adaleti); yağmurda, uzayda, pencere açıkken ve gökyüzünde
   // başka bir olay (turna, uçurtma, kâğıt uçak, takımyıldız) varken gelmez. Ekonomiye etkisi yoktur.
-  let birdIn = 40 + Math.random() * 30, birdHints = 0;
+  // Göç Yolu'nda kuşlar iki kat sık geçer; yalnızca orada arada bir (ilki 45–75 sn, sonra 150–240 sn) Hüdhüd görünür.
+  let birdIn = 40 + Math.random() * 30, birdHints = 0, hoopoeIn = 45 + Math.random() * 30, hoopoeHints = 0;
   function updateBirds(dt) {
     if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
+    const migrate = perk() === 'birds';
+    if (migrate) {
+      hoopoeIn -= dt;
+      if (hoopoeIn <= 0) {
+        hoopoeIn = 150 + Math.random() * 90;
+        scene.spawnBird('hoopoe', hudBottom()); Sound.bird('hoopoe');
+        if ((S.birds.hoopoe || 0) < 3 && hoopoeHints++ < 3) toast(t('toast.hoopoeSeen'), 'gold');
+        return;
+      }
+    }
     birdIn -= dt;
     if (birdIn > 0) return;
-    birdIn = 120 + Math.random() * 80;
+    birdIn = (120 + Math.random() * 80) * (migrate ? 0.5 : 1);
     const b = IT.BIRD_OF[IT.regionAt(S.regionIdx).biome];
     if (!b) return;
     scene.spawnBird(b.id, hudBottom()); Sound.bird(b.id);
@@ -670,6 +682,15 @@
     const fresh = !S.birds[id];
     S.birds[id] = (S.birds[id] || 0) + 1; uiDirty.journal = true; note('bird');
     const n = IT.birdCount(S), m = IT.BIRDS.length;
+    if (id === 'hoopoe') {
+      // Hüdhüd yol gösterir: kısa bir süre hız ve kredi ×2; ilk karşılaşmada Kuş Defteri'ne gizli bir sayfa eklenir
+      const g = GIFT.hoopoe, dur = addEffect(g, g.dur).dur;
+      Sound.gift();
+      toast(t(fresh ? 'toast.hoopoeNew' : 'toast.hoopoe', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+      scene.addFloat(t('float.hoopoe'), { color: '#ffd56b', big: true });
+      save();
+      return;
+    }
     scene.addFloat(fresh ? t('float.birdNew', { name: b.name }) : `🪶 ${b.name}`, { color: '#fff4d6', big: fresh });
     if (fresh) {
       if (n === m) {
@@ -789,13 +810,15 @@
   const NOTES = [
     { id: 'steps', e: '👣', need: () => 150 },
     { id: 'gift', e: '🦋', need: () => 2 },
-    { id: 'bird', e: '🪶', need: () => 1, when: () => (scene.space || 0) < 0.3 },
+    // uzaya çıkan araçlarda (roket ve sonrası) kuş gelmez; açılışta sahne henüz güncellenmediği için araçtan bakılır
+    { id: 'bird', e: '🪶', need: () => 1, when: () => (VEH[S.active].alt || 0) < 1 },
     { id: 'photo', e: '📷', need: () => 1 },
     { id: 'wish', e: '🌠', need: () => 1 },
     { id: 'upgrade', e: '🔧', need: () => 5 },
-    // otomatik hızla ~10 dakikalık yol (en az 10 m)
-    { id: 'dist', e: '🧭', need: () => Math.max(10, current().idle * 600) },
-    { id: 'pumpkin', e: '🎃', need: () => 1, when: () => IT.festival() === 'harvest' },
+    // oyun açıkken 10 dakika yolculuk (süre sayılır: hıza, araca ve eve dönüşe bağlı değil)
+    { id: 'time', e: '🧭', need: () => 600 },
+    // balkabakları yalnızca tarla bölgelerinde çıkar
+    { id: 'pumpkin', e: '🎃', need: () => 1, when: () => IT.festival() === 'harvest' && !!IT.HARVEST_BIOMES[IT.regionAt(S.regionIdx).biome] },
   ];
   const NOTE = Object.fromEntries(NOTES.map(n => [n.id, n]));
   function cleanNotes(n) {
@@ -807,7 +830,8 @@
   }
   function ensureNotes() {
     const today = dayKey(Date.now());
-    if (S.notes.day === today) return;
+    // saat geri alınınca notlar yeniden kurulmaz (ödüller tekrarlanmasın); yalnızca yeni bir gün yenisini getirir
+    if (S.notes.day >= today) return;
     // tarihten tohum: aynı gün herkese aynı notlar
     let h = 2166136261;
     for (const ch of today) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
@@ -817,7 +841,7 @@
     S.notes = { day: today, list: list.map(n => ({ id: n.id, need: n.need() })), prog: [0, 0, 0], done: [false, false, false], seen: false };
     uiDirty.journal = true;
   }
-  const noteText = n => t(`note.${n.id}`, { n: n.need, c: fmtNum(Math.ceil(n.need)), d: fmtDist(n.need) });
+  const noteText = n => t(`note.${n.id}`, { n: n.need, c: fmtNum(Math.ceil(n.need)), m: fmtNum(Math.round(n.need / 60)) });
   function note(id, amount) {
     const N = S && S.notes;
     if (!N || N.day !== dayKey(Date.now())) return;
@@ -1156,7 +1180,7 @@
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
-    if (gained > 0) note('dist', gained);
+    if (dt > 0) note('time', dt);
     if (dt > 0) {
       const a = 1 - Math.exp(-dt / 0.9);
       rateEma += (gained / dt - rateEma) * a;
@@ -1746,6 +1770,8 @@
     // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir; listedeki son mesajı
     // silmez, ama gezgin mesajdaki gibi sahnede öne alınır
     talkAt.set(m.pub, Date.now() - m.age);
+    // gün boyu açık sekmede çok sayıda gezgin gelip giderse eski kayıtlar budanır (10 dakikadan eski)
+    if (talkAt.size > 200) for (const [k, at] of talkAt) if (Date.now() - at > 600e3) { talkAt.delete(k); lastMsg.delete(k); }
     if (m.msg !== 'wave') lastMsg.set(m.pub, { msg: m.msg, at: Date.now() - m.age });
     if (m.msg === 'wave') {
       scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
@@ -1840,6 +1866,7 @@
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
     const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S), nConsts = IT.constCount(S), nBirds = IT.birdCount(S);
+    const shelf = IT.BIRDS.concat(IT.RARE_BIRDS.filter(b => S.birds[b.id]));
     // Her aile tek kart: madalya o anki kademenin renginde, altında 8 kademe noktası ve bir sonraki hedef
     const badges = BADGES.map(b => {
       const k = S.badges[b.id] || 0, tier = k ? TIERS[k - 1] : null;
@@ -1901,9 +1928,9 @@
         ? `<li><div class="keep const on" title="${esc(c.name)}"><svg viewBox="0 0 44 30" aria-hidden="true">${c.e.map(([i, j]) => `<line x1="${(c.s[i][0] * 44).toFixed(1)}" y1="${(c.s[i][1] * 30).toFixed(1)}" x2="${(c.s[j][0] * 44).toFixed(1)}" y2="${(c.s[j][1] * 30).toFixed(1)}"/>`).join('')}${c.s.map(p => `<circle cx="${(p[0] * 44).toFixed(1)}" cy="${(p[1] * 30).toFixed(1)}" r="1.6"/>`).join('')}</svg><b>${esc(c.name)}</b></div></li>`
         : `<li><div class="keep const" role="img" aria-label="${esc(t('j.constSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${nConsts >= IT.CONSTELLATIONS.length ? t('j.constsDone') : t('j.constsHint')}</p>` : ''}
-      ${nBirds ? `<h3 class="sec">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
-      <ul class="keeps birds">${IT.BIRDS.map(b => S.birds[b.id]
-        ? `<li><button class="keep bird on" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: S.birds[b.id], c: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
+      ${nBirds || shelf.length > IT.BIRDS.length ? `<h3 class="sec">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
+      <ul class="keeps birds">${shelf.map(b => S.birds[b.id]
+        ? `<li><button class="keep bird on${b.biomes.length ? '' : ' rare'}" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: S.birds[b.id], c: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
         : `<li><div class="keep bird" title="${esc(b.hint)}"><canvas data-bird="${b.id}" data-locked="1" aria-hidden="true"></canvas><b>???</b><small>${esc(b.hint)}</small></div></li>`).join('')}</ul>
       <p class="tag small">${nBirds >= IT.BIRDS.length ? t('j.birdsDone') : t('j.birdsHint')}</p>` : ''}
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>

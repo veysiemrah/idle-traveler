@@ -8,7 +8,7 @@
    GET  /api/feed                                              → son 20 saniyenin mesajları */
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp', 'whale', 'startrain', 'anka'];
-const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite'];
+const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite', 'migrate'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer', 'sailor', 'birder'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
