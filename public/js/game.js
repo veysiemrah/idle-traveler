@@ -27,7 +27,7 @@
   const MAP_PIECES = 4, MAP_DROP = { gift: 0.2, star: 0.5 };
   // Gelire bağlı ödüller: kaç saniyelik kalıcı gelir verdikleri (tests/sim_game.js'teki RW ile aynı tutulur)
   // v1.39: belgelenen tempo hedeflerine göre yeniden seçildi (sim_game ızgarası; bkz. README > Tempo)
-  const REWARD = { region: 120, ms: 90, instant: 250, chest: 2200 };
+  const REWARD = { region: 120, ms: 90, instant: 250, chest: 2200, harvest: 120 };
   // Kat sayısına göre etkinin çarpanları: her kat temel artışı bir kez daha ekler (×3 → ×5 → ×7)
   const effMult = (g, stack) => {
     const n = stack || 1, f = x => (x ? 1 + (x - 1) * n : 1);
@@ -49,7 +49,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'birds', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -76,6 +76,7 @@
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
       dolphins: 0, // selam verilen yunus sürüleri (kıyı denizi, ömür boyu; DOLPHIN_NEED olunca Denizci kıyafeti açılır)
+      harvestDay: '', // hasat payının en son alındığı gün (YYYY-AA-GG; günde bir kez)
       birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
@@ -147,6 +148,7 @@
     s.fox = count(s.fox, Econ.foxNeed);
     const consts = isObj(d.consts) ? d.consts : {};
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
+    if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
     s.birds = Object.fromEntries(IT.BIRDS.filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
     const pk = Econ.pals.find(x => x.id === s.palPick);
@@ -259,7 +261,7 @@
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
   let uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
-  let uiTimer = 0, saveTimer = 0, fxLast = '';
+  let uiTimer = 0, saveTimer = 0, fxLast = -1;
   let lastFrame = performance.now(), lastWall = Date.now();
 
   function comboMult() {
@@ -676,6 +678,31 @@
     save();
   }
 
+  /* ---------- Hasat mevsimi ---------- */
+  // Ekim–kasımda (IT.festival) tarla bölgelerinin yol kenarında balkabakları, saman balyaları ve korkuluklar durur; gece oyulmuş
+  // balkabakları yanar. Bir balkabağına dokununca hoplar; günün ilk dokunuşu hasat payı verir (kalıcı gelirin 120 sn'si).
+  // İlk balkabağı göründüğünde, pay alınmamışsa oturumda bir kez ipucu gelir.
+  let harvestHint = false;
+  function updateHarvest() {
+    if (!scene.pumpkinSeen) return;
+    scene.pumpkinSeen = false;
+    if (harvestHint || S.harvestDay === dayKey(Date.now())) return;
+    harvestHint = true;
+    setTimeout(() => toast(t('toast.harvestSeen'), 'gold'), 2500);
+  }
+  function catchPumpkin() {
+    Sound.unlock(); Sound.pumpkin();
+    const today = dayKey(Date.now());
+    if (scene.festival === 'harvest' && S.harvestDay !== today) {
+      S.harvestDay = today;
+      const bonus = Math.max(30, incomeRate() * REWARD.harvest);
+      grant(bonus);
+      toast(t('toast.harvest', { c: fmtNum(bonus) }), 'gold');
+      scene.addFloat(t('ui.credits', { c: fmtNum(bonus) }), { color: '#ffb347', big: true });
+      save();
+    } else scene.addFloat('🎃', { color: '#ffb347' });
+  }
+
   /* ---------- Mektuplar ---------- */
   // Sıradaki mektup hazırsa (ömür boyu yol ya da eve dönüş eşiği) bir süre sonra kâğıt uçakla gelir; kaçırılırsa yeniden gelir.
   // Yağmurda ve pencere açıkken gelmez. Okunan mektuptan sonra sıradaki en erken 4–7 dakikada gelir (birikmiş mektuplar,
@@ -1064,6 +1091,7 @@
     updateKites(dt);
     updateDolphins(dt);
     updateBirds(dt);
+    updateHarvest();
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -1115,7 +1143,7 @@
     uiTimer += dt;
     if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); }
     saveTimer += dt;
-    if (saveTimer > 5) { saveTimer = 0; save(); }
+    if (saveTimer > 5) { saveTimer = 0; save(); scene.festival = IT.festival(); }
     requestAnimationFrame(frame);
   }
   // Tıklamalarla gelen mesafe, hız ortalamasına bir sonraki karede eklenir
@@ -1588,6 +1616,8 @@
   }
   // Bütün yolculuklarda gidilen toplam yol (Yol Defteri'ndeki "toplam yol" ile aynı)
   const myLife = () => Math.max((S.lifeDist || 0) + S.distance, S.legacyDist || 0);
+  // tüm zamanlar listesinde kendi satırın: sunucudaki toplam (sıfırlamadan önceki yol da sayılır) ile bu kaydınkinin büyüğü
+  const myTopLife = () => { const tp = IT.Online.top, me = tp && (tp.me || tp.players.find(p => p.me)); return Math.max(myLife(), (me && +me.life) || 0); };
   /* ---------- Hazır mesajlar ---------- */
   // Mesaj seçici açıkken sahneye dokunmak onu kapatır; o dokunuş adım sayılmaz
   let chatClosedAt = 0;
@@ -1636,12 +1666,12 @@
   function waveAt(g) {
     Sound.unlock();
     // az önce mesaj ya da el sallama gönderildiyse sunucu kabul etmez: halka dolana kadar bekletilir
-    if (S.player.name && Date.now() < chatCoolUntil) { Sound.deny(); return; }
+    if (!S.player.name) { showName(); return; }
+    if (Date.now() < chatCoolUntil) { Sound.deny(); return; }
     Sound.wave();
     scene.sayMine('👋', 3.5);
     const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
     toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-    if (!S.player.name) return;
     startCool();
     IT.Online.say('wave', S.player.id, S.player.key, g.pub);
   }
@@ -1658,7 +1688,7 @@
     if (m.msg === 'wave') {
       scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
       if (m.to && m.to === mine) {
-        Sound.wave();
+        if (!document.hidden) Sound.wave();
         if (p) toast(t(S.settings.others ? 'others.wavedYou' : 'others.wavedYou0', { name: esc(p.name) }), 'teal');
       }
       if (!p && Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); }
@@ -1668,7 +1698,7 @@
     scene.say(m.pub, text);
     if (!p) { if (Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); } }
     else if (!S.settings.others) toast(`<b>${esc(p.name)}</b> ${esc(text)}`, 'teal');
-    Sound.chat();
+    if (!document.hidden && (scene.ghosts.has(m.pub) || (p && !S.settings.others))) Sound.chat();
     uiDirty.travelers = true;
   }
 
@@ -1695,7 +1725,7 @@
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
           <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p, all ? O.topAt : O.at))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
         </div>
-        <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? (all ? myLife() : S.distance) : p.dist)}</b>
+        <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? (all ? myTopLife() : S.distance) : p.dist)}</b>
       </li>`;
     };
     let body;
@@ -1703,9 +1733,10 @@
     if (!d) body = `<p class="tr-note">${t(status === 'error' ? 'tr.error' : 'tr.wait')}</p>`;
     else if (all) {
       // tüm zamanlar: saf sıralama (toplam yol); yoldakilerin toplamı iki bildirim arasında da akar
-      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? myLife() : O.liveLife(p) })).sort((a, b) => b.dist - a.dist);
+      // kendi toplamın: sunucu toplam yolu hiç azaltmaz (ör. yolculuğu sıfırladıktan sonra da eski toplam listede kalır)
+      const live = d.players.map(p => Object.assign({}, p, { dist: p.me ? Math.max(myLife(), +p.life || 0) : O.liveLife(p) })).sort((a, b) => b.dist - a.dist);
       live.forEach((p, i) => { p.rank = i + 1; });
-      const meOut = d.me && !live.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(Object.assign({}, d.me, { dist: myLife() }))}` : '';
+      const meOut = d.me && !live.some(p => p.me) ? `<li class="tr-gap" aria-hidden="true">⋯</li>${row(Object.assign({}, d.me, { dist: Math.max(myLife(), +d.me.life || 0) }))}` : '';
       const list = live.map(row).join('') + meOut;
       body = `${status === 'error' ? `<p class="tr-note">${t('tr.error')}</p>` : ''}
         ${list ? `<ol class="tr-list">${list}</ol>` : `<p class="tr-note">${t('tr.empty')}</p>`}`;
@@ -1802,7 +1833,7 @@
       <p class="tag small">${nConsts >= IT.CONSTELLATIONS.length ? t('j.constsDone') : t('j.constsHint')}</p>` : ''}
       ${nBirds ? `<h3 class="sec">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
       <ul class="keeps birds">${IT.BIRDS.map(b => S.birds[b.id]
-        ? `<li><button class="keep bird on" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
+        ? `<li><button class="keep bird on" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: S.birds[b.id], c: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
         : `<li><div class="keep bird" title="${esc(b.hint)}"><canvas data-bird="${b.id}" data-locked="1" aria-hidden="true"></canvas><b>???</b><small>${esc(b.hint)}</small></div></li>`).join('')}</ul>
       <p class="tag small">${nBirds >= IT.BIRDS.length ? t('j.birdsDone') : t('j.birdsHint')}</p>` : ''}
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
@@ -1857,11 +1888,11 @@
     if (uiDirty.buffs) { renderBuffs(); uiDirty.buffs = false; }
     if (uiDirty.journal) { renderJournal(); uiDirty.journal = false; }
     // Yolcular sekmesi açıkken mesafeler ve sıra iki saniyede bir tazelenir
-    if (!$('#pane-travelers').hidden && Date.now() - trRenderedAt > 2000) uiDirty.travelers = true;
+    if (!$('#pane-travelers').hidden && Date.now() - trRenderedAt > 2000 && !$('#pane-travelers').contains(document.activeElement)) uiDirty.travelers = true;
     if (!$('#pane-travelers').hidden && S.settings.trScope === 'all' && !topBusy && Date.now() - IT.Online.topAt > 60e3 && Date.now() - lastTopTry > 20e3) { lastTopTry = Date.now(); loadTop(); }
     if (uiDirty.travelers) { renderTravelers(); uiDirty.travelers = false; }
     // Kendi satırında mesafe canlı akar; sekmedeki sayı "şu an yolda" olanlardır
-    setText('#trMeDist', fmtDist(S.settings.trScope === 'all' ? myLife() : S.distance));
+    setText('#trMeDist', fmtDist(S.settings.trScope === 'all' ? myTopLife() : S.distance));
     scene.setOthers(othersOnStage());
     const od = IT.Online.data;
     setText('#trCount', IT.Online.status === 'ok' && od ? fmtNum(od.online) : '');
@@ -1921,17 +1952,13 @@
     }
     // biten etki yumuşakça solup daralır (alttakiler birden yukarı zıplamaz)
     for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx) && !el.classList.contains('out')) {
-      el.classList.add('out');
+      el.classList.remove('ending'); el.classList.add('out');
       setTimeout(() => { if (el.classList.contains('out')) el.remove(); }, 450);
     }
-    // telefonda bildirimler etkilerin altında durur (üst üste binmesin)
-    const fxKey = [...live].join();
-    if (fxKey !== fxLast) {
-      fxLast = fxKey;
-      let h = 0;
-      for (const el of fxBox.children) if (!el.classList.contains('out')) h += el.offsetHeight + 6;
-      $('#stage').style.setProperty('--fx-bottom', `${fxBox.offsetTop + h}px`);
-    }
+    // telefonda bildirimler etkilerin altında durur (üst üste binmesin); etki değişince, satır kayınca ya da ekran dönünce güncellenir
+    let fxH = fxBox.offsetTop;
+    for (const el of fxBox.children) if (!el.classList.contains('out')) fxH += el.offsetHeight + 6;
+    if (fxH !== fxLast) { fxLast = fxH; $('#stage').style.setProperty('--fx-bottom', `${fxH}px`); }
     // butonlar ('Maks' modunda miktar bütçeyle değişir)
     if (S.settings.bulk === 'max') document.querySelectorAll('#pane-garage [data-act="upgrade"]').forEach(b => {
       const v = VEH[b.dataset.id], q = Econ.upgradeQuote(v, S.levels[v.id] || 0, 'max', S.credits);
@@ -1992,6 +2019,7 @@
       if (m === scene.mode) return;
       scene.setMode(m);
       syncSkyBtn();
+      uiDirty.journal = true; // defterdeki siluetler yeni temanın rengiyle yeniden çizilsin
       // Gün döngüsünde sahne temayı izlemez; tema yalnızca döngü kapanınca dönülecek yer olarak saklanır
       if (scene.cycle) return;
       toast(t(m === 'dark' ? 'toast.dusk' : 'toast.dawn'), 'teal');
@@ -2034,6 +2062,7 @@
       if (scene.hitPlane(x, y)) { catchPlane(); return; }
       if (scene.hitChest(x, y)) { catchChest(); return; }
       if (scene.hitFox(x, y)) { catchFox(); return; }
+      if (scene.hitPumpkin(x, y)) { catchPumpkin(); return; }
       const kp = scene.hitKeep(x, y);
       if (kp) { catchKeep(kp); return; }
       const g = scene.hitGhost(x, y);

@@ -5,13 +5,25 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.44';
+  IT.VERSION = '1.45';
 
   IT.CHANGELOG = [
+    { v: '1.45', date: '2026-10-12', items: {
+      tr: ['Ekim geldi; tarlaların kenarında bir hazırlık var… Gün batınca da yola bakmayı unutma, ay bile kılık değiştirdi.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['October is here, and something is being prepared at the edge of the fields… Keep watching the road after sunset; even the moon has changed its colors.',
+        'A few small touches along the road.'],
+      de: ['Der Oktober ist da, und am Feldrand wird etwas vorbereitet … Schau auch nach Sonnenuntergang auf den Weg; sogar der Mond hat sich verkleidet.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Llegó octubre y algo se prepara al borde de los campos… No dejes de mirar el camino al anochecer; hasta la luna se ha disfrazado.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Octobre est là, et quelque chose se prépare au bord des champs… Regarde aussi la route après le coucher du soleil ; même la lune s’est déguisée.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.44', date: '2026-10-12', items: {
       tr: ['Gökyüzü için bir defter tutmanın tam zamanı: her yolun kendine has kanatlı sakinleri var. Hepsini tanıyan gezgini küçük bir sürpriz bekliyor.',
         'Yolda birkaç küçük rötuş.'],
-      en: ['Time to start a notebook for the sky: every road has winged residents of its own. A small surprise awaits the traveller who gets to know them all.',
+      en: ['Time to start a notebook for the sky: every road has winged residents of its own. A small surprise awaits the traveler who gets to know them all.',
         'A few small touches along the road.'],
       de: ['Zeit für ein Notizbuch über den Himmel: Jede Strecke hat ihre eigenen gefiederten Bewohner. Wer sie alle kennenlernt, den erwartet eine kleine Überraschung.',
         'Ein paar kleine Feinschliffe unterwegs.'],
