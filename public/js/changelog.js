@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.47';
+  IT.VERSION = '1.48';
 
   IT.CHANGELOG = [
+    { v: '1.48', date: '2026-10-12', items: {
+      tr: ['Yolda birkaç küçük rötuş.'],
+      en: ['A few small touches along the road.'],
+      de: ['Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Algunos pequeños retoques por el camino.'],
+      fr: ['Quelques petites retouches en chemin.'],
+    } },
     { v: '1.47', date: '2026-10-12', items: {
       tr: ['Günün Notları: Yol Defteri’nin başında her gün herkese aynı üç küçük not seni bekliyor. Her biri küçük bir ödül, üçü birden bir hediye daha getirir.',
         'Yolda birkaç küçük rötuş.'],

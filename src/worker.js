@@ -31,7 +31,9 @@ const PRUNE_LIFE = 1000;           // (tüm zamanlar listesi gerçekten tüm zam
 // ('"boost":1' ve eski ödül/güçlendirme fiyatları) ölçüldü, o kurallarla ilerlemiş kayıtlar da kırpılmasın diye büyüğü alındı.
 const REACH = [[60, 7.7e6], [300, 1.4e9], [900, 2.3e10], [1800, 3.8e11], [3600, 1.1e13], [7200, 1.9e13], [14400, 1.6e14],
   [28800, 6.0e14], [57600, 2.4e15], [86400, 4.6e15], [172800, 1.3e16]];
-const LIFE_SLACK = 100;
+// v1.48'de 100'den 10'a indi: bugünkü kurallarla en hızlı dürüst oyuncu REACH eğrisinin çok altında kalır
+// (sim_game reach, 168 saat: 1. saatte ~1,1e10, 48. saatte ~2,8e13, 1 haftada ~2,9e14 m), 10 kat pay yine de bol gelir.
+const LIFE_SLACK = 10;
 function reachCap(ageMs) {
   const t = Math.max(REACH[0][0], ageMs / 1000), last = REACH[REACH.length - 1];
   // son noktanın ötesinde son noktadan cömert bir eğimle (yol ∝ süre²) uzar
@@ -157,7 +159,7 @@ async function hello(request, env) {
   const cap = reachCap(now - (born && born.created ? born.created : now));
   const distOk = Math.min(dist, cap), lifeOk = Math.max(distOk, Math.min(life, cap));
   // hız (m/sn): iki bildirim arasında diğer oyuncular mesafeyi bununla tahmin eder; aynı tavana bağlıdır (tek bildirimde
-  // tavanın 1/30'u: yeni kayıtta ~2,6e7 m/sn, en hızlı dürüst araç ~2,2e7), yoksa sahte bir hızla 3 dakika liste başı olunurdu
+  // tavanın 1/30'u: yeni kayıtta ~2,6e6 m/sn; hızlı araçlara ancak saatler sonra ulaşılır, tavan da kaydın yaşıyla büyür), yoksa sahte bir hızla 3 dakika liste başı olunurdu
   const speed = Math.min(spdIn, cap / 30);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
   const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14)
