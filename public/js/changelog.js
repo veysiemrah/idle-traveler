@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.43';
+  IT.VERSION = '1.44';
 
   IT.CHANGELOG = [
+    { v: '1.44', date: '2026-10-12', items: {
+      tr: ['Gökyüzü için bir defter tutmanın tam zamanı: her yolun kendine has kanatlı sakinleri var. Hepsini tanıyan gezgini küçük bir sürpriz bekliyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Time to start a notebook for the sky: every road has winged residents of its own. A small surprise awaits the traveller who gets to know them all.',
+        'A few small touches along the road.'],
+      de: ['Zeit für ein Notizbuch über den Himmel: Jede Strecke hat ihre eigenen gefiederten Bewohner. Wer sie alle kennenlernt, den erwartet eine kleine Überraschung.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Es hora de llevar un cuaderno del cielo: cada camino tiene sus propios habitantes alados. Una pequeña sorpresa espera a quien los conozca a todos.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['C’est le moment de tenir un carnet du ciel : chaque route a ses propres habitants ailés. Une petite surprise attend qui les connaîtra tous.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.43', date: '2026-10-12', items: {
       tr: ['Kıyı yollarında arada bir denize de bak: ufukta seninle yarışmak isteyen birileri var. Selamını eksik etme; onlar da seni unutmaz.',
         'Telefonda sahne artık düğmelerden ayrı, garaj ve güçlendirme kartları daha derli toplu; telefonu yan çevirince panel sahnenin yanında durur.',

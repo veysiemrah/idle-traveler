@@ -49,7 +49,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -76,6 +76,7 @@
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
       dolphins: 0, // selam verilen yunus sürüleri (kıyı denizi, ömür boyu; DOLPHIN_NEED olunca Denizci kıyafeti açılır)
+      birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
       memories: 0, trips: 0, lifeDist: 0, homeReady: false,
       active: 'walk', owned: { walk: true }, levels: { walk: 0 },
       buffs: Object.fromEntries(BUFFS.map(b => [b.id, 0])),
@@ -146,6 +147,8 @@
     s.fox = count(s.fox, Econ.foxNeed);
     const consts = isObj(d.consts) ? d.consts : {};
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
+    const birds = isObj(d.birds) ? d.birds : {};
+    s.birds = Object.fromEntries(IT.BIRDS.filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
     const pk = Econ.pals.find(x => x.id === s.palPick);
     if (!pk || (pk.fox && s.fox < Econ.foxNeed)) s.palPick = 'dog';
     s.mapPieces = count(s.mapPieces, MAP_PIECES); s.treasures = count(s.treasures, 1e6); s.unitTip = count(s.unitTip, 2); s.letters = count(s.letters, IT.LETTERS.length);
@@ -192,9 +195,10 @@
     s.player = IT.validId(pl.id) && IT.validKey(pl.key) ? { id: pl.id, key: pl.key, name: IT.cleanName(pl.name) || '' } : defaultState().player;
     return s;
   }
+  // lastSeen'e burada dokunulmaz: onu yalnızca çalışan döngü (frame) ve açılış ilerletir. Gizli sekmede (döngü durmuşken)
+  // gelen bir kayıt, ör. yeni sürüm yenilemesi, sekmenin gizli kaldığı süreyi silip çevrimdışı ilerlemeyi kaybettirmesin.
   function save() {
     if (saveLocked) return;
-    S.lastSeen = Math.max(S.lastSeen, Date.now());
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* depolama kapalı: oyun yine çalışır */ }
   }
 
@@ -255,7 +259,7 @@
   // Hava: bahar yağmuru, ardından gökkuşağı
   let weather = 'clear', weatherT = 0, weatherIn = 150 + Math.random() * 120;
   let uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
-  let uiTimer = 0, saveTimer = 0;
+  let uiTimer = 0, saveTimer = 0, fxLast = '';
   let lastFrame = performance.now(), lastWall = Date.now();
 
   function comboMult() {
@@ -318,7 +322,9 @@
 
   const nBadges = () => IT.badgeCount(S);
   const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : o.consts ? IT.constCount(S) >= o.consts
-    : o.dolphins ? S.dolphins >= o.dolphins : nBadges() >= o.need);
+    : o.dolphins ? S.dolphins >= o.dolphins : o.birds ? IT.birdCount(S) >= o.birds : nBadges() >= o.need);
+  // rozetle değil, bir koleksiyonla açılan kıyafetler
+  const outfitSpecial = o => !!(o.keeps || o.letters || o.consts || o.dolphins || o.birds);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -356,7 +362,7 @@
         toast(t('toast.badge', { name: esc(g.b.name), tier: tier.name, tierLow: tier.name.toLocaleLowerCase(IT.locale()), p: fmtPct(g.bonus * 100) }), 'gold');
         Sound.milestone();
       }
-      const opened = OUTFITS.filter(o => !o.keeps && !o.letters && !o.consts && !o.dolphins && o.need > before && o.need <= nBadges());
+      const opened = OUTFITS.filter(o => !outfitSpecial(o) && o.need > before && o.need <= nBadges());
       if (!silent) for (const o of opened) toast(t('toast.outfit', { name: esc(o.name) }), 'teal');
       if (opened.length) applyOutfit(); // sıfırlamadan sonra yeniden açılan seçili kıyafet hemen giyilir
     }
@@ -438,7 +444,7 @@
   // Turna Yolu: gökyüzünden geçen turna sürüsüne dokununca rüzgârlarını seninle paylaşırlar (Turna Rüzgârı, hız ×3)
   let craneIn = 35 + Math.random() * 30, craneHints = 0;
   function updateCranes(dt) {
-    if (perk() !== 'cranes' || scene.cranes || scene.plane || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'cranes' || scene.cranes || scene.plane || scene.constel || scene.bird || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     craneIn -= dt;
     if (craneIn > 0) return;
     craneIn = 110 + Math.random() * 90;
@@ -459,7 +465,7 @@
   // (Uçurtma Neşesi). Turnalar gibi yağmurda, uzayda ve pencere açıkken gelmez; uçak ya da sürü gökteyken beklenir.
   let kiteIn = 35 + Math.random() * 30, kiteHints = 0;
   function updateKites(dt) {
-    if (perk() !== 'kites' || scene.kite || scene.cranes || scene.plane || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'kites' || scene.kite || scene.cranes || scene.plane || scene.constel || scene.bird || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     kiteIn -= dt;
     if (kiteIn > 0) return;
     kiteIn = 110 + Math.random() * 90;
@@ -541,9 +547,14 @@
     const c = $('.hud-card'), r = scene.canvas.getBoundingClientRect();
     return c ? Math.max(0, (c.getBoundingClientRect().right - r.left) / scene.zoom) : 0;
   }
+  // konum kartının alt kenarı (sahnenin sanal px'i): kuşlar kartın altından uçsun
+  function hudBottom() {
+    const c = $('.hud-card'), r = scene.canvas.getBoundingClientRect();
+    return c ? Math.max(0, (c.getBoundingClientRect().bottom - r.top) / scene.zoom) : 0;
+  }
   function updateConsts(dt) {
     const next = IT.CONSTELLATIONS.find(c => !S.consts[c.id]);
-    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
+    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || scene.bird || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
     constIn -= dt;
     if (constIn > 0) return;
     constIn = (70 + Math.random() * 40) * (perk() === 'stars' ? 0.5 : 1);
@@ -574,7 +585,7 @@
   // Her karşılaşmada bir kez dokunulabilir; Econ.foxNeed karşılaşmadan sonra güvenir ve Kızıl adıyla yol arkadaşı olur.
   // Yağmurda, uzayda ve pencere açıkken gelmez. Ekonomiye etkisi yoktur.
   const FOX_BIOMES = { pine: 1, autumn: 1, snow: 1, aurora: 1 };
-  let foxIn = 50 + Math.random() * 40;
+  let foxIn = 50 + Math.random() * 40, foxHints = 0;
   function updateFox(dt) {
     if (S.fox >= Econ.foxNeed || !(S.buffs.pal > 0) || scene.fox || scene.chest || scene.keep || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
     if (!FOX_BIOMES[IT.regionAt(S.regionIdx).biome]) return;
@@ -582,7 +593,7 @@
     if (foxIn > 0) return;
     foxIn = 140 + Math.random() * 100;
     scene.spawnFox(); Sound.fox();
-    if (!S.fox) toast(t('toast.foxSeen'), 'teal');
+    if (!S.fox && foxHints++ < 1) toast(t('toast.foxSeen'), 'teal');
   }
   function catchFox() {
     Sound.unlock(); Sound.fox();
@@ -607,10 +618,12 @@
   // sevinçle yükseğe sıçrar; her sürü bir kez sayılır. DOLPHIN_NEED selamda Denizci kıyafeti açılır. Yağmurda, uzayda ve
   // pencere açıkken gelmez. Ekonomiye etkisi yoktur.
   const DOLPHIN_NEED = 7;
-  let dolphinIn = 30 + Math.random() * 30, dolphinHints = 0;
+  let dolphinIn = 30 + Math.random() * 30, dolphinHints = 0, dolphinSea = false;
   function updateDolphins(dt) {
     if (scene.dolphins || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
-    if (IT.BIOMES[IT.regionAt(S.regionIdx).biome].farShape !== 'sea') { dolphinIn = Math.max(dolphinIn, 30 + Math.random() * 30); return; }
+    // denizli bir bölgeye her girişte ilk sürü 30–60 sn sonra gelir (önceki bölgeden kalan uzun bekleme taşınmaz)
+    if (IT.BIOMES[IT.regionAt(S.regionIdx).biome].farShape !== 'sea') { dolphinSea = false; return; }
+    if (!dolphinSea) { dolphinSea = true; dolphinIn = 30 + Math.random() * 30; }
     dolphinIn -= dt;
     if (dolphinIn > 0) return;
     dolphinIn = 90 + Math.random() * 80;
@@ -629,6 +642,40 @@
     save();
   }
 
+  /* ---------- Kuş Defteri ---------- */
+  // Her bölgenin kendine has bir kuşu var (IT.BIRD_OF). Arada bir o kuş (ya da küçük sürüsü) gökyüzünden geçer: ilki 40–70 sn
+  // sonra, sonra 120–200 sn arayla. Dokununca deftere yazılır; yeni bir kuşsa defterde silueti renklenir. Bütün kuşları
+  // tanıyınca Kuş Gözlemcisi kıyafeti açılır. Gece de gelir (tema adaleti); yağmurda, uzayda, pencere açıkken ve gökyüzünde
+  // başka bir olay (turna, uçurtma, kâğıt uçak, takımyıldız) varken gelmez. Ekonomiye etkisi yoktur.
+  let birdIn = 40 + Math.random() * 30, birdHints = 0;
+  function updateBirds(dt) {
+    if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
+    birdIn -= dt;
+    if (birdIn > 0) return;
+    birdIn = 120 + Math.random() * 80;
+    const b = IT.BIRD_OF[IT.regionAt(S.regionIdx).biome];
+    if (!b) return;
+    scene.spawnBird(b.id, hudBottom()); Sound.bird(b.id);
+    if (!S.birds[b.id] && birdHints++ < 2) toast(t('toast.birdSeen'), 'teal');
+  }
+  function catchBird(id) {
+    const b = IT.BIRD[id];
+    if (!b) return;
+    Sound.unlock(); Sound.bird(id, true);
+    const fresh = !S.birds[id];
+    S.birds[id] = (S.birds[id] || 0) + 1; uiDirty.journal = true;
+    const n = IT.birdCount(S), m = IT.BIRDS.length;
+    scene.addFloat(fresh ? t('float.birdNew', { name: b.name }) : `🪶 ${b.name}`, { color: '#fff4d6', big: fresh });
+    if (fresh) {
+      if (n === m) {
+        applyOutfit();
+        const o = OUTFITS.find(x => x.birds);
+        setTimeout(() => { toast(t('toast.birdsAll', { name: esc(o.name) }), 'gold'); Sound.region(); }, 900);
+      } else toast(t('toast.birdNew', { name: esc(b.name), n, m }), 'teal');
+    }
+    save();
+  }
+
   /* ---------- Mektuplar ---------- */
   // Sıradaki mektup hazırsa (ömür boyu yol ya da eve dönüş eşiği) bir süre sonra kâğıt uçakla gelir; kaçırılırsa yeniden gelir.
   // Yağmurda ve pencere açıkken gelmez. Okunan mektuptan sonra sıradaki en erken 4–7 dakikada gelir (birikmiş mektuplar,
@@ -636,7 +683,7 @@
   let letterIn = 70 + Math.random() * 40, planeHints = 0;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
-    if (!next || scene.plane || scene.cranes || scene.kiteFree() || scene.constel || !$('#modal').hidden || weather === 'rain') return;
+    if (!next || scene.plane || scene.cranes || scene.kiteFree() || scene.constel || scene.bird || !$('#modal').hidden || weather === 'rain') return;
     letterIn -= dt;
     if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
     if (letterIn > 0) return;
@@ -771,7 +818,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -863,6 +910,12 @@
     keepPeek(_, el) {
       el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
       Sound.chat();
+    },
+    // Defterdeki kuşa dokununca kendi sesiyle öter ve kartında hafifçe kanat çırpar
+    birdPeek(id, el) {
+      if (!IT.BIRD[id] || !S.birds[id]) return;
+      el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
+      Sound.unlock(); Sound.bird(id);
     },
     palPick(id) {
       const p = Econ.pals.find(x => x.id === id);
@@ -1010,6 +1063,7 @@
     updateConsts(dt);
     updateKites(dt);
     updateDolphins(dt);
+    updateBirds(dt);
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -1172,10 +1226,12 @@
     const opener = document.activeElement && document.activeElement !== document.body && !$('#modal').contains(document.activeElement) ? document.activeElement : modalOpener;
     modalOpener = opener;
     $('#modal').hidden = false;
+    // pencere açıkken arkadaki sayfa klavyeyle de ulaşılamaz (Tab pencereden çıkıp arkadaki bir düğmeye basamasın)
+    $('.app').inert = true;
     b.focus({ preventScroll: true });
     b.onclick = () => {
       if (guard && !guard()) return;
-      $('#modal').hidden = true; modalRender = null; modalDismiss = false; Sound.unlock();
+      $('#modal').hidden = true; $('.app').inert = false; modalRender = null; modalDismiss = false; Sound.unlock();
       if (onClose) onClose();
       if (modalQueue.length) openModal(...modalQueue.shift());
       else if (modalOpener) { const o = modalOpener; modalOpener = null; if (o.isConnected && $('#modal').hidden) o.focus({ preventScroll: true }); }
@@ -1690,7 +1746,7 @@
     const nr = IT.regionAt(S.regionIdx + 1);
     stamps.push(`<li class="stamp next"><span>?</span><small>${fmtDist(nr.at)}</small></li>`);
     const msDone = MILESTONES.slice(0, S.msIdx).slice(-6).reverse();
-    const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S), nConsts = IT.constCount(S);
+    const nBadges = IT.badgeCount(S), nKeeps = IT.keepCount(S), nConsts = IT.constCount(S), nBirds = IT.birdCount(S);
     // Her aile tek kart: madalya o anki kademenin renginde, altında 8 kademe noktası ve bir sonraki hedef
     const badges = BADGES.map(b => {
       const k = S.badges[b.id] || 0, tier = k ? TIERS[k - 1] : null;
@@ -1744,6 +1800,11 @@
         ? `<li><div class="keep const on" title="${esc(c.name)}"><svg viewBox="0 0 44 30" aria-hidden="true">${c.e.map(([i, j]) => `<line x1="${(c.s[i][0] * 44).toFixed(1)}" y1="${(c.s[i][1] * 30).toFixed(1)}" x2="${(c.s[j][0] * 44).toFixed(1)}" y2="${(c.s[j][1] * 30).toFixed(1)}"/>`).join('')}${c.s.map(p => `<circle cx="${(p[0] * 44).toFixed(1)}" cy="${(p[1] * 30).toFixed(1)}" r="1.6"/>`).join('')}</svg><b>${esc(c.name)}</b></div></li>`
         : `<li><div class="keep const" role="img" aria-label="${esc(t('j.constSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${nConsts >= IT.CONSTELLATIONS.length ? t('j.constsDone') : t('j.constsHint')}</p>` : ''}
+      ${nBirds ? `<h3 class="sec">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
+      <ul class="keeps birds">${IT.BIRDS.map(b => S.birds[b.id]
+        ? `<li><button class="keep bird on" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
+        : `<li><div class="keep bird" title="${esc(b.hint)}"><canvas data-bird="${b.id}" data-locked="1" aria-hidden="true"></canvas><b>???</b><small>${esc(b.hint)}</small></div></li>`).join('')}</ul>
+      <p class="tag small">${nBirds >= IT.BIRDS.length ? t('j.birdsDone') : t('j.birdsHint')}</p>` : ''}
       <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
       <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
@@ -1758,8 +1819,10 @@
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
           <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : o.consts ? t('ui.outfitConsts', { n: o.consts })
-            : o.dolphins ? (S.dolphins ? t('ui.outfitDolphins', { n: S.dolphins, m: o.dolphins }) : t('ui.outfitSea')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+            : o.dolphins ? (S.dolphins ? t('ui.outfitDolphins', { n: S.dolphins, m: o.dolphins }) : t('ui.outfitSea'))
+            : o.birds ? (IT.birdCount(S) ? t('ui.outfitBirds', { n: IT.birdCount(S), m: o.birds }) : t('ui.outfitSky')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
+    pane.querySelectorAll('canvas[data-bird]').forEach(c => IT.drawBirdIcon(c, c.dataset.bird, !!c.dataset.locked));
   }
 
   /* ---------- Ayarlar (başlık çubuğundaki dişli düğmesi) ---------- */
@@ -1840,6 +1903,7 @@
       live.add(e.id);
       let el = fxBox.querySelector(`[data-fx="${e.id}"]`);
       if (!el) { el = document.createElement('span'); el.className = `fx fx-${e.id}`; el.dataset.fx = e.id; fxBox.appendChild(el); }
+      el.classList.remove('out');
       const left = Math.ceil((e.until - now) / 1000);
       const html = t('ui.fx', { name: GIFT[e.id].name, text: effText(GIFT[e.id], e.stack), dur: fmtDuration(left) });
       if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
@@ -1851,10 +1915,23 @@
       live.add('caravan');
       let el = fxBox.querySelector('[data-fx="caravan"]');
       if (!el) { el = document.createElement('span'); el.className = 'fx fx-caravan'; el.dataset.fx = 'caravan'; fxBox.appendChild(el); }
+      el.classList.remove('out');
       const html = t('ui.caravan', { n: caravanN(), p: fmtPct(caravanStep() * 100 * caravanN()) });
       if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
     }
-    for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx)) el.remove();
+    // biten etki yumuşakça solup daralır (alttakiler birden yukarı zıplamaz)
+    for (const el of [...fxBox.children]) if (!live.has(el.dataset.fx) && !el.classList.contains('out')) {
+      el.classList.add('out');
+      setTimeout(() => { if (el.classList.contains('out')) el.remove(); }, 450);
+    }
+    // telefonda bildirimler etkilerin altında durur (üst üste binmesin)
+    const fxKey = [...live].join();
+    if (fxKey !== fxLast) {
+      fxLast = fxKey;
+      let h = 0;
+      for (const el of fxBox.children) if (!el.classList.contains('out')) h += el.offsetHeight + 6;
+      $('#stage').style.setProperty('--fx-bottom', `${fxBox.offsetTop + h}px`);
+    }
     // butonlar ('Maks' modunda miktar bütçeyle değişir)
     if (S.settings.bulk === 'max') document.querySelectorAll('#pane-garage [data-act="upgrade"]').forEach(b => {
       const v = VEH[b.dataset.id], q = Econ.upgradeQuote(v, S.levels[v.id] || 0, 'max', S.credits);
@@ -1950,6 +2027,8 @@
       if (cs) { catchConst(cs); return; }
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
+      const bd = scene.hitBird(x, y);
+      if (bd) { catchBird(bd); return; }
       if (scene.hitKite(x, y)) { catchKite(); return; }
       if (scene.hitDolphins(x, y)) { catchDolphins(); return; }
       if (scene.hitPlane(x, y)) { catchPlane(); return; }

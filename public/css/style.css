@@ -11,6 +11,7 @@
   --apricot: #ffb067;    /* kredi ve ana eylem */
   --apricot-2: #ff9a52;
   --teal: #6fd3c1;       /* hız, olumlu durum */
+  --on-teal: #14213a;    /* turkuaz zemin üstündeki simge */
   --gold: #ffd56b;       /* kelebek, şans */
   --rose: #ff8f8f;       /* tehlikeli eylem */
   --apricot-text: #ffb067;
@@ -38,7 +39,7 @@
   :root:not([data-theme="dark"]) {
     --ink: #eef0f8; --ink-2: #ffffff; --ink-3: #dde2f1;
     --paper: #232849; --muted: #5f6488;
-    --apricot-text: #cf6a1f; --teal: #10806e; --gold: #a06d06; --rose: #c84444;
+    --apricot-text: #cf6a1f; --teal: #10806e; --on-teal: #ffffff; --gold: #a06d06; --rose: #c84444;
     --glass: rgba(255, 255, 255, 0.64); --glass-strong: rgba(255, 255, 255, 0.82); --glass-hover: rgba(255, 255, 255, 0.92);
     --glass-line: rgba(35, 40, 73, 0.12); --toast: rgba(255, 255, 255, 0.92);
     --line-soft: rgba(35, 40, 73, 0.08); --well: rgba(35, 40, 73, 0.06); --track: rgba(35, 40, 73, 0.12);
@@ -52,7 +53,7 @@
 :root[data-theme="light"] {
   --ink: #eef0f8; --ink-2: #ffffff; --ink-3: #dde2f1;
   --paper: #232849; --muted: #5f6488;
-  --apricot-text: #cf6a1f; --teal: #10806e; --gold: #a06d06; --rose: #c84444;
+  --apricot-text: #cf6a1f; --teal: #10806e; --on-teal: #ffffff; --gold: #a06d06; --rose: #c84444;
   --glass: rgba(255, 255, 255, 0.64); --glass-strong: rgba(255, 255, 255, 0.82); --glass-hover: rgba(255, 255, 255, 0.92);
   --glass-line: rgba(35, 40, 73, 0.12); --toast: rgba(255, 255, 255, 0.92);
   --line-soft: rgba(35, 40, 73, 0.08); --well: rgba(35, 40, 73, 0.06); --track: rgba(35, 40, 73, 0.12);
@@ -88,6 +89,8 @@ button { font: inherit; color: inherit; }
 /* ---------- Yerleşim ---------- */
 .app {
   height: 100%;
+  /* çentikli telefonlarda yatay tutunca kenarlar çentiğin altına girmesin */
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 390px;
   grid-template-rows: auto minmax(0, 1fr);
@@ -199,6 +202,8 @@ button { font: inherit; color: inherit; }
 .fx-wish b { color: var(--wish-ink); text-shadow: 0 0 8px var(--wish-glow); }
 .fx-rainbow b { background: var(--rainbow-ink); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fxIn { from { opacity: 0; transform: translateX(-8px); } }
+.fx { max-height: 80px; transition: opacity .4s, max-height .4s, padding .4s, margin .4s, border-width .4s; }
+.fx.out { animation: none; opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; margin-top: -6px; }
 /* Süresi biten etki son 10 saniyede yumuşakça nabız atar */
 .fx.ending { animation: fxPulse 1.2s ease-in-out infinite; }
 @keyframes fxPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
@@ -212,7 +217,8 @@ button { font: inherit; color: inherit; }
   pointer-events: none; z-index: 4; /* yakınlaştırma denetiminin üstünde okunur (dokunuşları engellemez) */
 }
 @container (max-width: 760px) {
-  .toasts { top: 176px; left: 16px; right: 16px; width: auto; align-items: center; transition: top .4s; }
+  /* etkiler (sol üstte, kartın altında) çoğaldıkça bildirimler onların altına iner */
+  .toasts { top: max(176px, var(--fx-bottom, 0px) + 8px); left: 16px; right: 16px; width: auto; align-items: center; transition: top .4s; }
   .toast:nth-last-child(n+3) { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; margin-top: -8px; }
 }
 .toast {
@@ -262,7 +268,7 @@ button { font: inherit; color: inherit; }
 }
 .chat-btn:hover { transform: scale(1.07); }
 .chat-btn:active { transform: scale(0.93); }
-.chat-btn[aria-expanded="true"] { background: var(--teal); color: #fff; }
+.chat-btn[aria-expanded="true"] { background: var(--teal); color: var(--on-teal); }
 .chat-btn svg { width: 24px; height: 24px; fill: currentColor; }
 .chat-btn svg circle { fill: var(--ink); }
 .chat-btn[aria-expanded="true"] svg circle { fill: var(--teal); }
@@ -641,6 +647,13 @@ button { font: inherit; color: inherit; }
 .keep.const svg circle { fill: #fff; }
 .keep.const.on { background: radial-gradient(circle at 50% 30%, rgba(60, 80, 160, .35), transparent 70%), #1b2550; color: #e8eeff; }
 .keep.const.on:hover svg line { opacity: 1; }
+/* Kuş Defteri: bulunan kuşlar renkli, bulunmayanlar soluk siluet ve bir ipucuyla */
+.keep.bird { --c: #e9c98a; min-height: 92px; padding: 6px 5px 7px; }
+.keep.bird canvas { width: 64px; height: 44px; flex: none; }
+.keep.bird.on b { font-size: 11.5px; }
+.keep.bird.on small { opacity: .75; }
+.keep.bird.wiggle canvas { animation: birdHop .6s ease; }
+@keyframes birdHop { 30% { transform: translateY(-5px) rotate(-6deg); } 65% { transform: translateY(-2px) rotate(4deg); } }
 /* Mektup penceresi: iki temada da krem bir kâğıt, köşesinde mum mühür; açılırken hafifçe yayılır */
 .letter {
   position: relative; margin: 4px 2px 2px; padding: 18px 18px 14px; border-radius: 6px;
@@ -911,14 +924,14 @@ button { font: inherit; color: inherit; }
   .wallet { padding: 8px 14px 6px; }
   .credits { font-size: 22px; }
   .coin.big { width: 26px; height: 26px; }
-  /* alçak sahnede bildirimler yolun değil gökyüzünün üstünde durur */
-  .toasts { top: 12px; }
+  /* alçak sahnede bildirimler yolun değil gökyüzünün üstünde durur; konum kartını örtmesinler diye sağa yaslanır */
+  .toasts, .banner-on .toasts { top: 12px; left: auto; right: 12px; width: min(300px, 55%); align-items: flex-end; }
 }
 /* sahne daraldıkça (yan yana yerleşim, dar telefon) durak çubuğunda yalnızca durağın adı kalır */
 @container (max-width: 520px) { .ms-prog, .ms-top .lbl { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .hint, .banner.show, .toast, .modal-card, .fx, .keep .e, .letter { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
+  .hint, .banner.show, .toast, .modal-card, .fx, .keep .e, .keep canvas, .letter { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
 }
 /* Yeni sürüm: sayfa yenilenmeden önce yumuşakça solar */
 html.reloading body { opacity: 0; transition: opacity .6s ease; }

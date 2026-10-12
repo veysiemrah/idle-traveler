@@ -722,6 +722,8 @@
   // tier: 1 tasma, 2 boyunluk, 3 sırtta minik fener, 4 altın süsler ve parıltı. look: başını geriye çevirme (0–1, yabani tilki)
   const FOX = { fur: '#df7a34', shade: '#b65b24', cream: '#fbf1e2', sock: '#3a2a24' };
   // Yunus: sağa bakan, burnu x = +11, kuyruğu x = -14 birimde; s ölçeğinde, ang açısıyla çizilir
+  // yunusların olağan sıçrayışı: DOL_P saniyede bir, havada DOL_A saniye
+  const DOL_P = 2.2, DOL_A = 1.05;
   function drawDolphin(ctx, x, y, s, ang, back, belly, a) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(s, s); ctx.globalAlpha *= a;
     ctx.fillStyle = back;
@@ -850,6 +852,181 @@
     ctx.beginPath(); ctx.moveTo(x + 23 * k, y - 3.1 * k); ctx.lineTo(x + 28 * k, y - 2.4 * k); ctx.stroke();
     wing(0, w, '#d3d7df', '#24252c'); // ön kanat
   }
+  /* ---------- Kuş Defteri kuşları ----------
+     Hepsi sağa bakar; sola uçanlar dışarıda aynalanır. w: kanadın konumu (1 yukarıda, −0,6 aşağıda), night: gece karartması (0–1) */
+  const tint = night => c => css(mixc(hex(c), hex('#3a4266'), night * 0.45));
+  // Kanat: omuz (x, y); s: kanat konumu, L: kanat boyu (birim), c1: kanat, c2: uç tüyleri (yoksa çizilmez),
+  // fingers: kartal gibi ayrık uç tüyleri. Kanat ucunun yerini döndürür (benek çizmek için).
+  // ch: kanadın gövdeye bağlandığı yerin genişliği (1 = boyla orantılı; uzun kanatlı kuşlarda daha ince)
+  function birdWing(ctx, x, y, k, s, L, c1, c2, fingers, ch) {
+    const q = k * L / 21, c = q * (ch || 1), tx = x - 7 * q, ty = y - 21 * q * s;
+    ctx.fillStyle = c1; ctx.beginPath();
+    ctx.moveTo(x + 5 * c, y - 1 * k); ctx.quadraticCurveTo(x + 3 * c, y - 13 * q * s, tx, ty);
+    ctx.quadraticCurveTo(x - 13 * c, y - 8 * q * s, x - 6 * c, y - 0.5 * k); ctx.closePath(); ctx.fill();
+    if (c2) {
+      ctx.fillStyle = c2; ctx.beginPath();
+      ctx.moveTo(x + 0.5 * q, y - 16.5 * q * s); ctx.lineTo(tx, ty); ctx.lineTo(x - 10 * q, y - 14.5 * q * s); ctx.closePath(); ctx.fill();
+    }
+    if (fingers) {
+      // uçtaki ayrık tüyler: kanadın ucundan dışarı doğru açılan dört kısa çizgi
+      const ax = x + 0.5 * q, ay = y - 16.5 * q * s, cx = x - 10 * q, cy = y - 14.5 * q * s;
+      const dx = tx - (ax + cx) / 2, dy = ty - (ay + cy) / 2;
+      ctx.strokeStyle = c2; ctx.lineWidth = 1.5 * q; ctx.lineCap = 'round';
+      for (let i = 0; i < 4; i++) {
+        const f = (i + 0.5) / 4, bx = lerp(ax, cx, f), by = lerp(ay, cy, f);
+        ctx.beginPath(); ctx.moveTo(lerp(bx, tx, 0.6), lerp(by, ty, 0.6));
+        ctx.lineTo(bx + dx * 1.05 + (f - 0.5) * 3 * q, by + dy * 1.05 + (f - 0.5) * 2 * q * Math.sign(s || 1)); ctx.stroke();
+      }
+    }
+    return { tx, ty, sx: x, sy: y - 1 * k };
+  }
+  // Uzun boyunlu ve uzun bacaklı kuşlar (leylek, flamingo): boyun ileri uzanır, bacaklar geride
+  const LONG_BIRD = {
+    stork:    { wing: '#f3f2ee', back: '#c9c7c2', tip: '#1f1f24', body: '#fbfaf6', neck: '#fbfaf6', beak: '#e2483d', bill: null, legs: '#e2483d', neckLen: 19, neckW: 2.6 },
+    flamingo: { wing: '#ef6f8e', back: '#cf5574', tip: '#1f1f24', body: '#f7aec2', neck: '#f7aec2', beak: '#f3ece4', bill: '#1f1f24', legs: '#ef86a2', neckLen: 23, neckW: 2 },
+  };
+  function drawLongBird(ctx, x, y, k, w, night, c) {
+    const col = tint(night), hx = x + c.neckLen * k + 1 * k, hy = y - 2.8 * k;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    birdWing(ctx, x - 2 * k, y, k, w * 0.85, 21, col(c.back), col(c.tip));
+    ctx.strokeStyle = col(c.legs); ctx.lineWidth = 1.2 * k;
+    ctx.beginPath(); ctx.moveTo(x - 7 * k, y + 1 * k); ctx.lineTo(x - 25 * k, y + 3.4 * k); ctx.moveTo(x - 7 * k, y + 1.6 * k); ctx.lineTo(x - 24 * k, y + 4.6 * k); ctx.stroke();
+    ctx.fillStyle = col(c.body); ellipse(ctx, x - 8.5 * k, y + 0.3 * k, 4.4 * k, 2.8 * k); ellipse(ctx, x, y, 10 * k, 3.8 * k);
+    ctx.strokeStyle = col(c.neck); ctx.lineWidth = c.neckW * k;
+    ctx.beginPath(); ctx.moveTo(x + 7 * k, y - 0.8 * k); ctx.quadraticCurveTo(x + (c.neckLen * 0.6 + 4) * k, y - 1.2 * k, hx - 1 * k, hy); ctx.stroke();
+    ctx.fillStyle = col(c.neck); circle(ctx, hx, hy, 2.3 * k);
+    if (c.bill) {
+      // flamingo: kalın, ortasından aşağı kıvrılan gaga; ucu siyah
+      ctx.strokeStyle = col(c.beak); ctx.lineWidth = 1.9 * k;
+      ctx.beginPath(); ctx.moveTo(hx + 1.6 * k, hy); ctx.quadraticCurveTo(hx + 4.4 * k, hy - 0.4 * k, hx + 5 * k, hy + 1.8 * k); ctx.stroke();
+      ctx.strokeStyle = col(c.bill); ctx.lineWidth = 1.6 * k;
+      ctx.beginPath(); ctx.moveTo(hx + 4.9 * k, hy + 1.2 * k); ctx.lineTo(hx + 4.7 * k, hy + 2.6 * k); ctx.stroke();
+    } else {
+      ctx.strokeStyle = col(c.beak); ctx.lineWidth = 1.5 * k;
+      ctx.beginPath(); ctx.moveTo(hx + 1.5 * k, hy + 0.1 * k); ctx.lineTo(hx + 9 * k, hy + 1.3 * k); ctx.stroke();
+    }
+    ctx.fillStyle = col('#1d1716'); circle(ctx, hx + 0.6 * k, hy - 0.6 * k, 0.6 * k);
+    birdWing(ctx, x, y, k, w, 21, col(c.wing), col(c.tip));
+  }
+  // Arıkuşu: turkuaz karın, kestane sırt, sarı gerdan, siyah göz bandı, uzayan orta kuyruk tüyleri
+  function drawBeeEater(ctx, x, y, k, w, night) {
+    const col = tint(night);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    birdWing(ctx, x - 1 * k, y, k, w * 0.85, 13, col('#2f7f73'), col('#1f4f6e'));
+    ctx.fillStyle = col('#3fa58f'); ctx.beginPath();
+    ctx.moveTo(x - 5 * k, y - 1 * k); ctx.lineTo(x - 13 * k, y - 0.4 * k); ctx.lineTo(x - 12.5 * k, y + 1.6 * k); ctx.lineTo(x - 5 * k, y + 1.4 * k); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = col('#3fa58f'); ctx.lineWidth = 0.9 * k;
+    ctx.beginPath(); ctx.moveTo(x - 12 * k, y + 0.5 * k); ctx.lineTo(x - 17.5 * k, y + 0.9 * k); ctx.stroke();
+    ctx.fillStyle = col('#36b6c4'); ellipse(ctx, x, y + 0.3 * k, 7 * k, 3 * k);
+    ctx.fillStyle = col('#a0532c'); ellipse(ctx, x + 1 * k, y - 1.4 * k, 6 * k, 1.7 * k); circle(ctx, x + 7 * k, y - 1.6 * k, 2.6 * k);
+    ctx.fillStyle = col('#f7d33c'); ellipse(ctx, x + 7.7 * k, y + 0.5 * k, 2 * k, 1.4 * k);
+    ctx.strokeStyle = col('#1d1716'); ctx.lineWidth = 0.9 * k;
+    ctx.beginPath(); ctx.moveTo(x + 5 * k, y - 1.5 * k); ctx.lineTo(x + 9.6 * k, y - 1.2 * k); ctx.stroke();
+    ctx.lineWidth = 0.8 * k;
+    ctx.beginPath(); ctx.moveTo(x + 9.4 * k, y - 1.3 * k); ctx.quadraticCurveTo(x + 12 * k, y - 1.5 * k, x + 14 * k, y - 0.4 * k); ctx.stroke();
+    birdWing(ctx, x + 1 * k, y - 0.5 * k, k, w, 14, col('#3a9a7e'), col('#24607e'));
+  }
+  // Alaca ağaçkakan: siyah sırt, beyaz omuz ve yanak, kırmızı ense ve kuyruk altı, kanatlarda beyaz benekler
+  function drawWoodpecker(ctx, x, y, k, w, night) {
+    const col = tint(night), spots = wg => {
+      ctx.fillStyle = col('#f4f1ea');
+      for (const f of [0.32, 0.52, 0.72]) circle(ctx, lerp(wg.sx, wg.tx, f) - 0.6 * k, lerp(wg.sy, wg.ty, f) + 0.4 * k, 0.75 * k);
+    };
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    spots(birdWing(ctx, x - 1 * k, y, k, w * 0.85, 14, col('#2a2a30'), null));
+    ctx.fillStyle = col('#26262c'); ctx.beginPath();
+    ctx.moveTo(x - 5.5 * k, y - 1.2 * k); ctx.lineTo(x - 13 * k, y - 0.4 * k); ctx.lineTo(x - 12.4 * k, y + 1.6 * k); ctx.lineTo(x - 5.5 * k, y + 1.2 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#f1ece2'); ellipse(ctx, x + 0.5 * k, y + 0.8 * k, 6.6 * k, 2.4 * k);
+    ctx.fillStyle = col('#d6343a'); ellipse(ctx, x - 4.6 * k, y + 1.6 * k, 2.2 * k, 1.3 * k);
+    ctx.fillStyle = col('#26262c'); ellipse(ctx, x, y - 0.8 * k, 7.4 * k, 2.6 * k); circle(ctx, x + 7 * k, y - 1.8 * k, 2.7 * k);
+    ctx.fillStyle = col('#f4f1ea'); ellipse(ctx, x - 0.6 * k, y - 1.4 * k, 2.6 * k, 1.1 * k, -0.1); ellipse(ctx, x + 7.6 * k, y - 1.1 * k, 1.7 * k, 1.1 * k);
+    ctx.fillStyle = col('#d6343a'); circle(ctx, x + 5.3 * k, y - 3.1 * k, 1.1 * k);
+    ctx.fillStyle = col('#5b5d66'); ctx.beginPath(); ctx.moveTo(x + 9.3 * k, y - 2.5 * k); ctx.lineTo(x + 13.6 * k, y - 1.7 * k); ctx.lineTo(x + 9.3 * k, y - 1 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#ffffff'); circle(ctx, x + 7.8 * k, y - 2.3 * k, 0.55 * k);
+    spots(birdWing(ctx, x + 0.5 * k, y - 0.6 * k, k, w, 15, col('#2a2a30'), null));
+  }
+  // Kartal: koyu kahverengi, altın ense, kancalı sarı gaga; geniş kanatlarının ucundaki tüyler parmak gibi ayrık
+  function drawEagle(ctx, x, y, k, w, night) {
+    const col = tint(night);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    birdWing(ctx, x - 2 * k, y, k, w * 0.9, 40, col('#4a2f1c'), col('#2c1c12'), true, 0.55);
+    ctx.fillStyle = col('#5b3a22'); ctx.beginPath();
+    ctx.moveTo(x - 8 * k, y - 1.4 * k); ctx.lineTo(x - 17 * k, y - 2.6 * k); ctx.lineTo(x - 17.5 * k, y + 2.8 * k); ctx.lineTo(x - 8 * k, y + 1.8 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#f2c14e'); ellipse(ctx, x - 3 * k, y + 3.4 * k, 2.2 * k, 1.1 * k);
+    ctx.fillStyle = col('#5b3a22'); ellipse(ctx, x, y, 11 * k, 4.2 * k);
+    ctx.fillStyle = col('#c99a4b'); ellipse(ctx, x + 8 * k, y - 2 * k, 3.8 * k, 2.5 * k, -0.2);
+    ctx.fillStyle = col('#b8883f'); circle(ctx, x + 11 * k, y - 2.3 * k, 2.9 * k);
+    ctx.fillStyle = col('#f2c14e'); ctx.beginPath();
+    ctx.moveTo(x + 13 * k, y - 3.2 * k); ctx.quadraticCurveTo(x + 16.8 * k, y - 3.2 * k, x + 15.8 * k, y - 0.7 * k);
+    ctx.lineTo(x + 13.2 * k, y - 1.4 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#1d1716'); circle(ctx, x + 12.1 * k, y - 3 * k, 0.75 * k);
+    ctx.strokeStyle = col('#7a5428'); ctx.lineWidth = 0.8 * k;
+    ctx.beginPath(); ctx.moveTo(x + 10.8 * k, y - 4 * k); ctx.lineTo(x + 13.2 * k, y - 3.7 * k); ctx.stroke();
+    birdWing(ctx, x, y, k, w, 44, col('#5e3c22'), col('#2c1c12'), true, 0.55);
+  }
+  // Kar baykuşu: bembeyaz, yuvarlak; koyu benekler, öne bakan iri sarı gözler (gece hafifçe ışıldar)
+  function drawOwl(ctx, x, y, k, w, night) {
+    const col = tint(night * 0.6), dots = (wg, n) => {
+      ctx.fillStyle = col('#6b7385');
+      for (let i = 0; i < n; i++) { const f = 0.3 + i * 0.6 / n; circle(ctx, lerp(wg.sx, wg.tx, f) - 1 * k, lerp(wg.sy, wg.ty, f) + 0.8 * k, 0.55 * k); }
+    };
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    dots(birdWing(ctx, x - 1 * k, y, k, w * 0.85, 20, col('#dfe4ec'), null), 3);
+    ctx.fillStyle = col('#eef1f5'); ctx.beginPath();
+    ctx.moveTo(x - 7 * k, y - 1.6 * k); ctx.lineTo(x - 12 * k, y - 0.8 * k); ctx.lineTo(x - 11.5 * k, y + 2.2 * k); ctx.lineTo(x - 7 * k, y + 2 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#f6f8fb'); ellipse(ctx, x, y + 0.4 * k, 8.5 * k, 4.6 * k);
+    ctx.fillStyle = col('#6b7385');
+    for (const [dx, dy] of [[-3.4, -1.6], [-0.2, -2.6], [2.6, -1.2], [-1.4, 0.8], [1.6, 1.8], [-4.6, 1]]) circle(ctx, x + dx * k, y + dy * k, 0.55 * k);
+    ctx.fillStyle = col('#f8fafc'); circle(ctx, x + 7.5 * k, y - 2.4 * k, 4.4 * k);
+    if (night > 0.3) { ctx.globalCompositeOperation = 'lighter'; for (const ex of [5.8, 9.2]) glow(ctx, x + ex * k, y - 2.8 * k, 4 * k, hex('#ffd56b'), 0.5 * night); ctx.globalCompositeOperation = 'source-over'; }
+    for (const ex of [5.8, 9.2]) {
+      ctx.fillStyle = '#f5c518'; circle(ctx, x + ex * k, y - 2.8 * k, 1.35 * k);
+      ctx.fillStyle = '#1d1716'; circle(ctx, x + ex * k, y - 2.8 * k, 0.7 * k);
+    }
+    ctx.fillStyle = col('#3a3f4a'); ctx.beginPath(); ctx.moveTo(x + 7 * k, y - 1.9 * k); ctx.lineTo(x + 8 * k, y - 1.9 * k); ctx.lineTo(x + 7.5 * k, y - 0.8 * k); ctx.closePath(); ctx.fill();
+    dots(birdWing(ctx, x + 0.5 * k, y - 0.2 * k, k, w, 22, col('#f1f4f8'), null), 4);
+  }
+  // Yalıçapkını: parlak mavi sırt, turuncu karın, beyaz boyun lekesi, uzun hançer gaga
+  function drawKingfisher(ctx, x, y, k, w, night) {
+    const col = tint(night);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    birdWing(ctx, x - 1 * k, y, k, w * 0.85, 11, col('#1a6fa8'), null);
+    ctx.fillStyle = col('#1e8fd6'); ctx.beginPath();
+    ctx.moveTo(x - 5 * k, y - 1.2 * k); ctx.lineTo(x - 9.5 * k, y - 0.8 * k); ctx.lineTo(x - 9.2 * k, y + 1.2 * k); ctx.lineTo(x - 5 * k, y + 1.2 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#f08a3c'); ellipse(ctx, x + 0.5 * k, y + 0.9 * k, 5.8 * k, 2.4 * k);
+    ctx.fillStyle = col('#1f9be0'); ellipse(ctx, x, y - 0.7 * k, 6.2 * k, 2.3 * k);
+    ctx.fillStyle = col('#6fdcf7'); ellipse(ctx, x - 1 * k, y - 1.5 * k, 4 * k, 0.7 * k);
+    ctx.fillStyle = col('#1a7fc4'); circle(ctx, x + 5.6 * k, y - 1.4 * k, 2.8 * k);
+    ctx.fillStyle = col('#f08a3c'); ellipse(ctx, x + 5.8 * k, y - 0.6 * k, 1.6 * k, 0.9 * k);
+    ctx.fillStyle = col('#ffffff'); ellipse(ctx, x + 4.2 * k, y + 0.3 * k, 1 * k, 0.7 * k);
+    ctx.fillStyle = col('#1d1716'); circle(ctx, x + 6.6 * k, y - 1.9 * k, 0.6 * k);
+    ctx.beginPath(); ctx.moveTo(x + 7.8 * k, y - 2.2 * k); ctx.lineTo(x + 14.5 * k, y - 0.9 * k); ctx.lineTo(x + 7.8 * k, y - 0.3 * k); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = col('#e2483d'); circle(ctx, x + 1 * k, y + 3.1 * k, 0.8 * k);
+    birdWing(ctx, x + 0.5 * k, y - 0.4 * k, k, w, 12, col('#1a7fc4'), col('#145a8a'));
+  }
+  const BIRD_ART = {
+    stork: (c, x, y, k, w, n) => drawLongBird(c, x, y, k, w, n, LONG_BIRD.stork),
+    flamingo: (c, x, y, k, w, n) => drawLongBird(c, x, y, k, w, n, LONG_BIRD.flamingo),
+    beeeater: drawBeeEater, woodpecker: drawWoodpecker, eagle: drawEagle, owl: drawOwl, kingfisher: drawKingfisher,
+  };
+  // Uçuş biçimleri: dir 1 soldan sağa (yolcuyla aynı yöne), −1 sağdan sola; dur: ekranı geçme süresi (sn), y: gökyüzünde
+  // yükseklik (ekranın oranı), n: sürü [en az, en çok], s: boy, fl: kanat çırpma hızı (rad/sn), amp: çırpış genliği,
+  // bound: çırp-süzül dalgalı uçuş (arıkuşu, ağaçkakan), glide: süzülerek geçen zamanın oranı (leylek, kartal), gw: süzülürken kanadın duruşu,
+  // gap: sürüdeki kuşlar arası (birim; varsayılan 26)
+  const BIRD_FLY = {
+    stork:      { dir: 1,  dur: 19, y: [0.27, 0.36], n: [1, 2], s: 1.4,  fl: 6,   amp: 1,   glide: 0.4, gw: 0.45, gap: 40 },
+    beeeater:   { dir: -1, dur: 12, y: [0.32, 0.42], n: [2, 3], s: 1.75, fl: 22,  amp: 0.9, bound: 1 },
+    woodpecker: { dir: -1, dur: 13, y: [0.33, 0.43], n: [1, 1], s: 1.75, fl: 24,  amp: 1,   bound: 1.5 },
+    flamingo:   { dir: 1,  dur: 18, y: [0.27, 0.36], n: [3, 5], s: 1.3,  fl: 8,   amp: 0.9, gap: 40 },
+    eagle:      { dir: -1, dur: 21, y: [0.24, 0.33], n: [1, 1], s: 1.55, fl: 5,   amp: 0.8, glide: 0.75, gw: 0.62 },
+    owl:        { dir: -1, dur: 15, y: [0.32, 0.42], n: [1, 1], s: 1.65, fl: 6.5, amp: 1.1 },
+    kingfisher: { dir: -1, dur: 10, y: [0.38, 0.46], n: [1, 1], s: 1.8,  fl: 34,  amp: 0.6 },
+  };
+  const BIRD_SPARK = {
+    stork: ['#ffffff', '#f3f2ee', '#e2483d', '#ffd56b'], beeeater: ['#36b6c4', '#f7d33c', '#a0532c', '#ffffff'],
+    woodpecker: ['#ffffff', '#d6343a', '#26262c', '#ffd56b'], flamingo: ['#f7aec2', '#ef6f8e', '#ffffff', '#ffd56b'],
+    eagle: ['#c99a4b', '#f2c14e', '#ffffff', '#7a5428'], owl: ['#ffffff', '#e9f3ff', '#f5c518', '#cfe0ff'], kingfisher: ['#1f9be0', '#f08a3c', '#6fdcf7', '#ffffff'],
+  };
   const KITE_COLS = [['#ff6b6b', '#ffd56b'], ['#4dabf7', '#fbf8ee'], ['#9775fa', '#6fd3c1'], ['#f2a03d', '#2f9e8f'], ['#e8638e', '#fff1c2']];
   // Uçurtma (Uçurtma Yolu): iki renkli baklava gövde, çapraz çıtalar, rüzgârda dalgalanan fiyonklu kuyruk.
   // s: boy ölçüsü, ang: yatma açısı, col: [renk1, renk2], night: gece karartması (0–1), dışarıda translate edilmez
@@ -1397,6 +1574,8 @@
       // Yunus sürüsü: denizli bölgelerde uzak denizden sıçrayarak yolcuyla aynı yöne yüzer (game.js sayar).
       // seaLine: deniz yüzeyinin y'si (her karede uzak katman çizilirken güncellenir)
       this.dolphins = null; this.seaLine = 0;
+      // Kuş Defteri: bölgenin kuşu (ya da küçük sürüsü) gökyüzünden geçer; dokununca deftere yazılır (game.js sayar)
+      this.bird = null;
       // Diğer gezginler (Yolcular): game.js listeyi verir, sahne yumuşakça ekler/çıkarır
       this.others = []; this.ghosts = new Map();
       // Hazır mesajlar: gezginin (ya da yolcunun) başının üstünde konuşma balonu
@@ -1655,6 +1834,47 @@
       }
       return false;
     }
+    // Kuş Defteri: bölgenin kuşu (1–5 kuşluk küçük bir sürü) gökyüzünden geçer. Dokununca dürbün halkası belirir,
+    // kuş sevinçle kanat çırpıp yükselir ve solar.
+    // hudBottom: konum kartının alt kenarı (sanal px); kuş kartın arkasından geçmesin diye altından uçar
+    spawnBird(id, hudBottom) {
+      const f = BIRD_FLY[id];
+      if (!f) return;
+      const k = Math.max(this.k, 0.8) * f.s, n = f.n[0] + ((Math.random() * (f.n[1] - f.n[0] + 1)) | 0);
+      if (hudBottom === undefined) hudBottom = this.RW < 480 ? 150 / this.zoom : 0;
+      const y0 = Math.min(Math.max(this.H * rand(f.y[0], f.y[1]), hudBottom + (24 + rand(0, 30)) * k), this.H * 0.56);
+      this.bird = { id, n, t: 0, fp: Math.random() * TAU, ph: Math.random() * TAU, y0, noted: 0, ring: null,
+        x: f.dir > 0 ? -40 * k : this.W + 40 * k, vx: f.dir * (this.W + 80 * k + (n - 1) * (f.gap || 26) * k) / f.dur };
+    }
+    // i. kuşun yeri ve kanat konumu: sürü çapraz bir sıra halinde geride; dalgalı uçanlar çırpınca yükselir, süzülünce alçalır
+    birdPos(b, i) {
+      const f = BIRD_FLY[b.id], k = Math.max(this.k, 0.8) * f.s, t = b.t, calm = 1 - clamp(b.noted / 0.3, 0, 1);
+      let y = b.y0 + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 6 * k + Math.sin(t * 0.55 + b.ph + i) * 7 * k;
+      let w = 0.2 + 0.8 * f.amp * Math.sin(b.fp + i * 0.9);
+      if (f.bound) {
+        const cyc = (t * 1.1 + i * 0.3) % 1;
+        w = lerp(w, 0.05, smooth(0.55, 0.62, cyc) * (1 - smooth(0.94, 1, cyc)) * calm);
+        y += f.bound * 5 * k * Math.cos(cyc * TAU);
+      } else if (f.glide) {
+        const cyc = (t / 3.2 + i * 0.2) % 1, fp0 = 1 - f.glide;
+        w = lerp(w, f.gw, (cyc < fp0 ? 0 : smooth(fp0, fp0 + 0.12, cyc) * (1 - smooth(0.9, 1, cyc))) * calm);
+      }
+      return { x: b.x - f.dir * i * (f.gap || 26) * k + Math.sin(t * 0.8 + i * 1.3) * 3 * k, y, k, w, dir: f.dir };
+    }
+    hitBird(px, py) {
+      const b = this.bird;
+      if (!b || b.noted || b.t < 0.5) return null;
+      const r = 34 * Math.max(this.k, 0.8);
+      for (let i = 0; i < b.n; i++) {
+        const p = this.birdPos(b, i), cx = p.x + p.dir * 4 * p.k, cy = p.y - 2 * p.k;
+        if (Math.hypot(px - cx, py - cy) < r) {
+          b.noted = 0.001; b.ring = { x: cx, y: cy, t: 0, k: p.k };
+          this.burst(cx, cy, 22, BIRD_SPARK[b.id]);
+          return b.id;
+        }
+      }
+      return null;
+    }
     // Yabani tilki: çalılardan çıkar (gece önce gözleri parlar), bir süre yolcunun önünde koşup arada dönüp bakar,
     // sonra çalılara dalar. Dokununca sevinçle sıçrar ve uzaklaşır.
     spawnFox() { this.fox = { t: 0, dur: 15, ph: 0, happy: 0, out: 0 }; }
@@ -1695,16 +1915,22 @@
     dolPose(i) {
       const d = this.dolphins, s = this.dolScale(), sea = this.seaLine;
       const x0 = this.dolHead() - i * 34 * s, vx = this.dolSpeed();
-      // selam: sırayla yüksek bir sıçrayış ve havada tam bir takla
-      const hu = d.happy ? (d.happy - i * 0.18) / 1.3 : -1;
+      // selam: sırayla yüksek bir sıçrayış ve havada tam bir takla. Havadaki yunus önce o sıçrayışını bitirir (suya
+      // birden düşmesin); selamdan sonra olağan sıçrayışlar sudan yeniden başlar (havada birden belirmesin)
+      const hu = d.happy ? (d.happy - d.hs[i]) / 1.3 : -1;
       if (hu >= 0 && hu <= 1) {
         const h = 46 * s, fx = 22 * s;
         return { air: true, x: x0 + hu * fx, y: sea - Math.sin(hu * Math.PI) * h, ang: Math.atan2(-Math.PI * h * Math.cos(hu * Math.PI) / 1.3, vx + fx / 1.3) + hu * TAU };
       }
-      const P = 2.2, A = 1.05, tt = d.t - d.ph - i * 0.42;
+      const P = DOL_P, A = DOL_A;
+      let tt = d.t - d.ph - i * 0.42;
+      if (d.happy) {
+        // taklanın hemen ardından kısa bir dalış, sonra sıçrayışlar baştan; selamı beklerken yeni sıçrayışa başlamaz
+        if (hu > 1) { if (hu < 1.25) return { air: false, x: x0 }; tt = (hu - 1.25) * 1.3; }
+        else if (tt >= 0 && d.t - (tt % P) > d.tapAt) return { air: false, x: x0 };
+      }
       const u = tt < 0 ? -1 : (tt % P) / A;
-      // taklanın hemen ardından kısa bir dalış: olağan sıçrayışlar yeniden başlamadan önce
-      if (u < 0 || u > 1 || (hu > 1 && hu < 1.25)) return { air: false, x: x0 };
+      if (u < 0 || u > 1) return { air: false, x: x0 };
       const h = 26 * s, fx = 14 * s;
       return { air: true, x: x0 + u * fx, y: sea - Math.sin(u * Math.PI) * h, ang: Math.atan2(-Math.PI * h * Math.cos(u * Math.PI) / A, vx + fx / A) };
     }
@@ -1715,11 +1941,17 @@
     }
     hitDolphins(px, py) {
       const d = this.dolphins;
-      if (!d || d.happy || d.t < 0.8 || !this.seaLine) return false;
+      // deniz solarken (denizsiz bölgeye geçiş, uzay) görünmeyen sürüye dokunulmaz
+      if (!d || d.happy || d.t < 0.8 || !this.seaLine || !(d.vis > 0.4)) return false;
       const s = this.dolScale(), head = this.dolHead(), tail = head - (d.n - 1) * 34 * s;
       if (head < 10 * s || tail > this.W - 10 * s) return false;
       if (px > tail - 40 * s && px < head + 46 * s && py > this.seaLine - 80 * s && py < this.seaLine + 30 * s) {
-        d.happy = 0.001;
+        d.happy = 0.001; d.tapAt = d.t;
+        // her yunus selama, havadaysa o sıçrayışı bitince başlar
+        d.hs = Array.from({ length: d.n }, (_, i) => {
+          const tt = d.t - d.ph - i * 0.42, u = tt < 0 ? -1 : (tt % DOL_P) / DOL_A;
+          return Math.max(i * 0.18, u >= 0 && u <= 1 ? (1 - u) * DOL_A + 0.05 : 0);
+        });
         return true;
       }
       return false;
@@ -2253,6 +2485,17 @@
         if (!c.caught && Math.random() < dt * 2.2) { const p = this.cranePos(c, (Math.random() * c.n) | 0); this.parts.push({ type: 'spark', x: p.x - 8 * p.k, y: p.y, vx: -rand(10, 30), vy: rand(-6, 10), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: pick(['#ffffff', '#fff4c2']), rot: 0 }); }
         if (c.caught > 1.4 || c.x - (c.n >> 1) * 36 * Math.max(this.k, 0.8) > this.W + 60 * this.k) this.cranes = null;
       }
+      if (this.bird) {
+        const b = this.bird, f = BIRD_FLY[b.id], k = Math.max(this.k, 0.8) * f.s;
+        // deftere yazılınca hızlanıp yükselir ve yumuşakça solar
+        if (b.noted) { b.noted += dt; b.y0 -= 36 * k * dt; }
+        b.t += dt; b.fp += dt * f.fl * (b.noted ? 1.6 : 1);
+        b.x += b.vx * (b.noted ? 1 + Math.min(1.5, b.noted * 1.5) : 1) * dt;
+        if (b.ring) b.ring.t += dt;
+        if (b.noted && Math.random() < dt * 8) { const p = this.birdPos(b, (Math.random() * b.n) | 0); this.parts.push({ type: 'spark', x: p.x - p.dir * 8 * p.k, y: p.y, vx: -p.dir * rand(10, 30), vy: rand(-6, 10), life: 0, max: rand(0.5, 1), size: rand(1, 1.8), color: pick(BIRD_SPARK[b.id]), rot: 0 }); }
+        const tail = b.x - f.dir * (b.n - 1) * (f.gap || 26) * k;
+        if (b.noted > 1.6 || (f.dir > 0 ? tail > this.W + 60 * k : tail < -60 * k)) this.bird = null;
+      }
       if (this.star) {
         const s = this.star;
         s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt;
@@ -2586,6 +2829,7 @@
       if (this.keep) this.drawKeep(ctx, this.keep);
       if (this.seed) this.drawSeed(ctx, this.seed);
       if (this.cranes) this.drawCranes(ctx, this.cranes, night);
+      if (this.bird) this.drawBirds(ctx, this.bird, night);
       if (this.kite) this.drawKiteState(ctx, this.kite, night);
       if (this.plane) this.drawPlane(ctx, this.plane, night);
       if (this.gift) this.drawButterfly(ctx, this.gift);
@@ -2903,6 +3147,7 @@
     // Arada başını çevirip yolcuya bakar.
     drawDolphins(ctx, pal, night, space) {
       const d = this.dolphins, s = this.dolScale(), sea = this.seaLine, a = d.a * clamp(pal.sea, 0, 1) * (1 - space);
+      d.vis = clamp(pal.sea, 0, 1) * (1 - space); // denizin görünürlüğü (beliriş solması hariç: dokunuş zaten 0,8 sn bekler)
       if (a < 0.02) return;
       // gece: ay ışığında gümüşi siluet, suyun değdiği yerler yeşilimsi mavi ışıldar (deniz ışıması)
       const back = css(mixc(hex('#5b81a3'), hex('#5a7596'), night)), belly = css(mixc(hex('#e3edf4'), hex('#b8c9db'), night));
@@ -3046,6 +3291,33 @@
       // arkadakiler önce çizilir, lider en üstte
       for (let i = c.n - 1; i >= 0; i--) { const p = this.cranePos(c, i); drawCrane(ctx, p.x, p.y, p.k, c.caught ? Math.sin(c.t * 16 + i) : p.w, night); }
       ctx.restore();
+    }
+    drawBirds(ctx, b, night) {
+      const a = clamp(b.t / 1, 0, 1) * (b.noted ? clamp(1 - b.noted / 1.6, 0, 1) : 1);
+      if (a > 0) {
+        ctx.save(); ctx.globalAlpha = a;
+        const lead = this.birdPos(b, 0);
+        ctx.globalCompositeOperation = 'lighter';
+        glow(ctx, lead.x, lead.y, 60 * lead.k, hex(night > 0.5 ? '#cfe0ff' : '#fff8e0'), (b.noted ? 0.4 : 0.1 + 0.12 * night) + 0.05 * Math.sin(b.t * 3));
+        ctx.globalCompositeOperation = 'source-over';
+        for (let i = b.n - 1; i >= 0; i--) {
+          const p = this.birdPos(b, i);
+          ctx.save(); ctx.translate(p.x, p.y); if (p.dir < 0) ctx.scale(-1, 1);
+          BIRD_ART[b.id](ctx, 0, 0, p.k, p.w, night);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+      // dürbün halkası: dokunulan yerde iki yuvarlak mercek büyüyerek solar
+      const r = b.ring;
+      if (r && r.t < 0.9) {
+        const e = r.t / 0.9, rad = (12 + 16 * Math.sqrt(e)) * r.k, al = 1 - e;
+        ctx.save(); ctx.lineWidth = 3.4 * r.k; ctx.strokeStyle = `rgba(40,50,90,${(0.22 * al).toFixed(3)})`;
+        for (const d of [-0.62, 0.62]) { ctx.beginPath(); ctx.arc(r.x + d * rad, r.y, rad, 0, TAU); ctx.stroke(); }
+        ctx.lineWidth = 1.8 * r.k; ctx.strokeStyle = `rgba(255,250,232,${(0.9 * al).toFixed(3)})`;
+        for (const d of [-0.62, 0.62]) { ctx.beginPath(); ctx.arc(r.x + d * rad, r.y, rad, 0, TAU); ctx.stroke(); }
+        ctx.restore();
+      }
     }
     // Katlanmış kâğıt uçak: açık gökte ince bir kontur, gecede ve uzayda sıcak bir ışıltıyla seçilir
     drawPlane(ctx, p, night) {
@@ -3278,6 +3550,29 @@
     ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
 
+  // Kuş Defteri simgesi: kanatları açık kuş; bulunmamışsa yalnızca soluk silueti (kartın yazı rengiyle, temaya uyar).
+  // [boy (yüksekliğe göre), x, y]: her kuş kendi biçimine göre kutuya sığdırılır
+  const BIRD_ICON = { stork: [1.05, 0.47, 0.64], flamingo: [1.05, 0.47, 0.64], beeeater: [1.8, 0.55, 0.66], woodpecker: [1.9, 0.49, 0.7],
+    eagle: [0.92, 0.5, 0.86], owl: [1.75, 0.5, 0.74], kingfisher: [2.15, 0.42, 0.65] };
+  function drawBirdIcon(canvas, id, locked) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = canvas.clientWidth || 64, h = canvas.clientHeight || 44;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const ic = BIRD_ICON[id];
+    if (!ic) return;
+    const k = Math.min(ic[0] * h / 44, ic[0] * w / 64);
+    BIRD_ART[id](ctx, w * ic[1], h * ic[2], k, 0.75, 0);
+    if (locked) {
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.globalAlpha = 0.42; ctx.fillStyle = getComputedStyle(canvas).color; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    }
+  }
+
   IT.Scene = Scene;
   IT.drawIcon = drawIcon;
+  IT.drawBirdIcon = drawBirdIcon;
 })();

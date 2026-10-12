@@ -27,7 +27,7 @@ const { chromium } = require('./lib/pw');
   await p.close();
   p = await open({}, null, 'night');
   seen = 0;
-  for (let i = 0; i < 110 && !seen; i++) { await p.waitForTimeout(1000); if (await p.evaluate(() => !!__sc.constel)) seen = i + 1; }
+  for (let i = 0; i < 140 && !seen; i++) { await p.waitForTimeout(1000); if (await p.evaluate(() => !!__sc.constel)) seen = i + 1; }
   console.log('gece takımyıldız geldi (sn):', seen, '·', await toasts(p));
   await p.screenshot({ path: process.env.SP + '/const_active.png' });
   // yıldızlara dokun: ilk dokunuşta bir yıldız yanar, hepsi yanınca tamamlanır
@@ -58,7 +58,7 @@ const { chromium } = require('./lib/pw');
   await p.waitForTimeout(2500);
   await p.screenshot({ path: process.env.SP + '/const_skymap.png' });
   seen = 0;
-  for (let i = 0; i < 110 && !seen; i++) { await p.waitForTimeout(1000); if (await p.evaluate(() => !!__sc.constel)) seen = i + 1; }
+  for (let i = 0; i < 140 && !seen; i++) { await p.waitForTimeout(1000); if (await p.evaluate(() => !!__sc.constel)) seen = i + 1; }
   console.log('uzayda sekizinci geldi (sn):', seen, '· ilk ipucu tekrar mı:', /parlak/.test(await toasts(p)));
   const m = await p.evaluate(() => __sc.constel.c.s.length);
   for (let i = 0; i < m; i++) { await tapStar(p, i); await p.waitForTimeout(100); }

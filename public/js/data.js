@@ -314,6 +314,8 @@
     { id: 'stargazer', need: 0, consts: 8, jacket: '#2b3a6b', jacketDark: '#1f2b52', hat: '#cfe0ff', hatDark: '#a9bde6', pack: '#e8b93c' },
     // kıyı denizindeki yunus sürülerine yedi kez selam verince açılır (beyaz denizci şapkası, kırmızı can simidi rengi çanta)
     { id: 'sailor', need: 0, dolphins: 7, jacket: '#1d5f8a', jacketDark: '#154766', hat: '#f4f7fa', hatDark: '#cfd8e2', pack: '#e2483d' },
+    // Kuş Defteri'ndeki bütün kuşları tanıyınca açılır (haki ceket, hasır şapka, tuğla kırmızısı çanta)
+    { id: 'birder', need: 0, birds: 7, jacket: '#7d8a4a', jacketDark: '#636e39', hat: '#e9c98a', hatDark: '#c8a766', pack: '#b5523b' },
   ];
 
   /* ---------- Takımyıldızlar: gece gökyüzünde birleştirilen parlak yıldızlar ----------
@@ -332,6 +334,22 @@
   CONSTELLATIONS.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`const.${c.id}`) }));
   const CONST = Object.fromEntries(CONSTELLATIONS.map(c => [c.id, c]));
   const constCount = s => CONSTELLATIONS.filter(c => s.consts && s.consts[c.id]).length;
+  /* ---------- Kuş Defteri: her bölgenin kendine has bir kuşu gökyüzünden geçer ----------
+     biomes: kuşun görüldüğü bölgeler (her biyomda tek kuş). Dokunulan kuş deftere yazılır; hepsi tanınınca Kuş Gözlemcisi
+     kıyafeti açılır. Sıra: ilk yolculukta karşılaşılma sırası. */
+  const BIRDS = [
+    { id: 'stork',      biomes: ['meadow', 'wheat'] },
+    { id: 'beeeater',   biomes: ['lavender', 'tulip', 'sakura'] },
+    { id: 'woodpecker', biomes: ['pine', 'autumn'] },
+    { id: 'flamingo',   biomes: ['coast', 'olive'] },
+    { id: 'eagle',      biomes: ['canyon', 'cappadocia', 'desert'] },
+    { id: 'owl',        biomes: ['snow', 'aurora'] },
+    { id: 'kingfisher', biomes: ['tea'] },
+  ];
+  BIRDS.forEach(b => Object.defineProperties(b, { name: { get: () => T(`bird.${b.id}`) }, hint: { get: () => T(`bird.${b.id}.hint`) } }));
+  const BIRD = Object.fromEntries(BIRDS.map(b => [b.id, b]));
+  const BIRD_OF = Object.fromEntries(BIRDS.flatMap(b => b.biomes.map(m => [m, b])));
+  const birdCount = s => BIRDS.filter(b => s.birds && s.birds[b.id] > 0).length;
   OUTFITS.forEach(o => Object.defineProperty(o, 'name', { get: () => T(`outfit.${o.id}`) }));
   const OUTFIT = Object.fromEntries(OUTFITS.map(o => [o.id, o]));
 
@@ -525,7 +543,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, BIRD, BIRD_OF, birdCount, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

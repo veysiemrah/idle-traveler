@@ -80,9 +80,9 @@
       if (echo) g.connect(this.delay);
       o.start(t); o.stop(t + dur + 0.05);
     },
-    noise(vol, dur, freq, q, dest) {
+    noise(vol, dur, freq, q, dest, when) {
       if (!this.ctx || ((!dest || dest === this.sfx) && !this.sfxOn)) return;
-      const c = this.ctx, t = c.currentTime;
+      const c = this.ctx, t = c.currentTime + (when || 0);
       const s = c.createBufferSource(); s.buffer = this.noiseBuf;
       const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
       const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -166,6 +166,28 @@
         o.connect(g); g.connect(this.sfx); g.connect(this.delay);
         o.start(t); o.stop(t + 0.28);
       });
+    },
+    // Kuş Defteri: her kuşun kendi sesi (leylek gaga takırdatır, baykuş öter, kartal ıslık gibi çığlık atar, diğerleri cıvıldar);
+    // deftere yazılınca ardından iki yumuşak, yükselen nota
+    bird(id, noted) {
+      if (!this.ctx || !this.sfxOn) return;
+      const c = this.ctx;
+      const chirp = (w, f0, f1, dur, vol, type) => {
+        const t = c.currentTime + w, o = c.createOscillator(), g = c.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + Math.min(0.03, dur * 0.3)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(this.sfx); g.connect(this.delay);
+        o.start(t); o.stop(t + dur + 0.05);
+      };
+      if (id === 'stork') for (let i = 0; i < 7; i++) this.noise(0.05, 0.03, 1800 + (i % 2) * 400, 3, undefined, 0.1 + i * 0.07);
+      else if (id === 'owl') { chirp(0.1, 420, 380, 0.32, 0.03); chirp(0.55, 400, 360, 0.5, 0.028); }
+      else if (id === 'eagle') { chirp(0.1, 2600, 1900, 0.45, 0.014, 'triangle'); chirp(0.62, 2400, 1700, 0.35, 0.011, 'triangle'); }
+      else if (id === 'flamingo') { chirp(0.1, 700, 560, 0.16, 0.02, 'sawtooth'); chirp(0.32, 760, 600, 0.16, 0.016, 'sawtooth'); }
+      else if (id === 'kingfisher') { chirp(0.1, 3600, 4200, 0.12, 0.012); chirp(0.26, 3600, 4300, 0.12, 0.01); }
+      else if (id === 'woodpecker') { for (let i = 0; i < 9; i++) this.noise(0.06, 0.02, 2600, 4, undefined, 0.1 + i * 0.045); chirp(0.6, 2200, 1800, 0.1, 0.012); }
+      else { chirp(0.1, 2600, 3200, 0.09, 0.012); chirp(0.24, 2800, 3400, 0.09, 0.011); chirp(0.4, 2400, 3000, 0.12, 0.01); }
+      if (noted) [2, 4].forEach((n, i) => this.tone(PENTA[n] * 2, 0.03, 0.9, 'sine', this.sfx, true, 0.5 + i * 0.13));
     },
     // kâğıt uçak: yanından süzülen yumuşak bir hışırtı ve iki ince nota
     plane() {
