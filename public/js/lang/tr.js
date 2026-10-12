@@ -455,5 +455,20 @@ IT.addLang('tr', {
     // Hasat mevsimi (v1.45)
     "toast.harvestSeen": "Yol kenarları hasada hazırlanmış… Bir balkabağına dokun!",
     "toast.harvest": "<b>Hasat payı!</b> · +{c} kredi · Yarın yine uğra",
+    // Günün Notları (v1.47)
+    "note.title": "Günün Notları",
+    "note.sub": "{n}/{m} · yarın yenileri gelir",
+    "note.hint": "Her gün herkese aynı üç not. Her biri küçük bir ödül, üçü birden bir hediye daha.",
+    "note.allDone": "Bugünün notları tamam! Yarın yenileri seni bekliyor.",
+    "note.steps": "{c} adım at",
+    "note.gift": { one: "Bir altın kelebek yakala", other: "{c} altın kelebek yakala" },
+    "note.bird": "Gökyüzünden geçen bir kuşa dokun",
+    "note.photo": "Bir kartpostal çek",
+    "note.wish": "Bir dilek tut (kayan yıldız ya da karahindiba)",
+    "note.upgrade": { one: "Bir yükseltme al", other: "{c} yükseltme al" },
+    "note.dist": "Oyun açıkken {d} yol git",
+    "note.pumpkin": "Bir balkabağına dokun",
+    "toast.note": "<b>Not tamam:</b> {text} · +{c} kredi",
+    "toast.notesAll": "<b>Günün notları tamam!</b> · +{c} kredi · Yarın yenileri gelir",
   },
 });

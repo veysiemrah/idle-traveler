@@ -443,5 +443,20 @@ IT.addLang('en', {
     // Hasat mevsimi (v1.45)
     "toast.harvestSeen": "The roadside is ready for the harvest… Tap a pumpkin!",
     "toast.harvest": "<b>Your share of the harvest!</b> · +{c} credits · Come back tomorrow",
+    // Günün Notları (v1.47)
+    "note.title": "Today's Notes",
+    "note.sub": "{n}/{m} · new ones tomorrow",
+    "note.hint": "The same three notes for everyone, every day. Each brings a small reward; all three bring a gift.",
+    "note.allDone": "Today's notes are done! New ones await you tomorrow.",
+    "note.steps": "Take {c} steps",
+    "note.gift": { one: "Catch a golden butterfly", other: "Catch {c} golden butterflies" },
+    "note.bird": "Tap a bird flying across the sky",
+    "note.photo": "Take a postcard",
+    "note.wish": "Make a wish (shooting star or dandelion)",
+    "note.upgrade": { one: "Buy an upgrade", other: "Buy {c} upgrades" },
+    "note.dist": "Travel {d} while the game is open",
+    "note.pumpkin": "Tap a pumpkin",
+    "toast.note": "<b>Note done:</b> {text} · +{c} credits",
+    "toast.notesAll": "<b>Today's notes are done!</b> · +{c} credits · New ones tomorrow",
   },
 });

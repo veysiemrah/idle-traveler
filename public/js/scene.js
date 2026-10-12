@@ -729,7 +729,7 @@
   // Aşamalar: 1 vagonda kıyafet renginde kuşak ve altın kazan halkaları, 2 vagon damında renkli fener dizisi,
   // 3 ışıldayan tekerlekler ve daha parlak ray, 4 altın süsler ve parıltı
   function drawStarTrain(ctx, x, y, k, st) {
-    const T = st.tier || 0, t = st.t || 0, ic = st.icon;
+    const T = st.tier || 0, t = st.t || 0, ic = st.icon, a0 = ctx.globalAlpha; // diğer gezginlerde solma saydamlığı
     ctx.save(); ctx.translate(x, y + Math.sin(t * 1.3) * 1.5 * k);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     // ışıktan ray: geriye doğru solar, traversler akar
@@ -739,8 +739,8 @@
     for (const ry of [19, 22.5]) { ctx.beginPath(); ctx.moveTo(62 * k, ry * k); ctx.lineTo(-L, ry * k); ctx.stroke(); }
     ctx.lineWidth = 1.8 * k;
     const off = ic ? 0 : (t * 70) % 12;
-    for (let sx = 60 - off; sx > -L / k; sx -= 12) { ctx.globalAlpha = clamp(1 + sx * k / L, 0, 1) * 0.7; ctx.beginPath(); ctx.moveTo(sx * k, 18 * k); ctx.lineTo((sx - 2) * k, 24 * k); ctx.stroke(); }
-    ctx.globalAlpha = 1;
+    for (let sx = 60 - off; sx > -L / k; sx -= 12) { ctx.globalAlpha = a0 * clamp(1 + sx * k / L, 0, 1) * 0.7; ctx.beginPath(); ctx.moveTo(sx * k, 18 * k); ctx.lineTo((sx - 2) * k, 24 * k); ctx.stroke(); }
+    ctx.globalAlpha = a0;
     if (T >= 3) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 10 * k, 22 * k, 60 * k, hex('#9fd4ff'), 0.25); ctx.globalCompositeOperation = 'source-over'; }
     // yıldız tozu dumanı
     for (let i = 0; i < 6; i++) {
@@ -2464,7 +2464,10 @@
       const k = this.k, o = g.o, s = GHOST_SCALE;
       const x = g.x + Math.sin(this.t * 0.45 + g.seed) * 8 * k;
       const hop = g.wave > 0 ? Math.abs(Math.sin(g.wave * 9)) * 7 * k : 0;
-      const y = FLYING[o.veh] ? this.flyY(o.veh, k) - 34 * k + Math.sin(this.t * 0.8 + g.seed) * 4 * k : this.groundY() - 9 * k - hop;
+      // uçan gezgin konum kartının altına denk gelirse (etiketi ve balonu da) kartın altında kalır; kartın kenarında
+      // yumuşakça geçiş yapar (birden zıplamaz)
+      const fy = this.flyY(o.veh, k) - 34 * k, under = clamp(((this.hudRight || 0) - (x - 120 * k)) / (60 * k), 0, 1);
+      const y = FLYING[o.veh] ? lerp(fy, Math.max(fy, (this.hudB || 0) + ((VEH_TOP[o.veh] || 60) * s + 40) * k), under) + Math.sin(this.t * 0.8 + g.seed) * 4 * k : this.groundY() - 9 * k - hop;
       return { x, y, s, top: y - (VEH_TOP[o.veh] || 80) * k * s };
     }
     drawGhosts(ctx, night) {

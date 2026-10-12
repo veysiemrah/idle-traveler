@@ -445,5 +445,20 @@ IT.addLang('fr', {
     // Hasat mevsimi (v1.45)
     "toast.harvestSeen": "Le bord de la route est prêt pour la récolte… Touche une citrouille !",
     "toast.harvest": "<b>Ta part de la récolte !</b> · +{c} crédits · Reviens demain",
+    // Günün Notları (v1.47)
+    "note.title": "Notes du jour",
+    "note.sub": "{n}/{m} · de nouvelles demain",
+    "note.hint": "Les trois mêmes notes pour tout le monde, chaque jour. Chacune rapporte une petite récompense, les trois ensemble un cadeau.",
+    "note.allDone": "Les notes du jour sont faites ! De nouvelles t’attendent demain.",
+    "note.steps": "Fais {c} pas",
+    "note.gift": { one: "Attrape un papillon doré", other: "Attrape {c} papillons dorés" },
+    "note.bird": "Touche un oiseau qui traverse le ciel",
+    "note.photo": "Prends une carte postale",
+    "note.wish": "Fais un vœu (étoile filante ou pissenlit)",
+    "note.upgrade": { one: "Achète une amélioration", other: "Achète {c} améliorations" },
+    "note.dist": "Parcours {d} pendant que le jeu est ouvert",
+    "note.pumpkin": "Touche une citrouille",
+    "toast.note": "<b>Note faite :</b> {text} · +{c} crédits",
+    "toast.notesAll": "<b>Notes du jour faites !</b> · +{c} crédits · De nouvelles demain",
   },
 });
