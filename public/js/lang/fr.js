@@ -487,5 +487,9 @@ IT.addLang('fr', {
     "j.albumHint": "Les {m} dernières cartes postales prises avec l’appareil photo sont gardées ici. Touche-en une pour l’agrandir ou la télécharger à nouveau.",
     "pc.saved": "Ajoutée à ton album · Carnet",
     "album.eyebrow": "Album · {n}/{m}",
+    // Depolama engelli (v1.53)
+    "toast.noStorage": "<b>Ce navigateur ne permet pas au jeu de sauvegarder.</b> · Tu peux jouer, mais ta progression sera perdue en fermant la page. Autorise les données du site et ton voyage sera sauvegardé.",
+    // Yol Defteri gezinme şeridi (v1.53)
+    "j.nav": "Sections du carnet",
   },
 });

@@ -155,8 +155,8 @@
   function shoe(ctx, x, y, k) { ctx.fillStyle = P.shoe; ellipse(ctx, x + 2 * k, y - 1.6 * k, 4.6 * k, 2.3 * k); }
 
   /* ---------- Yükseltme görünümleri ----------
-     st.tier: aracın görsel aşaması (0–4). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır;
-     4. aşamada altın süslemeler ve parıltı gelir. */
+     st.tier: aracın görsel aşaması (0–8). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır, 4. aşamada altın
+     süslemeler ve parıltı gelir; 5–6 (Sv. 150, 200) iz ve gökkuşağı kuyruğu (trail), 7–8 (Sv. 300, 500) yörünge ve huzme (aura). */
   const GOLD = '#e8b93c', GOLD_HI = '#fff1c2';
   // dört köşeli küçük parıltılar (yerleri sabit, ışıkları yanıp söner)
   function sparkles(ctx, cx, cy, k, t, n, w, h) {
@@ -1805,7 +1805,8 @@
     if (T < 7) return;
     const [l, r] = VEH_EXT[id] || [-30, 30], top = VEH_TOP[id] || 60, t = st.t || 0, train = id === 'train';
     const cx = x + (train ? 10 : (l + r) / 2) * k, cy = y - top * 0.42 * k;
-    const rx = (train ? 72 : Math.min(92, (r - l) / 2 + 16)) * k, ry = Math.max(16, top * 0.34) * k;
+    // simgede yörünge daralır (geniş araçlarda yıldızlar simgenin kenarından taşmasın)
+    const rx = (train ? 72 : Math.min(st.icon ? 56 : 92, (r - l) / 2 + 16)) * k * (st.icon ? 0.75 : 1), ry = Math.max(16, top * 0.34) * k;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     if (!front && T >= 8) {

@@ -485,5 +485,9 @@ IT.addLang('es', {
     "j.albumHint": "Aquí se guardan las últimas {m} postales que hiciste con la cámara. Toca una para ampliarla o descargarla de nuevo.",
     "pc.saved": "Añadida a tu álbum · Diario",
     "album.eyebrow": "Álbum · {n}/{m}",
+    // Depolama engelli (v1.53)
+    "toast.noStorage": "<b>Este navegador no permite que el juego guarde.</b> · Puedes jugar, pero perderás tu progreso al cerrar la página. Permite los datos del sitio y tu viaje se guardará.",
+    // Yol Defteri gezinme şeridi (v1.53)
+    "j.nav": "Secciones del diario",
   },
 });

@@ -95,10 +95,11 @@
   // karışırsa) bu oturumda kayda hiç yazılmaz (saveLocked); sayfa yenilenince kayıt aynen açılır. JSON bozuksa ilk bozuk
   // kopya yedeğe (-bak) konur ve sağlam bir yedek varsa oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir.
   const BAK_KEY = SAVE_KEY + '-bak';
-  let saveLocked = false, otherTab = false;
+  // noStorage: tarayıcı depolamaya hiç izin vermiyor (site verileri engelli, gizli pencere kısıtı): kayıt yok sayılmaz, hiç yoktur
+  let saveLocked = false, otherTab = false, noStorage = false;
   function load() {
     let raw = null, d;
-    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { saveLocked = true; return null; }
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { saveLocked = noStorage = true; return null; }
     if (raw) {
       try { d = JSON.parse(raw); } catch (e) { d = undefined; }
       if (d !== undefined) {
@@ -852,7 +853,7 @@
       if (n.id !== id || N.done[i]) return;
       N.prog[i] = Math.min(n.need, N.prog[i] + (amount === undefined ? 1 : amount));
       if (N.prog[i] < n.need) return;
-      N.done[i] = true; uiDirty.journal = true;
+      N.done[i] = true; uiDirty.journal = true; notePop = i;
       const bonus = Math.max(20, incomeRate() * REWARD.note);
       grant(bonus);
       toast(t('toast.note', { text: esc(noteText(n)), c: fmtNum(bonus) }), 'teal');
@@ -1027,6 +1028,15 @@
     keepPeek(_, el) {
       el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
       Sound.chat();
+    },
+    // Defter gezinme şeridi: bölüme yumuşakça kay (yapışkan şeridin altında durur), çip kısa bir ışıkla karşılık verir
+    jnav(id, el) {
+      const h = document.getElementById(`jsec${id}`);
+      if (!h) return;
+      Sound.unlock(); Sound.chat();
+      el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      h.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      h.classList.remove('flash'); void h.offsetWidth; h.classList.add('flash');
     },
     // Albümdeki kartpostal büyük açılır
     albumPeek(id) { Sound.unlock(); Sound.chat(); showAlbumPhoto(+id); },
@@ -1403,7 +1413,10 @@
     // pencere açıkken arkadaki sayfa klavyeyle de ulaşılamaz (Tab pencereden çıkıp arkadaki bir düğmeye basamasın)
     $('.app').inert = true;
     b.focus({ preventScroll: true });
-    b.onclick = () => {
+    const openedAt = performance.now();
+    b.onclick = e => {
+      // klavyeden gelen tıklama (detail 0) pencere açıldıktan hemen sonraysa önceki pencereden taşan basılı tuştur
+      if (e && e.detail === 0 && e.isTrusted && performance.now() - openedAt < 400) return;
       if (guard && !guard()) return;
       $('#modal').hidden = true; $('.app').inert = false; modalRender = null; modalDismiss = false; Sound.unlock();
       if (onClose) onClose();
@@ -1484,7 +1497,8 @@
       // basılı tutulan Enter (tanıtımdaki "Başla"dan taşan) boş adı hemen reddetmesin
       inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); $('#modalBtn').click(); } });
       // Telefonlarda klavye kendiliğinden açılıp sahneyi örtmesin: yalnızca fareli cihazlarda odaklan
-      if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) inp.focus({ preventScroll: true });
+      // (pencere görünür olduktan ve düğme odağı aldıktan sonra: gizli öğeye odak verilemez)
+      if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) setTimeout(() => { if (inp.isConnected) inp.focus({ preventScroll: true }); }, 0);
     }, false,
     () => {
       if (IT.cleanName(nameDraft)) return true;
@@ -1922,6 +1936,7 @@
     trRenderedAt = Date.now();
   }
   let trRenderedAt = 0, lastTopTry = 0;
+  let jnavScroll = 0, jnavSync = () => {}, notePop = -1;
   function renderJournal() {
     const pane = $('#pane-journal');
     const stamps = [];
@@ -1946,14 +1961,16 @@
     }).join('');
     const N = S.notes, nDone = N.done.filter(Boolean).length, album = albumRead();
     const notes = N.list.length ? `
-      <h3 class="sec">${t('note.title')} <small>${t('note.sub', { n: nDone, m: N.list.length })}</small></h3>
-      <ul class="notes">${N.list.map((n, i) => `<li class="note${N.done[i] ? ' done' : ''}">
+      <h3 class="sec" data-nav="${nDone}/${N.list.length}">${t('note.title')} <small>${t('note.sub', { n: nDone, m: N.list.length })}</small></h3>
+      <ul class="notes">${N.list.map((n, i) => `<li class="note${N.done[i] ? ' done' : ''}${notePop === i ? ' pop' : ''}">
         <span class="note-e" aria-hidden="true">${N.done[i] ? '✓' : NOTE[n.id].e}</span>
         <span class="note-t">${esc(noteText(n))}</span>
         <span class="note-bar" aria-hidden="true"><i id="noteBar${i}" style="transform:scaleX(${Math.min(1, N.prog[i] / n.need)})"></i></span></li>`).join('')}</ul>
       <p class="tag small">${nDone === N.list.length ? t('note.allDone') : t('note.hint')}</p>` : '';
+    const scroller = pane.closest('.panes'), keepY = scroller ? scroller.scrollTop : 0;
+    const fa = pane.contains(document.activeElement) && document.activeElement.dataset ? { act: document.activeElement.dataset.act, id: document.activeElement.dataset.id } : null;
     pane.innerHTML = `${notes}
-      <h3 class="sec">${t('j.trip')}</h3>
+      <h3 class="sec" data-nav="">${t('j.trip')}</h3>
       <dl class="statgrid">
         <div><dt>${S.trips ? t('j.thisTrip') : t('j.total')}</dt><dd id="jDist"></dd></div>
         <div><dt>${t('j.credits')}</dt><dd id="jCred"></dd></div>
@@ -1973,16 +1990,16 @@
         ${S.trips ? `<div><dt>${t('j.life')}</dt><dd id="jLife"></dd></div>
         <div><dt>${t('j.memories')}</dt><dd>${t('j.memVal', { n: fmtNum(S.memories), p: fmtPct(HOME.bonus * S.memories * 100) })}</dd></div>` : ''}
       </dl>
-      ${album.length ? `<h3 class="sec">${t('j.album')} <small>${t('j.albumSub', { n: album.length, m: ALBUM_MAX })}</small></h3>
+      ${album.length ? `<h3 class="sec" data-nav="${album.length}">${t('j.album')} <small>${t('j.albumSub', { n: album.length, m: ALBUM_MAX })}</small></h3>
       <ul class="album">${album.map((p, i) => `<li><button class="album-pc" type="button" data-act="albumPeek" data-id="${i}" style="--r:${(i % 3) - 1}deg" title="${esc(p.region || '')}">
         <img src="${p.img}" alt="${esc(p.region || '')}" loading="lazy"><small>${esc(new Intl.DateTimeFormat(IT.locale(), { day: 'numeric', month: 'short' }).format(p.at))}</small></button></li>`).join('')}</ul>
       <p class="tag small">${t('j.albumHint', { m: ALBUM_MAX })}</p>` : ''}
-      <h3 class="sec">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
+      <h3 class="sec" data-nav="${S.mapPieces}/${MAP_PIECES}">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
         <p class="tag small">${S.mapPieces >= MAP_PIECES ? t('j.mapReady') : t('j.mapHint')}</p>
       </div>
-      <h3 class="sec">${t('j.keeps')} <small>${t('j.keepsSub', { n: nKeeps, m: IT.KEEPSAKES.length, p: fmtPct(Econ.keepBonus * 100 * nKeeps) })}</small></h3>
+      <h3 class="sec" data-nav="${nKeeps}/${IT.KEEPSAKES.length}">${t('j.keeps')} <small>${t('j.keepsSub', { n: nKeeps, m: IT.KEEPSAKES.length, p: fmtPct(Econ.keepBonus * 100 * nKeeps) })}</small></h3>
       <ul class="keeps">${IT.KEEPSAKES.map(k => {
         const where = IT.REGIONS.find(r => r.biome === k.id).name;
         return S.keeps[k.id]
@@ -1990,30 +2007,30 @@
           : `<li><div class="keep s-${k.id}" title="${esc(t('j.keepWhere', { region: where }))}"><span class="e" aria-hidden="true">?</span><small>${esc(where)}</small></div></li>`;
       }).join('')}</ul>
       <p class="tag small">${nKeeps === IT.KEEPSAKES.length ? t('j.keepsDone') : t('j.keepsHint')}</p>
-      ${S.letters ? `<h3 class="sec">${t('j.letters')} <small>${t('j.lettersSub', { n: S.letters, m: IT.LETTERS.length })}</small></h3>
+      ${S.letters ? `<h3 class="sec" data-nav="${S.letters}/${IT.LETTERS.length}">${t('j.letters')} <small>${t('j.lettersSub', { n: S.letters, m: IT.LETTERS.length })}</small></h3>
       <ul class="keeps letters">${IT.LETTERS.map((_, i) => i < S.letters
         ? `<li><button class="keep env on" type="button" data-act="letter" data-id="${i}"><span class="e" aria-hidden="true">✉️</span><b>${t(`letter.${i + 1}.t`)}</b></button></li>`
         : `<li><div class="keep env" role="img" aria-label="${esc(t('j.letterSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${S.letters >= IT.LETTERS.length ? t('j.lettersDone') : t('j.lettersHint')}</p>` : ''}
-      ${nConsts ? `<h3 class="sec">${t('j.consts')} <small>${t('j.constsSub', { n: nConsts, m: IT.CONSTELLATIONS.length })}</small></h3>
+      ${nConsts ? `<h3 class="sec" data-nav="${nConsts}/${IT.CONSTELLATIONS.length}">${t('j.consts')} <small>${t('j.constsSub', { n: nConsts, m: IT.CONSTELLATIONS.length })}</small></h3>
       <ul class="keeps consts">${IT.CONSTELLATIONS.map(c => S.consts[c.id]
         ? `<li><div class="keep const on" title="${esc(c.name)}"><svg viewBox="0 0 44 30" aria-hidden="true">${c.e.map(([i, j]) => `<line x1="${(c.s[i][0] * 44).toFixed(1)}" y1="${(c.s[i][1] * 30).toFixed(1)}" x2="${(c.s[j][0] * 44).toFixed(1)}" y2="${(c.s[j][1] * 30).toFixed(1)}"/>`).join('')}${c.s.map(p => `<circle cx="${(p[0] * 44).toFixed(1)}" cy="${(p[1] * 30).toFixed(1)}" r="1.6"/>`).join('')}</svg><b>${esc(c.name)}</b></div></li>`
         : `<li><div class="keep const" role="img" aria-label="${esc(t('j.constSealed'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${nConsts >= IT.CONSTELLATIONS.length ? t('j.constsDone') : t('j.constsHint')}</p>` : ''}
-      ${nBirds || shelf.length > IT.BIRDS.length ? `<h3 class="sec">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
+      ${nBirds || shelf.length > IT.BIRDS.length ? `<h3 class="sec" data-nav="${nBirds}/${IT.BIRDS.length}">${t('j.birds')} <small>${t('j.birdsSub', { n: nBirds, m: IT.BIRDS.length })}</small></h3>
       <ul class="keeps birds">${shelf.map(b => S.birds[b.id]
         ? `<li><button class="keep bird on${b.biomes.length ? '' : ' rare'}" type="button" data-act="birdPeek" data-id="${b.id}" title="${esc(t('j.birdSeen', { name: b.name, n: S.birds[b.id], c: fmtNum(S.birds[b.id]) }))}"><canvas data-bird="${b.id}" aria-hidden="true"></canvas><b>${esc(b.name)}</b><small>×${fmtNum(S.birds[b.id])}</small></button></li>`
         : `<li><div class="keep bird" title="${esc(b.hint)}"><canvas data-bird="${b.id}" data-locked="1" aria-hidden="true"></canvas><b>???</b><small>${esc(b.hint)}</small></div></li>`).join('')}</ul>
       <p class="tag small">${nBirds >= IT.BIRDS.length ? t('j.birdsDone') : t('j.birdsHint')}</p>` : ''}
-      <h3 class="sec">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
+      <h3 class="sec" data-nav="${S.regionIdx + 1}">${t('j.stamps')} <small>${t('j.stampsSub', { n: S.regionIdx + 1, p: fmtPct(6) })} · ${esc(IT.getRoute().name)}</small></h3>
       <ul class="stamps">${stamps.join('')}</ul>
-      <h3 class="sec">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
+      <h3 class="sec" data-nav="${nBadges}/${BADGE_TIERS}">${t('j.badges')} <small>${t('j.badgesSub', { n: nBadges, m: BADGE_TIERS, p: fmtPct(IT.badgeBonus(S) * 100) })}</small></h3>
       <ul class="badges">${badges}</ul>
       <h3 class="sec">${t('j.ms')}</h3>
       <ul class="mslist">${msDone.length ? msDone.map(m => `<li><span>${esc(m.name)}</span><b>${fmtDist(m.at)}</b></li>`).join('') : `<li class="muted">${t('j.msNone')}</li>`}</ul>
       <h3 class="sec">${t('j.offline')}</h3>
       <p class="tag">${t('j.offlineDesc', { p: fmtPct(Econ.offlineRate(S.buffs.dream) * 100), h: fmtHours(Econ.offlineCapHours(S.buffs.camp)) })}</p>
-      <h3 class="sec">${t('j.outfit')} <small>${t('j.outfitSub')}</small></h3>
+      <h3 class="sec" data-nav="${OUTFITS.filter(outfitOpen).length}/${OUTFITS.length}">${t('j.outfit')} <small>${t('j.outfitSub')}</small></h3>
       <ul class="outfits">${OUTFITS.map(o => {
         const open = outfitOpen(o), on = open && (S.settings.outfit === o.id || (!outfitOpen(OUTFIT[S.settings.outfit]) && o.id === 'classic'));
         return `<li><button class="outfit${on ? ' on' : ''}" data-act="outfit" data-id="${o.id}" aria-pressed="${on}" ${open ? '' : 'disabled'}
@@ -2022,7 +2039,26 @@
             : o.dolphins ? (S.dolphins ? t('ui.outfitDolphins', { n: S.dolphins, m: o.dolphins }) : t('ui.outfitSea'))
             : o.birds ? (IT.birdCount(S) ? t('ui.outfitBirds', { n: IT.birdCount(S), m: o.birds }) : t('ui.outfitSky')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
+    // Bölüm gezinme şeridi: defterin üstünde yapışkan, yatay kayan çipler (bölüm adı ve ilerleme); dokununca o bölüme
+    // yumuşakça kayar. Şeridin kendi yatay kaydırması yeniden çizimde korunur.
+    const heads = [...pane.querySelectorAll('h3.sec[data-nav]')];
+    const navX = jnavScroll;
+    const nav = document.createElement('nav');
+    nav.className = 'jnav'; nav.setAttribute('aria-label', t('j.nav'));
+    nav.innerHTML = heads.map((h, i) => {
+      h.id = `jsec${i}`;
+      const label = h.firstChild ? h.firstChild.textContent.trim() : '';
+      return `<button class="jnav-chip" type="button" data-act="jnav" data-id="${i}">${esc(label)}${h.dataset.nav ? ` <small>${esc(h.dataset.nav)}</small>` : ''}</button>`;
+    }).join('');
+    pane.prepend(nav);
+    nav.scrollLeft = navX;
+    nav.addEventListener('scroll', () => { jnavScroll = nav.scrollLeft; }, { passive: true });
+    jnavSync();
     pane.querySelectorAll('canvas[data-bird]').forEach(c => IT.drawBirdIcon(c, c.dataset.bird, !!c.dataset.locked));
+    notePop = -1;
+    // yeniden çizimde kaydırma ve klavye odağı yerinde kalır
+    if (scroller) scroller.scrollTop = keepY;
+    if (fa && fa.act) { const el = pane.querySelector(`[data-act="${fa.act}"]${fa.id !== undefined ? `[data-id="${fa.id}"]` : ''}`); if (el) el.focus({ preventScroll: true }); }
   }
 
   /* ---------- Ayarlar (başlık çubuğundaki dişli düğmesi) ---------- */
@@ -2350,22 +2386,37 @@
     window.addEventListener('pagehide', save);
     window.addEventListener('beforeunload', save);
 
+    // Yol Defteri kaydırıldıkça o an okunan bölümün çipi vurgulanır (karede en çok bir kez hesaplanır)
+    let jnavRaf = 0;
+    const jnavMark = () => {
+      jnavRaf = 0;
+      const nav = document.querySelector('#pane-journal .jnav');
+      if (!nav || $('#pane-journal').hidden) return;
+      const limit = nav.getBoundingClientRect().bottom + 56;
+      let cur = 0;
+      document.querySelectorAll('#pane-journal h3.sec[data-nav]').forEach((h, i) => { if (h.getBoundingClientRect().top <= limit) cur = i; });
+      nav.querySelectorAll('.jnav-chip').forEach((c, i) => c.classList.toggle('on', i === cur));
+    };
+    jnavSync = () => { if (!jnavRaf) jnavRaf = requestAnimationFrame(jnavMark); };
+    $('.panes').addEventListener('scroll', jnavSync, { passive: true });
     let tab = 'garage';
     try { tab = localStorage.getItem('idle-traveler-tab') || 'garage'; } catch (e) { /* yok say */ }
     actions.tab(['garage', 'buffs', 'journal', 'travelers'].includes(tab) ? tab : 'garage');
 
     // Kayıt bu kodla okunamadıysa (yayın sırasında karışan dosyalar): tanıtım ve ad sorulmaz, oturum kaydedilmez,
     // oyuncuya söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir
-    if (saveLocked) {
+    // Depolama hiç yoksa: yeni bir oyuncu gibi tanıtım ve ad gelir, yenilemek bir şey değiştirmez; oyuncuya söylenir
+    if (noStorage) setTimeout(() => toast(t('toast.noStorage'), 'teal'), 1500);
+    else if (saveLocked) {
       toast(t('toast.saveLocked'), 'teal');
       let tried = false;
       try { tried = sessionStorage.getItem('idle-traveler-locked') === IT.VERSION; sessionStorage.setItem('idle-traveler-locked', IT.VERSION); } catch (e) { tried = true; }
       setTimeout(() => (tried ? checkUpdate() : location.reload()), tried ? 2000 : 2500);
     }
     // İlk açılış ya da çevrimdışı dönüş
-    if (!S.intro && !saveLocked) showIntro();
+    if (!S.intro && (!saveLocked || noStorage)) showIntro();
     // Adı olmayan oyuncuya (yeni ya da eski) bir kez sorulur; çevrimdışı özeti bundan sonra gelir
-    if (!S.player.name && !saveLocked) showName();
+    if (!S.player.name && (!saveLocked || noStorage)) showName();
     if (S.intro) resume((Date.now() - S.lastSeen) / 1000);
     S.lastSeen = Math.max(S.lastSeen, Date.now());
     checkDaily();
@@ -2389,7 +2440,7 @@
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
     // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
     const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
-    IT.Online.start(() => S.player.name && !saveLocked ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
+    IT.Online.start(() => S.player.name && (!saveLocked || noStorage) ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
       tier: Econ.lookTier(S.levels[S.active]), outfit: wornOutfit(), pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;

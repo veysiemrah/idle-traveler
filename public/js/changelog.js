@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.52';
+  IT.VERSION = '1.53';
 
   IT.CHANGELOG = [
+    { v: '1.53', date: '2026-10-13', items: {
+      tr: ['Yol Defteri’nin üstünde artık bölümler arasında gezinmeni sağlayan bir şerit var: notlar, albüm, kuşlar, rozetler… hepsi bir dokunuş uzağında.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A strip at the top of the Journal now lets you jump between sections: notes, album, birds, badges… all just a tap away.',
+        'A few small touches along the road.'],
+      de: ['Oben im Tagebuch gibt es jetzt eine Leiste, mit der du zwischen den Abschnitten springst: Notizen, Album, Vögel, Abzeichen … alles nur einen Tipp entfernt.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una franja en la parte superior del Diario te permite saltar entre secciones: notas, álbum, aves, insignias… todo a un toque.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Une bande en haut du Carnet permet désormais de passer d’une section à l’autre : notes, album, oiseaux, badges… tout à portée de doigt.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.52', date: '2026-10-13', items: {
       tr: ['Yükseltmeye devam edenlerin araçları Sv. 300’de ve Sv. 500’de bir kez daha değişiyor… Gökyüzü bile onların etrafında dönmeye başlar.',
         'Yolda birkaç küçük rötuş.'],

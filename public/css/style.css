@@ -648,6 +648,28 @@ button { font: inherit; color: inherit; }
 .keep.const svg circle { fill: #fff; }
 .keep.const.on { background: radial-gradient(circle at 50% 30%, rgba(60, 80, 160, .35), transparent 70%), #1b2550; color: #e8eeff; }
 .keep.const.on:hover svg line { opacity: 1; }
+/* Yol Defteri gezinme şeridi: yapışkan, yatay kayan çipler; uçları solar */
+.jnav {
+  position: sticky; top: -14px; z-index: 2; margin: -14px -16px 6px; padding: 10px 16px 9px;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  background: var(--ink); border-bottom: 1px solid var(--line-soft);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent);
+}
+.jnav::-webkit-scrollbar { display: none; }
+.jnav-chip {
+  flex: none; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line-soft); background: var(--ink-2);
+  color: var(--paper); font: 600 12px/1.2 var(--font-body); white-space: nowrap; cursor: pointer; transition: background-color .2s, transform .15s;
+}
+.jnav-chip small { color: var(--muted); font-weight: 600; margin-left: 2px; }
+.jnav-chip:hover { background: var(--ink-3); }
+.jnav-chip.on { background: var(--ink-3); border-color: color-mix(in srgb, var(--apricot) 55%, transparent); }
+.jnav-chip:active { transform: scale(.95); }
+.jnav-chip.flash { animation: chipFlash .5s ease; }
+@keyframes chipFlash { 40% { background: color-mix(in srgb, var(--apricot) 35%, var(--ink-2)); } }
+#pane-journal h3.sec { scroll-margin-top: 52px; }
+#pane-journal h3.sec.flash { animation: secFlash 1.1s ease; }
+@keyframes secFlash { 20% { color: var(--apricot-text); } }
 /* Günün Notları: Yol Defteri'nin başında üç küçük hedef; her biri ilerleme çubuğuyla, tamamlanınca yeşil tik */
 .notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .note {
@@ -660,7 +682,8 @@ button { font: inherit; color: inherit; }
 .note-bar { height: 5px; border-radius: 3px; background: var(--track); overflow: hidden; }
 .note-bar i { display: block; height: 100%; background: var(--apricot); transform-origin: left; transition: transform .5s ease; }
 .note.done { border-color: color-mix(in srgb, var(--teal) 45%, transparent); background: color-mix(in srgb, var(--teal) 10%, var(--ink-2)); }
-.note.done .note-e { color: var(--teal); font-weight: 800; animation: noteDone .5s ease; }
+.note.done .note-e { color: var(--teal); font-weight: 800; }
+.note.done.pop .note-e { animation: noteDone .5s ease; }
 .note.done .note-t { color: var(--muted); }
 .note.done .note-bar i { background: var(--teal); }
 @keyframes noteDone { 40% { transform: scale(1.5); } }
@@ -894,6 +917,7 @@ button { font: inherit; color: inherit; }
 /* ---------- Telefonda kartlar sıkı: garaj ve güçlendirmeler daha az yer kaplar ---------- */
 @media (max-width: 860px) {
   .panes { padding: 10px 12px 20px; }
+  .jnav { top: -10px; margin: -10px -12px 6px; padding: 8px 12px 7px; }
   .tabpane { gap: 8px; }
   .card { padding: 10px; gap: 10px; }
   .card h3 { font-size: 15.5px; }

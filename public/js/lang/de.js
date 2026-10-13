@@ -501,5 +501,9 @@ IT.addLang('de', {
     "j.albumHint": "Hier liegen die letzten {m} Postkarten, die du mit der Kamera gemacht hast. Tippe eine an, um sie zu vergrößern oder erneut herunterzuladen.",
     "pc.saved": "Zum Album hinzugefügt · Tagebuch",
     "album.eyebrow": "Album · {n}/{m}",
+    // Depolama engelli (v1.53)
+    "toast.noStorage": "<b>Dieser Browser erlaubt dem Spiel nicht zu speichern.</b> · Du kannst spielen, aber dein Fortschritt geht beim Schließen der Seite verloren. Erlaube Websitedaten, dann wird deine Reise gespeichert.",
+    // Yol Defteri gezinme şeridi (v1.53)
+    "j.nav": "Tagebuch-Abschnitte",
   },
 });
