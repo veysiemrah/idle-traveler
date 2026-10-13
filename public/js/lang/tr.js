@@ -497,5 +497,9 @@ IT.addLang('tr', {
     "j.albumHint": "Fotoğraf makinesiyle çektiğin son {m} kartpostal burada saklanır. Dokunup büyütebilir, yeniden indirebilirsin.",
     "pc.saved": "Albümüne eklendi · Yol Defteri",
     "album.eyebrow": "Albüm · {n}/{m}",
+    // Depolama engelli (v1.53)
+    "toast.noStorage": "<b>Bu tarayıcı oyunu kaydetmeye izin vermiyor.</b> · Oynayabilirsin ama sayfayı kapatınca ilerlemen kaybolur. Site verilerine izin verirsen yolun kaydedilir.",
+    // Yol Defteri gezinme şeridi (v1.53)
+    "j.nav": "Yol Defteri bölümleri",
   },
 });

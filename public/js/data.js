@@ -436,7 +436,7 @@
     bfFreq: 0.05, bfDur: 0.05,
     butterflyFreq(lvl) { return 1 + Econ.bfFreq * (lvl || 0); },
     butterflyDur(lvl) { return 1 + Econ.bfDur * (lvl || 0); },
-    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–6).
+    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–8).
     // 150: arkasında yıldız tozu izi, 200: gökkuşağı kuyruğu (v1.28, yeni ekonomide bu seviyelere ulaşılabiliyor)
     // görünüm aşamaları: Sv. 300 ve 500 (v1.52) bütün araçlarda yıldız yörüngesi ve ışık huzmeleri
     looks: [10, 25, 50, 100, 150, 200, 300, 500],

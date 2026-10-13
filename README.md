@@ -310,6 +310,11 @@ npx wrangler dev   # http://localhost:8787
 - **Günün hediyesi**: Her yeni günün ilk ziyaretinde kredi hediyesi gelir (yaklaşık 2 dakikalık gelir). Üst üste gelinen her gün
   hediyeyi büyütür, 7. günde en yüksek düzeye ulaşır. Bir gün atlanırsa seri yeniden başlar. Oyun açıkken gece yarısı geçerse
   hediye hemen gelir. Saat geri alınarak hediye alınamaz. Seri ve en iyi seri Yol Defteri'nde görünür.
+- **Yol Defteri gezinme şeridi (v1.53)**: Defterin üstünde yapışkan, yatay kayan bir çip şeridi durur; yalnızca var olan
+  bölümler (Günün Notları, Yolculuk, Kartpostal Albümü, Hazine haritası, Yadigârlar, Mektuplar, Gökyüzü Haritası, Kuş Defteri,
+  Pasaport damgaları, Rozetler, Kıyafet) ilerleme sayılarıyla görünür. Çipe dokununca o bölüme yumuşakça kayılır (başlık şeridin
+  altında durur, çip ve başlık kısa bir ışıkla karşılık verir); kaydırdıkça o an okunan bölümün çipi vurgulanır. Defter yeniden
+  çizilince sayfanın ve şeridin kaydırması korunur; şeridin uçları solar. Testi: `tests/jnav.js`.
 - **Günün Notları (v1.47)**: Her gün herkese aynı üç küçük hedef verilir (tarihten türetilen tohumla seçilir; `game.js` →
   `NOTES`): adım atmak (150), altın kelebek yakalamak (2), gökyüzündeki bir kuşa dokunmak, kartpostal çekmek, dilek tutmak
   (kayan yıldız ya da karahindiba), yükseltme almak (5), oyun açıkken 10 dakika yolculuk etmek (süre sayılır; v1.49'a kadar
@@ -488,6 +493,8 @@ npx wrangler dev   # http://localhost:8787
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder. Son görülme zamanını (`lastSeen`) yalnızca
   çalışan döngü ve açılış ilerletir, kayıt ilerletmez: gizli sekmede gelen bir kayıt (ör. yeni sürümle yenilenme) sekmenin gizli
   kaldığı süreyi silmez (v1.44'e kadar her yayın arka plandaki sekmelerin çevrimdışı ilerlemesini o ana kadar siliyordu).
+  Tarayıcı depolamaya hiç izin vermiyorsa (site verileri engelli) oyun yeni bir oyuncu gibi tanıtım ve ad penceresiyle açılır,
+  "Bu tarayıcı oyunu kaydetmeye izin vermiyor" der, sayfayı yenilemeye çalışmaz ve oturum boyunca Yolcular'a katılır.
   Tanıtım penceresi kapanmadan (yeni oyuncu) geçen süre çevrimdışı yolculuk sayılmaz; yeni oyuncu ad penceresinden sonra "sen
   yokken…" raporu görmez. Ad penceresindeki kırmızı uyarı geçerli bir ad yazılınca kural metnine döner; basılı tutulan Enter
   boş adı hemen reddetmez.

@@ -485,5 +485,9 @@ IT.addLang('en', {
     "j.albumHint": "The last {m} postcards you took with the camera are kept here. Tap one to enlarge it or download it again.",
     "pc.saved": "Added to your album · Journal",
     "album.eyebrow": "Album · {n}/{m}",
+    // Depolama engelli (v1.53)
+    "toast.noStorage": "<b>This browser doesn't allow the game to save.</b> · You can play, but your progress is lost when you close the page. Allow site data and your journey will be saved.",
+    // Yol Defteri gezinme şeridi (v1.53)
+    "j.nav": "Journal sections",
   },
 });
