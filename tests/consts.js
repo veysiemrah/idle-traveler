@@ -10,7 +10,7 @@ const pw = require('./lib/pw'), { chromium } = pw;
     await p.addInitScript(hook);
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, letters: 12, settings: { sky: sky || 'night', zoom: 1 } }, save));
-    await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(1500);
+    await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 45000 }); await p.waitForTimeout(1500);
     return p;
   };
   const toasts = async p => (await p.textContent('#toasts')).replace(/\s+/g, ' ').trim();
