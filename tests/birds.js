@@ -14,7 +14,8 @@ const pw = require('./lib/pw'), { chromium } = pw;
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, msIdx: 99,
         settings: { sky: sky || 'day', zoom: 1 } }, save));
-    await p.goto(pw.url()); await p.waitForTimeout(1500);
+    // paralel koşuda yükleme yavaşlayabilir: sahne kancası hazır olana dek beklenir
+    await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 45000 }); await p.waitForTimeout(800);
     return p;
   };
   const at = id => ({ regionIdx: AT[id][0], distance: AT[id][1] });

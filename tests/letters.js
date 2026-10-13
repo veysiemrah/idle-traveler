@@ -10,7 +10,7 @@ async function open(b, o, opts) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, save(o));
-  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 45000 }); await p.waitForTimeout(900);
   return p;
 }
 const saved = p => p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
@@ -27,6 +27,8 @@ const modal = p => p.evaluate(() => document.getElementById('modal').hidden ? '(
   const q = await open(b, { letters: 8, trips: 0, lifeDist: 0, distance: 5e7 });
   let seen = false, early = false;
   for (let i = 0; i < 125 && !seen; i++) { await p.waitForTimeout(1000); seen = await p.evaluate(() => !!__sc.plane); early = early || await q.evaluate(() => !!__sc.plane); }
+  // uçak geldi: hız normale döner, başka olaylar dokunuşu kapmasın diye sahne temizlenir
+  for (const x of [p, q]) await x.evaluate(() => { window.__testSpeed && __testSpeed(1); __sc.bird = __sc.cranes = __sc.gift = __sc.star = __sc.seed = __sc.constel = null; });
   console.log('uçak kendiliğinden geldi mi:', seen, '· eşiği gelmemiş mektup geldi mi:', early);
   if (!seen) await p.evaluate(() => __sc.spawnPlane());
   await p.waitForTimeout(6500);

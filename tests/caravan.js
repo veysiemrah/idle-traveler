@@ -3,7 +3,8 @@ const { chromium } = require('./lib/pw');
 const BASE = 'http://127.0.0.1:8787';
 (async () => {
   const b = await chromium.launch(); const errs = [];
-  const base = 9e7 + Math.random() * 1e7;
+  // yeni oyuncunun ilk bildirdiği mesafe sunucu tavanının (~7,7e7) altında kalmalı; yoksa kesilir ve kervan oluşmaz
+  const base = 3e7 + Math.random() * 1e7;
   const open = async (name, dist, veh) => {
     const ctx = await b.newContext({ locale: 'tr-TR', viewport: { width: 1280, height: 760 } });
     const p = await ctx.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message));

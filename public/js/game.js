@@ -1173,14 +1173,16 @@
   /* ---------- Test zaman hızlandırıcısı ----------
      Yalnızca yerel sunucuda (localhost/127.0.0.1) ?testspeed=N ile açılınca olay zamanlayıcıları (kelebek, kayan yıldız,
      karahindiba, sandık, hava, yadigâr, turna, mektup, tilki, takımyıldız, uçurtma, yunus, kuş) N kat hızlı işler (en çok 50).
-     Ekonomi, sahne ve etki süreleri etkilenmez. Doğal gelişi bekleyen testler beklemeyi böyle kısaltır (tests/run-all.sh). */
-  const TEST_SPEED = (() => {
+     Ekonomi, sahne ve etki süreleri etkilenmez. Doğal gelişi bekleyen testler beklemeyi böyle kısaltır (tests/run-all.sh).
+     Beklenen olay gelince test window.__testSpeed(1) ile hızı normale döndürür: başka olaylar araya girmez. */
+  let TEST_SPEED = (() => {
     try {
       if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return 1;
       const v = +new URLSearchParams(location.search).get('testspeed');
       return v > 1 ? Math.min(50, v) : 1;
     } catch (e) { return 1; }
   })();
+  if (TEST_SPEED > 1) window.__testSpeed = n => { TEST_SPEED = Math.max(1, Math.min(50, +n || 1)); };
 
   /* ---------- Döngü ---------- */
   function frame(now) {

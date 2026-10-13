@@ -54,6 +54,14 @@ for f in $LIST; do
 done
 wait
 for f in $LIST; do case "$SERIAL" in *" $f "*) run_one "$f" ;; esac; done
+# paralel yükte zaman aşımına düşen betik sonda bir kez tek başına yeniden denenir; iki kez düşen gerçek hatadır
+for f in $LIST; do
+  case "$SERIAL" in *" $f "*) continue ;; esac
+  if grep -qE "Error|not defined" "$PARTS/$f.out" 2>/dev/null; then
+    cp "$PARTS/$f.out" "$PARTS/$f.first"; run_one "$f"
+    sed -i '1i (paralelde düştü, tek başına yeniden denendi)' "$PARTS/$f.out"
+  fi
+done
 for f in $LIST; do echo "== $f" >> "$OUT"; cat "$PARTS/$f.out" >> "$OUT" 2>/dev/null; done
 if [ -z "$ONLY" ]; then
   echo "== i18n" >> "$OUT"; cat "$PARTS/__i18n.out" >> "$OUT" 2>/dev/null

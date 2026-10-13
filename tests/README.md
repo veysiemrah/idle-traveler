@@ -29,7 +29,9 @@ Betikler JOBS kadarı aynı anda çalışır; zamanlamaya ya da sayfa yenilemeye
 `update`, `persist`, `backup`, `stress`) en sonda tek tek çalışır. Çıktı sırası listedeki sırayla aynıdır. Doğal gelişi bekleyen
 bölümler (kuş, turna, uçurtma, mektup, tilki, takımyıldız, yunus, yadigâr, karahindiba, hasat penceresi, Göç Yolu) oyunu
 `pw.speed(20)` ile `?testspeed=20` adresinden açar: olay zamanlayıcıları 20 kat hızlı işler (yalnızca localhost'ta, en çok 50;
-ekonomi ve etki süreleri etkilenmez).
+ekonomi ve etki süreleri etkilenmez; beklenen olay gelince test `__testSpeed(1)` ile hızı normale döndürebilir).
+Paralel koşuda zaman aşımına ya da yükleme hatasına düşen betik, sonda bir kez tek başına yeniden denenir (çıktıda
+"paralelde düştü, tek başına yeniden denendi" yazar); iki kez düşen gerçek hatadır.
 
 Tek bir testi çalıştırmak için önce oyunu sun, sonra betiği çağır:
 

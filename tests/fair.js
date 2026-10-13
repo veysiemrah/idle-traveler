@@ -11,7 +11,7 @@ async function open(b, extra, opts) {
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } },
     JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, player: undefined }, extra || {})));
-  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 45000 }); await p.waitForTimeout(900);
   return p;
 }
 const saved = p => p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1')));

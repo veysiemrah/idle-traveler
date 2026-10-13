@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.56';
+  IT.VERSION = '1.57';
 
   IT.CHANGELOG = [
+    { v: '1.57', date: '2026-10-13', items: {
+      tr: ['Dar ekranlarda güçlendirme kartları daha derli toplu.', 'Yolda birkaç küçük rötuş.'],
+      en: ['Boost cards look tidier on narrow screens.', 'A few small touches along the road.'],
+      de: ['Die Verstärkungskarten wirken auf schmalen Bildschirmen aufgeräumter.', 'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Las tarjetas de mejoras se ven más ordenadas en pantallas estrechas.', 'Algunos pequeños retoques por el camino.'],
+      fr: ['Les cartes de bonus sont plus soignées sur les écrans étroits.', 'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.56', date: '2026-10-13', items: {
       tr: ['Telefonda manzara artık bütünüyle senin: sahnenin üstünde yazı kalmadı. Yolculuk bilgileri ve bildirimler sahnenin altındaki panoda; garaj ve diğer sekmeler alttan açılan bir sayfada.',
         'Garajdaki araçlar ve güçlendirmeler artık katlanır kartlar: dokununca ayrıntılar açılır, liste kısalır.',

@@ -1077,6 +1077,16 @@ html.reloading body { opacity: 0; transition: opacity .6s ease; }
    Kapalı kartta tanıtım, istatistikler, yol arkadaşı seçimi ve sonraki eşik yazısı yumuşakça kapanır; simge küçülür */
 .card[data-fold] { cursor: pointer; }
 .card[data-fold] .row { align-items: center; }
+/* uzun adlar (Schmetterlingsfreund, Postkartensammlung) dar kartta satırı taşırıp katlama düğmesini itmesin: ad bölünür */
+.card[data-fold] .row h3 { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.card[data-fold] .row .lvl { font-variant-numeric: tabular-nums; }
+/* dar telefonda güçlendirme kartının seviye rozeti adın altına iner: ad tek sütunda rahatça okunur, katlama düğmesi sağda kalır */
+@media (max-width: 420px) {
+  .card[data-fold] .row:has(> .lvl) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; row-gap: 4px; }
+  .card[data-fold] .row:has(> .lvl) > h3 { grid-area: 1 / 1; }
+  .card[data-fold] .row:has(> .lvl) > .fold-btn { grid-area: 1 / 2; }
+  .card[data-fold] .row:has(> .lvl) > .lvl { grid-area: 2 / 1; justify-self: start; }
+}
 .fold-btn {
   flex: none; width: 30px; height: 30px; margin: -4px -4px -4px 2px; border: 0; border-radius: 50%; background: transparent;
   color: var(--muted); display: grid; place-items: center; cursor: pointer; transition: background-color .2s;

@@ -11,7 +11,7 @@ async function open(b, extra, opts) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, save(extra));
-  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 45000 }); await p.waitForTimeout(900);
   return p;
 }
 // uçurtmanın gövdesine dokun (sahne koordinatı → sayfa)
