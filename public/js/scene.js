@@ -158,8 +158,9 @@
   function shoe(ctx, x, y, k) { ctx.fillStyle = P.shoe; ellipse(ctx, x + 2 * k, y - 1.6 * k, 4.6 * k, 2.3 * k); }
 
   /* ---------- Yükseltme görünümleri ----------
-     st.tier: aracın görsel aşaması (0–8). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır, 4. aşamada altın
-     süslemeler ve parıltı gelir; 5–6 (Sv. 150, 200) iz ve gökkuşağı kuyruğu (trail), 7–8 (Sv. 300, 500) yörünge ve huzme (aura). */
+     st.tier: aracın görsel aşaması (0–9). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır, 4. aşamada altın
+     süslemeler ve parıltı gelir; 5–6 (Sv. 150, 200) iz ve gökkuşağı kuyruğu (trail), 7–9 (Sv. 300, 400, 500) yörüngeler ve
+     huzme (aura). */
   const GOLD = '#e8b93c', GOLD_HI = '#fff1c2';
   // dört köşeli küçük parıltılar (yerleri sabit, ışıkları yanıp söner)
   function sparkles(ctx, cx, cy, k, t, n, w, h) {
@@ -1801,8 +1802,9 @@
     ctx.restore();
   }
   // Sv. 300 (7. aşama): aracın çevresinde kıyafet ve altın renklerinde altı küçük yıldızın döndüğü bir yörünge; yıldızlar
-  // aracın önünden ve arkasından geçer. Sv. 500 (8. aşama): arkada yavaşça dönen yumuşak ışık huzmeleri, yörüngedeki
-  // yıldızlar daha iri ve kısa ışık kuyruklu. Bütün araçlarda aynı biçimde çizilir (sahne, garaj simgesi, diğer gezginler).
+  // aracın önünden ve arkasından geçer. Sv. 400 (8. aşama, v1.61): ilkine eğik ikinci bir yörüngede ters yönde dönen dört
+  // küçük, kuyruklu ay. Sv. 500 (9. aşama): arkada yavaşça dönen yumuşak ışık huzmeleri, yıldızlar daha iri ve kısa ışık
+  // kuyruklu. Bütün araçlarda aynı biçimde çizilir (sahne, garaj simgesi, diğer gezginler).
   function aura(ctx, id, x, y, k, st, front) {
     const T = st.tier || 0;
     if (T < 7) return;
@@ -1812,7 +1814,7 @@
     const rx = (train ? 72 : Math.min(st.icon ? 56 : 92, (r - l) / 2 + 16)) * k * (st.icon ? 0.75 : 1), ry = Math.max(16, top * 0.34) * k;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    if (!front && T >= 8) {
+    if (!front && T >= 9) {
       // ışık huzmeleri: merkezden dışa açılan, uca doğru solan on iki ince üçgen
       const R = rx * 1.45;
       for (let i = 0; i < 12; i++) {
@@ -1827,12 +1829,12 @@
     // yörünge çizgisi: arka yarısı aracın arkasında, ön yarısı önünde
     ctx.strokeStyle = 'rgba(255,240,200,0.4)'; ctx.lineWidth = 1.2 * k;
     ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry * 0.55, 0, front ? 0 : Math.PI, front ? Math.PI : TAU); ctx.stroke();
-    const cols = [GOLD_HI, P.hat, '#ffffff', P.jacket, GOLD, '#cfe0ff'], big = T >= 8 ? 1.45 : 1;
+    const cols = [GOLD_HI, P.hat, '#ffffff', P.jacket, GOLD, '#cfe0ff'], big = T >= 9 ? 1.45 : 1;
     for (let i = 0; i < 6; i++) {
       const ang = t * 0.9 + i * TAU / 6, depth = Math.sin(ang);
       if ((depth > 0) !== front) continue;
       const sx = cx + Math.cos(ang) * rx, sy = cy + depth * ry * 0.55, s = (2.7 + 0.8 * Math.sin(t * 4 + i)) * k * big * (0.85 + 0.15 * depth);
-      if (T >= 8) for (let j = 1; j <= 4; j++) { // kısa ışık kuyruğu (yörüngede geride kalan noktalar)
+      if (T >= 9) for (let j = 1; j <= 4; j++) { // kısa ışık kuyruğu (yörüngede geride kalan noktalar)
         const aj = ang - j * 0.09, px = cx + Math.cos(aj) * rx, py = cy + Math.sin(aj) * ry * 0.55;
         ctx.fillStyle = `rgba(255,236,190,${(0.35 - j * 0.07).toFixed(3)})`; circle(ctx, px, py, s * (0.7 - j * 0.12));
       }
@@ -1842,6 +1844,27 @@
       ctx.moveTo(sx, sy - s * 1.8); ctx.quadraticCurveTo(sx, sy, sx + s * 1.8, sy); ctx.quadraticCurveTo(sx, sy, sx, sy + s * 1.8);
       ctx.quadraticCurveTo(sx, sy, sx - s * 1.8, sy); ctx.quadraticCurveTo(sx, sy, sx, sy - s * 1.8); ctx.fill();
       ctx.globalCompositeOperation = 'lighter';
+    }
+    if (T >= 8) {
+      // ikinci yörünge (Sv. 400): eğik, ilkinden biraz dar; dört ay ters yönde döner, arkalarında soluk bir kuyruk
+      const rot = -0.38, cr = Math.cos(rot), sr = Math.sin(rot), ax = rx * 0.84, ay = ry * 0.55 * 1.25;
+      const at = (a, rr) => { const lx = Math.cos(a) * ax * rr, ly = Math.sin(a) * ay * rr; return [cx + lx * cr - ly * sr, cy + lx * sr + ly * cr]; };
+      ctx.strokeStyle = 'rgba(190,245,235,0.32)'; ctx.lineWidth = 1 * k;
+      ctx.beginPath(); ctx.ellipse(cx, cy, ax, ay, rot, front ? 0 : Math.PI, front ? Math.PI : TAU); ctx.stroke();
+      for (let i = 0; i < 4; i++) {
+        const ang = -t * 1.25 + i * TAU / 4 + 0.4, depth = Math.sin(ang);
+        if ((depth > 0) !== front) continue;
+        const s = (2.5 + 0.4 * Math.sin(t * 3 + i * 1.7)) * k * (0.85 + 0.15 * depth), [mx, my] = at(ang, 1);
+        for (let j = 1; j <= 5; j++) { // kuyruk: dönüş yönünün tersinde, uca doğru incelir
+          const [px, py] = at(ang + j * 0.07, 1);
+          ctx.fillStyle = `rgba(200,250,240,${(0.3 - j * 0.05).toFixed(3)})`; circle(ctx, px, py, s * (0.8 - j * 0.12));
+        }
+        glow(ctx, mx, my, s * 3.6, [190, 245, 235], 0.5);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = i % 2 ? '#e6fbff' : '#bff3e6'; circle(ctx, mx, my, s);
+        ctx.fillStyle = 'rgba(255,255,255,0.85)'; circle(ctx, mx - s * 0.3, my - s * 0.3, s * 0.38);
+        ctx.globalCompositeOperation = 'lighter';
+      }
     }
     ctx.restore();
   }

@@ -149,7 +149,7 @@ async function hello(request, env) {
   if (!Number.isInteger(trip) || trip < 1 || trip > 1e5 + 1) return json({ error: 'bad-trip' }, 400);
   const veh = VEHICLES.includes(b.veh) ? b.veh : 'walk';
   const route = ROUTES.includes(b.route) ? b.route : 'anatolia';
-  const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 8 ? b.tier : 0;
+  const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 9 ? b.tier : 0;
   const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
   const pal = PALS.includes(b.pal) ? b.pal : '';
   const spd = Number(b.spd), spdIn = isFinite(spd) && spd > 0 && spd < 1e15 ? spd : 0;
