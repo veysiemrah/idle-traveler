@@ -201,6 +201,8 @@
       o.connect(g); g.connect(this.sfx); g.connect(this.delay);
       o.start(t); o.stop(t + 0.75);
     },
+    // ateşböcekleri: çok yüksekten, düzensiz aralıklarla tıngırdayan minik, yumuşak çanlar
+    fireflies() { if (!this.ctx) return; [6, 4, 5, 3, 6].forEach((n, i) => this.tone(PENTA[n] * 4, 0.018, 0.9, 'sine', this.sfx, true, i * 0.11 + Math.random() * 0.05)); },
     // tilki: çalı hışırtısı ve uzaktan iki kısa, yukarı kalkıp inen yumuşak "yip"
     fox() {
       if (!this.ctx || !this.sfxOn) return;

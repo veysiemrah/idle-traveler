@@ -9,6 +9,9 @@
   const TAU = Math.PI * 2;
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const lerp = (a, b, t) => a + (b - a) * t;
+  const fract = x => x - Math.floor(x);
+  // Ateşböceği Yolu: gece çimenlerdeki ateşböceği sayısı ve sürünün en uzun kalış süresi (sn)
+  const FIREFLIES = 22, SWARM_LIFE = 40;
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
   const mixc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -2008,6 +2011,9 @@
       this.gift = null; this.star = null; this.seed = null; this.chest = null;
       // Turna sürüsü (Turna Yolu): V düzeninde soldan sağa, yolcuyla aynı yöne uçar
       this.cranes = null;
+      // Ateşböceği Yolu: gece çimenlerdeki ateşböcekleri (fireflyAmb), yakalanabilir sürü (swarm) ve
+      // etki süresince yolcuya eşlik eden ışık bulutu (glowOn: game.js verir, glowA: yumuşak beliriş/kayboluş)
+      this.swarm = null; this.fireflyAmb = false; this.glowOn = false; this.glowA = 0;
       // Kâğıt uçak (mektup): soldan gelir, ortalarda bir takla atıp sağdan çıkar
       this.plane = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
@@ -2295,6 +2301,71 @@
         }
       }
       return false;
+    }
+    // Ateşböceği sürüsü: yolun ilerisinde, çimenlerin üstünde dönerek parlayan bir avuç ışık; yavaşça geride kalır
+    spawnSwarm() {
+      const k = Math.max(this.k, 0.8);
+      this.swarm = { t: 0, x: this.W * rand(0.58, 0.84), y: this.groundY() - this.H * rand(0.1, 0.17), n: 13, caught: 0, ph: Math.random() * TAU, k };
+    }
+    // i. ateşböceğinin yeri: merkezin çevresinde basık bir halkada döner; yakalanınca omuzdaki bulutun yerine süzülür
+    swarmPos(s, i) {
+      const k = s.k, a = s.t * (1.1 + 0.25 * (i % 3)) + i * TAU / s.n + s.ph, r = (12 + 7 * Math.sin(s.t * 1.6 + i * 2.1)) * k;
+      let x = s.x + Math.cos(a) * r, y = s.y + Math.sin(a) * r * 0.6 + Math.sin(s.t * 2.3 + i) * 3 * k;
+      if (s.caught) { const f = this.glowHome(), q = clamp(s.caught / 1.1, 0, 1), e = q * q * (3 - 2 * q); x = lerp(x, f.x, e); y = lerp(y, f.y, e); }
+      return { x, y };
+    }
+    // ışık bulutunun yeri: yolcunun omzunun üstü (uçan araçta da aracın üstünde kalır)
+    glowHome() { return { x: this.travelerX - 26 * this.k, y: this.riderY() - 80 * this.k }; }
+    hitSwarm(px, py) {
+      const s = this.swarm;
+      if (!s || s.caught || s.t < 0.5) return false;
+      if (Math.hypot(px - s.x, py - s.y) < 44 * s.k) {
+        s.caught = 0.001;
+        this.burst(s.x, s.y, 22, ['#f4ff9e', '#d9ff7a', '#fff6c2', '#ffffff']);
+        return true;
+      }
+      return false;
+    }
+    drawFireflies(ctx, night) {
+      const k = this.k, t = this.t, sp = this.space || 0;
+      const amb = this.fireflyAmb ? clamp((night - 0.35) / 0.3, 0, 1) * (1 - sp) : 0;
+      if (amb <= 0 && !this.swarm && !(this.glowA > 0)) return;
+      const day = 1 - night;
+      ctx.save();
+      // gece ışık eklenir (lighter); gündüz aynı ışık zeytin yeşili bir gövdeyle görünür kalır
+      const dot = (x, y, a, r) => {
+        if (a <= 0.01) return;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgba(210,255,120,${(0.16 * a).toFixed(3)})`; circle(ctx, x, y, r * 3.2);
+        ctx.fillStyle = `rgba(248,255,200,${a.toFixed(3)})`; circle(ctx, x, y, r);
+        if (day > 0.3) { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = `rgba(150,190,40,${(0.75 * a * day).toFixed(3)})`; circle(ctx, x, y, r * 0.95); }
+      };
+      if (amb > 0) {
+        const gy = this.groundY(), W = this.W, H = this.H, span = W + 40;
+        for (let i = 0; i < FIREFLIES; i++) {
+          const h1 = fract(Math.sin(i * 12.9898) * 43758.5453), h2 = fract(Math.sin(i * 78.233) * 12543.1), h3 = fract(Math.sin(i * 39.37) * 9157.3);
+          const x = (((h1 * span + t * (5 + 9 * h2) * (h3 > 0.5 ? 1 : -1) * k) % span) + span) % span - 20 + Math.sin(t * 0.7 + i) * 12 * k;
+          // dörtte biri yolun önündeki çimenlerde, gerisi yolun ardındaki çayırda
+          const y0 = i % 4 === 3 ? gy + H * 0.05 : gy - H * 0.2, y1 = i % 4 === 3 ? H - 8 * k : gy - H * 0.03;
+          const y = y0 + (y1 - y0) * h2 + Math.sin(t * (0.9 + h3) + i * 1.7) * 7 * k;
+          dot(x, y, amb * Math.pow(Math.max(0, Math.sin(t * (0.6 + 0.5 * h3) + i * 2.3)), 3), 1.3 * k);
+        }
+      }
+      if (this.swarm) {
+        const s = this.swarm, fade = Math.min(1, s.t) * clamp((SWARM_LIFE - s.t) / 2, 0, 1) * (s.caught ? clamp((1.2 - s.caught) / 0.35, 0, 1) : 1);
+        if (!s.caught) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y, 46 * s.k, [200, 255, 110], (0.08 + 0.1 * night) * fade); }
+        for (let i = 0; i < s.n; i++) { const p = this.swarmPos(s, i); dot(p.x, p.y, fade * (0.55 + 0.45 * Math.sin(t * 5 + i * 1.9)), 1.6 * s.k); }
+      }
+      if (this.glowA > 0) {
+        const f = this.glowHome(), a = this.glowA;
+        ctx.globalCompositeOperation = 'lighter';
+        glow(ctx, f.x, f.y + 34 * k, 72 * k, [200, 255, 110], 0.1 * a * (0.3 + 0.7 * night));
+        for (let i = 0; i < 8; i++) {
+          const ang = t * (1.4 + 0.2 * (i % 3)) + i * TAU / 8, r = (8 + 4 * Math.sin(t * 1.3 + i)) * k;
+          dot(f.x + Math.cos(ang) * r, f.y + Math.sin(ang) * r * 0.7 + Math.sin(t * 2 + i) * 2 * k, a * (0.6 + 0.4 * Math.sin(t * 4 + i * 2)), 1.4 * k);
+        }
+      }
+      ctx.restore();
     }
     // Kuş Defteri: bölgenin kuşu (1–5 kuşluk küçük bir sürü) gökyüzünden geçer. Dokununca dürbün halkası belirir,
     // kuş sevinçle kanat çırpıp yükselir ve solar.
@@ -2985,6 +3056,16 @@
         if (!c.caught && Math.random() < dt * 2.2) { const p = this.cranePos(c, (Math.random() * c.n) | 0); this.parts.push({ type: 'spark', x: p.x - 8 * p.k, y: p.y, vx: -rand(10, 30), vy: rand(-6, 10), life: 0, max: rand(0.6, 1.1), size: rand(1, 1.8), color: pick(['#ffffff', '#fff4c2']), rot: 0 }); }
         if (c.caught > 1.4 || c.x - (c.n >> 1) * 36 * Math.max(this.k, 0.8) > this.W + 60 * this.k) this.cranes = null;
       }
+      if (this.swarm) {
+        const s = this.swarm;
+        s.t += dt;
+        // yakalanınca ışıklar yolcunun omzunun üstüne süzülür; yakalanmazsa yavaşça geride kalır ya da söner
+        if (s.caught) { s.caught += dt; if (s.caught > 1.2) this.swarm = null; }
+        else { s.x -= this.W / 70 * dt; s.y += Math.sin(s.t * 0.7 + s.ph) * 6 * s.k * dt; if (s.x < -60 * s.k || s.t > SWARM_LIFE) this.swarm = null; }
+      }
+      // ışık bulutu: sürü omza vardıktan sonra belirir, etki bitince yavaşça söner
+      const glowIn = this.glowOn && !(this.swarm && this.swarm.caught);
+      this.glowA = clamp(this.glowA + (glowIn ? dt * 1.4 : this.glowOn ? 0 : -dt * 0.7), 0, 1);
       if (this.bird) {
         const b = this.bird, f = BIRD_FLY[b.id], k = Math.max(this.k, 0.8) * f.s;
         // deftere yazılınca hızlanıp yükselir ve yumuşakça solar
@@ -3338,6 +3419,7 @@
       this.drawTags(ctx, night);
       this.drawBubbles(ctx);
       this.drawParts(ctx, true);
+      this.drawFireflies(ctx, night);
       if (this.fox) this.drawFoxEyes(ctx, night);
       if (this.chest) this.drawChest(ctx, this.chest);
       if (this.keep) this.drawKeep(ctx, this.keep);

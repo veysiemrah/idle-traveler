@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.58';
+  IT.VERSION = '1.59';
 
   IT.CHANGELOG = [
+    { v: '1.59', date: '2026-10-13', items: {
+      tr: ['Çok yol yürüyenlere yeni bir rota: Ateşböceği Yolu. Geceleri çimenlere bak; belki bir avuç ışık sana eşlik etmek ister.',
+        'Telefonda alt pano artık hep ekran boyunca uzanıyor.', 'Yolda birkaç küçük rötuş.'],
+      en: ['A new route for seasoned travelers: Firefly Road. Watch the grass at night; a handful of lights might want to keep you company.',
+        'On phones, the bottom panel now always spans the full width.', 'A few small touches along the road.'],
+      de: ['Eine neue Route für erfahrene Reisende: der Glühwürmchenweg. Schau nachts ins Gras; vielleicht möchte dich eine Handvoll Lichter begleiten.',
+        'Auf dem Handy reicht die untere Leiste jetzt immer über die ganze Breite.', 'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una nueva ruta para viajeros veteranos: el Camino de las Luciérnagas. Mira la hierba de noche; quizá un puñado de luces quiera acompañarte.',
+        'En el móvil, el panel inferior ocupa ahora siempre todo el ancho.', 'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle route pour les voyageurs aguerris : le Chemin des Lucioles. Regarde l’herbe la nuit ; une poignée de lumières voudra peut-être t’accompagner.',
+        'Sur téléphone, le panneau du bas occupe désormais toujours toute la largeur.', 'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.58', date: '2026-10-13', items: {
       tr: ['Güçlendirme kartlarında küçük noktalar belirdi. Hepsi yandığında ne olacak, merak etmiyor musun?',
         'Yolda birkaç küçük rötuş.'],

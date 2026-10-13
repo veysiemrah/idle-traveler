@@ -196,6 +196,7 @@ button { font: inherit; color: inherit; }
 .fx-seed { border-color: rgba(214, 236, 170, 0.85); }
 .fx-seed b { color: var(--teal); }
 .fx-crane { border-color: rgba(190, 212, 240, 0.9); }
+.fx-glow { border-color: rgba(214, 255, 130, 0.9); }
 .fx-hoopoe { border-color: rgba(232, 185, 60, 0.95); }
 .fx-caravan { border-color: rgba(111, 211, 193, 0.8); }
 .fx-caravan b { color: var(--teal); }
@@ -1013,7 +1014,8 @@ html.reloading body { opacity: 0; transition: opacity .6s ease; }
    Telefonda sahnenin üstünde yazı kalmaz: durum satırı, etkiler ve ritim şeridi panoya iner (game.js → arrange). */
 .dock[hidden], .sheet-head { display: none; }
 .hud-cred { display: none; }
-.m-phone .dock { display: flex; flex-direction: column; gap: 6px; background: var(--ink); border-top: 1px solid var(--line-soft); }
+/* pano her zaman tam genişlik: içeriğe göre daralıp genişlerse durak adı ya da bildirim değişince zıplar */
+.m-phone .dock { width: 100%; box-sizing: border-box; justify-self: stretch; align-self: stretch; display: flex; flex-direction: column; gap: 6px; background: var(--ink); border-top: 1px solid var(--line-soft); }
 .m-phone .dock-status { display: grid; position: relative; min-height: 46px; padding: 6px 12px 0; }
 .m-phone .dock-status > * { grid-area: 1 / 1; }
 .m-phone .hud { position: static; inset: auto; padding: 0; margin: 0; pointer-events: auto; transition: opacity .35s; }
