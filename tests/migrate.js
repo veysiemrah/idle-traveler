@@ -1,7 +1,7 @@
 // Göç Yolu (12. rota): rota kartı, Hüdhüd gündüz/gece/telefonda (tepesi dokununca açılır), dokununca hız ve kredi ×2 etkisi,
 // Kuş Defteri'nde altın kenarlı gizli sayfa (kıyafet sayısını değiştirmez), yalnızca bu rotada kendiliğinden gelmesi,
 // on birinci dönüşte rotanın açılması
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
@@ -13,7 +13,7 @@ const { chromium } = require('./lib/pw');
     await p.addInitScript(s => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)); } },
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, msIdx: 99, harvestDay: today, trips: 11, routeMax: 11, memories: 300, route: 'migrate',
         distance: 10, regionIdx: 0, settings: { sky: sky || 'day', zoom: 1 } }, save));
-    await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1300);
+    await p.goto(pw.url()); await p.waitForTimeout(1300);
     return p;
   };
   const saved = async p => { await p.evaluate(() => window.dispatchEvent(new Event('pagehide'))); return p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1'))); };
@@ -51,6 +51,8 @@ const { chromium } = require('./lib/pw');
     }
     await p.close();
   }
+
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
 
   // 2) Kendiliğinden gelir (ilki 45–75 sn) yalnızca Göç Yolu'nda
   const w = await open({}), o = await open({ route: 'kite', trips: 10, routeMax: 10 });

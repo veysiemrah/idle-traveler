@@ -512,5 +512,9 @@ IT.addLang('es', {
     "j.momentsDone": "¡Has capturado todos los momentos especiales! Tus postales ahora tienen marco dorado.",
     "toast.moment": "<b>Momento especial capturado: {name}</b> · {n}/{m}",
     "toast.momentsAll": "<b>¡Todos los momentos especiales son tuyos!</b> · Tus postales ahora tienen marco dorado",
+    // Telefon panosu (v1.56)
+    "sheet.close": "Cerrar",
+    "ui.details": "Detalles",
+    "ui.buffBoost": "Nv. {t}: efecto ×{x}",
   },
 });

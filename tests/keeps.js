@@ -1,6 +1,6 @@
 // Yadigârlar: yol kenarında kendiliğinden belirir, dokununca rafa konur, hız bonusu verir, kayda yazılır;
 // raf dolunca Kâşif kıyafeti açılır. Telefon (320 px), koyu tema ve eski kayıt da denenir.
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 const save = extra => JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, credits: 100,
   player: { id: '00000000-0000-4000-8000-000000000001', key: 'b'.repeat(64), name: 'Raf' } }, extra));
@@ -9,7 +9,7 @@ async function page(b, opts, data) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, data);
-  await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(600);
+  await p.goto(pw.url()); await p.waitForTimeout(600);
   return p;
 }
 const tapKeep = async p => {
@@ -19,6 +19,7 @@ const tapKeep = async p => {
 const shelf = p => p.$eval('.keeps', e => e.closest('#pane-journal').querySelector('.sec:has(+ .keeps)').textContent.replace(/\s+/g, ' ').trim());
 (async () => {
   const b = await chromium.launch(); const errs = [];
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
   // 1) yeni yolcu: raf boş, yadigâr kendiliğinden belirir
   const p = await page(b, { locale: 'tr-TR', viewport: { width: 1280, height: 860 } }, save({}));
   await p.click('.tab[data-id="journal"]'); await p.waitForTimeout(200);
@@ -45,6 +46,7 @@ const shelf = p => p.$eval('.keeps', e => e.closest('#pane-journal').querySelect
   await p.click('.keep.on'); await p.waitForTimeout(150);
   console.log('dokununca sallandı mı:', await p.$eval('.keep.on', e => e.classList.contains('wiggle')));
   errs.push(...p.errs);
+  pw.speed(0); // olay zamanlayıcıları normal
   // 2) on dört yadigâr: sonuncusu Kâşif kıyafetini açar (telefon, koyu tema)
   const all = ['meadow', 'lavender', 'pine', 'wheat', 'coast', 'canyon', 'sakura', 'autumn', 'desert', 'snow', 'aurora', 'tea', 'cappadocia', 'tulip'];
   const q = await page(b, { locale: 'en-US', viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true, colorScheme: 'dark' },

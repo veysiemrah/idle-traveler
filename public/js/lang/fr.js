@@ -514,5 +514,9 @@ IT.addLang('fr', {
     "j.momentsDone": "Tu as capturé tous les moments spéciaux ! Tes cartes postales ont maintenant un cadre doré.",
     "toast.moment": "<b>Moment spécial capturé : {name}</b> · {n}/{m}",
     "toast.momentsAll": "<b>Tous les moments spéciaux sont à toi !</b> · Tes cartes postales ont maintenant un cadre doré",
+    // Telefon panosu (v1.56)
+    "sheet.close": "Fermer",
+    "ui.details": "Détails",
+    "ui.buffBoost": "Niv. {t} : effet ×{x}",
   },
 });

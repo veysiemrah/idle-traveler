@@ -3,7 +3,7 @@
 // - eski kayıtta (10'dan çok dönüş) sonradan eklenen rota bir sonraki dönüşte duyurulur ve seçilir
 // - açık temada uzayda Gece Kuşu sayacı işler ve kayan yıldız gelir
 // - gece yağmurdan sonra soluk ay gökkuşağı çizilir (ekran görüntüsü)
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 async function open(b, extra, opts) {
   const p = await b.newPage(Object.assign({ locale: 'tr-TR', viewport: { width: 1100, height: 760 } }, opts || {}));
@@ -11,7 +11,7 @@ async function open(b, extra, opts) {
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } },
     JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, player: undefined }, extra || {})));
-  await p.goto('http://localhost:8765/index.html'); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
   return p;
 }
 const saved = p => p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
@@ -50,6 +50,8 @@ const goHome = async p => {
   console.log('rota:', sv.route, '· routeMax:', sv.routeMax);
   errs.push(...v.errs); await v.close();
 
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
+
   // 3) açık tema, roket: uzayda Gece Kuşu sayacı işler ve kayan yıldız gelir
   const r = await open(b, { owned: { walk: 1, rocket: 1 }, active: 'rocket', distance: 2e6, regionIdx: 4, msIdx: 99, nightTime: 0, settings: { sky: 'day' } });
   let star = 0;
@@ -58,6 +60,8 @@ const goHome = async p => {
   const sr = await saved(r);
   console.log('uzay:', await r.evaluate(() => (__sc.space || 0).toFixed(2)), '· gece sayacı (sn):', Math.round(sr.nightTime), '· kayan yıldız (sn):', star);
   errs.push(...r.errs); await r.close();
+
+  pw.speed(0); // olay zamanlayıcıları normal
 
   // 4) ay gökkuşağı (gece) ve gündüz gökkuşağı
   for (const [name, sky] of [['moonbow', 'night'], ['rainbow', 'day']]) {

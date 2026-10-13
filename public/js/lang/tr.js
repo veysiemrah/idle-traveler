@@ -524,5 +524,9 @@ IT.addLang('tr', {
     "j.momentsDone": "Bütün özel anları yakaladın! Kartpostalların artık altın çerçeveli.",
     "toast.moment": "<b>Özel an yakalandı: {name}</b> · {n}/{m}",
     "toast.momentsAll": "<b>Bütün özel anlar senin!</b> · Kartpostalların artık altın çerçeveli",
+    // Telefon panosu (v1.56)
+    "sheet.close": "Kapat",
+    "ui.details": "Ayrıntılar",
+    "ui.buffBoost": "Sv. {t}: etki ×{x}",
   },
 });

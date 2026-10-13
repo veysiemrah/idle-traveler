@@ -528,5 +528,9 @@ IT.addLang('de', {
     "j.momentsDone": "Du hast alle besonderen Momente eingefangen! Deine Postkarten haben jetzt einen goldenen Rahmen.",
     "toast.moment": "<b>Besonderer Moment eingefangen: {name}</b> · {n}/{m}",
     "toast.momentsAll": "<b>Alle besonderen Momente gehören dir!</b> · Deine Postkarten haben jetzt einen goldenen Rahmen",
+    // Telefon panosu (v1.56)
+    "sheet.close": "Schließen",
+    "ui.details": "Details",
+    "ui.buffBoost": "Stufe {t}: Wirkung ×{x}",
   },
 });

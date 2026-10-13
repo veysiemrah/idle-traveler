@@ -37,6 +37,7 @@ async function open(b, extra, opts) {
   // 3) telefon: yükseltme adları kesilmez, seviye artınca kart büyümez
   for (const loc of ['tr-TR', 'en-US', 'de-DE', 'es-ES', 'fr-FR']) {
     const q = await open(b, { owned: Object.assign({}, ALL, { comet: 1, warp: 1 }), levels: { sail: 60, warp: 9 } }, { locale: loc, viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
+    await q.click('.tab[data-id="garage"]'); await q.waitForTimeout(450); // dikey telefonda panel alttan açılır (v1.56)
     const cut = await q.$$eval('.upname', l => l.filter(e => e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1).map(e => e.textContent));
     const h = () => q.$eval('[data-act="upgrade"][data-id="warp"]', e => e.closest('.card').getBoundingClientRect().height);
     const h0 = await h();

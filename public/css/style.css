@@ -1000,3 +1000,99 @@ button { font: inherit; color: inherit; }
 }
 /* Yeni sürüm: sayfa yenilenmeden önce yumuşakça solar */
 html.reloading body { opacity: 0; transition: opacity .6s ease; }
+
+/* ---------- Telefon panosu ve alttan açılan panel (v1.56) ----------
+   Telefonda sahnenin üstünde yazı kalmaz: durum satırı, etkiler ve ritim şeridi panoya iner (game.js → arrange). */
+.dock[hidden], .sheet-head { display: none; }
+.hud-cred { display: none; }
+.m-phone .dock { display: flex; flex-direction: column; gap: 6px; background: var(--ink); border-top: 1px solid var(--line-soft); }
+.m-phone .dock-status { display: grid; position: relative; min-height: 46px; padding: 6px 12px 0; }
+.m-phone .dock-status > * { grid-area: 1 / 1; }
+.m-phone .hud { position: static; inset: auto; padding: 0; margin: 0; pointer-events: auto; transition: opacity .35s; }
+.m-phone .hud-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "reg cred" "dist cred" "row cred";
+  align-items: center; column-gap: 10px; padding: 0; background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.m-phone .hud-card .eyebrow { display: none; }
+.m-phone .hud-card .region { grid-area: reg; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-phone .hud-card .dist { grid-area: dist; font-size: 21px; margin: 0; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-phone .hud-card .hud-row { grid-area: row; font-size: 12px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-phone .hud-cred { grid-area: cred; display: flex; align-items: center; gap: 6px; margin: 0; font: 800 18px/1 var(--font-display); color: var(--apricot-text); }
+.m-phone .hud-cred .coin { width: 20px; height: 20px; }
+.m-land .hud-cred { display: none; }
+.m-phone .dock-status .hint { position: static; transform: none; inset: auto; align-self: center; justify-self: start; text-align: left; margin: 0; background: none; box-shadow: none; padding: 0; }
+.m-phone .dock-status .hint:not(.gone) ~ .toasts, .m-phone .dock-status:has(.hint:not(.gone)) .hud { opacity: 0; }
+.m-phone .dock-status .toasts {
+  position: static; inset: auto; width: auto; display: grid; align-items: center; pointer-events: none; z-index: 1;
+}
+.m-phone .dock-status .toast {
+  grid-area: 1 / 1; margin: 0; padding: 0 2px; background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  text-align: left; font-size: 13.5px; line-height: 1.3; max-height: none; transform: none;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.m-phone .dock-status .toast.out { opacity: 0; transform: none; max-height: none; margin: 0; padding: 0 2px; }
+.m-phone .dock-status.ticking .hud { opacity: 0; }
+.m-phone .effects { position: static; inset: auto; flex-direction: row; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 12px; align-items: center; }
+.m-phone .effects:empty { display: none; }
+.m-phone .effects::-webkit-scrollbar { display: none; }
+.m-phone .fx { white-space: nowrap; font-size: 12px; padding: 4px 10px; flex: none; }
+.m-phone .dock-trail { display: flex; align-items: center; gap: 6px; padding: 0 12px; position: relative; }
+.m-phone .dock-trail .trail { position: static; inset: auto; flex: 1; min-width: 0; padding: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; pointer-events: auto; }
+.m-phone .trail > div { background: var(--ink-2); border-color: var(--line-soft); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+.m-phone .dock-trail .zoom-ctl { position: static; flex-direction: row-reverse; width: auto; height: 38px; padding: 0 3px; background: var(--ink-2); border-color: var(--line-soft); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.m-phone .dock-trail .zoom-pips { flex-direction: row; padding: 0 2px; }
+.m-phone .dock-trail .chat-btn { position: static; width: 40px; height: 40px; flex: none; margin: 0; background: var(--ink-2); border-color: var(--line-soft); box-shadow: none; }
+.m-phone .dock-trail .chat-pop { right: 12px; bottom: calc(100% + 8px); }
+/* dikey: sahne ekranı doldurur, pano altında; panel alttan açılan sayfa */
+.m-port .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+.m-port .stage { display: flex; flex-direction: column; background: var(--ink); cursor: default; }
+.m-port #scene { position: relative; inset: auto; flex: 1; min-height: 0; width: 100%; cursor: pointer; }
+.m-port .dock { padding-bottom: max(6px, env(safe-area-inset-bottom, 0px)); }
+.m-port .dock .tabs { margin: 2px 12px 0; }
+.m-port .panel {
+  position: fixed; left: 0; right: 0; bottom: var(--sheet-bottom, 0px); z-index: 6; height: min(72vh, 660px); max-height: calc(100% - var(--sheet-bottom, 0px) - 56px);
+  border: 0; border-top: 1px solid var(--line-soft); border-radius: 18px 18px 0 0; box-shadow: 0 -12px 40px rgba(10, 12, 30, .35);
+  transform: translateY(105%); transition: transform .32s cubic-bezier(.2, .8, .25, 1); visibility: hidden;
+}
+.m-port.sheet-open .panel { transform: none; visibility: visible; }
+.m-port .panel { transition: transform .32s cubic-bezier(.2, .8, .25, 1), visibility 0s linear .32s; }
+.m-port.sheet-open .panel { transition: transform .32s cubic-bezier(.2, .8, .25, 1), visibility 0s; }
+.m-port .sheet-head { display: flex; justify-content: center; align-items: center; position: relative; padding: 8px 12px 0; touch-action: none; cursor: grab; }
+.m-port .sheet-head .grip { width: 42px; height: 5px; border-radius: 3px; background: var(--ink-3); }
+.m-port .sheet-close { position: absolute; right: 10px; top: 4px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--ink-2); color: var(--paper); cursor: pointer; }
+.m-port .sheet-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.m-port .dock .tabs { position: relative; z-index: 7; }
+/* sayfa açıkken de üst çubuk (ayarlar, kartpostal, tema, ses) kullanılabilir */
+.m-port .topbar { z-index: 7; }
+.sheet-back { position: fixed; inset: 0 0 var(--sheet-bottom, 0px) 0; z-index: 5; background: rgba(10, 12, 30, .35); animation: fadeIn .3s ease; }
+.sheet-back[hidden] { display: none; }
+@keyframes fadeIn { from { opacity: 0; } }
+/* yatay: pano panelin üstünde (sahne solda yalnızca manzara; yakınlaştırma ve konuşma düğmeleri yazısız, sahnede kalır) */
+.m-land .dock { border-top: 0; border-bottom: 1px solid var(--line-soft); padding-bottom: 6px; }
+.m-land .dock-status { min-height: 40px; }
+.m-land .hud-card .dist { font-size: 18px; }
+@media (prefers-reduced-motion: reduce) { .m-port .panel { transition: none; } }
+
+/* ---------- Katlanır kartlar (v1.56) ----------
+   Kapalı kartta tanıtım, istatistikler, yol arkadaşı seçimi ve sonraki eşik yazısı yumuşakça kapanır; simge küçülür */
+.card[data-fold] { cursor: pointer; }
+.card[data-fold] .row { align-items: center; }
+.fold-btn {
+  flex: none; width: 30px; height: 30px; margin: -4px -4px -4px 2px; border: 0; border-radius: 50%; background: transparent;
+  color: var(--muted); display: grid; place-items: center; cursor: pointer; transition: background-color .2s;
+}
+.fold-btn:hover { background: var(--ink-3); }
+.fold-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .28s ease; }
+.card:not(.folded) .fold-btn svg { transform: rotate(180deg); }
+.card[data-fold] .body > .tag, .card[data-fold] .body > .stats, .card[data-fold] .pals, .card[data-fold] .up small, .card[data-fold] > .up small {
+  max-height: 22em; overflow: hidden; transition: max-height .3s ease, opacity .22s ease, margin .3s ease, min-height .3s ease;
+}
+.card.folded .body > .tag, .card.folded .body > .stats, .card.folded .pals, .card.folded .up small, .card.folded > .up small {
+  max-height: 0; min-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0; visibility: hidden;
+  transition: max-height .3s ease, opacity .22s ease, margin .3s ease, min-height .3s ease, visibility 0s linear .3s;
+}
+.card[data-fold] .icon { transition: width .3s ease, height .3s ease; }
+.card.veh.folded .icon { width: 46px; height: 36px; }
+.card.folded { gap: 8px 12px; }
+.card.veh.folded > .up { padding-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .card[data-fold] *, .fold-btn svg { transition: none !important; } }

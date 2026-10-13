@@ -58,6 +58,7 @@
         <p class="region" id="hudRegion">Sabah Köyü</p>
         <p class="dist" id="hudDist">0 m</p>
         <p class="hud-row"><span class="speed" id="hudSpeed">0 km/sa</span><span class="dotsep" aria-hidden="true"></span><span id="hudVehicle">Yürüyüş</span></p>
+        <p class="hud-cred" aria-hidden="true"><i class="coin"></i><b id="hudCredits">0</b></p>
       </div>
     </header>
 
@@ -100,9 +101,22 @@
         <span class="bar"><i id="msFill"></i></span>
       </div>
     </footer>
+
+    <!-- Telefon panosu (v1.56): telefonda sahnenin üstünde yazı kalmaz; durum satırı (bildirimler de burada akar), etkiler,
+         ritim şeridi ve sekmeler buraya taşınır (game.js → arrange). Masaüstünde gizli. -->
+    <div class="dock" id="dock" hidden>
+      <div class="dock-status" id="dockStatus"></div>
+      <div class="dock-trail" id="dockTrail"></div>
+    </div>
   </main>
 
   <aside class="panel" id="panel">
+    <!-- dikey telefonda panel alttan açılan bir sayfadır: tutamaç ve kapatma düğmesi -->
+    <div class="sheet-head" id="sheetHead">
+      <span class="grip" aria-hidden="true"></span>
+      <button class="sheet-close" type="button" data-act="sheetClose" aria-label="Kapat" data-i18n-aria="sheet.close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    </div>
     <div class="wallet">
       <i class="coin big" aria-hidden="true"></i>
       <div>
@@ -128,6 +142,7 @@
   </aside>
 </div>
 
+<div class="sheet-back" id="sheetBack" hidden></div>
 <div class="modal" id="modal" hidden>
   <div class="modal-card" role="dialog" aria-modal="true">
     <div id="modalBody"></div>

@@ -1,7 +1,7 @@
 // Turna Yolu (v1.35): 9. eve dönüş onuncu rotayı açar; bu rotada gökyüzünden ara sıra V düzeninde turna sürüsü geçer,
 // dokununca Turna Rüzgârı (hız ×3) gelir ve Yol Defteri'nde sayılır. Başka rotada turna gelmez.
 // Ekran görüntüleri: gündüz, gece, telefon (320 px), rota seçimi.
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 const save = extra => JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, distance: 30,
   trips: 9, memories: 120, route: 'crane', player: undefined }, extra || {}));
@@ -10,7 +10,7 @@ async function open(b, extra, opts) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, save(extra));
-  await p.goto('http://localhost:8765/index.html'); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
   return p;
 }
 // sürünün ortasındaki bir turnaya dokun
@@ -20,6 +20,7 @@ const tap = async p => {
 };
 (async () => {
   const b = await chromium.launch(); const errs = [];
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
   // 1) gündüz: kendiliğinden gelir (ilk sürü 35–65 sn)
   const p = await open(b, { settings: { sky: 'day' } });
   let seen = false;
@@ -40,6 +41,7 @@ const tap = async p => {
   await p.click('.tab[data-id="journal"]'); await p.waitForTimeout(300);
   console.log('defter:', await p.$$eval('#pane-journal .statgrid div', l => l.map(d => d.textContent.trim()).filter(x => /Turna/.test(x)).join(' | ') || '(yok)'));
   errs.push(...p.errs); await p.close();
+  pw.speed(0); // olay zamanlayıcıları normal
   // 2) gece ve koyu tema
   const n = await open(b, { settings: { sky: 'night' } }, { colorScheme: 'dark' });
   await n.evaluate(() => __sc.spawnCranes()); await n.waitForTimeout(7000);
@@ -53,12 +55,14 @@ const tap = async p => {
   await q.$eval('.card.home', e => e.scrollIntoView({ block: 'center' })); await q.waitForTimeout(200);
   await q.screenshot({ path: process.env.SP + '/cranes_routes_phone.png' });
   errs.push(...q.errs); await q.close();
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
   // 4) başka rotada turna gelmez
   const o = await open(b, { route: 'anatolia', settings: { sky: 'day' } });
   await o.evaluate(() => { let c = 0; const f = __sc.spawnCranes.bind(__sc); __sc.spawnCranes = () => { c++; f(); }; window.__cn = () => c; });
-  await o.waitForTimeout(75000);
+  await o.waitForTimeout(6000) /* hızlandırılmış: ~120 sn oyun zamanı */;
   console.log('Anadolu Yolu’nda turna (75 sn):', await o.evaluate(() => window.__cn()));
   errs.push(...o.errs); await o.close();
+  pw.speed(0); // olay zamanlayıcıları normal
   // 5) 9. eve dönüş onuncu rotayı açar
   const h = await open(b, { trips: 8, route: 'lighthouse', distance: 7e11, regionIdx: 0 });
   await h.click('.tab[data-id="buffs"]'); await h.waitForTimeout(300);

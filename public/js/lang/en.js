@@ -512,5 +512,9 @@ IT.addLang('en', {
     "j.momentsDone": "You captured every special moment! Your postcards now have a golden frame.",
     "toast.moment": "<b>Special moment captured: {name}</b> · {n}/{m}",
     "toast.momentsAll": "<b>Every special moment is yours!</b> · Your postcards now have a golden frame",
+    // Telefon panosu (v1.56)
+    "sheet.close": "Close",
+    "ui.details": "Details",
+    "ui.buffBoost": "Lv. {t}: effect ×{x}",
   },
 });

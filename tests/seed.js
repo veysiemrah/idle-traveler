@@ -1,6 +1,6 @@
 // Karahindiba tohumu (v1.31): gündüz kendiliğinden belirir, dokununca dilek sayılır (Rüzgâr Dileği: kredi ×10, harita parçası
 // düşebilir); gece belirmez. Ekran görüntüleri: gündüz masaüstü, telefon.
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 const save = sky => JSON.stringify({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, distance: 30, settings: { sky } });
 async function open(b, sky, opts) {
@@ -8,7 +8,7 @@ async function open(b, sky, opts) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, save(sky));
-  await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForTimeout(900);
   return p;
 }
 const tap = async p => {
@@ -17,6 +17,7 @@ const tap = async p => {
 };
 (async () => {
   const b = await chromium.launch(); const errs = [];
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
   // 1) gündüz: kendiliğinden belirir
   const p = await open(b, 'day');
   let seen = false;
@@ -37,9 +38,10 @@ const tap = async p => {
   const n = await open(b, 'night');
   await n.waitForTimeout(1500);
   const before = await n.evaluate(() => { let c = 0; const o = __sc.spawnSeed.bind(__sc); __sc.spawnSeed = () => { c++; o(); }; window.__seedCount = () => c; return 0; });
-  await n.waitForTimeout(90000);
+  await n.waitForTimeout(6000) /* hızlandırılmış: ~120 sn oyun zamanı */;
   console.log('gecede tohum sayısı (90 sn):', await n.evaluate(() => window.__seedCount()));
   errs.push(...n.errs); await n.close();
+  pw.speed(0); // olay zamanlayıcıları normal
   // 3) telefon
   const q = await open(b, 'day', { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
   await q.evaluate(() => __sc.spawnSeed()); await q.waitForTimeout(4500);

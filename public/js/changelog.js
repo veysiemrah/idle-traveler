@@ -5,9 +5,36 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.55';
+  IT.VERSION = '1.56';
 
   IT.CHANGELOG = [
+    { v: '1.56', date: '2026-10-13', items: {
+      tr: ['Telefonda manzara artık bütünüyle senin: sahnenin üstünde yazı kalmadı. Yolculuk bilgileri ve bildirimler sahnenin altındaki panoda; garaj ve diğer sekmeler alttan açılan bir sayfada.',
+        'Garajdaki araçlar ve güçlendirmeler artık katlanır kartlar: dokununca ayrıntılar açılır, liste kısalır.',
+        'Garajdaki eski dostların Sv. 200’den sonra daha da hevesli.',
+        'Sınırsız güçlendirmelerin bazı seviyelerinde küçük bir sıçrama seni bekliyor; kartlara göz at.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['On phones, the scenery is now all yours: no more text over the scene. Travel info and notifications live in a panel below it; the garage and other tabs open in a sheet from the bottom.',
+        'Vehicles and boosts in the garage are now collapsible cards: tap to see the details, and the list gets shorter.',
+        'Your old friends in the garage are even more eager beyond Lv. 200.',
+        'Some levels of the endless boosts hide a little leap; check the cards.',
+        'A few small touches along the road.'],
+      de: ['Auf dem Handy gehört dir die Landschaft jetzt ganz: kein Text mehr über der Szene. Reiseinfos und Meldungen stehen in einer Leiste darunter; Garage und die anderen Reiter öffnen sich von unten.',
+        'Fahrzeuge und Verstärkungen in der Garage sind jetzt aufklappbare Karten: Tippe für Details, die Liste wird kürzer.',
+        'Deine alten Freunde in der Garage sind jenseits von Stufe 200 noch eifriger.',
+        'Bei manchen Stufen der endlosen Verstärkungen wartet ein kleiner Sprung; schau auf die Karten.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['En el móvil, el paisaje ya es todo tuyo: no queda texto sobre la escena. La información del viaje y los avisos están en un panel debajo; el garaje y las demás pestañas se abren desde abajo.',
+        'Los vehículos y las mejoras del garaje son ahora tarjetas plegables: toca para ver los detalles y la lista se acorta.',
+        'Tus viejos amigos del garaje están aún más animados más allá del Nv. 200.',
+        'Algunos niveles de las mejoras sin límite esconden un pequeño salto; mira las tarjetas.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Sur téléphone, le paysage est désormais tout à toi : plus aucun texte sur la scène. Les infos du voyage et les notifications sont dans un panneau en dessous ; le garage et les autres onglets s’ouvrent depuis le bas.',
+        'Les véhicules et les bonus du garage sont maintenant des cartes repliables : touche pour voir les détails, la liste raccourcit.',
+        'Tes vieux amis du garage sont encore plus motivés au-delà du Niv. 200.',
+        'Certains niveaux des bonus sans limite cachent un petit bond ; jette un œil aux cartes.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.55', date: '2026-10-13', items: {
       tr: ['Sesini aç ve kulak ver: her bölgenin artık kendi sesi var. Kıyıda dalgalar, ovalarda kuşlar, gece cırcır böcekleri… Uzayda bile bir şey mırıldanıyor.',
         'Yolda birkaç küçük rötuş.'],

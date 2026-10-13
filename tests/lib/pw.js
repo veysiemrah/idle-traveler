@@ -8,4 +8,8 @@ try { pw = require('playwright'); } catch (e) {
 }
 process.env.SP = process.env.SP || path.join(__dirname, '..', 'out');
 fs.mkdirSync(process.env.SP, { recursive: true });
+// Oyunun adresi: doğal gelişi bekleyen bölümler pw.speed(n) ile olay zamanlayıcılarını hızlandırır (?testspeed=n)
+let speed = 0;
+pw.speed = n => { speed = n || 0; };
+pw.url = (base = 'http://localhost:8765/index.html') => speed > 1 ? `${base}?testspeed=${speed}` : base;
 module.exports = pw;

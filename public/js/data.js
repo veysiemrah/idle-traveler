@@ -54,9 +54,10 @@
   // Tavanlı güçlendirmelerin büyümesi v1.38'de dikleşti: son seviyeleri ilk dakikalarda değil, minibüs ile uçak arasında
   // alınır (önceden hepsi ~3 Mr krediydi, aktif oyuncu ilk 10 dakikada bitiriyordu). Tempo neredeyse aynı kaldı (sim_game).
   const BUFFS = [
-    { id: 'stride',   base: 40,   growth: 2.2,           vals: l => ({ p: fmtPct(20 * l) }),                    step: () => ({ p: fmtPct(20) }) },
-    { id: 'breeze',   base: 70,   growth: 2.2,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
-    { id: 'postcard', base: 240,  growth: 2.6,           vals: l => ({ p: fmtPct(25 * l) }),                    step: () => ({ p: fmtPct(25) }) },
+    // sınırsız üç güçlendirme (v1.56): etki (1 + artış × seviye) × eşik katları (Sv. 25, 50, 100, 150'de ×2, 200'de ×3)
+    { id: 'stride',   base: 40,   growth: 2.2, per: 0.2,  vals: l => ({ p: fmtPct(Econ.buffPct(0.2, l)) }),   step: l => ({ p: fmtPct(Econ.buffPct(0.2, l + 1) - Econ.buffPct(0.2, l)) }) },
+    { id: 'breeze',   base: 70,   growth: 2.2, per: 0.25, vals: l => ({ p: fmtPct(Econ.buffPct(0.25, l)) }),  step: l => ({ p: fmtPct(Econ.buffPct(0.25, l + 1) - Econ.buffPct(0.25, l)) }) },
+    { id: 'postcard', base: 240,  growth: 2.6, per: 0.25, vals: l => ({ p: fmtPct(Econ.buffPct(0.25, l)) }),  step: l => ({ p: fmtPct(Econ.buffPct(0.25, l + 1) - Econ.buffPct(0.25, l)) }) },
     { id: 'rhythm',   base: 300,  growth: 4.0, max: 10,  vals: l => ({ p: fmtPct(50 + 10 * l) }),               step: () => ({ p: fmtPct(10) }) },
     { id: 'luck',     base: 500,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(l), x: Econ.luckMult }),       step: () => ({ p: fmtPct(1) }) },
     { id: 'dream',    base: 800,  growth: 4.5, max: 10,  vals: l => ({ p: fmtPct(30 + 6 * l) }),                step: () => ({ p: fmtPct(6) }) },
@@ -67,7 +68,7 @@
   ];
   BUFFS.forEach(b => Object.defineProperties(b, {
     name: { get: () => T(`buff.${b.id}.name`) },
-    next: { get: () => T(`buff.${b.id}.next`, b.step()) },
+    next: { get: () => T(`buff.${b.id}.next`, b.step(0)) },
   }));
   BUFFS.forEach(b => { b.desc = l => T(`buff.${b.id}.desc`, b.vals(l)); });
   const BUFF = Object.fromEntries(BUFFS.map(b => [b.id, b]));
@@ -385,11 +386,21 @@
   // Sahnenin kayma hızı mesafe ölçeğinden bağımsız: eski görsel tempo korunur
   const SPEED_VIS = 10;
   const Econ = {
-    // Her seviye aracın hızına +%10 ekler; bu seviyelerde hız katlanır: Sv. 25–200'de ×2 (en büyük sıçrama Sv. 50'de),
-    // v1.51'den beri Sv. 250 ve 300'de ×3, 350 ve 400'de ×4, 450 ve 500'de ×5 (geç oyunda eski araçları geliştirmeye yeni hedefler)
+    // Her seviye aracın hızına +%10 ekler; bu seviyelerde hız katlanır: Sv. 25–150'de ×2 (en büyük sıçrama Sv. 50'de),
+    // v1.56'dan beri Sv. 200 ve 250'de ×3, 300 ve 350'de ×4, 400 ve 450'de ×5, 500'de ×10 (geç oyunda eski araçlara yeni hedefler)
     levelGain: 0.1,
     doublings: [25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500],
-    boostOf(t) { return t >= 450 ? 5 : t >= 350 ? 4 : t >= 250 ? 3 : 2; },
+    boostOf(t) { return t >= 500 ? 10 : t >= 400 ? 5 : t >= 300 ? 4 : t >= 200 ? 3 : 2; },
+    // Sınırsız güçlendirmelerin (Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu) etki çarpanı: araçlardaki gibi
+    // seviye başına sabit artış ve eşiklerde katlanma (v1.56)
+    buffBoosts: [25, 50, 100, 150, 200],
+    buffBoostOf(t) { return t >= 200 ? 3 : 2; },
+    buffMult(per, lvl) {
+      let m = 1 + per * (lvl || 0);
+      for (const t of Econ.buffBoosts) if ((lvl || 0) >= t) m *= Econ.buffBoostOf(t);
+      return m;
+    },
+    buffPct(per, lvl) { return (Econ.buffMult(per, lvl) - 1) * 100; },
     vehicleMult(lvl) {
       let m = 1 + Econ.levelGain * lvl;
       for (const t of Econ.doublings) if (lvl >= t) m *= Econ.boostOf(t);
@@ -464,7 +475,7 @@
     // Bir aracın tek başına hızı (yol tecrübesi ve geçici etkiler hariç); garaj kartlarında gösterilir.
     own(state, id) {
       const v = VEH[id], m = Econ.vehicleMult(state.levels[id] || 0) * Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories) * Econ.keepMult(state);
-      return { idle: v.idle * m * (1 + 0.25 * state.buffs.breeze), click: v.click * m * (1 + 0.2 * state.buffs.stride) };
+      return { idle: v.idle * m * Econ.buffMult(0.25, state.buffs.breeze), click: v.click * m * Econ.buffMult(0.2, state.buffs.stride) };
     },
     // Kalıcı değerler (geçici kelebek etkileri hariç). convoy: diğer araçlardan gelen yol tecrübesi payı.
     base(state) {
@@ -476,11 +487,11 @@
         idle += v.idle * m; click += v.click * m;
         if (v.id !== lead) cIdle += v.idle * m;
       }
-      const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories) * Econ.keepMult(state), bi = 1 + 0.25 * b.breeze;
+      const d = Econ.discoveryMult(state.regionIdx) * Econ.memoryMult(state.memories) * Econ.keepMult(state), bi = Econ.buffMult(0.25, b.breeze);
       return {
         idle: idle * d * bi,
-        click: click * d * (1 + 0.2 * b.stride),
-        cpm: CREDITS_PER_M * (1 + 0.25 * b.postcard) * (1 + Econ.palBonus(b.pal)) * Econ.badgeMult(state),
+        click: click * d * Econ.buffMult(0.2, b.stride),
+        cpm: CREDITS_PER_M * Econ.buffMult(0.25, b.postcard) * (1 + Econ.palBonus(b.pal)) * Econ.badgeMult(state),
         convoy: cIdle * d * bi,
       };
     },

@@ -1,7 +1,7 @@
 // Kuş Defteri: her bölgenin kuşu gündüz/gece/telefonda gökyüzünden geçer, dokununca deftere yazılır (aynı kuşa ikinci dokunuş
 // sayılmaz), defterde bulunanlar renkli ve bulunmayanlar siluet, yedinci kuşta Kuş Gözlemcisi kıyafeti, kilitli kıyafetin
 // ipucu, eski kayıt (birds alanı yok), kendiliğinden gelmesi ve yağmurda gelmemesi
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
@@ -14,7 +14,7 @@ const { chromium } = require('./lib/pw');
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, msIdx: 99,
         settings: { sky: sky || 'day', zoom: 1 } }, save));
-    await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1500);
+    await p.goto(pw.url()); await p.waitForTimeout(1500);
     return p;
   };
   const at = id => ({ regionIdx: AT[id][0], distance: AT[id][1] });
@@ -98,6 +98,8 @@ const { chromium } = require('./lib/pw');
   await old.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   console.log('eski kayıt: birds:', JSON.stringify((await saved(old)).birds), '· kıyafet kilitli mi:', await old.$eval('.outfit[data-id="birder"]', e => e.disabled), '· defter bölümü gizli mi:', !(await old.$('.keeps.birds')));
   await old.close();
+
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
 
   // 4) Sabah Köyü'nde kendiliğinden gelir (ilki 40–70 sn); yağmurda gelmez
   const w = await open(at('stork'));

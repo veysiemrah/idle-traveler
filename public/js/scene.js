@@ -2202,6 +2202,8 @@
       opts = opts || {};
       const jitter = (Math.random() - 0.5) * 50 * this.k;
       const f = { text, x: this.travelerX + jitter + 10 * this.k, y: this.riderY() - (opts.big ? 96 : 80) * this.k, life: 0, max: opts.big ? 1.8 : 1.15, color: opts.color || '#ffffff', big: !!opts.big };
+      // telefonda sahnenin üstünde yazı olmaz: harf ya da rakam içeren uçan yazılar çizilmez (yalnızca emoji uçar)
+      if (this.textless && /[\p{L}\p{N}]/u.test(text)) return f;
       this.floats.push(f);
       if (this.floats.length > 24) this.floats.shift();
       return f;
@@ -2655,6 +2657,7 @@
     }
     // Etiketler soldan sağa yerleşir; üst üste binen etiket yumuşakça yukarı kalkar ve ince bir çizgiyle gezgine bağlanır
     drawTags(ctx, night) {
+      if (this.textless) return; // telefonda gezgin ad etiketleri çizilmez
       const k = Math.max(this.k, 0.85) * this.tz(), h = 30 * k, gap = 4 * k, placed = [];
       for (const [x, y, o, a, g] of (this.tags || []).slice().sort((p, q) => p[0] - q[0])) {
         const w = this.tagWidth(ctx, o), bx = clamp(x - w / 2, 4, this.W - w - 4);
@@ -2718,6 +2721,12 @@
     }
     // Balon küçük bir sıçrayışla açılır, hafifçe yükselir ve sonunda solar; kuyruğu konuşanı gösterir
     drawBubble(ctx, x, y, m, alpha) {
+      // telefonda balonda yalnızca mesajın emojisi kalır (yazı panodaki durum satırında görünür)
+      if (this.textless) {
+        const e = (m.text.match(/^\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*/u) || [''])[0];
+        if (!e) return;
+        m = Object.assign({}, m, { text: e });
+      }
       const k = Math.max(this.k, 0.85) * this.tz(), t = m.t;
       const pop = t < 0.3 ? 1 + 2.7 * Math.pow(t / 0.3 - 1, 3) + 1.7 * Math.pow(t / 0.3 - 1, 2) : 1; // easeOutBack
       const a = (alpha === undefined ? 1 : alpha) * clamp(t / 0.15, 0, 1) * clamp((m.life - t) / 0.7, 0, 1);
@@ -3596,6 +3605,7 @@
     }
 
     drawSign(ctx, x, y, k, txt, lit) {
+      if (this.textless) return; // telefonda yazılı yol tabelası çizilmez
       ctx.font = `700 ${Math.round(10.5 * k)}px "Figtree", system-ui, sans-serif`;
       const w1 = ctx.measureText(txt.title).width, w2 = ctx.measureText(txt.sub).width;
       const w = Math.max(w1, w2) + 16 * k, h = 32 * k;

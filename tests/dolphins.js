@@ -1,6 +1,6 @@
 // Yunuslar: kıyı denizinde sıçrayan sürü (gündüz/gece/telefon), dokununca selam (bir kez sayılır), yedi selamda Denizci kıyafeti,
 // kilitli kıyafetin ipucu, denizli bölgede kendiliğinden gelmesi ve denizsiz bölgede gelmemesi
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
@@ -12,7 +12,7 @@ const { chromium } = require('./lib/pw');
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50,
         settings: { sky: sky || 'day', zoom: 1 } }, save));
-    await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1500);
+    await p.goto(pw.url()); await p.waitForTimeout(1500);
     return p;
   };
   // sürünün ortasına (sanal koordinat → sayfa) dokunur
@@ -79,6 +79,8 @@ const { chromium } = require('./lib/pw');
   await ph.screenshot({ path: `${process.env.SP}/dolphins_outfits_phone.png` });
   console.log('telefonda ipucu taşıyor mu:', await ph.$eval('.outfit[data-id="sailor"] small', e => e.scrollWidth > e.clientWidth + 1));
   await ph.close();
+
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
 
   // 3) Ege Sahil Yolu'nda kendiliğinden gelir (ilki 30–60 sn), Sabah Köyü'nde gelmez
   const w = await open(COAST), m = await open(MEADOW);

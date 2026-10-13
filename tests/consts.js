@@ -1,6 +1,6 @@
 // Takımyıldızlar: gece belirir (gündüz belirmez), yıldızlara dokununca birleşir ve haritaya işlenir, bulunanlar gökyüzünde kalır,
 // sekizincide Yıldız Haritacısı kıyafeti açılır; telefonda konum kartının arkasında kalmaz
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
@@ -10,7 +10,7 @@ const { chromium } = require('./lib/pw');
     await p.addInitScript(hook);
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50, letters: 12, settings: { sky: sky || 'night', zoom: 1 } }, save));
-    await p.goto('http://localhost:8765/index.html'); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(1500);
+    await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(1500);
     return p;
   };
   const toasts = async p => (await p.textContent('#toasts')).replace(/\s+/g, ' ').trim();
@@ -19,6 +19,8 @@ const { chromium } = require('./lib/pw');
     const pt = await p.evaluate(i => { const s = __sc.constStarPos(__sc.constel, i), r = __sc.canvas.getBoundingClientRect(), z = __sc.zoom; return { x: r.left + s.x * z, y: r.top + s.y * z }; }, i);
     await p.mouse.click(pt.x, pt.y);
   };
+
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
 
   // 1) Gündüz gelmez, gece 60–100 sn içinde gelir
   let p = await open({}, null, 'day');
@@ -67,6 +69,8 @@ const { chromium } = require('./lib/pw');
   await p.click('.tab[data-id="journal"]'); await p.waitForTimeout(300);
   console.log('kıyafet açık mı:', await p.$eval('.outfit[data-id="stargazer"]', e => !e.disabled + ' · ' + e.innerText.replace(/\s+/g, ' ')));
   await p.close();
+
+  pw.speed(0); // olay zamanlayıcıları normal
 
   // 3) Telefonda (320 px) takımyıldız konum kartının arkasında kalmaz; kilitli kıyafet satırı
   p = await open({}, { width: 320, height: 640 }, 'night');
