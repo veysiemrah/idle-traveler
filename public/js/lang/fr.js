@@ -164,6 +164,7 @@ IT.addLang('fr', {
     'toast.vehNewLead': '<b>Nouveau véhicule : {name}</b> · {lead} fixe encore ta vitesse. Quelques améliorations et {name} prendra la tête.',
     'toast.doubled': '<b>{up} {lvl}</b> · Vitesse de {name} doublée !',
     'toast.doubledN': '<b>{up} {lvl}</b> · Vitesse de {name} ×{m} !',
+    'toast.buffBoost': '<b>{name} {lvl}</b> · son effet est multiplié ×{x} !',
     'toast.doubledLook': '<b>{up} {lvl}</b> · {name} : vitesse doublée et nouveau look !',
     'toast.boostedLook': '<b>{up} {lvl}</b> · Vitesse de {name} ×{m} et nouveau look !',
     'toast.reset': 'Un nouveau voyage commence. Bonne route !',

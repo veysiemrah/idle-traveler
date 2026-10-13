@@ -1002,6 +1002,12 @@
       if (b.max && lvl >= b.max) return;
       if (!spend(Econ.buffCost(b, lvl))) return;
       S.buffs[id]++;
+      // sınırsız güçlendirmenin eşiği (Sv. 25, 50, 100, 150, 200): etki katlanır, kart altınla parlar, rozetteki nokta dolar
+      if (b.per && Econ.buffBoosts.includes(S.buffs[id])) {
+        toast(t('toast.buffBoost', { name: b.name, x: Econ.buffBoostOf(S.buffs[id]), lvl: t('ui.lvl', { n: S.buffs[id] }) }), 'gold');
+        scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 26, ['#ffd56b', '#fff1c2', '#ffffff', '#6fd3c1']);
+        Sound.region(); buffSurge = id;
+      }
       if (id === 'pal') {
         const n = S.buffs.pal, opened = Econ.pals.find(x => x.need === n && n > 1);
         if (n === 1) toast(t('toast.pal'), 'teal');
@@ -1810,6 +1816,12 @@
 
   // Kızıl'ın kilitli kartındaki pati izi
   const PAW = '<svg viewBox="0 0 16 16" aria-hidden="true"><ellipse cx="8" cy="11" rx="4.2" ry="3.4"/><circle cx="3.2" cy="6.6" r="1.7"/><circle cx="6.2" cy="3.8" r="1.8"/><circle cx="9.8" cy="3.8" r="1.8"/><circle cx="12.8" cy="6.6" r="1.7"/></svg>';
+  // Eşik noktaları: sınırsız güçlendirmenin seviye rozetinde beş küçük nokta (ulaşılan altın, sıradaki hafifçe yanıp söner)
+  let buffSurge = null;
+  const buffPips = (id, lvl) => {
+    const nx = Econ.buffBoosts.find(x => x > lvl);
+    return `<i class="pips" aria-hidden="true">${Econ.buffBoosts.map(x => `<i${lvl >= x ? ` class="on${buffSurge === id && x === lvl ? ' pop' : ''}"` : x === nx ? ' class="nx"' : ''}></i>`).join('')}</i>`;
+  };
   function renderBuffs() {
     const pane = $('#pane-buffs');
     pane.innerHTML = BUFFS.map(b => {
@@ -1831,13 +1843,15 @@
         }).join('')}</div>`;
       }
       const fk = `b:${b.id}`, fold = !openCards.has(fk);
-      return `<article class="card buff${fold ? ' folded' : ''}" data-fold="${fk}">
+      const top = b.per && lvl >= Econ.buffBoosts[Econ.buffBoosts.length - 1];
+      return `<article class="card buff${fold ? ' folded' : ''}${buffSurge === b.id ? ' surge' : ''}" data-fold="${fk}">
         <div class="body">
-          <div class="row"><h3>${b.name}</h3><span class="lvl">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}</span>${foldBtn(fk, fold)}</div>
+          <div class="row"><h3>${b.name}</h3><span class="lvl${top ? ' top' : ''}">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}${b.per ? buffPips(b.id, lvl) : ''}</span>${foldBtn(fk, fold)}</div>
           <p class="tag">${lvl ? b.desc(lvl) : t('ui.notYet')}</p>${extra}
           <div class="up"><small>${t('ui.nextLevel', { x: next })}</small>${maxed ? `<span class="chip on">${t('ui.done')}</span>` : costBtn('buff', b.id, Econ.buffCost(b, lvl), t('ui.get'))}</div>
         </div></article>`;
     }).join('') + homeCard();
+    buffSurge = null;
   }
   function homeCard() {
     const gain = Econ.memoryGain(S.distance, S.trips), pct = HOME.bonus * 100;
@@ -2288,11 +2302,11 @@
     const m = MILESTONES[S.msIdx];
     if (m) {
       const prev = S.msIdx ? MILESTONES[S.msIdx - 1].at : 0;
-      setText('#msName', m.name);
+      setMsName(m.name);
       setText('#msProg', `${fmtDist(S.distance)} / ${fmtDist(m.at)}`);
       $('#msFill').style.transform = `scaleX(${Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev)))})`;
     } else {
-      setText('#msName', t('ms.unknown')); setText('#msProg', fmtDist(S.distance));
+      setMsName(t('ms.unknown')); setText('#msProg', fmtDist(S.distance));
       $('#msFill').style.transform = 'scaleX(1)';
     }
     // etkiler
@@ -2370,6 +2384,22 @@
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
+  // Uzun durak adı kırpılmaz: sığmıyorsa yavaşça sona kayıp geri döner (kutunun yüksekliği değişmez, sahne zıplamaz)
+  function setMsName(name) {
+    const el = $('#msName');
+    if (el.textContent !== name) { el.textContent = name; fitMsName(); }
+  }
+  function fitMsName() {
+    const el = $('#msName');
+    if (!el) return;
+    el.classList.remove('pan');
+    const over = el.scrollWidth - el.clientWidth;
+    if (over > 2 && el.clientWidth > 0) {
+      el.style.setProperty('--pan', `${-over - 4}px`);
+      el.style.setProperty('--pan-t', `${Math.max(7, 5 + over / 14).toFixed(1)}s`);
+      el.classList.add('pan');
+    }
+  }
 
   /* ---------- Başlatma ---------- */
   function start(hotSave) {
@@ -2585,7 +2615,8 @@
     $('.panes').addEventListener('scroll', jnavSync, { passive: true });
     // telefon yerleşimi: açılışta ve ekran döndükçe/boyut değiştikçe
     arrange();
-    window.addEventListener('resize', arrange);
+    window.addEventListener('resize', () => { arrange(); fitMsName(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMsName);
     $('#sheetBack').addEventListener('click', () => sheet(false));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen() && $('#modal').hidden) sheet(false); });
     // sayfayı tutamaçtan aşağı çekince kapanır

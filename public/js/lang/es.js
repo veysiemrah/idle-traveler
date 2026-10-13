@@ -162,6 +162,7 @@ IT.addLang('es', {
     'toast.vehNewLead': '<b>Nuevo vehículo: {name}</b> · {lead} sigue marcando tu velocidad. Con unas cuantas mejoras, {name} tomará la delantera.',
     'toast.doubled': '<b>{up} {lvl}</b> · ¡La velocidad de {name} se ha duplicado!',
     'toast.doubledN': '<b>{up} {lvl}</b> · ¡La velocidad de {name} se ha multiplicado por {m}!',
+    'toast.buffBoost': '<b>{name} {lvl}</b> · ¡su efecto se multiplica ×{x}!',
     'toast.doubledLook': '<b>{up} {lvl}</b> · ¡{name} duplica su velocidad y estrena aspecto!',
     'toast.boostedLook': '<b>{up} {lvl}</b> · ¡La velocidad de {name} se ha multiplicado por {m} y tiene un nuevo aspecto!',
     'toast.reset': 'Empieza un nuevo viaje. ¡Buen camino!',

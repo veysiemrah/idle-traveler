@@ -175,6 +175,7 @@ IT.addLang('tr', {
     'toast.vehNewLead': '<b>Yeni araç: {name}</b> · Hızını şimdilik {lead} belirliyor. Birkaç yükseltmeyle {name} öne geçer.',
     'toast.doubled': '<b>{up} {lvl}</b> · {name} hızı ikiye katlandı!',
     'toast.doubledN': '<b>{up} {lvl}</b> · {name} hızı {m} katına çıktı!',
+    'toast.buffBoost': '<b>{name} {lvl}</b> · etkisi {x} katına çıktı!',
     'toast.doubledLook': '<b>{up} {lvl}</b> · {name} hızı ikiye katlandı ve araç yeni bir görünüm kazandı!',
     'toast.boostedLook': '<b>{up} {lvl}</b> · {name} hızı {m} katına çıktı ve araç yeni bir görünüm kazandı!',
     'toast.reset': 'Yeni bir yolculuk başladı. İyi yolculuklar!',

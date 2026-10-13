@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.57';
+  IT.VERSION = '1.58';
 
   IT.CHANGELOG = [
+    { v: '1.58', date: '2026-10-13', items: {
+      tr: ['Güçlendirme kartlarında küçük noktalar belirdi. Hepsi yandığında ne olacak, merak etmiyor musun?',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Little dots have appeared on the boost cards. Aren’t you curious what happens when they all light up?',
+        'A few small touches along the road.'],
+      de: ['Auf den Verstärkungskarten sind kleine Punkte aufgetaucht. Bist du nicht neugierig, was passiert, wenn alle leuchten?',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Han aparecido pequeños puntos en las tarjetas de mejoras. ¿No tienes curiosidad por saber qué pasa cuando se encienden todos?',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['De petits points sont apparus sur les cartes de bonus. Tu n’es pas curieux de voir ce qui se passe quand ils s’allument tous ?',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.57', date: '2026-10-13', items: {
       tr: ['Dar ekranlarda güçlendirme kartları daha derli toplu.', 'Yolda birkaç küçük rötuş.'],
       en: ['Boost cards look tidier on narrow screens.', 'A few small touches along the road.'],
