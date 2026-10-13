@@ -1,6 +1,6 @@
 // Özel Anlar (v1.54): kartpostal çekilirken sahnedeki olay (altın kelebek, kuş…) yakalanır, fotoğrafın köşesine altın mühür
-// basılır, bildirim gelir ve Yol Defteri'nde işlenir; aynı an ikinci kez bildirilmez; sekizinci anla kartpostallar altın
-// çerçeveli olur; albümün büyük görünümünde yakalanan anlar yazar; bozuk kayıt temizlenir
+// basılır, bildirim gelir ve Yol Defteri'nde işlenir; aynı an ikinci kez bildirilmez; dokuz anın hepsiyle (v1.60) kartpostallar
+// altın çerçeveli olur, v1.54'ün sekiz anını toplamış eski kayıtlar çerçeveyi korur; albümün büyük görünümünde yakalanan anlar yazar; bozuk kayıt temizlenir
 const { chromium } = require('./lib/pw');
 (async () => {
   const b = await chromium.launch(); const errs = [];
@@ -37,16 +37,31 @@ const { chromium } = require('./lib/pw');
   console.log('albüm büyük görünüm:', await p.$eval('#modalBody', e => (e.querySelector('.album-mo') || { textContent: '(yok)' }).textContent.trim()));
   await p.close();
 
-  // 2) Sekizinci an: altın çerçeve ve bildirim; sonraki kartpostal altın çerçeveli
+  // 2) Dokuzuncu an (v1.60): yeni kayıtta sekiz an altın çerçeve vermez; ateşböceği sürüsüyle dokuzuncu an tamamlanınca verir
   const all7 = { butterfly: 1, bird: 1, rainbow: 1, star: 1, plane: 1, dolphins: 1, fox: 1 };
-  const q = await open({ photos: 3, moments: all7, distance: 1.3e7, regionIdx: 10, settings: { sky: 'night' } }, { colorScheme: 'dark' });
+  const q = await open({ photos: 3, moments: all7, momentGold: 0, distance: 1.3e7, regionIdx: 10, settings: { sky: 'night' } }, { colorScheme: 'dark' });
   await q.waitForTimeout(1500);
+  await shoot(q, 'moments_eight');
+  let qs = await saved(q);
+  console.log('sekizinci an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Özel an[^·]*· \d\/\d/) || '(yok)');
+  await q.evaluate(() => { __sc.spawnSwarm(); __sc.swarm.x = __sc.W * 0.6; __sc.swarm.t = 2; });
+  await q.waitForTimeout(100);
   await shoot(q, 'moments_gold');
-  console.log('sekizinci an:', JSON.stringify(Object.keys((await saved(q)).moments).length), '·', (await toasts(q)).match(/Bütün özel anlar[^·]*·[^·]*/) || '(yok)');
+  qs = await saved(q);
+  console.log('dokuzuncu an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Bütün özel anlar[^·]*·[^·]*/) || '(yok)');
   await shoot(q, 'moments_gold2');
   await q.close();
+  // 3) eski kayıt: v1.54'ün sekiz anını toplamış oyuncu çerçevesini korur; defterde yeni an için boş yer ipucu
+  const old = await open({ photos: 9, moments: Object.assign({ aurora: 1 }, all7) });
+  const os = await saved(old);
+  await old.click('.tab[data-id="journal"]'); await old.waitForTimeout(300);
+  console.log('eski kayıt: altın çerçeve korundu mu:', os.momentGold === 1, '· defter:', await old.$eval('.keeps.moments + p', e => e.textContent.trim().slice(0, 60)),
+    '· boş yer:', await old.$$eval('.keep.moment:not(.on)', l => l.map(e => e.innerText.replace(/\s+/g, ' ')).join(' | ')));
+  await old.$eval('.keeps.moments', e => e.scrollIntoView({ block: 'center' })); await old.waitForTimeout(150);
+  await old.screenshot({ path: `${process.env.SP}/moments_old.png`, clip: { x: 890, y: 55, width: 390, height: 805 } });
+  await old.close();
 
-  // 3) bozuk kayıt
+  // 4) bozuk kayıt
   const r = await open({ moments: { rainbow: 1, nope: 1, star: 'x' } });
   console.log('bozuk kayıt:', JSON.stringify((await saved(r)).moments));
   await r.close();

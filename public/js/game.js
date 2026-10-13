@@ -51,7 +51,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'momentGold', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -82,6 +82,7 @@
       // Günün Notları: o günün üç küçük hedefi (her gün herkese aynı), ilerlemeleri ve tamamlananlar; seen: defterde görüldü mü
       notes: { day: '', list: [], prog: [], done: [], seen: false },
       moments: {}, // Özel Anlar: kartpostala giren olaylar { an: 1 } (ömür boyu; hepsi bulununca kartpostallar altın çerçeveli)
+      momentGold: 0, // altın çerçeve kazanıldı mı (bir kez kazanılınca kalır; yeni anlar eklense de)
       autoSteps: 0, // Zaman Makinesi'nin attığı otomatik adımlar (ömür boyu)
       harvestDay: '', // hasat payının en son alındığı gün (YYYY-AA-GG; günde bir kez)
       birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
@@ -159,6 +160,9 @@
     s.notes = cleanNotes(d.notes);
     const mo = isObj(d.moments) ? d.moments : {};
     s.moments = Object.fromEntries(MOMENTS.filter(m => mo[m.id] === 1 || mo[m.id] === true).map(m => [m.id, 1]));
+    // altın çerçeve bir kez kazanılınca kalır: v1.60'ta dokuzuncu an eklendi; o zamanki sekiz anı toplamış eski kayıtlar
+    // (alan henüz yok) çerçevelerini korur, yeni an onlara albümde boş bir yer olarak görünür
+    s.momentGold = d.momentGold === 1 || (d.momentGold === undefined && MOMENTS_V154.every(id => s.moments[id])) ? 1 : 0;
     if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
     s.birds = Object.fromEntries([...IT.BIRDS, ...IT.RARE_BIRDS].filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
@@ -1352,7 +1356,11 @@
     // gece tilkinin önce yalnızca gözleri parlar: gövdesi belirince sayılır
     { id: 'fox', e: '🦊', test: () => !!(scene.fox && !scene.fox.out && scene.fox.t > ((scene.nightAmt || 0) > 0.4 ? 1.8 : 0.8)) },
     { id: 'aurora', e: '🌌', test: () => (scene.auroraVis || 0) > 0.5 && (scene.space || 0) < 0.3 },
+    // v1.60: ateşböceği sürüsü kareye girerken ya da ateşböcekleri omzundayken (Ateşböceği Yolu)
+    { id: 'fireflies', e: '🎇', test: () => { const s = scene.swarm; return !!(s && !s.caught && s.t > 0.6 && onScr(s.x, s.y)) || (scene.glowA || 0) > 0.8; } },
   ];
+  // v1.54'teki sekiz an: hepsini toplamış eski kayıtlar altın çerçeveyi korur (sanitize)
+  const MOMENTS_V154 = ['butterfly', 'bird', 'rainbow', 'star', 'plane', 'dolphins', 'fox', 'aurora'];
   const MOMENT = Object.assign(Object.create(null), Object.fromEntries(MOMENTS.map(m => [m.id, m])));
   const momentCount = () => MOMENTS.filter(m => S.moments[m.id]).length;
   const momentName = id => t(`moment.${id}`);
@@ -1445,11 +1453,12 @@
   function takePostcard() {
     Sound.unlock(); Sound.gift();
     const shot = MOMENTS.filter(m => m.test()), fresh = shot.filter(m => !S.moments[m.id]);
-    // seti tamamlayan kartpostal da altın çerçeveli olur
-    const c = makePostcard(shot, momentCount() + fresh.length >= MOMENTS.length);
+    // seti tamamlayan kartpostal da altın çerçeveli olur; kazanılmış çerçeve yeni bir an eklense de kalır
+    const c = makePostcard(shot, !!S.momentGold || momentCount() + fresh.length >= MOMENTS.length);
     for (const m of fresh) S.moments[m.id] = 1;
     if (fresh.length) {
       const n = momentCount();
+      if (n >= MOMENTS.length) S.momentGold = 1;
       setTimeout(() => {
         if (n >= MOMENTS.length) { toast(t('toast.momentsAll'), 'gold'); Sound.region(); }
         else { toast(t('toast.moment', { name: fresh.map(m => esc(momentName(m.id))).join(', '), n, m: MOMENTS.length }), 'gold'); Sound.milestone(); }
@@ -2200,7 +2209,7 @@
       <ul class="keeps moments">${MOMENTS.map(m => S.moments[m.id]
         ? `<li><div class="keep moment on" title="${esc(momentName(m.id))}"><span class="e" aria-hidden="true">${m.e}</span><b>${esc(momentName(m.id))}</b></div></li>`
         : `<li><div class="keep moment" title="${esc(t(`moment.${m.id}.hint`))}"><span class="e" aria-hidden="true">?</span><small>${esc(t(`moment.${m.id}.hint`))}</small></div></li>`).join('')}</ul>
-      <p class="tag small">${momentCount() >= MOMENTS.length ? t('j.momentsDone') : t('j.momentsHint')}</p>` : ''}
+      <p class="tag small">${momentCount() >= MOMENTS.length ? t('j.momentsDone') : S.momentGold ? t('j.momentsMore') : t('j.momentsHint')}</p>` : ''}
       <h3 class="sec" data-nav="${S.mapPieces}/${MAP_PIECES}">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
