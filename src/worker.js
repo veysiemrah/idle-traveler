@@ -9,7 +9,7 @@
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp', 'whale', 'startrain', 'anka', 'chrono'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite', 'migrate', 'firefly'];
-const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer', 'sailor', 'birder'];
+const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer', 'sailor', 'birder', 'glow'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
 // 'wave': bir gezgine el sallamak (yalnızca o gezgine bildirilir, diğerleri balonu görür)

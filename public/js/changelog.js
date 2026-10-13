@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.61';
+  IT.VERSION = '1.62';
 
   IT.CHANGELOG = [
+    { v: '1.62', date: '2026-10-14', items: {
+      tr: ['Ateşböcekleri seni yeterince tanıdığında sana küçük bir hediye hazırlıyorlar. Kaç kez yanına gelmeleri gerektiğini Yol Defteri’nde göreceksin.',
+        'Yenilikler penceresi derli toplu: en yeni sürümler açık, öncekiler tek dokunuşla açılıyor.', 'Yolda birkaç küçük rötuş.'],
+      en: ['Once the fireflies get to know you well enough, they’ll have a small gift ready. Your Journal will show how many visits it takes.',
+        'The What’s New window is tidier: the latest versions are open, earlier ones are a tap away.', 'A few small touches along the road.'],
+      de: ['Wenn die Glühwürmchen dich gut genug kennen, haben sie ein kleines Geschenk für dich. Wie oft sie dafür kommen müssen, zeigt dein Tagebuch.',
+        'Das Neuigkeiten-Fenster ist aufgeräumter: Die neuesten Versionen sind offen, frühere nur einen Tipp entfernt.', 'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Cuando las luciérnagas te conozcan lo suficiente, tendrán un pequeño regalo para ti. Tu Diario te mostrará cuántas visitas hacen falta.',
+        'La ventana de Novedades está más ordenada: las versiones más recientes están abiertas y las anteriores, a un toque.', 'Algunos pequeños retoques por el camino.'],
+      fr: ['Quand les lucioles te connaîtront assez, elles auront un petit cadeau pour toi. Ton Carnet te montrera combien de visites il faut.',
+        'La fenêtre Nouveautés est plus claire : les dernières versions sont ouvertes, les précédentes à portée de doigt.', 'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.61', date: '2026-10-13', items: {
       tr: ['Sv. 400’e ulaşan araçların çevresinde artık bir şey daha dönüyor. Ne olduğunu görmek için yolun uzun ama değer.',
         'Yolda birkaç küçük rötuş.'],

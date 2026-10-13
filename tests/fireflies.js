@@ -1,7 +1,8 @@
 // Ateşböceği Yolu (v1.59): 12. eve dönüş on üçüncü rotayı açar; bu rotada gece çimenlerde ateşböcekleri yanıp söner,
 // ara sıra bir ateşböceği sürüsü toplanır (gece iki kat sık). Dokununca Ateşböceği Işığı (hız ×2, tıklama ×3) gelir, ışıklar
 // etki süresince yolcunun omzunda bir bulut olur ve Yol Defteri'nde sayılır. Başka rotada ne sürü ne gece ışıkları var.
-// Ekran görüntüleri: gece, gündüz, telefon (320 px) ve uçan araç, rota seçimi.
+// Yedinci sürü Işık Taşıyıcı kıyafetini açar (v1.62). Ekran görüntüleri: gece, gündüz, telefon (320 px) ve uçan araç,
+// kıyafet listesi, rota seçimi.
 const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 const save = extra => JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, distance: 30,
@@ -71,6 +72,24 @@ const saved = p => p.evaluate(() => { window.dispatchEvent(new Event('pagehide')
   const es = await saved(e);
   console.log('bozuk sayaç:', es.fireflies, '· defterde satır var mı:', await e.evaluate(() => /ateşböce/i.test(document.querySelector('#pane-journal').textContent)));
   errs.push(...e.errs); await e.close();
+  // 5b) yedinci sürü Işık Taşıyıcı kıyafetini açar; defterde sayaç ve 320 px'te kıyafet listesi
+  const k = await open(b, { fireflies: 6, settings: { sky: 'night' } }, { viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
+  await k.click('.tab[data-id="journal"]'); await k.waitForTimeout(400);
+  const lock = await k.$eval('[data-act="outfit"][data-id="glow"]', e => e.innerText.replace(/\s+/g, ' '));
+  await k.keyboard.press('Escape'); await k.waitForTimeout(500); // alttan açılan sayfa kapanır
+  await k.evaluate(() => { __sc.bird = __sc.cranes = __sc.gift = __sc.star = __sc.seed = __sc.constel = __sc.plane = null; __sc.spawnSwarm(); }); await k.waitForTimeout(800);
+  console.log('sayfa kapandı mı:', await k.evaluate(() => !document.documentElement.classList.contains('sheet-open')));
+  await tap(k); await k.waitForTimeout(1300);
+  console.log('kıyafet (6/7):', lock, '· yedinci sürü bildirimi:', /Ateşböcekleri seni tanıdı/.test(await k.textContent('#toasts')));
+  await k.click('.tab[data-id="journal"]'); await k.waitForTimeout(400);
+  console.log('kıyafet açıldı mı:', await k.$eval('[data-act="outfit"][data-id="glow"]', e => !e.disabled && e.innerText.replace(/\s+/g, ' ')));
+  await k.click('[data-act="outfit"][data-id="glow"]'); await k.waitForTimeout(300);
+  await k.$eval('[data-act="outfit"][data-id="glow"]', e => e.scrollIntoView({ block: 'center' })); await k.waitForTimeout(300);
+  console.log('kıyafet listesinde taşma:', await k.$$eval('.outfit b, .outfit small', l => l.filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent).join(' | ') || 'yok'));
+  await k.screenshot({ path: process.env.SP + '/fireflies_outfit.png' });
+  await k.keyboard.press('Escape'); await k.waitForTimeout(600);
+  await k.screenshot({ path: process.env.SP + '/fireflies_outfit_scene.png' });
+  errs.push(...k.errs); await k.close();
   // 6) 12. eve dönüş on üçüncü rotayı açar
   const h = await open(b, { trips: 11, route: 'migrate', routeMax: 11, distance: 5e13, regionIdx: 0 });
   await h.click('.tab[data-id="buffs"]'); await h.waitForTimeout(300);
