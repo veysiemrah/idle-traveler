@@ -316,7 +316,9 @@ npx wrangler dev   # http://localhost:8787
   Lale Bahçeleri (yel değirmenleri), Zeytin Bahçeleri (deniz kıyısında zeytinlikler)… Liste bitince bölgeler ikinci tura girer;
   her yeni bölge öncekinden 3 kat uzaktadır. Her yeni bölge pasaporta bir damga ekler ve kalıcı olarak +%6 hız verir.
 - **Duraklar**: Kapının önü (10 m), Bir stadyum turu, Maraton, Ultra maraton (100 km), İstanbul – Ankara, Dünya turu,
-  Ay'a varış, Proxima Centauri… gibi gerçek mesafeler.
+  Ay'a varış, Proxima Centauri… gibi gerçek mesafeler. Sıradaki durak çubuğu v1.63'ten beri küçük bir yoldur: kalan yolda
+  soluk şerit çizgileri, ilerlemenin ucunda yavaşça nefes alan bir yolcu işareti, sonda durağın bayrağı. Durağa %90 yaklaşınca
+  bayrak altınlanıp dalgalanır; durağa varınca işaret geri koşmaz, geçişsiz başa döner (`game.js` → `setMsRoad`).
 - **Gerçekçi mesafeler**: v1.11'de bütün mesafeler 1/10'a indi (yürüyüşte adım başına birkaç santimetre, atla birkaç on km/sa).
   Metre başına kazanılan kredi 10 katına çıktığı için tempo aynı kaldı: araçlar, yükseltmeler, bölgeler ve eve dönüş eskisiyle
   aynı sürede gelir. İlk saatin durak ritmi de korunur. Eski kayıtlar otomatik çevrilir; geçilmiş duraklar yeniden ödül vermez.
