@@ -766,6 +766,11 @@ button { font: inherit; color: inherit; }
 }
 .intro-lang { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
 .intro-lang .lang-select { max-width: none; }
+/* Özel Anlar: kartpostala giren olaylar (altın kenarlı yuvalar) */
+.keep.moment { --c: #e8b93c; min-height: 82px; }
+.keep.moment.on { cursor: default; }
+.keep.moment.on:hover { transform: none; }
+.album-mo { text-align: center; margin: -4px 0 8px; color: var(--apricot-text); }
 /* Kartpostal Albümü: Yol Defteri'nde hafifçe eğik duran küçük kartpostallar; dokununca düzelip öne çıkar */
 .album { list-style: none; margin: 0; padding: 4px 2px 2px; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
 .album-pc {

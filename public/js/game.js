@@ -50,7 +50,7 @@
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'routeMax',
-    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
+    'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
   const fmt2 = n => new Intl.NumberFormat(IT.locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -79,6 +79,7 @@
       dolphins: 0, // selam verilen yunus sürüleri (kıyı denizi, ömür boyu; DOLPHIN_NEED olunca Denizci kıyafeti açılır)
       // Günün Notları: o günün üç küçük hedefi (her gün herkese aynı), ilerlemeleri ve tamamlananlar; seen: defterde görüldü mü
       notes: { day: '', list: [], prog: [], done: [], seen: false },
+      moments: {}, // Özel Anlar: kartpostala giren olaylar { an: 1 } (ömür boyu; hepsi bulununca kartpostallar altın çerçeveli)
       autoSteps: 0, // Zaman Makinesi'nin attığı otomatik adımlar (ömür boyu)
       harvestDay: '', // hasat payının en son alındığı gün (YYYY-AA-GG; günde bir kez)
       birds: {}, // Kuş Defteri: { kuş: kaç kez görüldü } (ömür boyu; hepsi tanınınca Kuş Gözlemcisi kıyafeti açılır)
@@ -154,6 +155,8 @@
     const consts = isObj(d.consts) ? d.consts : {};
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
     s.notes = cleanNotes(d.notes);
+    const mo = isObj(d.moments) ? d.moments : {};
+    s.moments = Object.fromEntries(MOMENTS.filter(m => mo[m.id] === 1 || mo[m.id] === true).map(m => [m.id, 1]));
     if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
     s.birds = Object.fromEntries([...IT.BIRDS, ...IT.RARE_BIRDS].filter(b => count(birds[b.id]) > 0).map(b => [b.id, count(birds[b.id], 1e9)]));
@@ -1065,6 +1068,7 @@
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === id)));
       document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.id !== 'pane-' + id; });
       $('.panes').scrollTop = 0;
+      if (id === 'journal') { jnavScroll = 0; const nav = $('#pane-journal .jnav'); if (nav) nav.scrollLeft = 0; jnavSync(); }
       try { localStorage.setItem('idle-traveler-tab', id); } catch (e) { /* yok say */ }
     },
     sky(id) {
@@ -1129,7 +1133,7 @@
         return;
       }
       // kayıt korunurken (okunamadı ya da oyun başka sekmede sürüyor) sıfırlama korunan kaydı silmesin
-      if (saveLocked) { toast(t(otherTab ? 'toast.otherTab' : 'toast.saveLocked'), 'teal'); Sound.deny(); return; }
+      if (saveLocked && !noStorage) { toast(t(otherTab ? 'toast.otherTab' : 'toast.saveLocked'), 'teal'); Sound.deny(); return; }
       try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); localStorage.removeItem(ALBUM_KEY); } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro', 'player', 'seenVer']);
       applyOutfit(); applyRoute();
@@ -1274,6 +1278,25 @@
 
   /* ---------- Kartpostal ---------- */
   // Sahnenin arayüzsüz görüntüsünden kenarlıklı, yazılı, pullu bir kartpostal üretir
+  /* ---------- Özel Anlar ----------
+     Kartpostal çekilirken sahnede bir olay varsa o an yakalanır: altın kelebek, deftere yazılmamış bir kuş, gökkuşağı (ay
+     gökkuşağı da sayılır), kayan yıldız, kâğıt uçak (mektup), havadaki bir yunus, yabani tilki ve gece Kuzey Işıkları.
+     Yakalanan anlar fotoğrafın köşesinde küçük altın mühürlerle görünür (albümde de); yeni an bildirilir. Hepsi bulununca
+     kartpostallar altın çerçeveli olur. Ekonomiye etkisi yoktur. */
+  const MOMENTS = [
+    { id: 'butterfly', e: '🦋', test: () => !!(scene.gift && !scene.gift.caught) },
+    { id: 'bird', e: '🪶', test: () => !!(scene.bird && !scene.bird.noted && scene.bird.t > 0.5) },
+    { id: 'rainbow', e: '🌈', test: () => (scene.rainbow || 0) > 0.4 },
+    { id: 'star', e: '🌠', test: () => !!scene.star },
+    { id: 'plane', e: '✉️', test: () => !!scene.plane },
+    { id: 'dolphins', e: '🐬', test: () => !!(scene.dolphins && scene.dolphins.air.some(Boolean) && (scene.dolphins.vis || 0) > 0.4) },
+    { id: 'fox', e: '🦊', test: () => !!(scene.fox && !scene.fox.out && scene.fox.t > 0.8) },
+    { id: 'aurora', e: '🌌', test: () => scene.biome === 'aurora' && (scene.nightAmt || 0) > 0.5 && (scene.space || 0) < 0.3 },
+  ];
+  const MOMENT = Object.fromEntries(MOMENTS.map(m => [m.id, m]));
+  const momentCount = () => MOMENTS.filter(m => S.moments[m.id]).length;
+  const momentName = id => t(`moment.${id}`);
+
   /* ---------- Kartpostal Albümü ----------
      Çekilen son ALBUM_MAX kartpostalın küçük bir kopyası (JPEG, 360 px) ayrı bir anahtarda saklanır (ana kaydı şişirmesin).
      Yer kalmazsa en eskiler silinir; depolama kapalıysa albüm yalnızca boş görünür. Yolculuğu sıfırlamak albümü de siler. */
@@ -1281,12 +1304,12 @@
   function albumRead() {
     try { const a = JSON.parse(localStorage.getItem(ALBUM_KEY) || '[]'); return Array.isArray(a) ? a.filter(p => p && typeof p.img === 'string' && p.img.startsWith('data:image/') && Number.isFinite(p.at)).slice(0, ALBUM_MAX) : []; } catch (e) { return []; }
   }
-  function albumAdd(card, region, dist) {
+  function albumAdd(card, region, dist, mo) {
     try {
       const r = card.photo || { x: 0, y: 0, w: card.width, h: card.height };
       const w = 360, h = Math.round(r.h * w / r.w), c = document.createElement('canvas');
       c.width = w; c.height = h; c.getContext('2d').drawImage(card, r.x, r.y, r.w, r.h, 0, 0, w, h);
-      const list = [{ img: c.toDataURL('image/jpeg', 0.74), at: Date.now(), region, dist }, ...albumRead()].slice(0, ALBUM_MAX);
+      const list = [{ img: c.toDataURL('image/jpeg', 0.74), at: Date.now(), region, dist, mo: (mo || []).filter(id => MOMENT[id]) }, ...albumRead()].slice(0, ALBUM_MAX);
       while (list.length) {
         try { localStorage.setItem(ALBUM_KEY, JSON.stringify(list)); return true; } catch (e) { list.pop(); }
       }
@@ -1302,18 +1325,39 @@
       <h2>${esc(p.region || '')}</h2>
       <figure class="postcard album-big"><img src="${p.img}" alt="${esc(p.region || '')}">
         <figcaption><b>${esc(p.region || '')}</b><small>${esc(when)}${p.dist ? ` · ${esc(p.dist)}` : ''}</small></figcaption></figure>
+      ${Array.isArray(p.mo) && p.mo.some(id => MOMENT[id]) ? `<p class="tag small album-mo">✨ ${p.mo.filter(id => MOMENT[id]).map(id => `${MOMENT[id].e} ${esc(momentName(id))}`).join(' · ')}</p>` : ''}
       <div class="pc-actions"><a class="buy pc-btn" href="${p.img}" download="idle-traveler-${p.at}.jpg"><b>${t('pc.download')}</b></a></div>` }), null, null, true);
   }
-  function makePostcard() {
+  function makePostcard(shot, gold) {
     const src = scene.canvas, W = src.width, H = src.height;
     const pad = Math.round(Math.min(W, H) * 0.045), capH = Math.round(Math.max(H * 0.17, pad * 3.2));
     const c = document.createElement('canvas');
     c.width = W + pad * 2; c.height = H + pad * 2 + capH;
     c.photo = { x: pad, y: pad, w: W, h: H }; // albüm yalnızca fotoğrafı saklar
     const x = c.getContext('2d');
-    x.fillStyle = '#fbf5e9'; x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = gold ? '#fff6dc' : '#fbf5e9'; x.fillRect(0, 0, c.width, c.height);
     x.drawImage(src, pad, pad);
     x.strokeStyle = 'rgba(60,50,40,0.18)'; x.lineWidth = Math.max(1, pad * 0.08); x.strokeRect(pad, pad, W, H);
+    if (gold) {
+      // bütün özel anları bulana: altın çerçeve (iki ince çizgi ve köşelerde küçük yıldızlar)
+      x.strokeStyle = '#d9a83a'; x.lineWidth = Math.max(2, pad * 0.22); x.strokeRect(pad * 0.35, pad * 0.35, c.width - pad * 0.7, c.height - pad * 0.7);
+      x.strokeStyle = 'rgba(217,168,58,0.55)'; x.lineWidth = Math.max(1, pad * 0.08); x.strokeRect(pad * 0.62, pad * 0.62, c.width - pad * 1.24, c.height - pad * 1.24);
+      x.fillStyle = '#d9a83a';
+      for (const [qx, qy] of [[pad * 0.35, pad * 0.35], [c.width - pad * 0.35, pad * 0.35], [pad * 0.35, c.height - pad * 0.35], [c.width - pad * 0.35, c.height - pad * 0.35]]) {
+        const r = pad * 0.45; x.beginPath(); x.moveTo(qx, qy - r); x.quadraticCurveTo(qx, qy, qx + r, qy); x.quadraticCurveTo(qx, qy, qx, qy + r);
+        x.quadraticCurveTo(qx, qy, qx - r, qy); x.quadraticCurveTo(qx, qy, qx, qy - r); x.fill();
+      }
+    }
+    // yakalanan özel anlar: fotoğrafın sağ üst köşesinde altın mühürler (albümde de görünür)
+    (shot || []).slice(0, 4).forEach((m, i) => {
+      const r = Math.max(10, Math.min(W, H) * 0.045), mx = pad + W - r * 1.4 - i * r * 2.3, my = pad + r * 1.4;
+      x.fillStyle = 'rgba(40,30,10,0.25)'; x.beginPath(); x.arc(mx + r * 0.08, my + r * 0.12, r, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#e8b93c'; x.beginPath(); x.arc(mx, my, r, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = '#fff1c2'; x.lineWidth = r * 0.12; x.beginPath(); x.arc(mx, my, r * 0.8, 0, Math.PI * 2); x.stroke();
+      x.font = `${Math.round(r * 1.05)}px system-ui, "Segoe UI Emoji", "Apple Color Emoji", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText(m.e, mx, my + r * 0.06);
+      x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+    });
     const region = IT.regionAt(S.regionIdx).name, fs = capH * 0.3;
     x.fillStyle = '#2b2a45'; x.textBaseline = 'alphabetic';
     x.font = `800 ${Math.round(fs)}px "Baloo 2", system-ui, sans-serif`;
@@ -1340,13 +1384,22 @@
   }
   function takePostcard() {
     Sound.unlock(); Sound.gift();
-    const c = makePostcard();
+    const shot = MOMENTS.filter(m => m.test()), fresh = shot.filter(m => !S.moments[m.id]);
+    const c = makePostcard(shot, momentCount() >= MOMENTS.length);
+    for (const m of fresh) S.moments[m.id] = 1;
+    if (fresh.length) {
+      const n = momentCount();
+      setTimeout(() => {
+        if (n >= MOMENTS.length) { toast(t('toast.momentsAll'), 'gold'); Sound.region(); }
+        else { toast(t('toast.moment', { name: fresh.map(m => esc(momentName(m.id))).join(', '), n, m: MOMENTS.length }), 'gold'); Sound.milestone(); }
+      }, 700);
+    }
     const url = c.toDataURL('image/png');
     const name = `idle-traveler-${Date.now()}.png`;
     // Paylaşım metni fotoğrafın çekildiği anı anlatsın
     const dist = S.distance, region = IT.regionAt(S.regionIdx).name;
     S.photos++; note('photo'); checkBadges(); save();
-    const inAlbum = albumAdd(c, region, fmtDist(dist)); uiDirty.journal = true;
+    const inAlbum = albumAdd(c, region, fmtDist(dist), shot.map(m => m.id)); uiDirty.journal = true;
     openModal(() => ({ btn: t('pc.close'), html: `
       <p class="eyebrow">${t('pc.eyebrow')}</p>
       <h2>${t('pc.title')}</h2>
@@ -1537,6 +1590,8 @@
   const UPDATE_MS = 3 * 60e3, RELOAD_KEY = 'idle-traveler-reload';
   let updateAt = 0, updating = '';
   async function checkUpdate() {
+    // depolama yoksa kendiliğinden yenileme kaydedilemeyen ilerlemeyi silerdi: yeni sürüm bir sonraki açılışta gelir
+    if (noStorage) return;
     if (updating || !/^https?:$/.test(location.protocol)) return;
     updateAt = Date.now();
     let v = '';
@@ -1994,6 +2049,11 @@
       <ul class="album">${album.map((p, i) => `<li><button class="album-pc" type="button" data-act="albumPeek" data-id="${i}" style="--r:${(i % 3) - 1}deg" title="${esc(p.region || '')}">
         <img src="${p.img}" alt="${esc(p.region || '')}" loading="lazy"><small>${esc(new Intl.DateTimeFormat(IT.locale(), { day: 'numeric', month: 'short' }).format(p.at))}</small></button></li>`).join('')}</ul>
       <p class="tag small">${t('j.albumHint', { m: ALBUM_MAX })}</p>` : ''}
+      ${S.photos ? `<h3 class="sec" data-nav="${momentCount()}/${MOMENTS.length}">${t('j.moments')} <small>${t('j.momentsSub', { n: momentCount(), m: MOMENTS.length })}</small></h3>
+      <ul class="keeps moments">${MOMENTS.map(m => S.moments[m.id]
+        ? `<li><div class="keep moment on" title="${esc(momentName(m.id))}"><span class="e" aria-hidden="true">${m.e}</span><b>${esc(momentName(m.id))}</b></div></li>`
+        : `<li><div class="keep moment" title="${esc(t(`moment.${m.id}.hint`))}"><span class="e" aria-hidden="true">?</span><small>${esc(t(`moment.${m.id}.hint`))}</small></div></li>`).join('')}</ul>
+      <p class="tag small">${momentCount() >= MOMENTS.length ? t('j.momentsDone') : t('j.momentsHint')}</p>` : ''}
       <h3 class="sec" data-nav="${S.mapPieces}/${MAP_PIECES}">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
@@ -2394,7 +2454,10 @@
       if (!nav || $('#pane-journal').hidden) return;
       const limit = nav.getBoundingClientRect().bottom + 56;
       let cur = 0;
-      document.querySelectorAll('#pane-journal h3.sec[data-nav]').forEach((h, i) => { if (h.getBoundingClientRect().top <= limit) cur = i; });
+      const heads = document.querySelectorAll('#pane-journal h3.sec[data-nav]'), sc = $('.panes');
+      heads.forEach((h, i) => { if (h.getBoundingClientRect().top <= limit) cur = i; });
+      // en alta inildiyse son bölüm okunuyordur (başlığı şeridin altına kadar çıkamaz)
+      if (sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) cur = heads.length - 1;
       nav.querySelectorAll('.jnav-chip').forEach((c, i) => c.classList.toggle('on', i === cur));
     };
     jnavSync = () => { if (!jnavRaf) jnavRaf = requestAnimationFrame(jnavMark); };

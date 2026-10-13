@@ -216,7 +216,7 @@ npx wrangler dev   # http://localhost:8787
   2 dakikada bir). Kervandan ayrılmak için pencerenin %25 dışına çıkmak gerekir, böylece sınırdaki gezgin yüzünden etki
   yanıp sönmez. Yalnızca canlı oyunda geçerlidir, çevrimdışı ilerlemeye eklenmez. Sürüm notunda yalnızca ipucu verilir.
 - **Canlı mesafeler**: Her oyuncu bildirimde hızını da (`spd`, m/sn) gönderir; sunucu hızı da makullük tavanına bağlar (tek
-  bildirimde tavanın 1/30'u, yeni kayıtta ≈2,6e7 m/sn; en hızlı dürüst araç ≈2,2e7), yoksa sahte bir hızla 3 dakika liste başı olunurdu.
+  bildirimde tavanın 1/30'u, yeni kayıtta ≈2,6e6 m/sn; hızlı araçlara ancak saatler sonra ulaşılır, tavan da kaydın yaşıyla büyür), yoksa sahte bir hızla 3 dakika liste başı olunurdu.
   İki bildirim arasında diğer gezginlerin mesafesi bu hızla tahmin edilir (en çok 3 dakika), böylece sahnedeki etiketler ve Yolcular listesi canlı akar; liste
   açıkken iki saniyede bir tazelenir ve sıra tahmini mesafeye göre yeniden kurulur.
 - **Hazır mesajlar**: Sahnenin sağ altındaki konuşma düğmesi 9 hazır mesaj açar (👋 Merhaba!, 🌄 Ne güzel manzara!, 🚀 Haydi,
@@ -335,7 +335,7 @@ npx wrangler dev   # http://localhost:8787
 - **Yadigârlar**: Her bölgenin (biyomun) bir yadigârı var: köy balı, lavanta demeti, çam fidanı, başak demeti, deniz kabuğu,
   eski testi, kiraz çiçeği, kızıl yaprak, kum saati, kardan adam, yıldız dürbünü, çay fincanı, minik balon, lale ve nazar boncuğu.
   Yadigârı henüz bulunmamış bir bölgede yaklaşık 45–85 saniye sonra aracın önünde, yolun biraz üstünde parıldayan bir cam kabarcık
-  belirir ("Yol kenarında bir şey parıldıyor…"). 20 saniye süzülür; kaçırılırsa 1,5–2,5 dakika sonra yeniden gelir. Dokununca
+  belirir ("Yol kenarında bir şey parıldıyor…"). 20 saniye süzülür; kaçırılırsa 80–150 sn sonra yeniden gelir. Dokununca
   yadigâr rafa konur ve ömür boyu +%2 hız verir (15 yadigârla +%30). Eve dönüşte kaybolmaz. Yol Defteri'ndeki rafta bulunanlar
   bölgenin renginde durur (dokununca küçük bir sallanma ve ses), bulunmayanlar "?" ve bölgenin adıyla bekler. Bazı bölgelere ilk
   yolculukta varılamaz; onları başka rotalar erken gezer. *Koleksiyoncu* rozet ailesi bulunan yadigârları sayar, raf dolunca
@@ -475,6 +475,13 @@ npx wrangler dev   # http://localhost:8787
   Kartpostal penceresi "Albümüne eklendi · Yol Defteri" der. Yol Defteri'nde ilk kartpostaldan sonra *Kartpostal Albümü* bölümü
   görünür: en yenisi başta, hafifçe eğik duran küçük kartpostallar (dokununca düzelir); dokununca fotoğraf altında bölge adı,
   tarih ve yolla büyük açılır, yeniden indirilebilir. Yolculuğu sıfırlamak albümü de siler. Testi: `tests/album.js`.
+  **Özel Anlar (v1.54)**: Kartpostal çekilirken sahnede bir olay varsa o an yakalanır (`game.js` → `MOMENTS`): altın kelebek,
+  deftere yazılmamış bir kuş, gökkuşağı (ay gökkuşağı da), kayan yıldız, kâğıt uçak, havadaki bir yunus, yabani tilki ve gece
+  Kuzey Işıkları bölgesi. Yakalanan anlar fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük
+  görünümün altında adları yazar); yeni bir an "Özel an yakalandı: … (n/8)" diye bildirilir. İlk kartpostaldan sonra Yol
+  Defteri'nde *Özel Anlar* bölümü görünür: bulunanlar adıyla, bulunmayanlar sezdiren bir ipucuyla ("Gökyüzü yedi renge
+  boyandığında"). Sekizi de bulununca kartpostallar altın çerçeveli olur (köşelerinde küçük yıldızlar). `moments` alanında
+  ömür boyu tutulur. Ekonomiye etkisi yoktur. Testi: `tests/moments.js`.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
@@ -494,7 +501,8 @@ npx wrangler dev   # http://localhost:8787
   çalışan döngü ve açılış ilerletir, kayıt ilerletmez: gizli sekmede gelen bir kayıt (ör. yeni sürümle yenilenme) sekmenin gizli
   kaldığı süreyi silmez (v1.44'e kadar her yayın arka plandaki sekmelerin çevrimdışı ilerlemesini o ana kadar siliyordu).
   Tarayıcı depolamaya hiç izin vermiyorsa (site verileri engelli) oyun yeni bir oyuncu gibi tanıtım ve ad penceresiyle açılır,
-  "Bu tarayıcı oyunu kaydetmeye izin vermiyor" der, sayfayı yenilemeye çalışmaz ve oturum boyunca Yolcular'a katılır.
+  "Bu tarayıcı oyunu kaydetmeye izin vermiyor" der, sayfayı yenilemeye çalışmaz (yeni sürüm yoklaması da kendiliğinden yenilemez,
+  kaydedilemeyen ilerleme silinmesin), yolculuğu sıfırlamaya izin verir ve oturum boyunca Yolcular'a katılır.
   Tanıtım penceresi kapanmadan (yeni oyuncu) geçen süre çevrimdışı yolculuk sayılmaz; yeni oyuncu ad penceresinden sonra "sen
   yokken…" raporu görmez. Ad penceresindeki kırmızı uyarı geçerli bir ad yazılınca kural metnine döner; basılı tutulan Enter
   boş adı hemen reddetmez.
