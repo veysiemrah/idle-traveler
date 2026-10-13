@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.51';
+  IT.VERSION = '1.52';
 
   IT.CHANGELOG = [
+    { v: '1.52', date: '2026-10-13', items: {
+      tr: ['Yükseltmeye devam edenlerin araçları Sv. 300’de ve Sv. 500’de bir kez daha değişiyor… Gökyüzü bile onların etrafında dönmeye başlar.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['For those who keep upgrading, vehicles change once more at Lv. 300 and Lv. 500… Even the sky starts to circle around them.',
+        'A few small touches along the road.'],
+      de: ['Wer weiter verbessert, dessen Fahrzeuge verändern sich bei Stufe 300 und 500 noch einmal … Sogar der Himmel beginnt, um sie zu kreisen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Para quien sigue mejorando, los vehículos vuelven a cambiar en el Nv. 300 y el Nv. 500… Hasta el cielo empieza a girar a su alrededor.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Pour ceux qui continuent à améliorer, les véhicules changent encore au Niv. 300 et au Niv. 500… Même le ciel se met à tourner autour d’eux.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.51', date: '2026-10-13', items: {
       tr: ['Kartpostal Albümü: fotoğraf makinesiyle çektiğin son 12 kartpostal artık Yol Defteri’nde saklanıyor. Dokunup büyütebilir, yeniden indirebilirsin.',
         'Garajdaki eski dostların henüz son sözlerini söylemedi: yükseltmeye devam edenleri Sv. 200’ün ötesinde sürprizler bekliyor.',

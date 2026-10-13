@@ -1797,8 +1797,57 @@
     }
     ctx.restore();
   }
+  // Sv. 300 (7. aşama): aracın çevresinde kıyafet ve altın renklerinde altı küçük yıldızın döndüğü bir yörünge; yıldızlar
+  // aracın önünden ve arkasından geçer. Sv. 500 (8. aşama): arkada yavaşça dönen yumuşak ışık huzmeleri, yörüngedeki
+  // yıldızlar daha iri ve kısa ışık kuyruklu. Bütün araçlarda aynı biçimde çizilir (sahne, garaj simgesi, diğer gezginler).
+  function aura(ctx, id, x, y, k, st, front) {
+    const T = st.tier || 0;
+    if (T < 7) return;
+    const [l, r] = VEH_EXT[id] || [-30, 30], top = VEH_TOP[id] || 60, t = st.t || 0, train = id === 'train';
+    const cx = x + (train ? 10 : (l + r) / 2) * k, cy = y - top * 0.42 * k;
+    const rx = (train ? 72 : Math.min(92, (r - l) / 2 + 16)) * k, ry = Math.max(16, top * 0.34) * k;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    if (!front && T >= 8) {
+      // ışık huzmeleri: merkezden dışa açılan, uca doğru solan on iki ince üçgen
+      const R = rx * 1.45;
+      for (let i = 0; i < 12; i++) {
+        const a = t * 0.25 + i * TAU / 12, w = 0.09;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+        g.addColorStop(0, `rgba(255,225,150,${((i % 2 ? 0.3 : 0.44) * (0.5 + 0.5 * (st.night || 0))).toFixed(3)})`); g.addColorStop(1, 'rgba(255,225,150,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a - w) * R, cy + Math.sin(a - w) * R * 0.7); ctx.lineTo(cx + Math.cos(a + w) * R, cy + Math.sin(a + w) * R * 0.7);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+    // yörünge çizgisi: arka yarısı aracın arkasında, ön yarısı önünde
+    ctx.strokeStyle = 'rgba(255,240,200,0.4)'; ctx.lineWidth = 1.2 * k;
+    ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry * 0.55, 0, front ? 0 : Math.PI, front ? Math.PI : TAU); ctx.stroke();
+    const cols = [GOLD_HI, P.hat, '#ffffff', P.jacket, GOLD, '#cfe0ff'], big = T >= 8 ? 1.45 : 1;
+    for (let i = 0; i < 6; i++) {
+      const ang = t * 0.9 + i * TAU / 6, depth = Math.sin(ang);
+      if ((depth > 0) !== front) continue;
+      const sx = cx + Math.cos(ang) * rx, sy = cy + depth * ry * 0.55, s = (2.7 + 0.8 * Math.sin(t * 4 + i)) * k * big * (0.85 + 0.15 * depth);
+      if (T >= 8) for (let j = 1; j <= 4; j++) { // kısa ışık kuyruğu (yörüngede geride kalan noktalar)
+        const aj = ang - j * 0.09, px = cx + Math.cos(aj) * rx, py = cy + Math.sin(aj) * ry * 0.55;
+        ctx.fillStyle = `rgba(255,236,190,${(0.35 - j * 0.07).toFixed(3)})`; circle(ctx, px, py, s * (0.7 - j * 0.12));
+      }
+      glow(ctx, sx, sy, s * 4, hex(cols[i] && cols[i][0] === '#' && cols[i].length === 7 ? cols[i] : '#ffd56b'), 0.45);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = cols[i]; ctx.beginPath();
+      ctx.moveTo(sx, sy - s * 1.8); ctx.quadraticCurveTo(sx, sy, sx + s * 1.8, sy); ctx.quadraticCurveTo(sx, sy, sx, sy + s * 1.8);
+      ctx.quadraticCurveTo(sx, sy, sx - s * 1.8, sy); ctx.quadraticCurveTo(sx, sy, sx, sy - s * 1.8); ctx.fill();
+      ctx.globalCompositeOperation = 'lighter';
+    }
+    ctx.restore();
+  }
   function drawVehicle(ctx, id, x, y, k, st) {
     trail(ctx, id, x, y, k, st);
+    aura(ctx, id, x, y, k, st, false);
+    drawVehicleBody(ctx, id, x, y, k, st);
+    aura(ctx, id, x, y, k, st, true);
+  }
+  function drawVehicleBody(ctx, id, x, y, k, st) {
     switch (id) {
       case 'walk': return drawWalker(ctx, x, y, k, st, false);
       case 'skates': return drawWalker(ctx, x, y, k, st, true);
