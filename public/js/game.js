@@ -2351,10 +2351,10 @@
       const prev = S.msIdx ? MILESTONES[S.msIdx - 1].at : 0;
       setMsName(m.name);
       setText('#msProg', `${fmtDist(S.distance)} / ${fmtDist(m.at)}`);
-      $('#msFill').style.transform = `scaleX(${Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev)))})`;
+      setMsRoad(Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev))));
     } else {
       setMsName(t('ms.unknown')); setText('#msProg', fmtDist(S.distance));
-      $('#msFill').style.transform = 'scaleX(1)';
+      setMsRoad(1);
     }
     // etkiler
     const now = Date.now();
@@ -2431,6 +2431,21 @@
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
+  // Durak çubuğu küçük bir yol: dolgu ve ucundaki yolcu işareti ilerlemeyi gösterir; durağa yaklaşınca sondaki bayrak dalgalanır.
+  // Yeni durağa geçişte işaret geri koşmaz, başa solarak döner (reset sınıfı geçişi bir kare kapatır).
+  let msRoadP = -1;
+  function setMsRoad(f) {
+    const q = Math.round(f * 1000) / 1000;
+    if (q === msRoadP) return;
+    const road = $('#msRoad'), back = q < msRoadP - 0.2;
+    road.classList.toggle('reset', back);
+    if (back) void road.offsetWidth;
+    msRoadP = q;
+    $('#msFill').style.transform = `scaleX(${q})`;
+    road.style.setProperty('--p', q);
+    road.classList.toggle('near', q >= 0.9 && q < 1);
+    if (back) requestAnimationFrame(() => road.classList.remove('reset'));
+  }
   // Uzun durak adı kırpılmaz: sığmıyorsa yavaşça sona kayıp geri döner (kutunun yüksekliği değişmez, sahne zıplamaz)
   function setMsName(name) {
     const el = $('#msName');

@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.62';
+  IT.VERSION = '1.63';
 
   IT.CHANGELOG = [
+    { v: '1.63', date: '2026-10-14', items: {
+      tr: ['Sıradaki durak çubuğu artık küçük bir yol: ucunda sen yürüyorsun, sonunda durağın bayrağı seni bekliyor. Yaklaştığında bayrağa bir bak.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['The next-stop bar is now a little road: you’re walking at its tip, and the stop’s flag waits at the end. Watch the flag as you get close.',
+        'A few small touches along the road.'],
+      de: ['Die Leiste zur nächsten Station ist jetzt ein kleiner Weg: An ihrer Spitze gehst du, am Ende wartet die Flagge der Station. Schau auf die Flagge, wenn du näher kommst.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['La barra de la próxima parada es ahora un pequeño camino: tú caminas en su punta y la bandera de la parada te espera al final. Mira la bandera cuando te acerques.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La barre du prochain arrêt est désormais une petite route : tu marches à sa pointe et le drapeau de l’arrêt t’attend au bout. Regarde le drapeau quand tu approches.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.62', date: '2026-10-14', items: {
       tr: ['Ateşböcekleri seni yeterince tanıdığında sana küçük bir hediye hazırlıyorlar. Kaç kez yanına gelmeleri gerektiğini Yol Defteri’nde göreceksin.',
         'Yenilikler penceresi derli toplu: en yeni sürümler açık, öncekiler tek dokunuşla açılıyor.', 'Yolda birkaç küçük rötuş.'],
