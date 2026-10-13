@@ -327,6 +327,8 @@
     { id: 'sailor', need: 0, dolphins: 7, jacket: '#1d5f8a', jacketDark: '#154766', hat: '#f4f7fa', hatDark: '#cfd8e2', pack: '#e2483d' },
     // Kuş Defteri'ndeki bütün kuşları tanıyınca açılır (haki ceket, hasır şapka, tuğla kırmızısı çanta)
     { id: 'birder', need: 0, birds: 7, jacket: '#7d8a4a', jacketDark: '#636e39', hat: '#e9c98a', hatDark: '#c8a766', pack: '#b5523b' },
+    // Ateşböceği Yolu'nda yedi sürü yanına gelince açılır (yosun yeşili ceket, ateşböceği sarısı şapka, fener sarısı çanta)
+    { id: 'glow', need: 0, fireflies: 7, jacket: '#3f5a3a', jacketDark: '#2f4529', hat: '#d9f27a', hatDark: '#b5cc58', pack: '#f5c74f' },
   ];
 
   /* ---------- Takımyıldızlar: gece gökyüzünde birleştirilen parlak yıldızlar ----------

@@ -339,9 +339,9 @@
 
   const nBadges = () => IT.badgeCount(S);
   const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : o.consts ? IT.constCount(S) >= o.consts
-    : o.dolphins ? S.dolphins >= o.dolphins : o.birds ? IT.birdCount(S) >= o.birds : nBadges() >= o.need);
+    : o.dolphins ? S.dolphins >= o.dolphins : o.birds ? IT.birdCount(S) >= o.birds : o.fireflies ? S.fireflies >= o.fireflies : nBadges() >= o.need);
   // rozetle değil, bir koleksiyonla açılan kıyafetler
-  const outfitSpecial = o => !!(o.keeps || o.letters || o.consts || o.dolphins || o.birds);
+  const outfitSpecial = o => !!(o.keeps || o.letters || o.consts || o.dolphins || o.birds || o.fireflies);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -496,6 +496,9 @@
     const g = GIFT.glow, dur = addEffect(g, g.dur).dur;
     Sound.gift(); Sound.fireflies();
     toast(t('toast.fireflies', { name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    // yedinci sürüde ateşböcekleri seni tanır: Işık Taşıyıcı kıyafeti açılır
+    const o = OUTFITS.find(x => x.fireflies);
+    if (S.fireflies === o.fireflies) { applyOutfit(); setTimeout(() => { toast(t('toast.firefliesAll', { name: esc(o.name) }), 'gold'); Sound.region(); }, 900); }
     scene.addFloat(t('float.fireflies'), { color: '#f4ffc2', big: true });
     checkBadges();
   }
@@ -1641,6 +1644,7 @@
 
   /* ---------- Sürüm ve yenilikler ---------- */
   const hasNews = () => IT.verCmp(IT.VERSION, S.seenVer) > 0;
+  const NEWS_OPEN = 3;
   function syncNews() {
     setText('#verNum', 'v' + IT.VERSION);
     $('.ver-dot').hidden = !hasNews();
@@ -1652,14 +1656,20 @@
     openModal(() => {
       const df = new Intl.DateTimeFormat(IT.locale(), { dateStyle: 'long' });
       const items = c => c.items[IT.lang()] || c.items.en;
+      const entry = c => {
+        const fresh = IT.verCmp(c.v, seen) > 0;
+        return `<li${fresh ? ' class="fresh"' : ''}><h3>v${c.v} <small>${df.format(new Date(c.date + 'T12:00:00'))}</small>${fresh ? `<span class="tagnew">${t('news.new')}</span>` : ''}</h3>
+            <ul>${items(c).map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`;
+      };
+      // en yeni NEWS_OPEN sürüm açık; öncekiler katlanır (liste uzadıkça pencere telefonda binlerce piksele çıkıyordu)
+      const head = IT.CHANGELOG.slice(0, NEWS_OPEN), rest = IT.CHANGELOG.slice(NEWS_OPEN);
+      const restFresh = rest.filter(c => IT.verCmp(c.v, seen) > 0).length;
       return { btn: t('news.btn'), html: `
         <p class="eyebrow">${t('news.eyebrow', { v: IT.VERSION })}</p>
         <h2>${t('news.title')}</h2>
-        <ol class="news">${IT.CHANGELOG.map(c => {
-          const fresh = IT.verCmp(c.v, seen) > 0;
-          return `<li${fresh ? ' class="fresh"' : ''}><h3>v${c.v} <small>${df.format(new Date(c.date + 'T12:00:00'))}</small>${fresh ? `<span class="tagnew">${t('news.new')}</span>` : ''}</h3>
-            <ul>${items(c).map(x => `<li>${esc(x)}</li>`).join('')}</ul></li>`;
-        }).join('')}</ol>` };
+        <ol class="news">${head.map(entry).join('')}</ol>
+        ${rest.length ? `<details class="news-old"><summary>${t('news.older', { n: rest.length })}${restFresh ? ` <span class="tagnew">${t('news.moreNew', { n: restFresh })}</span>` : ''}</summary>
+          <ol class="news">${rest.map(entry).join('')}</ol></details>` : ''}` };
     }, null, null, true);
   }
   // Yayındaki sürüm birkaç dakikada bir (ve sekmeye dönünce) yoklanır. Yeni sürüm varsa ilerleme kaydedilir ve sayfa
@@ -2253,7 +2263,8 @@
           style="--j:${o.jacket};--h:${o.hat};--p:${o.pack}"><span class="sw" aria-hidden="true"></span><b>${open ? esc(o.name) : '???'}</b>
           <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : o.consts ? t('ui.outfitConsts', { n: o.consts })
             : o.dolphins ? (S.dolphins ? t('ui.outfitDolphins', { n: S.dolphins, m: o.dolphins }) : t('ui.outfitSea'))
-            : o.birds ? (IT.birdCount(S) ? t('ui.outfitBirds', { n: IT.birdCount(S), m: o.birds }) : t('ui.outfitSky')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+            : o.birds ? (IT.birdCount(S) ? t('ui.outfitBirds', { n: IT.birdCount(S), m: o.birds }) : t('ui.outfitSky'))
+            : o.fireflies ? (S.fireflies ? t('ui.outfitFireflies', { n: Math.min(S.fireflies, o.fireflies), m: o.fireflies }) : t('ui.outfitGlow')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
     // Bölüm gezinme şeridi: defterin üstünde yapışkan, yatay kayan çipler (bölüm adı ve ilerleme); dokununca o bölüme
     // yumuşakça kayar. Şeridin kendi yatay kaydırması yeniden çizimde korunur.

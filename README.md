@@ -109,7 +109,9 @@ npx wrangler dev   # http://localhost:8787
   ilk dokunuşta yeniden başlar.
 - **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
   yayınlandığında düğmede turuncu bir nokta belirir ve kısa bir bildirim gelir; pencerede yeni sürümler işaretlidir.
-  Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez.
+  Yeni oyuncular eski sürüm notlarını "yeni" olarak görmez. v1.62'den beri yalnızca en yeni üç sürüm açık görünür; öncekiler
+  "Önceki sürümler (n)" altında katlıdır ve içlerinde görülmemiş sürüm varsa "n yeni daha" yazar (`NEWS_OPEN`). Uzun
+  pencerelerde alttaki düğme yapışıktır: kapatmak için sonuna kadar kaydırmak gerekmez.
   Yenilikler, Ayarlar ve Kartpostal pencereleri dışına basınca ya da Esc tuşuyla kapanır (tanıtım penceresi düğmeyle kapanır).
   Pencere açıkken arkadaki sayfa (`.app`, `inert`) klavyeyle de ulaşılamaz.
 - **Kendiliğinden güncelleme**: Oyun yayındaki sürümü açılıştan 30 saniye sonra, sonra 3 dakikada bir ve sekmeye dönünce
@@ -184,6 +186,11 @@ npx wrangler dev   # http://localhost:8787
     Kuyruklu Yıldız'a 14. yolculukta ulaşır).
   - **Aktif** (aynı, normal şans): tren ~15 dk, uçak ~46 dk, roket ~4,6 saat, Güneş Yelkeni ~12,7 saat.
   - **Sıradan** (0,3 dokunuş/sn, olayların yarısını yakalar): motor ~14 dk, tren ~1 saat, uçak ~3,9 saat, roket ~20,6 saat.
+  **v1.62 ölçümü (3 deneme):** v1.51–v1.56'daki araç eşikleri (Sv. 200'den sonra ×3–×10) ve sınırsız güçlendirmelerin eşik katları
+  (Sv. 25–200) kullanıcı isteğiyle eklendi; geç oyun belirgin hızlandı, erken oyun aynı kaldı. Şanslı + aktif: tren 10 dk, uçak
+  24 dk, roket 83 dk, Güneş Yelkeni 161 dk, Kuyruklu Yıldız ~6,8 saat, Yıldız Gemisi ~20,4 saat. Aktif: tren 15 dk, uçak 36 dk,
+  roket 132 dk, Güneş Yelkeni 268 dk, Kuyruklu Yıldız ~11 saat, Yıldız Gemisi ~34 saat. Sıradan: motor 13 dk, tren 60 dk, uçak
+  ~3 saat, roket ~9,5 saat, Güneş Yelkeni ~22 saat. Yukarıdaki hedefler v1.39 dengesinin kaydıdır.
   **Ölçüm geçmişi:** v1.38'e kadar simülasyon Kelebek Dostu'nu hiç almıyor, Şans'ı da yanlışlıkla değersiz sayıyordu. Gerçek
   tempo bu yüzden yazılandan çok hızlıydı (aynı düzeltilmiş simülasyonla Güneş Yelkeni: v1.36 kurallarında şanslı oyuncu ~37 dk,
   aktif ~93 dk; v1.38'de ~177 ve ~214 dk). Asıl hızlandırıcı Kelebek Dostu'ydu: 10. seviyede kelebekler iki kat sık, etkileri
@@ -471,7 +478,8 @@ npx wrangler dev   # http://localhost:8787
     ve başka bir gök olayı sürerken gelmez. İlk üç sürüde "Çimenlerin üstünde bir avuç ışık dönüyor… Dokunsan mı?" bildirimi
     gelir. Dokununca ışıklar yolcunun omzunun üstüne süzülür ve 30 saniye *Ateşböceği Işığı* (hız ×2, tıklama ×3) gelir: etki
     boyunca yolcunun (uçan araçta aracın) üstünde dönen küçük bir ışık bulutu olur, gece çevresini aydınlatır; etki bitince
-    yavaşça söner, sayfa yeniden açılınca etki sürüyorsa yerinde belirir. Sürüler Yol Defteri'nde sayılır (`fireflies`).
+    yavaşça söner, sayfa yeniden açılınca etki sürüyorsa yerinde belirir. Sürüler Yol Defteri'nde sayılır (`fireflies`);
+    yedinci sürü *Işık Taşıyıcı* kıyafetini açar (v1.62).
     Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
   Yatay telefonda pano panele taşındığından durak kutusu kendi genişliğiyle ölçülür (`.dock-trail` kapsayıcı sorgusu):
   dar kalınca etiket ve mesafe gizlenir, durağın adı görünür.
@@ -519,7 +527,9 @@ npx wrangler dev   # http://localhost:8787
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
-  yunus selamıyla, *Kuş Gözlemcisi* Kuş Defteri dolunca (7 kuş) açılır. Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  yunus selamıyla, *Kuş Gözlemcisi* Kuş Defteri dolunca (7 kuş), *Işık Taşıyıcı* (v1.62; yosun yeşili ceket, ateşböceği sarısı
+  şapka, fener sarısı çanta) Ateşböceği Yolu'nda yedinci sürü yanına gelince açılır ("Ateşböcekleri seni tanıdı!"; kilitliyken
+  "Çimenlerde bir ışık…", ilk sürüden sonra "Ateşböcekleri: n/7"). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,
