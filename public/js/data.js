@@ -177,6 +177,8 @@
     { id: 'kite', perk: 'kites', biomes: ['meadow', 'tulip', 'wheat', 'coast', 'lavender', 'olive', 'cappadocia', 'tea', 'sakura', 'autumn', 'pine', 'canyon', 'desert', 'snow', 'aurora'] },
     // 12. yolculuk: kuşlar iki kat sık geçer; yalnızca bu rotada kuşlara yol gösteren Hüdhüd (ibibik) görünür
     { id: 'migrate', perk: 'birds', biomes: ['meadow', 'wheat', 'lavender', 'coast', 'pine', 'olive', 'tea', 'tulip', 'autumn', 'sakura', 'snow', 'canyon', 'cappadocia', 'desert', 'aurora'] },
+    // 13. yolculuk: gece çimenlerde ateşböcekleri yanıp söner (yalnızca bu rotada); bir sürüye dokununca omuzda ışık olurlar
+    { id: 'firefly', perk: 'fireflies', biomes: ['meadow', 'pine', 'tea', 'lavender', 'sakura', 'olive', 'tulip', 'autumn', 'coast', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
   ];
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });

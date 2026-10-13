@@ -37,6 +37,7 @@ const { chromium } = require('./lib/pw');
       const c1 = await clicks(p);
       await p.mouse.click(cv.l + cv.w * 0.6, cv.t + cv.h * 0.5);
       const c2 = await clicks(p);
+      console.log(name, 'pano tam genişlikte mi (içeriğe göre daralmaz):', Math.abs(dk.w - vp.width) <= 1);
       console.log(name, 'pano sahnenin altında mı:', dk.t >= cv.b - 1, '· panoya dokunmak adım saydı mı:', c1 !== c0, '· sahneye dokunmak saydı mı:', c2 > c1);
       // bildirim durum satırında
       await p.click('#btnSky'); await p.waitForTimeout(500);

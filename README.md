@@ -462,7 +462,16 @@ npx wrangler dev   # http://localhost:8787
     altın ışıklı bir kuş…" bildirimi gelir. Dokununca tepesini yelpaze gibi açar ve 30 saniye *Hüdhüd'ün Rehberliği* (hız ×2,
     kredi ×2) gelir; ilk karşılaşmada Kuş Defteri'ne altın kenarlı gizli bir sayfa eklenir (yedi kuşun sayısını ve Kuş Gözlemcisi
     kıyafetini etkilemez; `data.js` → `RARE_BIRDS`). Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
-  Rotalar 12 tanedir; on birinci eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  - **Ateşböceği Yolu** (12., v1.59): çam ormanı, çay bahçeleri ve lavantayla başlar. Yalnızca bu rotada gece (sahne gecesi
+    %35'i geçince yavaşça) çimenlerde, yolun ardındaki çayırda ve önündeki otlarda 22 ateşböceği yanıp söner. Arada bir yolun
+    ilerisinde, çimenlerin üstünde 13 ateşböceğinden bir sürü toplanır (ilki 25–45 sn, sonra 90–160 sn arayla; gündüz iki kat
+    seyrek, gündüz de zeytin yeşili gövdeleriyle görünür; yavaşça geride kalır, en çok 40 sn). Yağmurda, uzayda, pencere açıkken
+    ve başka bir gök olayı sürerken gelmez. İlk üç sürüde "Çimenlerin üstünde bir avuç ışık dönüyor… Dokunsan mı?" bildirimi
+    gelir. Dokununca ışıklar yolcunun omzunun üstüne süzülür ve 30 saniye *Ateşböceği Işığı* (hız ×2, tıklama ×3) gelir: etki
+    boyunca yolcunun (uçan araçta aracın) üstünde dönen küçük bir ışık bulutu olur, gece çevresini aydınlatır; etki bitince
+    yavaşça söner, sayfa yeniden açılınca etki sürüyorsa yerinde belirir. Sürüler Yol Defteri'nde sayılır (`fireflies`).
+    Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+  Rotalar 13 tanedir; on ikinci eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
   yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
