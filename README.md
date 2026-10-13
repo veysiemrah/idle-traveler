@@ -126,18 +126,23 @@ npx wrangler dev   # http://localhost:8787
   kademeyi gösterir; seçim kaydedilir. Geniş ekranda denetim konuşma düğmesinin üstünde dikey, telefonda solunda yataydır.
   Yatay telefonda bu iki düğme sahnenin üstünde, yolun şeridinde durur: tilki, hazine sandığı ya da yadigâr onların altına
   düşerse düğmeler yumuşakça solar ve dokunuşu sahneye geçirir (dokunuş düğmeye değil yakalanacak şeye gider); o kalkınca geri gelirler.
-- **Telefon yerleşimi (v1.43)**:
-  - *Dikey* (genişlik ≤ 860 px, dikey yön): sahnenin üstünde düğme kalmaz. Ritim, sıradaki durak, yakınlaştırma ve konuşma düğmesi
-    sahnenin hemen altındaki bir şeride iner (sahne tuvali şeridin üstünde biter; şerit sayfa renginde, kutular düz zeminli).
-    Şeride dokunmak adım saymaz, yalnızca sahneye dokunmak sayar. Konuşma seçici şeridin üstünde açılır. 480 pikselin altında
-    ritim kutusu etiketsiz (çarpan ve çubuk), yakınlaştırma noktaları gizli: durak adına yer kalır.
-  - *Yatay* (yükseklik ≤ 480 px, genişlik ≤ 860 px): sahne solda, panel sağda (en az 320 px, %42) yan yana durur. Önceden alt alta
-    dizildiği için alçak ekranda panele ~40 piksel kalıyor, sayfa da kaydırılamıyordu. Cüzdan küçülür, bildirimler gökyüzünün
-    üstünde (yolun değil) belirir; sahne daralınca durak kutusunda yalnızca durağın adı kalır (kapsayıcı sorgusu, ≤ 520 px).
-  - *Sıkı kartlar* (≤ 860 px): kart iç boşlukları, simgeler (60×47) ve başlıklar küçülür. Sahip olunan araçların tanıtım cümlesi
-    gizlenir (sıradaki aracın merak uyandıran cümlesi kalır). Güçlendirme kartında düğme kartın sağında dikey ortada durur; ad,
-    açıklama ve sonraki seviye solunda (kart ~150 px'ten ~95–110 px'e indi). Garajın kural açıklaması "i" işaretiyle tek satırdır,
-    sonu solar; dokununca yumuşakça açılır. Bütün bunları `tests/layout.js` denetler.
+- **Telefon yerleşimi (v1.56)**: Telefonda (genişlik ≤ 860 px) sahnenin üstünde hiç yazı yoktur; sahne yalnızca manzaradır
+  (`game.js` → `arrange`, `scene.textless`).
+  - *Dikey*: sahne ekranın büyük kısmını kaplar; altında bir pano (`#dock`) durur: durum satırı (bölge, mesafe, hız, araç ve kredi;
+    bildirimler ve "yeni bölge" afişi de birkaç saniye bu satırda akar, sonra durum yumuşakça geri gelir), etki çipleri, ritim ve
+    durak şeridiyle yakınlaştırma ve konuşma düğmeleri, en altta sekmeler. Panoya dokunmak adım saymaz. Panel alttan açılan bir
+    sayfadır: sekmeye dokununca sekme çubuğunun hemen üstüne kadar açılır (açıkken başka sekmeye geçilebilir, aynı sekmeye yeniden
+    dokununca kapanır); tutamaçtan aşağı çekince, tutamaçtaki düğmeyle, arkadaki karartmaya dokununca ya da Esc ile kapanır. Sayfa
+    açıkken de üst çubuk (ayarlar, kartpostal, tema, ses) kullanılabilir.
+  - *Yatay*: sahne solda, panel sağda; pano panelin üstündedir (durum satırı, etkiler, ritim ve durak). Yakınlaştırma ve konuşma
+    düğmeleri yazısız oldukları için sahnede kalır.
+  - Sahnenin içinde harf ya da rakam içeren uçan yazılar ("+2 cm", "Yunuslar!"), gezgin ad etiketleri ve yol tabelaları çizilmez;
+    konuşma balonlarında yalnızca mesajın emojisi kalır, yazısı durum satırında görünür. Konum kartı sahnenin üstünde olmadığı için
+    uçan araçlar, kuşlar ve takımyıldızlar gökyüzünün tamamını kullanır.
+  - *Katlanır kartlar* (her ekranda): sahip olunan araçlar ve güçlendirmeler kapalı başlar (ad, seviye, düğme); karta ya da sağdaki
+    oka dokununca tanıtım, hızlar ve sonraki eşik yumuşakça açılır. Sıradaki alınacak araç ve Eve Dönüş kartı hep açıktır, yol
+    arkadaşı kartı (seçici) ilk açılışta açık başlar. Açık kartlar tarayıcıda hatırlanır (`idle-traveler-open`, kayda girmez).
+  Bütün bunları `tests/layout.js` denetler.
 - **Adım at**: Sahneye dokun ya da Boşluk tuşuna bas. Hızlı ve ritmik tıklamalar *Ritim* bonusunu doldurur (telefonda da
   sahnenin altında küçük bir kutuda görünür). Art arda atılan adımların mesafesi tek bir büyüyen yazıda toplanır.
 - **Araçlar**: Yürüyüş → Paten → Kaykay → Bisiklet → At → Motosiklet → Araba → Karavan → Tren →
@@ -152,10 +157,10 @@ npx wrangler dev   # http://localhost:8787
   sayacı (`autoSteps`) görünür. Uzun yolculuklarda (eve dönüş eşiği her dönüşte
   3 katına çıktığı için) yeni hedef olurlar. *Garaj Sahibi* rozetinin son kademesi (Elmas) v1.48'de
   19 araca çıktı (v1.36'da 13 ve 14'ten 14 ve 16'ya yükselmişti); kazanılmış kademeler düşmez.
-  Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100, 150 ve 200'de hız ikiye katlanır
-  (en büyük sıçrama Sv. 50'de). v1.51'den beri geç oyun için daha büyük eşikler de var: Sv. 250 ve 300'de ×3, 350 ve 400'de ×4,
-  450 ve 500'de ×5 (`Econ.boostOf`). Aracın hız çarpanı (1 + 0,1 × seviye) × eşik katlarının çarpımıdır: Sv. 200'de 672,
-  Sv. 300'de 8.928 (×13,3), Sv. 400'de 188.928, Sv. 500'de ~5,9 milyon (Sv. 200'ün ~8.700 katı). Yükseltmeler seviye başına %9,5
+  Her aracın kendi yükseltme hattı var. Her seviye +%10 hız verir; Sv. 25, 50, 100 ve 150'de hız ikiye katlanır
+  (en büyük sıçrama Sv. 50'de). Geç oyun için daha büyük eşikler var (v1.51'de eklendi, v1.56'da yeniden düzenlendi): Sv. 200 ve
+  250'de ×3, 300 ve 350'de ×4, 400 ve 450'de ×5, 500'de ×10 (`Econ.boostOf`). Aracın hız çarpanı (1 + 0,1 × seviye) × eşik katlarının
+  çarpımıdır: Sv. 150'de 256, Sv. 200'de 1.008, Sv. 300'de 17.856, Sv. 400'de 472.320, Sv. 500'de ~29,4 milyon. Yükseltmeler seviye başına %9,5
   pahalandığı için bu eşikler orta oyunun temposunu değiştirmez (araçlar yine Sv. 50 civarında değiştirilir); zincirin sonuna
   gelen oyuncuya eski araçlarını geliştirmek için yeni hedefler verir. Yükseltme satırı sıradaki eşiği ve katını söyler
   (yeni görünüm, hız ×2 … ×5); birden çok eşik birden ya da ×3 ve üstü bir eşik geçilince bildirim toplam katı yazar.
@@ -288,6 +293,9 @@ npx wrangler dev   # http://localhost:8787
 - **Güçlendirmeler**: Güçlü Adımlar, Arkadan Esen Rüzgâr, Kartpostal Koleksiyonu (kredi), Yolun Ritmi,
   Şanslı Adım (seviye başına %1 ihtimalle 5 kat uzun adım), Rüyada Yolculuk (çevrimdışı hız), Uzun Mola (çevrimdışı süre), Kelebek Dostu.
   İlk üçü tavansızdır (her seviye 2,2–2,6 kat pahalanır, alınabilen seviye gelirin logaritmasıyla artar: 24 saatte ~25–30 seviye).
+  v1.56'dan beri bu üçünün etkisi araçlardaki gibi eşiklerde katlanır: (1 + seviye başına %20/%25 × seviye) × Sv. 25, 50, 100
+  ve 150'de ×2, Sv. 200'de ×3 (Güçlü Adımlar Sv. 25'te +%1.100, Sv. 100'de +%16.700). Kartın "sonraki seviye" satırı sıradaki
+  eşiği de gösterir (`ui.buffBoost`).
   Tavanlı olanlar v1.38'de dikleşti (büyüme: Ritim ×4, Şans ve Rüya ×4,5, Kamp ×2,3, Kelebek Dostu ×5, Yol Arkadaşı ×6). Son
   seviyeleri artık minibüs ile uçak arasındaki fiyatlarda (Ritim ~79 Mn, Kelebek Dostu ~3,5 Mr, Yol Arkadaşı ~50 Mr); önceden
   hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar.

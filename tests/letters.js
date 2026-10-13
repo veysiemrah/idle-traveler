@@ -1,7 +1,7 @@
 // Mektuplar (v1.39): kâğıt uçak kendiliğinden gelir, dokununca mektup açılır; Yol Defteri'nde zarflar, okunan mektup yeniden açılır;
 // eşiği gelmemiş mektup gelmez; son mektup imzayı yolcunun adıyla atar ve Zamansız Gezgin kıyafetini açar.
 // Ekran görüntüleri: gündüz/gece uçak, mektup penceresi (açık/koyu), telefon (320 px), defter.
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 const hook = () => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); };
 const save = o => JSON.stringify(Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '99', clicks: 50, distance: 30,
   player: { id: '11111111-2222-4333-8444-555555555555', key: 'a'.repeat(64), name: 'Deniz' }, settings: { sky: 'day' } }, o));
@@ -10,7 +10,7 @@ async function open(b, o, opts) {
   p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
   await p.addInitScript(hook);
   await p.addInitScript(d => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', d); } }, save(o));
-  await p.goto('http://localhost:8765/index.html'); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
+  await p.goto(pw.url()); await p.waitForFunction(() => window.__sc, null, { timeout: 15000 }); await p.waitForTimeout(900);
   return p;
 }
 const saved = p => p.evaluate(() => JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
@@ -21,6 +21,7 @@ const tap = async p => {
 const modal = p => p.evaluate(() => document.getElementById('modal').hidden ? '(kapalı)' : document.getElementById('modalBody').innerText.replace(/\s+/g, ' ').trim());
 (async () => {
   const b = await chromium.launch(); const errs = [];
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
   // 1) kendiliğinden gelir (ilk mektup her zaman hazır) ve eşiği gelmemiş mektup gelmez
   const p = await open(b, {});
   const q = await open(b, { letters: 8, trips: 0, lifeDist: 0, distance: 5e7 });
@@ -45,6 +46,7 @@ const modal = p => p.evaluate(() => document.getElementById('modal').hidden ? '(
   await p.keyboard.press('Escape'); await p.waitForTimeout(300);
   console.log('Esc ile kapandı mı:', await p.evaluate(() => document.getElementById('modal').hidden));
   errs.push(...p.errs, ...q.errs); await p.close(); await q.close();
+  pw.speed(0); // olay zamanlayıcıları normal
   // 2) gece, koyu tema: uçak ve son mektup (adla imza, kıyafet)
   const n = await open(b, { letters: 11, trips: 3, settings: { sky: 'night' } }, { colorScheme: 'dark' });
   await n.evaluate(() => __sc.spawnPlane()); await n.waitForTimeout(5000);

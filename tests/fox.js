@@ -1,6 +1,6 @@
 // Kızıl (tilki): yabani tilki karşılaşması (gündüz/gece, telefon), üç dokunuşta yol arkadaşı olması,
 // kilitli kartın ipucu ve pati izleri, araçlarda koşan/camdan bakan tilki görünümleri
-const { chromium } = require('./lib/pw');
+const pw = require('./lib/pw'), { chromium } = pw;
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const all = { walk: 1, skates: 1, board: 1, bike: 1, horse: 1, moto: 1, car: 1, van: 1, train: 1, balloon: 1, plane: 1, jet: 1, rocket: 1, sail: 1 };
@@ -12,7 +12,7 @@ const { chromium } = require('./lib/pw');
     await p.addInitScript(s => localStorage.setItem('idle-traveler-save-v1', JSON.stringify(s)),
       Object.assign({ v: 3, intro: true, lastSeen: Date.now(), seenVer: '9', clicks: 50,
         settings: { sky: sky || 'day', zoom: 1 } }, save));
-    await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1500);
+    await p.goto(pw.url()); await p.waitForTimeout(1500);
     return p;
   };
   // sahnedeki (sanal) koordinatı sayfa koordinatına çevirir
@@ -79,6 +79,8 @@ const { chromium } = require('./lib/pw');
     shots.push(file); await r.close();
   }
   console.log('görüntüler:', shots.length);
+
+  pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
 
   // 5) Çam Ormanı'nda yol arkadaşıyla gezerken tilki kendiliğinden çıkar (ilk karşılaşma 50–90 sn)
   const w = await open({ distance: 200, regionIdx: 2, msIdx: 99, buffs: { pal: 1 } });

@@ -9,6 +9,8 @@ const { chromium } = require('./lib/pw');
       localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), credits: 3e7, distance: 9e5, regionIdx: 6, clicks: 50,
         owned: { walk: 1, skates: 1, board: 1, bike: 1, horse: 1 }, levels: { walk: 9, skates: 3, bike: 8, horse: 0 }, active: 'horse', buffs: {} })); } });
     await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(700);
+    // dikey telefonda panel alttan açılan bir sayfadır (v1.56): önce açılır
+    if (vw[0] <= 860 && vw[1] > vw[0]) { await p.click('.tab[data-id="garage"]'); await p.waitForTimeout(450); }
     const pos = () => p.$$eval('#panel [data-act]:not(.tab)', els => Object.fromEntries(els.filter(e => e.offsetParent).map(e => { const r = e.getBoundingClientRect(); return [e.dataset.act + ':' + (e.dataset.id || ''), [Math.round(r.left), Math.round(r.top), Math.round(r.width)]]; })));
     const diff = (a, c) => Object.keys(a).filter(k => c[k] && (a[k][0] !== c[k][0] || a[k][1] !== c[k][1] || a[k][2] !== c[k][2])).map(k => `${k} ${a[k]}→${c[k]}`);
     const report = [];

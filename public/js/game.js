@@ -555,11 +555,13 @@
   let constIn = 60 + Math.random() * 40, constHints = 0, stageConst = false;
   // konum kartının sağ kenarı (sahnenin sanal px'i): takımyıldız kartın arkasında kalmasın
   function hudEdge() {
+    if (layoutMode !== 'desk') return 0; // telefonda konum kartı sahnenin dışında (panoda)
     const c = $('.hud-card'), r = scene.canvas.getBoundingClientRect();
     return c ? Math.max(0, (c.getBoundingClientRect().right - r.left) / scene.zoom) : 0;
   }
   // konum kartının alt kenarı (sahnenin sanal px'i): kuşlar kartın altından uçsun
   function hudBottom() {
+    if (layoutMode !== 'desk') return 0;
     const c = $('.hud-card'), r = scene.canvas.getBoundingClientRect();
     return c ? Math.max(0, (c.getBoundingClientRect().bottom - r.top) / scene.zoom) : 0;
   }
@@ -1032,6 +1034,8 @@
       el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle');
       Sound.chat();
     },
+    sheetClose() { sheet(false); },
+    fold(k) { toggleFold(k); },
     // Defter gezinme şeridi: bölüme yumuşakça kay (yapışkan şeridin altında durur), çip kısa bir ışıkla karşılık verir
     jnav(id, el) {
       const h = document.getElementById(`jsec${id}`);
@@ -1064,7 +1068,12 @@
       S.player.name = name; save(); IT.Online.now(); uiDirty.travelers = true;
       toast(t('toast.named', { name: esc(name) }), 'teal');
     },
-    tab(id) {
+    tab(id, el) {
+      if (layoutMode === 'port' && el) {
+        const same = $(`.tab[data-id="${id}"]`).getAttribute('aria-selected') === 'true';
+        if (sheetOpen() && same) { sheet(false); return; }
+        sheet(true);
+      }
       document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.id === id)));
       document.querySelectorAll('.tabpane').forEach(p => { p.hidden = p.id !== 'pane-' + id; });
       $('.panes').scrollTop = 0;
@@ -1161,6 +1170,18 @@
     });
   }
 
+  /* ---------- Test zaman hızlandırıcısı ----------
+     Yalnızca yerel sunucuda (localhost/127.0.0.1) ?testspeed=N ile açılınca olay zamanlayıcıları (kelebek, kayan yıldız,
+     karahindiba, sandık, hava, yadigâr, turna, mektup, tilki, takımyıldız, uçurtma, yunus, kuş) N kat hızlı işler (en çok 50).
+     Ekonomi, sahne ve etki süreleri etkilenmez. Doğal gelişi bekleyen testler beklemeyi böyle kısaltır (tests/run-all.sh). */
+  const TEST_SPEED = (() => {
+    try {
+      if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return 1;
+      const v = +new URLSearchParams(location.search).get('testspeed');
+      return v > 1 ? Math.min(50, v) : 1;
+    } catch (e) { return 1; }
+  })();
+
   /* ---------- Döngü ---------- */
   function frame(now) {
     const dt = Math.min(0.25, Math.max(0, (now - lastFrame) / 1000));
@@ -1189,15 +1210,16 @@
     } else cycNight = null;
     checkProgress();
     S.effects = S.effects.filter(e => e.until > Date.now());
-    updateWeather(dt);
-    updateKeeps(dt);
-    updateCranes(dt);
-    updateLetters(dt);
-    updateFox(dt);
-    updateConsts(dt);
-    updateKites(dt);
-    updateDolphins(dt);
-    updateBirds(dt);
+    const et = dt * TEST_SPEED; // olay zamanlayıcıları (testte hızlanabilir)
+    updateWeather(et);
+    updateKeeps(et);
+    updateCranes(et);
+    updateLetters(et);
+    updateFox(et);
+    updateConsts(et);
+    updateKites(et);
+    updateDolphins(et);
+    updateBirds(et);
     updateHarvest();
 
     const gained = S.distance - before + clickBuffer;
@@ -1219,24 +1241,24 @@
       for (let n = 0; autoAcc >= 1 && n < 4; n++) { autoAcc -= 1; autoStep(); }
       autoAcc = Math.min(autoAcc, 1);
     }
-    if ($('#modal').hidden) giftIn -= dt;
+    if ($('#modal').hidden) giftIn -= et;
     if (giftIn <= 0) {
       if (!scene.gift) scene.spawnGift(14);
       giftIn = (40 + Math.random() * 45) / Econ.butterflyFreq(S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
     }
     // hazine sandığı: harita tamamken gelir; kaçırılırsa 45 sn sonra yeniden
     if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest && !scene.fox) {
-      chestIn -= dt;
+      chestIn -= et;
       if (chestIn <= 0) { scene.spawnChest(); chestIn = 45; }
     }
     // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
-    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.55 && weather !== 'rain') starIn -= dt;
+    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.55 && weather !== 'rain') starIn -= et;
     if (starIn <= 0) {
       if (!scene.star) scene.spawnStar();
       starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
     }
     // karahindiba tohumu: aydınlık, yağmursuz gündüzde (uzayda değilken)
-    if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) seedIn -= dt;
+    if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) seedIn -= et;
     if (seedIn <= 0) { scene.spawnSeed(); seedIn = (80 + Math.random() * 110) * (perk() === 'stars' ? 0.5 : 1); }
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
@@ -1424,6 +1446,11 @@
   }
 
   /* ---------- Arayüz ---------- */
+  // Panoda durum satırı ile bildirim aynı yeri paylaşır: bildirim varken durum (konum, kredi) solar
+  function syncTicker() {
+    const live = [...$('#toasts').children].some(x => !x.classList.contains('out'));
+    $('#dockStatus').classList.toggle('ticking', live);
+  }
   function toast(html, tone) {
     const box = $('#toasts');
     const el = document.createElement('div');
@@ -1431,13 +1458,16 @@
     el.innerHTML = html;
     box.appendChild(el);
     // en çok üç bildirim: fazlası ve süresi dolanlar solup yerini yumuşakça bırakır
-    const out = x => { if (x.classList.contains('out')) return; x.classList.add('out'); setTimeout(() => x.remove(), 550); };
+    const out = x => { if (x.classList.contains('out')) return; x.classList.add('out'); setTimeout(() => { x.remove(); syncTicker(); }, 550); syncTicker(); };
     const live = [...box.children].filter(x => !x.classList.contains('out'));
-    live.slice(0, Math.max(0, live.length - 3)).forEach(out);
-    setTimeout(() => out(el), 3600);
+    // panoda (telefon) tek satır vardır: yenisi gelince öncekiler hemen solar
+    live.slice(0, Math.max(0, live.length - (layoutMode === 'desk' ? 3 : 1))).forEach(out);
+    setTimeout(() => out(el), layoutMode === 'desk' ? 3600 : 3200);
+    syncTicker();
   }
   let bannerTimer = 0;
   function showBanner(name, sub) {
+    if (layoutMode !== 'desk') { toast(`<b>${esc(name)}</b> · ${esc(sub)}`, 'gold'); return; }
     const b = $('#banner');
     $('#bannerName').textContent = name;
     $('#bannerSub').textContent = sub;
@@ -1729,10 +1759,11 @@
       const st = Econ.own(S, v.id);
       const active = S.active === v.id;
       const lvl = S.levels[v.id] || 0;
-      html += `<article class="card veh${active ? ' active' : ''}${owned ? '' : ' locked'}">
+      const fk = `v:${v.id}`, fold = owned && !openCards.has(fk);
+      html += `<article class="card veh${active ? ' active' : ''}${owned ? '' : ' locked'}${fold ? ' folded' : ''}"${owned ? ` data-fold="${fk}"` : ''}>
         <canvas class="icon" data-icon="${v.id}" data-tier="${owned ? Econ.lookTier(lvl) : 0}" width="72" height="56"></canvas>
         <div class="body">
-          <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
+          <div class="row"><h3>${v.name}${owned ? ` <span class="lvl${v.id === lead ? '' : ' ghost'}" title="${t('ui.strongestTip')}"${v.id === lead ? '' : ' aria-hidden="true"'}>${t('ui.strongest')}</span>` : ''}</h3>${owned ? foldBtn(fk, fold) : ''}${active ? `<span class="chip on">${t('ui.riding')}</span>` : owned ? `<button class="chip ride" data-act="ride" data-id="${v.id}">${t('ui.ride')}</button>` : ''}</div>
           <p class="tag">${esc(v.tagline)}</p>
           <p class="stats"><span>${t('ui.auto')} <b>${fmtSpeed(st.idle)}</b></span><span>${t('ui.perClick')} <b>${fmtGain(st.click)}</b></span>${v.auto
             ? `<span>${t('ui.autoTaps')} <b>${t('ui.autoRate', { n: new Intl.NumberFormat(IT.locale(), { maximumFractionDigits: 2 }).format(Econ.autoRate(lvl)) })}</b></span>` : ''}</p>
@@ -1746,6 +1777,21 @@
       <div class="body"><h3>???</h3><p class="tag">${t('garage.mystery', { n: hidden })}</p></div></article>`;
     pane.innerHTML = html;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
+  }
+  // Katlanır kartlar (v1.56): sahip olunan araçlar ve güçlendirmeler kapalı başlar (ad, seviye, düğme); dokununca tanıtım,
+  // hızlar ve sonraki eşik yumuşakça açılır. Açık kartlar hatırlanır (tarayıcıda, kayda girmez).
+  // yol arkadaşı kartı (seçici içerir) ilk açılışta açık başlar
+  const openCards = new Set((() => { try { return JSON.parse(localStorage.getItem('idle-traveler-open') || '["b:pal"]'); } catch (e) { return ['b:pal']; } })().filter(x => typeof x === 'string').slice(0, 80));
+  const foldBtn = (k, fold) => `<button class="fold-btn" type="button" data-act="fold" data-id="${k}" aria-expanded="${!fold}" aria-label="${esc(t('ui.details'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`;
+  function toggleFold(k) {
+    const card = document.querySelector(`.card[data-fold="${k}"]`);
+    if (!card) return;
+    const open = card.classList.contains('folded');
+    card.classList.toggle('folded', !open);
+    const b = card.querySelector('.fold-btn'); if (b) b.setAttribute('aria-expanded', String(open));
+    if (open) openCards.add(k); else openCards.delete(k);
+    try { localStorage.setItem('idle-traveler-open', JSON.stringify([...openCards])); } catch (e) { /* yok say */ }
+    Sound.chat();
   }
   function upgradeBtn(v) {
     const q = Econ.upgradeQuote(v, S.levels[v.id] || 0, S.settings.bulk, S.credits);
@@ -1766,7 +1812,9 @@
     const pane = $('#pane-buffs');
     pane.innerHTML = BUFFS.map(b => {
       const lvl = S.buffs[b.id], maxed = b.max && lvl >= b.max;
-      let next = b.next, extra = '';
+      let next = b.per ? t(`buff.${b.id}.next`, b.step(lvl)) : b.next, extra = '';
+      // eşikli güçlendirmelerde sıradaki eşik: "Sv. 25: etki ×2"
+      if (b.per) { const nt = Econ.buffBoosts.find(x => x > lvl); if (nt) next += ` · ${t('ui.buffBoost', { t: nt, x: Econ.buffBoostOf(nt) })}`; }
       if (b.id === 'pal' && lvl) {
         // Yol arkadaşının gelişimi: sonraki seviyede yeni hayvan ya da yeni görünüm var mı
         const opens = Econ.pals.find(x => x.need === lvl + 1);
@@ -1780,9 +1828,10 @@
             <b>${open ? t(`pal.${x.id}.name`) : '???'}</b><small>${open ? t(`pal.${x.id}.desc`) : lock}</small></button>`;
         }).join('')}</div>`;
       }
-      return `<article class="card buff">
+      const fk = `b:${b.id}`, fold = !openCards.has(fk);
+      return `<article class="card buff${fold ? ' folded' : ''}" data-fold="${fk}">
         <div class="body">
-          <div class="row"><h3>${b.name}</h3><span class="lvl">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}</span></div>
+          <div class="row"><h3>${b.name}</h3><span class="lvl">${t('ui.lvl', { n: lvl })}${b.max ? ' / ' + b.max : ''}</span>${foldBtn(fk, fold)}</div>
           <p class="tag">${lvl ? b.desc(lvl) : t('ui.notYet')}</p>${extra}
           <div class="up"><small>${t('ui.nextLevel', { x: next })}</small>${maxed ? `<span class="chip on">${t('ui.done')}</span>` : costBtn('buff', b.id, Econ.buffCost(b, lvl), t('ui.get'))}</div>
         </div></article>`;
@@ -1926,7 +1975,7 @@
     const text = msgText(m.msg);
     scene.say(m.pub, text);
     if (!p) { if (Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); } }
-    else if (!S.settings.others) toast(`<b>${esc(p.name)}</b> ${esc(text)}`, 'teal');
+    else if (!S.settings.others || layoutMode !== 'desk') toast(`<b>${esc(p.name)}</b> ${esc(text)}`, 'teal');
     if (!document.hidden && (scene.ghosts.has(m.pub) || (p && !S.settings.others))) Sound.chat();
     uiDirty.travelers = true;
   }
@@ -1997,6 +2046,56 @@
   }
   let trRenderedAt = 0, lastTopTry = 0;
   let jnavScroll = 0, jnavSync = () => {}, notePop = -1;
+
+  /* ---------- Telefon yerleşimi (v1.56) ----------
+     Telefonda (≤ 860 px) sahnenin üstünde yazı kalmaz. Konum kartı (durum satırı; bildirimler ve bölge afişi de burada akar),
+     etkiler, ritim/durak şeridi panoya (#dock) taşınır. Dikeyde pano sahnenin altındadır, yakınlaştırma ve konuşma düğmeleri
+     ile sekmeler de oradadır; panel alttan açılan bir sayfa olur (sekmeye dokununca açılır; aşağı çekince, tutamaçtaki
+     düğmeyle, dışına dokununca ya da Esc ile kapanır). Yatayda pano panelin üstündedir. Sahne içindeki yazılar
+     (uçan yazılar, ad etiketleri, tabelalar, balon yazıları) çizilmez (scene.textless). */
+  let layoutMode = '';
+  const marks = new Map();
+  const place = (el, parent, before) => {
+    if (!marks.has(el)) { const m = document.createComment(el.id || el.className); el.before(m); marks.set(el, m); }
+    parent.insertBefore(el, before || null);
+  };
+  const restore = el => { const m = marks.get(el); if (m && el.previousSibling !== m) m.after(el); };
+  function arrange() {
+    const narrow = matchMedia('(max-width: 860px)').matches;
+    const mode = !narrow ? 'desk' : innerWidth > innerHeight ? 'land' : 'port';
+    if (mode === layoutMode) return;
+    const was = layoutMode;
+    layoutMode = mode;
+    const root = document.documentElement;
+    root.classList.toggle('m-phone', mode !== 'desk'); root.classList.toggle('m-port', mode === 'port'); root.classList.toggle('m-land', mode === 'land');
+    if (scene) scene.textless = mode !== 'desk';
+    const dock = $('#dock'), status = $('#dockStatus'), row = $('#dockTrail');
+    const els = { hud: $('.hud'), hint: $('#hint'), toasts: $('#toasts'), effects: $('#effects'), trail: $('.trail'), zoom: $('#zoomCtl'), chat: $('#btnChat'), pop: $('#chatPop'), tabs: $('.tabs'), dock };
+    for (const el of Object.values(els).reverse()) restore(el);
+    sheet(false);
+    if (mode !== 'desk') {
+      dock.hidden = false;
+      place(els.hud, status); place(els.hint, status); place(els.toasts, status);
+      place(els.effects, dock, row); place(els.trail, row);
+      if (mode === 'port') { place(els.zoom, row); place(els.chat, row); place(els.pop, row); place(els.tabs, dock); }
+      else place(dock, $('#panel'), $('.wallet'));
+    } else dock.hidden = true;
+    // gizli bildirim ve afiş kalıntıları yeni yerleşimde görünmesin
+    $('#banner').hidden = true; $('#stage').classList.remove('banner-on');
+    if (was && scene) { if (scene.resize()) scene.draw(); }
+    uiDirty.garage = uiDirty.buffs = uiDirty.journal = true;
+    syncTicker();
+  }
+  // Dikey telefonda paneli alttan açan sayfa
+  function sheet(open) {
+    const on = !!open && layoutMode === 'port';
+    // sayfa sekme çubuğunun üstünde biter: açıkken de başka sekmeye geçilebilir
+    if (on) { const tb = $('.dock .tabs'); if (tb) document.documentElement.style.setProperty('--sheet-bottom', `${Math.max(0, Math.round(innerHeight - tb.getBoundingClientRect().top + 6))}px`); }
+    document.documentElement.classList.toggle('sheet-open', on);
+    $('#sheetBack').hidden = !on;
+    $('#panel').inert = layoutMode === 'port' && !on;
+  }
+  const sheetOpen = () => document.documentElement.classList.contains('sheet-open');
   function renderJournal() {
     const pane = $('#pane-journal');
     const stamps = [];
@@ -2178,7 +2277,7 @@
       setText('#gLead', VEH[Econ.lead(S)].name);
       setText('#gConvoy', b.convoy > 0 ? '+' + fmtSpeed(b.convoy) : '—');
     }
-    setText('#credits', fmtNum(S.credits));
+    setText('#credits', fmtNum(S.credits)); setText('#hudCredits', fmtNum(S.credits));
     setText('#income', t('ui.perSec', { c: IT.fmtSmall(Math.max(creditEma, cur.idle * cur.cpm)) }));
     const cm = comboMult();
     setText('#rhythmVal', '×' + fmt2(cm));
@@ -2319,9 +2418,9 @@
     stage.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button > 0) return;
       // dikey telefonda sahnenin altındaki şerit (ritim, durak) adım saymaz
-      if (e.target === stage || e.target.closest('button, a, .chat-pop, .trail')) return;
-      // AB ya da ışık yılıyla yazılan mesafeye dokununca birimin açıklaması (adım sayılmaz)
-      if (e.target.closest('#hudDist.unit-tip')) { Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal'); return; }
+      // AB ya da ışık yılıyla yazılan mesafeye dokununca birimin açıklaması (adım sayılmaz; telefonda mesafe panodadır)
+      if (e.target.closest('#hudDist.unit-tip')) { if (layoutMode === 'desk') { Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal'); } return; }
+      if (e.target === stage || e.target.closest('button, a, .chat-pop, .trail, .dock')) return;
       if (chatJustClosed()) return;
       const r = scene.canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
@@ -2359,8 +2458,23 @@
         clickBuffer += S.distance - before;
       }
     });
+    // telefonda mesafe panodadır (yatayda panelin içinde): AB ya da ışık yılı açıklaması dokunuşla
+    $('#hudDist').addEventListener('click', e => {
+      if (layoutMode === 'desk' || !e.currentTarget.classList.contains('unit-tip')) return;
+      Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal');
+    });
+    // telefon panosu (dikeyde sahnenin altında): sekmeler ve diğer eylem düğmeleri; yatayda pano panelin içindedir
+    $('#dock').addEventListener('click', e => {
+      if ($('#panel').contains(e.currentTarget)) return;
+      const el = e.target.closest('[data-act]');
+      if (!el || el.disabled || !actions[el.dataset.act]) return;
+      Sound.unlock();
+      actions[el.dataset.act](el.dataset.id, el);
+    });
     $('#panel').addEventListener('click', e => {
       const el = e.target.closest('[data-act]');
+      const fc = !el && e.target.closest('.card[data-fold]');
+      if (fc && !e.target.closest('a, input, select, button, .pals')) { Sound.unlock(); toggleFold(fc.dataset.fold); return; }
       if (!el || el.disabled) return;
       Sound.unlock();
       actions[el.dataset.act](el.dataset.id, el);
@@ -2467,6 +2581,20 @@
     };
     jnavSync = () => { if (!jnavRaf) jnavRaf = requestAnimationFrame(jnavMark); };
     $('.panes').addEventListener('scroll', jnavSync, { passive: true });
+    // telefon yerleşimi: açılışta ve ekran döndükçe/boyut değiştikçe
+    arrange();
+    window.addEventListener('resize', arrange);
+    $('#sheetBack').addEventListener('click', () => sheet(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetOpen() && $('#modal').hidden) sheet(false); });
+    // sayfayı tutamaçtan aşağı çekince kapanır
+    (() => {
+      const head = $('#sheetHead'), panel = $('#panel');
+      let y0 = null, dy = 0;
+      head.addEventListener('pointerdown', e => { if (!sheetOpen()) return; y0 = e.clientY; dy = 0; head.setPointerCapture(e.pointerId); panel.style.transition = 'none'; });
+      head.addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); panel.style.transform = `translateY(${dy}px)`; });
+      const end = () => { if (y0 === null) return; y0 = null; panel.style.transition = ''; panel.style.transform = ''; if (dy > 70) sheet(false); };
+      head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+    })();
     let tab = 'garage';
     try { tab = localStorage.getItem('idle-traveler-tab') || 'garage'; } catch (e) { /* yok say */ }
     actions.tab(['garage', 'buffs', 'journal', 'travelers'].includes(tab) ? tab : 'garage');
