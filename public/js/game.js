@@ -1253,6 +1253,7 @@
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
+    Sound.ambient(dt, { biome: scene.biome, night: scene.nightAmt || 0, space: scene.space || 0, rain: scene.rain || 0 });
 
     uiTimer += dt;
     if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); scene.hudBottom = hudBottom(); scene.hudRight = hudEdge(); }
@@ -1283,17 +1284,20 @@
      gökkuşağı da sayılır), kayan yıldız, kâğıt uçak (mektup), havadaki bir yunus, yabani tilki ve gece Kuzey Işıkları.
      Yakalanan anlar fotoğrafın köşesinde küçük altın mühürlerle görünür (albümde de); yeni an bildirilir. Hepsi bulununca
      kartpostallar altın çerçeveli olur. Ekonomiye etkisi yoktur. */
+  // yalnızca karede gerçekten görünen olay sayılır (ekranın içinde, solmamış)
+  const onScr = (x, y, m = 20) => x > m && x < scene.W - m && y > 0 && y < scene.H;
   const MOMENTS = [
-    { id: 'butterfly', e: '🦋', test: () => !!(scene.gift && !scene.gift.caught) },
-    { id: 'bird', e: '🪶', test: () => !!(scene.bird && !scene.bird.noted && scene.bird.t > 0.5) },
-    { id: 'rainbow', e: '🌈', test: () => (scene.rainbow || 0) > 0.4 },
-    { id: 'star', e: '🌠', test: () => !!scene.star },
-    { id: 'plane', e: '✉️', test: () => !!scene.plane },
-    { id: 'dolphins', e: '🐬', test: () => !!(scene.dolphins && scene.dolphins.air.some(Boolean) && (scene.dolphins.vis || 0) > 0.4) },
-    { id: 'fox', e: '🦊', test: () => !!(scene.fox && !scene.fox.out && scene.fox.t > 0.8) },
-    { id: 'aurora', e: '🌌', test: () => scene.biome === 'aurora' && (scene.nightAmt || 0) > 0.5 && (scene.space || 0) < 0.3 },
+    { id: 'butterfly', e: '🦋', test: () => { const g = scene.gift; return !!(g && !g.caught && onScr(g.x, g.y)); } },
+    { id: 'bird', e: '🐦', test: () => { const b = scene.bird; if (!b || b.noted || b.t < 0.5) return false; for (let i = 0; i < b.n; i++) { const q = scene.birdPos(b, i); if (onScr(q.x, q.y)) return true; } return false; } },
+    { id: 'rainbow', e: '🌈', test: () => (scene.bowVis || 0) > 0.4 },
+    { id: 'star', e: '🌠', test: () => { const s = scene.star; return !!(s && s.t > 0.3 && s.t < s.dur && onScr(s.x, s.y)); } },
+    { id: 'plane', e: '✉️', test: () => { const p = scene.plane; return !!(p && onScr(p.x, p.y)); } },
+    { id: 'dolphins', e: '🐬', test: () => { const d = scene.dolphins; if (!d || (d.vis || 0) < 0.4 || d.a < 0.5) return false; for (let i = 0; i < d.n; i++) { const q = scene.dolPose(i); if (q.air && onScr(q.x, q.y)) return true; } return false; } },
+    // gece tilkinin önce yalnızca gözleri parlar: gövdesi belirince sayılır
+    { id: 'fox', e: '🦊', test: () => !!(scene.fox && !scene.fox.out && scene.fox.t > ((scene.nightAmt || 0) > 0.4 ? 1.8 : 0.8)) },
+    { id: 'aurora', e: '🌌', test: () => (scene.auroraVis || 0) > 0.5 && (scene.space || 0) < 0.3 },
   ];
-  const MOMENT = Object.fromEntries(MOMENTS.map(m => [m.id, m]));
+  const MOMENT = Object.assign(Object.create(null), Object.fromEntries(MOMENTS.map(m => [m.id, m])));
   const momentCount = () => MOMENTS.filter(m => S.moments[m.id]).length;
   const momentName = id => t(`moment.${id}`);
 
@@ -1385,7 +1389,8 @@
   function takePostcard() {
     Sound.unlock(); Sound.gift();
     const shot = MOMENTS.filter(m => m.test()), fresh = shot.filter(m => !S.moments[m.id]);
-    const c = makePostcard(shot, momentCount() >= MOMENTS.length);
+    // seti tamamlayan kartpostal da altın çerçeveli olur
+    const c = makePostcard(shot, momentCount() + fresh.length >= MOMENTS.length);
     for (const m of fresh) S.moments[m.id] = 1;
     if (fresh.length) {
       const n = momentCount();

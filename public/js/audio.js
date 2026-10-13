@@ -56,6 +56,69 @@
       rs.connect(hp); hp.connect(rg); rg.connect(this.music);
       rs.start();
       this.rain = rg;
+      // deniz (kıyı bölgeleri): yavaş, alçak bir hışırtı; dalgalar kazancın yavaşça kabarıp inmesiyle duyulur
+      const ss = c.createBufferSource(); ss.buffer = this.noiseBuf; ss.loop = true; ss.playbackRate.value = 0.55;
+      const sl = c.createBiquadFilter(); sl.type = 'lowpass'; sl.frequency.value = 650;
+      const sg = c.createGain(); sg.gain.value = 0;
+      ss.connect(sl); sl.connect(sg); sg.connect(this.music); ss.start();
+      this.sea = sg;
+      // uzay: derin, çok yumuşak bir uğultu (iki sinüs; biri hafifçe dalgalanır)
+      const dg = c.createGain(); dg.gain.value = 0; dg.connect(this.music);
+      for (const [f, v] of [[55, 1], [82.4, 0.6]]) { const o = c.createOscillator(); o.frequency.value = f; const og = c.createGain(); og.gain.value = v; o.connect(og); og.connect(dg); o.start(); }
+      this.drone = dg;
+    },
+    // Bölgelerin ses manzarası: dt'ye göre seyrek olaylar (kuş cıvıltısı, cırcır böceği, ağaçkakan, kuru esinti, kar
+    // ıslığı, kuzey ışıltısı) ve iki sürekli katman (deniz, uzay). Sürekli katmanlar saniyede dört kez güncellenir.
+    ambient(dt, env) {
+      if (!this.ctx || !this.musicOn || !env) return;
+      const c = this.ctx, night = env.night || 0, space = env.space || 0, rain = env.rain || 0, b = env.biome;
+      const sea = (b === 'coast' || b === 'olive') ? 1 - space : 0;
+      this.ambT = (this.ambT || 0) + dt; this.ambU = (this.ambU || 0) - dt;
+      if (this.ambU <= 0) {
+        this.ambU = 0.25;
+        const swell = 0.5 + 0.5 * Math.sin(this.ambT * 2 * Math.PI / 7);
+        if (this.sea) this.sea.gain.setTargetAtTime(sea * (0.02 + 0.06 * swell), c.currentTime, 0.6);
+        if (this.drone) this.drone.gain.setTargetAtTime(0.012 * space, c.currentTime, 1.5);
+      }
+      if (space > 0.5 || rain > 0.3) return;
+      this.ambE = (this.ambE === undefined ? 4 : this.ambE) - dt;
+      if (this.ambE > 0) return;
+      const green = { meadow: 1, lavender: 1, wheat: 1, tulip: 1, sakura: 1, tea: 1, olive: 1, coast: 1 }[b];
+      const forest = b === 'pine' || b === 'autumn', dry = b === 'desert' || b === 'canyon' || b === 'cappadocia', cold = b === 'snow' || b === 'aurora';
+      const at = w => c.currentTime + (w || 0);
+      const chirp = (w, f0, f1, d, v, type) => {
+        const t0 = at(w), o = c.createOscillator(), g = c.createGain();
+        o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + d * 0.8);
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(v, t0 + Math.min(0.02, d * 0.3)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+        o.connect(g); g.connect(this.music); g.connect(this.delay); o.start(t0); o.stop(t0 + d + 0.05);
+      };
+      if (night > 0.5 && (green || dry)) {
+        // cırcır böceği: yüksek, kısa titreşimlerden bir trill
+        this.ambE = 1.6 + Math.random() * 3;
+        const f = 4200 + Math.random() * 600, n = 3 + (Math.random() * 4 | 0);
+        for (let i = 0; i < n; i++) chirp(i * 0.055, f, f * 1.01, 0.04, 0.004);
+      } else if (night <= 0.5 && green) {
+        // kuş cıvıltısı: iki dört notalık, yukarı süzülen kısa sesler
+        this.ambE = 5 + Math.random() * 9;
+        const base = 2400 + Math.random() * 1400, n = 2 + (Math.random() * 3 | 0);
+        for (let i = 0; i < n; i++) chirp(i * (0.11 + Math.random() * 0.06), base * (0.9 + Math.random() * 0.25), base * 1.3, 0.09, 0.006);
+      } else if (night <= 0.5 && forest) {
+        // uzaktan ağaçkakan: hızlı, kuru tıkırtılar
+        this.ambE = 14 + Math.random() * 16;
+        for (let i = 0; i < 7 + (Math.random() * 4 | 0); i++) this.noise(0.035, 0.018, 1900, 5, this.music, 0.05 + i * 0.05);
+      } else if (dry) {
+        // kuru esinti: kum hışırtısı gibi kabarıp sönen bir dalga
+        this.ambE = 8 + Math.random() * 8;
+        const t0 = at(0), s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        s.buffer = this.noiseBuf; f.type = 'bandpass'; f.Q.value = 1.4;
+        f.frequency.setValueAtTime(300, t0); f.frequency.linearRampToValueAtTime(950, t0 + 1.2); f.frequency.linearRampToValueAtTime(400, t0 + 2.4);
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 1); g.gain.linearRampToValueAtTime(0, t0 + 2.4);
+        s.connect(f); f.connect(g); g.connect(this.music); s.start(t0, Math.random()); s.stop(t0 + 2.5);
+      } else if (cold) {
+        this.ambE = 10 + Math.random() * 10;
+        if (b === 'aurora' && night > 0.5) [0, 2, 4].forEach((n, i) => this.tone(PENTA[n] * 2, 0.012, 2.4, 'sine', this.music, true, i * 0.35)); // kuzey ışıltısı
+        else chirp(0, 900, 1250, 2, 0.005, 'sine'); // karlı rüzgârın ince ıslığı
+      } else this.ambE = 6;
     },
     // Her karede çağrılır: seyrek, rastgele pentatonik çan sesleri
     tick(dt, speedFactor, rain) {

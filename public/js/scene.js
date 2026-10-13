@@ -3074,6 +3074,7 @@
       if (starA > 0.02 && this.constFound.length) this.drawSkyMap(ctx, starA, space);
       // kuzey ışıkları
       const auroraA = pal.aurora * night;
+      this.auroraVis = auroraA; // Özel Anlar: kuzey ışıklarının gerçekten görünen yoğunluğu
       if (auroraA > 0.02) this.drawAurora(ctx, auroraA);
 
       // güneş ve ay
@@ -3099,6 +3100,7 @@
 
       // gökkuşağı (uzak dağların arkasında)
       const bowA = this.rainbow * (this.moonbow ? night : 1 - night) * (1 - space);
+      this.bowVis = bowA; // Özel Anlar: gökkuşağının gerçekten görünen yoğunluğu
       if (bowA > 0.01) this.drawRainbow(ctx, bowA, horizon, this.moonbow);
 
       // güneş yelkeninde uzak halkalı gezegen
