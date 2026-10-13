@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.53';
+  IT.VERSION = '1.54';
 
   IT.CHANGELOG = [
+    { v: '1.54', date: '2026-10-13', items: {
+      tr: ['Fotoğraf makinen artık daha dikkatli: doğru anda çekilen kartpostallar bir şey saklıyor. Hepsini bulanların kartpostallarını küçük bir sürpriz bekliyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Your camera is paying closer attention now: postcards taken at just the right moment keep a secret. A small surprise awaits the postcards of those who find them all.',
+        'A few small touches along the road.'],
+      de: ['Deine Kamera passt jetzt genauer auf: Postkarten, die im richtigen Moment entstehen, bewahren ein Geheimnis. Wer alle findet, dessen Postkarten erwartet eine kleine Überraschung.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Tu cámara ahora presta más atención: las postales hechas en el momento justo guardan un secreto. Una pequeña sorpresa espera a las postales de quien los encuentre todos.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Ton appareil photo est plus attentif : les cartes postales prises au bon moment gardent un secret. Une petite surprise attend les cartes de ceux qui les trouvent tous.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.53', date: '2026-10-13', items: {
       tr: ['Yol Defteri’nin üstünde artık bölümler arasında gezinmeni sağlayan bir şerit var: notlar, albüm, kuşlar, rozetler… hepsi bir dokunuş uzağında.',
         'Yolda birkaç küçük rötuş.'],
