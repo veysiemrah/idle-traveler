@@ -238,7 +238,11 @@ npx wrangler dev   # http://localhost:8787
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50, 100, 150 ve 200'de her araç yeni
   bir görünüm kazanır (25'ten sonrakiler aynı zamanda hızın ikiye katlandığı eşikler); 100. seviyede altın süsler ve parıltı gelir.
   150. seviyede aracın arkasından kıyafet renklerinde yıldız tozu izi akar, 200. seviyede buna dalgalanan bir gökkuşağı kuyruğu
-  eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). Garaj simgelerinde bu aşamalar köşelerdeki altın
+  eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). v1.52'den beri iki aşama daha var: Sv. 300'de aracın
+  çevresinde ince bir yörünge çizgisi üstünde kıyafet ve altın renklerinde altı yıldız döner (yıldızlar aracın önünden ve
+  arkasından geçer), Sv. 500'de arkada yavaşça dönen ışık huzmeleri belirir (gündüz daha soluk) ve yörüngedeki yıldızlar
+  iri ve kısa ışık kuyruklu olur (`scene.js` → `aura`). Sv. 300 hem ×3 hem yeni görünüm olduğu için bildirim "hızı 3 katına
+  çıktı ve araç yeni bir görünüm kazandı" der. Diğer gezginlerin görünüm aşaması sunucuda 0–8 arası kabul edilir. Garaj simgelerinde bu aşamalar köşelerdeki altın
   yıldızlar ve aracın arkasındaki minik gökkuşağı yayıyla görünür; diğer gezginler ve Yolcular listesindeki simgeler de bu
   görünümle çizilir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
@@ -484,6 +488,9 @@ npx wrangler dev   # http://localhost:8787
   (güçlendirmeyle %90'a kadar) en fazla 8 saat (uzatılabilir) yürümeye devam eder. Son görülme zamanını (`lastSeen`) yalnızca
   çalışan döngü ve açılış ilerletir, kayıt ilerletmez: gizli sekmede gelen bir kayıt (ör. yeni sürümle yenilenme) sekmenin gizli
   kaldığı süreyi silmez (v1.44'e kadar her yayın arka plandaki sekmelerin çevrimdışı ilerlemesini o ana kadar siliyordu).
+  Tanıtım penceresi kapanmadan (yeni oyuncu) geçen süre çevrimdışı yolculuk sayılmaz; yeni oyuncu ad penceresinden sonra "sen
+  yokken…" raporu görmez. Ad penceresindeki kırmızı uyarı geçerli bir ad yazılınca kural metnine döner; basılı tutulan Enter
+  boş adı hemen reddetmez.
 - **Gündüz ve gece**: Sahne varsayılan olarak tarayıcının temasını izler. Açık tema güneşli gündüzdür, koyu tema fenerlerin yandığı
   yıldızlı gecedir. HUD'daki güneş/ay düğmesiyle ya da Ayarlar > Gökyüzü (Otomatik / Gündüz / Gece) seçimiyle
   tarayıcı temasından bağımsız olarak sabitlenebilir. Değişimde gün batımı ya da gün doğumuyla yumuşak bir geçiş olur.

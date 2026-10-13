@@ -175,6 +175,7 @@ IT.addLang('de', {
     'toast.doubled': '<b>{up} {lvl}</b> · Tempo von {name} verdoppelt!',
     'toast.doubledN': '<b>{up} {lvl}</b> · Tempo von {name} ×{m}!',
     'toast.doubledLook': '<b>{up} {lvl}</b> · {name}: Tempo verdoppelt und ein neues Aussehen!',
+    'toast.boostedLook': '<b>{up} {lvl}</b> · Tempo von {name} ×{m} und ein neues Aussehen!',
     'toast.reset': 'Eine neue Reise beginnt. Gute Fahrt!',
     'toast.dusk': 'Der Abend bricht an. Laternen leuchten auf, die Sterne kommen heraus.',
     'toast.dawn': 'Die Sonne geht auf. Die Straße ist wieder hell.',

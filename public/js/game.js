@@ -979,7 +979,7 @@
       const looked = Econ.lookTier(lvl + q.n) > Econ.lookTier(lvl);
       const vars = { up: v.upName, lvl: t('ui.lvl', { n: lvl + q.n }), name: v.name, n: crossed, m: fmtNum(m) };
       // tek eşikte ×2 "ikiye katlandı"; daha büyük katlar (×3–×5) ya da birden çok eşik birden: toplam kat
-      if (crossed) toast(t(looked ? 'toast.doubledLook' : m > 2 ? 'toast.doubledN' : 'toast.doubled', vars), looked ? 'gold' : 'teal');
+      if (crossed) toast(t(looked ? (m > 2 ? 'toast.boostedLook' : 'toast.doubledLook') : m > 2 ? 'toast.doubledN' : 'toast.doubled', vars), looked ? 'gold' : 'teal');
       else if (looked) toast(t('toast.look', vars), 'gold');
       // Araç yeni bir görünüm kazandı: sahnedeyse parıltıyla göster
       if (looked && S.active === id) { scene.burst(scene.travelerX, scene.riderY() - 30 * scene.k, 30, ['#ffd56b', '#fff1c2', '#ffffff', '#6fd3c1']); Sound.region(); }
@@ -1156,7 +1156,8 @@
     lastFrame = now; lastWall = wall;
 
     // Sekme gizliyken ya da cihaz uykudayken geçen süre (bu karenin dt'si dışında): çevrimdışı hızla say
-    resume((Date.now() - S.lastSeen) / 1000 - dt);
+    // tanıtım kapanmadan (yeni oyuncu) geçen süre çevrimdışı yolculuk sayılmaz: yola henüz çıkılmadı
+    if (S.intro) resume((Date.now() - S.lastSeen) / 1000 - dt);
     S.lastSeen = Math.max(S.lastSeen, Date.now());
 
     const cur = current();
@@ -1268,7 +1269,7 @@
      Yer kalmazsa en eskiler silinir; depolama kapalıysa albüm yalnızca boş görünür. Yolculuğu sıfırlamak albümü de siler. */
   const ALBUM_KEY = 'idle-traveler-album', ALBUM_MAX = 12;
   function albumRead() {
-    try { const a = JSON.parse(localStorage.getItem(ALBUM_KEY) || '[]'); return Array.isArray(a) ? a.filter(p => p && typeof p.img === 'string' && p.img.startsWith('data:image/')).slice(0, ALBUM_MAX) : []; } catch (e) { return []; }
+    try { const a = JSON.parse(localStorage.getItem(ALBUM_KEY) || '[]'); return Array.isArray(a) ? a.filter(p => p && typeof p.img === 'string' && p.img.startsWith('data:image/') && Number.isFinite(p.at)).slice(0, ALBUM_MAX) : []; } catch (e) { return []; }
   }
   function albumAdd(card, region, dist) {
     try {
@@ -1470,12 +1471,18 @@
           aria-label="${t('name.label')}" placeholder="${esc(t('name.placeholder'))}" value="${esc(nameDraft)}">
         <button class="chip ride" type="button" data-act="nameDice">${t('name.dice')}</button>
       </div>
-      <p class="small ${bad ? 'name-bad' : 'muted'}" id="nameMsg">${t(bad ? 'name.bad' : 'name.rule')}</p>` }),
+      <p class="small ${bad && !IT.cleanName(nameDraft) ? 'name-bad' : 'muted'}" id="nameMsg">${t(bad && !IT.cleanName(nameDraft) ? 'name.bad' : 'name.rule')}</p>` }),
     () => { S.player.name = IT.cleanName(nameDraft); save(); IT.Online.now(); uiDirty.travelers = true; toast(t('toast.named', { name: esc(S.player.name) }), 'teal'); },
     () => {
       const inp = $('#nameInput');
-      inp.addEventListener('input', () => { nameDraft = inp.value; });
-      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#modalBtn').click(); } });
+      // geçerli bir ad yazılınca kırmızı uyarı yumuşakça kural metnine döner
+      inp.addEventListener('input', () => {
+        nameDraft = inp.value;
+        const msg = $('#nameMsg');
+        if (bad && msg && IT.cleanName(nameDraft)) { bad = false; msg.className = 'small muted'; msg.textContent = t('name.rule'); }
+      });
+      // basılı tutulan Enter (tanıtımdaki "Başla"dan taşan) boş adı hemen reddetmesin
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.repeat) { e.preventDefault(); $('#modalBtn').click(); } });
       // Telefonlarda klavye kendiliğinden açılıp sahneyi örtmesin: yalnızca fareli cihazlarda odaklan
       if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) inp.focus({ preventScroll: true });
     }, false,

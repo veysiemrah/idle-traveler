@@ -438,7 +438,8 @@
     butterflyDur(lvl) { return 1 + Econ.bfDur * (lvl || 0); },
     // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–6).
     // 150: arkasında yıldız tozu izi, 200: gökkuşağı kuyruğu (v1.28, yeni ekonomide bu seviyelere ulaşılabiliyor)
-    looks: [10, 25, 50, 100, 150, 200],
+    // görünüm aşamaları: Sv. 300 ve 500 (v1.52) bütün araçlarda yıldız yörüngesi ve ışık huzmeleri
+    looks: [10, 25, 50, 100, 150, 200, 300, 500],
     lookTier(lvl) { return Econ.looks.filter(t => (lvl || 0) >= t).length; },
     // Yol arkadaşı: ilk seviye +%10 kredi, sonraki her seviye +%5; görünüm 2, 4, 7 ve 10. seviyede değişir
     palBonus(lvl) { return lvl > 0 ? 0.1 + 0.05 * (lvl - 1) : 0; },
