@@ -251,9 +251,11 @@ npx wrangler dev   # http://localhost:8787
   150. seviyede aracın arkasından kıyafet renklerinde yıldız tozu izi akar, 200. seviyede buna dalgalanan bir gökkuşağı kuyruğu
   eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). v1.52'den beri iki aşama daha var: Sv. 300'de aracın
   çevresinde ince bir yörünge çizgisi üstünde kıyafet ve altın renklerinde altı yıldız döner (yıldızlar aracın önünden ve
-  arkasından geçer), Sv. 500'de arkada yavaşça dönen ışık huzmeleri belirir (gündüz daha soluk) ve yörüngedeki yıldızlar
+  arkasından geçer), Sv. 400'de (v1.61) ilkine eğik ikinci bir yörüngede dört küçük, kuyruklu deniz yeşili ay ters yönde
+  döner, Sv. 500'de arkada yavaşça dönen ışık huzmeleri belirir (gündüz daha soluk) ve yörüngedeki yıldızlar
   iri ve kısa ışık kuyruklu olur (`scene.js` → `aura`). Sv. 300 hem ×3 hem yeni görünüm olduğu için bildirim "hızı 3 katına
-  çıktı ve araç yeni bir görünüm kazandı" der. Diğer gezginlerin görünüm aşaması sunucuda 0–8 arası kabul edilir. Garaj simgelerinde bu aşamalar köşelerdeki altın
+  çıktı ve araç yeni bir görünüm kazandı" der. Diğer gezginlerin görünüm aşaması sunucuda 0–9 arası kabul edilir
+  (v1.61'den önce 0–8; Sv. 400 araya girdiği için eski istemcinin 8'i, yenilenene kadar Sv. 400 görünümüyle çizilir). Garaj simgelerinde bu aşamalar köşelerdeki altın
   yıldızlar ve aracın arkasındaki minik gökkuşağı yayıyla görünür; diğer gezginler ve Yolcular listesindeki simgeler de bu
   görünümle çizilir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı

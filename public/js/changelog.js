@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.60';
+  IT.VERSION = '1.61';
 
   IT.CHANGELOG = [
+    { v: '1.61', date: '2026-10-13', items: {
+      tr: ['Sv. 400’e ulaşan araçların çevresinde artık bir şey daha dönüyor. Ne olduğunu görmek için yolun uzun ama değer.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Vehicles that reach Lv. 400 now have something more circling around them. The road there is long, but worth it.',
+        'A few small touches along the road.'],
+      de: ['Um Fahrzeuge auf Stufe 400 kreist jetzt noch etwas. Der Weg dorthin ist lang, aber er lohnt sich.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Los vehículos que llegan al Nv. 400 ahora tienen algo más girando a su alrededor. El camino es largo, pero merece la pena.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Les véhicules qui atteignent le Niv. 400 ont désormais quelque chose de plus qui tourne autour d’eux. La route est longue, mais elle en vaut la peine.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.60', date: '2026-10-13', items: {
       tr: ['Özel Anlar’da yeni bir boş yer belirdi. İpucu: çimenlere bak. Altın çerçeveni çoktan kazandıysan merak etme, o hep senin.',
         'Yolda birkaç küçük rötuş.'],
