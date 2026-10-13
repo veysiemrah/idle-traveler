@@ -397,6 +397,14 @@ button { font: inherit; color: inherit; }
 .ms-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; min-width: 0; }
 .ms-top .lbl { white-space: nowrap; }
 .ms-top b { font: 700 15px/1.2 var(--font-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* sığmayan durak adı kırpılmaz: kenarları solarak yavaşça sona kayar, bekler, başa döner */
+#msName.pan {
+  text-overflow: clip; animation: ms-pan var(--pan-t, 8s) ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5px, #000 calc(100% - 8px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5px, #000 calc(100% - 8px), transparent);
+}
+@keyframes ms-pan { 0%, 20% { text-indent: 0; } 48%, 70% { text-indent: var(--pan); } 98%, 100% { text-indent: 0; } }
+@media (prefers-reduced-motion: reduce) { #msName.pan { animation: none; text-overflow: ellipsis; -webkit-mask-image: none; mask-image: none; } }
 .ms-prog { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .milestone i { background: linear-gradient(90deg, var(--apricot), var(--gold)); }
 
@@ -1080,6 +1088,25 @@ html.reloading body { opacity: 0; transition: opacity .6s ease; }
 /* uzun adlar (Schmetterlingsfreund, Postkartensammlung) dar kartta satırı taşırıp katlama düğmesini itmesin: ad bölünür */
 .card[data-fold] .row h3 { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 .card[data-fold] .row .lvl { font-variant-numeric: tabular-nums; }
+/* güçlendirme eşik noktaları (v1.58): rozetteki beş nokta; ulaşılan altın, sıradaki yavaşça nefes alır, yeni dolan büyüyüp yerine oturur */
+.lvl .pips { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: 1px; }
+.lvl .pips i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .22; }
+.lvl .pips i.on { background: var(--gold); opacity: 1; box-shadow: 0 0 4px rgba(255, 213, 107, 0.6); }
+.lvl .pips i.nx { opacity: .5; animation: pip-wait 2.6s ease-in-out infinite; }
+.lvl .pips i.pop { animation: pip-pop .7s cubic-bezier(.3, 1.6, .5, 1); }
+.lvl.top { color: var(--gold); background: rgba(255, 213, 107, 0.18); }
+:root[data-theme="light"] .lvl.top { color: #8a5a00; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .lvl.top { color: #8a5a00; } }
+@keyframes pip-wait { 50% { opacity: .18; } }
+@keyframes pip-pop { 0% { transform: scale(0); } 60% { transform: scale(1.9); } 100% { transform: scale(1); } }
+/* eşik geçilince kart bir kez altınla parlar */
+.card.surge { animation: card-surge 1.6s ease-out; }
+@keyframes card-surge {
+  0% { border-color: var(--line-soft); box-shadow: 0 0 0 0 rgba(255, 213, 107, 0); }
+  22% { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255, 213, 107, 0.55), 0 0 22px rgba(255, 213, 107, 0.45); }
+  100% { border-color: var(--line-soft); box-shadow: 0 0 0 0 rgba(255, 213, 107, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .lvl .pips i, .card.surge { animation: none !important; } }
 /* dar telefonda güçlendirme kartının seviye rozeti adın altına iner: ad tek sütunda rahatça okunur, katlama düğmesi sağda kalır */
 @media (max-width: 420px) {
   .card[data-fold] .row:has(> .lvl) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; row-gap: 4px; }

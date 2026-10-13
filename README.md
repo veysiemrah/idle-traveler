@@ -295,7 +295,9 @@ npx wrangler dev   # http://localhost:8787
   İlk üçü tavansızdır (her seviye 2,2–2,6 kat pahalanır, alınabilen seviye gelirin logaritmasıyla artar: 24 saatte ~25–30 seviye).
   v1.56'dan beri bu üçünün etkisi araçlardaki gibi eşiklerde katlanır: (1 + seviye başına %20/%25 × seviye) × Sv. 25, 50, 100
   ve 150'de ×2, Sv. 200'de ×3 (Güçlü Adımlar Sv. 25'te +%1.100, Sv. 100'de +%16.700). Kartın "sonraki seviye" satırı sıradaki
-  eşiği de gösterir (`ui.buffBoost`).
+  eşiği de gösterir (`ui.buffBoost`). v1.58: seviye rozetinde beş eşik noktası (ulaşılan altın, sıradaki yavaşça yanıp söner;
+  Sv. 200'de rozet altın olur). Eşiği geçen alım altın bildirim (`toast.buffBoost`), ses, sahnede parıltı ve kartın bir kez
+  altınla parlamasıyla kutlanır. Sıradaki durağın adı kutuya sığmazsa kırpılmaz, kenarları solarak yavaşça kayar.
   Tavanlı olanlar v1.38'de dikleşti (büyüme: Ritim ×4, Şans ve Rüya ×4,5, Kamp ×2,3, Kelebek Dostu ×5, Yol Arkadaşı ×6). Son
   seviyeleri artık minibüs ile uçak arasındaki fiyatlarda (Ritim ~79 Mn, Kelebek Dostu ~3,5 Mr, Yol Arkadaşı ~50 Mr); önceden
   hepsi ~3 Mr tutuyordu ve aktif oyuncu ilk 10 dakikada bitiriyordu. Sıradan oyuncu onları ilk ~3 saate yayar.

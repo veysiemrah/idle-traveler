@@ -162,6 +162,7 @@ IT.addLang('en', {
     'toast.vehNewLead': '<b>New vehicle: {name}</b> · {lead} still sets your speed. A few upgrades and {name} takes the lead.',
     'toast.doubled': '<b>{up} {lvl}</b> · {name} speed doubled!',
     'toast.doubledN': '<b>{up} {lvl}</b> · {name} speed ×{m}!',
+    'toast.buffBoost': '<b>{name} {lvl}</b> · its effect just grew ×{x}!',
     'toast.doubledLook': '<b>{up} {lvl}</b> · {name} speed doubled and it got a new look!',
     'toast.boostedLook': '<b>{up} {lvl}</b> · {name} speed ×{m} and a new look!',
     'toast.reset': 'A new journey begins. Safe travels!',

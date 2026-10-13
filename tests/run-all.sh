@@ -30,12 +30,13 @@ PARTS="$SP/parts"; rm -rf "$PARTS"; mkdir -p "$PARTS"
 # statik sunucu: açık değilse başlat, bitince kapat
 SRV=""
 if ! curl -s -o /dev/null http://localhost:8765/; then
-  python3 -m http.server 8765 -d ../public >/dev/null 2>&1 & SRV=$!
+  # komut ikamesiyle başlatılır: bu kabuğun işi (job) olmaz, aşağıdaki "wait" ve iş sayacı sunucuyu beklemez
+  SRV=$(python3 -m http.server 8765 -d ../public >/dev/null 2>&1 & echo $!)
   for _ in $(seq 1 30); do curl -s -o /dev/null http://localhost:8765/ && break; sleep 0.3; done
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
 export NODE_OPTIONS="-r $HERE/pw_name.js"
-ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient"
+ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient buffpips"
 # zamanlamaya ya da sayfa yenilemeye duyarlı betikler: paralel yük altında kararsızlaşmasınlar diye en sonda tek tek
 SERIAL=" off cycle cyctheme guards update persist backup stress "
 LIST="$ALL"; [ -n "$ONLY" ] && LIST="${ONLY//,/ }"

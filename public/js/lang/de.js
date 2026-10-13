@@ -174,6 +174,7 @@ IT.addLang('de', {
     'toast.vehNewLead': '<b>Neues Fahrzeug: {name}</b> · {lead} bestimmt noch dein Tempo. Ein paar Upgrades, und {name} übernimmt die Führung.',
     'toast.doubled': '<b>{up} {lvl}</b> · Tempo von {name} verdoppelt!',
     'toast.doubledN': '<b>{up} {lvl}</b> · Tempo von {name} ×{m}!',
+    'toast.buffBoost': '<b>{name} {lvl}</b> · Wirkung jetzt ×{x}!',
     'toast.doubledLook': '<b>{up} {lvl}</b> · {name}: Tempo verdoppelt und ein neues Aussehen!',
     'toast.boostedLook': '<b>{up} {lvl}</b> · Tempo von {name} ×{m} und ein neues Aussehen!',
     'toast.reset': 'Eine neue Reise beginnt. Gute Fahrt!',
