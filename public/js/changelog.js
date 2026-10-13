@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.54';
+  IT.VERSION = '1.55';
 
   IT.CHANGELOG = [
+    { v: '1.55', date: '2026-10-13', items: {
+      tr: ['Sesini aç ve kulak ver: her bölgenin artık kendi sesi var. Kıyıda dalgalar, ovalarda kuşlar, gece cırcır böcekleri… Uzayda bile bir şey mırıldanıyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Turn up the sound and listen: every region now has a voice of its own. Waves on the coast, birds on the plains, crickets at night… Even space hums softly.',
+        'A few small touches along the road.'],
+      de: ['Mach den Ton an und hör zu: Jede Region hat jetzt ihre eigene Stimme. Wellen an der Küste, Vögel auf den Ebenen, Grillen in der Nacht … Sogar das All summt leise.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Sube el sonido y escucha: cada región tiene ahora su propia voz. Olas en la costa, pájaros en las llanuras, grillos de noche… Hasta el espacio murmura.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Monte le son et écoute : chaque région a désormais sa propre voix. Les vagues sur la côte, les oiseaux dans les plaines, les grillons la nuit… Même l’espace murmure.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.54', date: '2026-10-13', items: {
       tr: ['Fotoğraf makinen artık daha dikkatli: doğru anda çekilen kartpostallar bir şey saklıyor. Hepsini bulanların kartpostallarını küçük bir sürpriz bekliyor.',
         'Yolda birkaç küçük rötuş.'],

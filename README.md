@@ -99,6 +99,12 @@ npx wrangler dev   # http://localhost:8787
 - **Başlık çubuğu**: Sayfanın üstünde oyunun adı, sürüm numarası ve *Yenilikler* düğmesi ile ayarlar (dişli), kartpostal,
   tema (gündüz/gece) ve ses düğmeleri durur. Ayarlar penceresinde dil, birimler, ses efektleri, ortam sesi, gökyüzü ve
   yolculuğu sıfırlama bulunur. Dar telefonlarda yalnızca logo, sürüm ve düğmeler kalır.
+  **Ses manzarası (v1.55)**: Ortam sesi bölgeye göre değişir (`audio.js` → `ambient`): kıyıda (Ege Sahil Yolu, Zeytin
+  Bahçeleri) yaklaşık 7 saniyede bir kabarıp inen alçak bir deniz hışırtısı; çiçekli ovalarda gündüz 5–14 sn arayla kuş
+  cıvıltıları, gece (ovalarda ve kuru bölgelerde) cırcır böceği trilleri; çam ormanı ve sonbahar korusunda gündüz uzaktan
+  ağaçkakan tıkırtısı; çöl, kanyon ve peri bacalarında kabarıp sönen kuru esintiler; karlı bölgelerde ince bir rüzgâr ıslığı,
+  Kuzey Işıkları'nda gece yumuşak bir ışıltı; uzayda derin, sessiz bir uğultu. Yağmurda ve uzayda olaylar susar. Hepsi ortam sesi
+  ayarına bağlıdır; sürekli katmanlar saniyede dört kez güncellenir. Testi: `tests/ambient.js`.
   Efektlerin yankısı ana çıkışa gider (ortam sesi kapalıyken de duyulur); iOS'ta bir kesintiden (arama, kilit ekranı) sonra ses
   ilk dokunuşta yeniden başlar.
 - **Yenilikler**: Sürüm düğmesi her sürümde neyin değiştiğini tarihleriyle gösterir. Oyuncunun henüz görmediği bir sürüm
@@ -480,7 +486,9 @@ npx wrangler dev   # http://localhost:8787
   Kuzey Işıkları bölgesi. Yakalanan anlar fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük
   görünümün altında adları yazar); yeni bir an "Özel an yakalandı: … (n/8)" diye bildirilir. İlk kartpostaldan sonra Yol
   Defteri'nde *Özel Anlar* bölümü görünür: bulunanlar adıyla, bulunmayanlar sezdiren bir ipucuyla ("Gökyüzü yedi renge
-  boyandığında"). Sekizi de bulununca kartpostallar altın çerçeveli olur (köşelerinde küçük yıldızlar). `moments` alanında
+  boyandığında"). Yalnızca karede gerçekten görünen olay sayılır: ekranın içinde (kelebek, kuş, kâğıt uçak, havadaki yunus),
+  solmamış (gökkuşağı ve Kuzey Işıkları çizildikleri yoğunluğa göre), gece tilkinin gövdesi belirmiş. Sekizi de bulununca
+  (seti tamamlayan kartpostal dahil) kartpostallar altın çerçeveli olur (köşelerinde küçük yıldızlar). `moments` alanında
   ömür boyu tutulur. Ekonomiye etkisi yoktur. Testi: `tests/moments.js`.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
