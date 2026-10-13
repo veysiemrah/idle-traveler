@@ -471,6 +471,8 @@ npx wrangler dev   # http://localhost:8787
     boyunca yolcunun (uçan araçta aracın) üstünde dönen küçük bir ışık bulutu olur, gece çevresini aydınlatır; etki bitince
     yavaşça söner, sayfa yeniden açılınca etki sürüyorsa yerinde belirir. Sürüler Yol Defteri'nde sayılır (`fireflies`).
     Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+  Yatay telefonda pano panele taşındığından durak kutusu kendi genişliğiyle ölçülür (`.dock-trail` kapsayıcı sorgusu):
+  dar kalınca etiket ve mesafe gizlenir, durağın adı görünür.
   Rotalar 13 tanedir; on ikinci eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
@@ -502,13 +504,16 @@ npx wrangler dev   # http://localhost:8787
   tarih ve yolla büyük açılır, yeniden indirilebilir. Yolculuğu sıfırlamak albümü de siler. Testi: `tests/album.js`.
   **Özel Anlar (v1.54)**: Kartpostal çekilirken sahnede bir olay varsa o an yakalanır (`game.js` → `MOMENTS`): altın kelebek,
   deftere yazılmamış bir kuş, gökkuşağı (ay gökkuşağı da), kayan yıldız, kâğıt uçak, havadaki bir yunus, yabani tilki ve gece
-  Kuzey Işıkları bölgesi. Yakalanan anlar fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük
-  görünümün altında adları yazar); yeni bir an "Özel an yakalandı: … (n/8)" diye bildirilir. İlk kartpostaldan sonra Yol
+  Kuzey Işıkları bölgesi; v1.60'tan beri dokuzuncu olarak ateşböceği sürüsü (Ateşböceği Yolu; sürü karede ya da ateşböcekleri
+  omuzdayken, mührü 🎇). Yakalanan anlar fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük
+  görünümün altında adları yazar); yeni bir an "Özel an yakalandı: … (n/9)" diye bildirilir. İlk kartpostaldan sonra Yol
   Defteri'nde *Özel Anlar* bölümü görünür: bulunanlar adıyla, bulunmayanlar sezdiren bir ipucuyla ("Gökyüzü yedi renge
   boyandığında"). Yalnızca karede gerçekten görünen olay sayılır: ekranın içinde (kelebek, kuş, kâğıt uçak, havadaki yunus),
-  solmamış (gökkuşağı ve Kuzey Işıkları çizildikleri yoğunluğa göre), gece tilkinin gövdesi belirmiş. Sekizi de bulununca
+  solmamış (gökkuşağı ve Kuzey Işıkları çizildikleri yoğunluğa göre), gece tilkinin gövdesi belirmiş. Hepsi bulununca
   (seti tamamlayan kartpostal dahil) kartpostallar altın çerçeveli olur (köşelerinde küçük yıldızlar). `moments` alanında
-  ömür boyu tutulur. Ekonomiye etkisi yoktur. Testi: `tests/moments.js`.
+  ömür boyu tutulur. Çerçeve bir kez kazanılınca kalır (`momentGold`): yeni bir an eklense de gitmez; v1.54'ün sekiz anını
+  toplamış eski kayıtlar (alan henüz yokken) çerçeveyi korur, defterde "Altın çerçeven hep seninle. Yine de albümde yeni bir
+  an için boş bir yer açıldı…" yazar. Ekonomiye etkisi yoktur. Testi: `tests/moments.js`.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci

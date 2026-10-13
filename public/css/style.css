@@ -1047,6 +1047,8 @@ html.reloading body { opacity: 0; transition: opacity .6s ease; }
 .m-phone .effects::-webkit-scrollbar { display: none; }
 .m-phone .fx { white-space: nowrap; font-size: 12px; padding: 4px 10px; flex: none; }
 .m-phone .dock-trail { display: flex; align-items: center; gap: 6px; padding: 0 12px; position: relative; }
+/* şerit kendi genişliğiyle ölçülür: yatayda panele taşınınca da durak kutusu dar kalırsa yalnızca durağın adını gösterir */
+.m-phone .dock-trail { container-type: inline-size; }
 .m-phone .dock-trail .trail { position: static; inset: auto; flex: 1; min-width: 0; padding: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; pointer-events: auto; }
 .m-phone .trail > div { background: var(--ink-2); border-color: var(--line-soft); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
 .m-phone .dock-trail .zoom-ctl { position: static; flex-direction: row-reverse; width: auto; height: 38px; padding: 0 3px; background: var(--ink-2); border-color: var(--line-soft); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }

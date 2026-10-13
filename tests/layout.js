@@ -29,6 +29,9 @@ const { chromium } = require('./lib/pw');
     if (name.startsWith('land')) {
       const pn = await rect(p, '.panel'), dk = await rect(p, '#dock');
       console.log(name, 'panel yanında mı:', pn.l >= cv.r - 1, '· pano panelin üstünde mi:', dk.l >= pn.l - 1 && dk.t <= pn.t + 70);
+      // panele taşınan durak kutusu dar: etiket ve mesafe gizlenir, durağın adı görünür ve kutudan taşmaz
+      const ms = await p.evaluate(() => { const n = document.querySelector('#msName'), m = document.querySelector('.milestone'); return { w: n.clientWidth, over: m.scrollWidth > m.clientWidth + 1, prog: getComputedStyle(document.querySelector('#msProg')).display }; });
+      console.log(name, 'durak adı görünüyor mu:', ms.w > 60, '· durak kutusu taşıyor mu:', ms.over, '· mesafe gizli mi:', ms.prog === 'none');
     } else {
       // pano sahnenin altında; panoya dokunmak adım saymaz, sahneye dokunmak sayar
       const dk = await rect(p, '#dock'), tr = await rect(p, '.trail');

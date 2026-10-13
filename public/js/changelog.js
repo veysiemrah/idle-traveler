@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.59';
+  IT.VERSION = '1.60';
 
   IT.CHANGELOG = [
+    { v: '1.60', date: '2026-10-13', items: {
+      tr: ['Özel Anlar’da yeni bir boş yer belirdi. İpucu: çimenlere bak. Altın çerçeveni çoktan kazandıysan merak etme, o hep senin.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A new empty spot has appeared in Special Moments. Hint: look at the grass. If you’ve already earned your golden frame, don’t worry, it’s yours to keep.',
+        'A few small touches along the road.'],
+      de: ['Bei den Besonderen Momenten ist ein neuer leerer Platz aufgetaucht. Tipp: Schau ins Gras. Wenn du deinen goldenen Rahmen schon hast, keine Sorge, er bleibt dir.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Ha aparecido un nuevo hueco en los Momentos especiales. Pista: mira la hierba. Si ya ganaste tu marco dorado, tranquilo, es tuyo para siempre.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle place vide est apparue dans les Moments spéciaux. Indice : regarde l’herbe. Si tu as déjà gagné ton cadre doré, pas d’inquiétude, il reste à toi.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.59', date: '2026-10-13', items: {
       tr: ['Çok yol yürüyenlere yeni bir rota: Ateşböceği Yolu. Geceleri çimenlere bak; belki bir avuç ışık sana eşlik etmek ister.',
         'Telefonda alt pano artık hep ekran boyunca uzanıyor.', 'Yolda birkaç küçük rötuş.'],
