@@ -202,6 +202,12 @@
       o.start(t); o.stop(t + 0.75);
     },
     // ateşböcekleri: çok yüksekten, düzensiz aralıklarla tıngırdayan minik, yumuşak çanlar
+    // bulut hayali: yumuşak bir esinti ve yavaşça yükselen üç tatlı, yuvarlak nota
+    dream() {
+      if (!this.ctx || !this.sfxOn) return;
+      this.noise(0.05, 1.1, 900, 0.5);
+      [0, 2, 4].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.022, 1.6, 'sine', this.sfx, true, 0.1 + i * 0.22));
+    },
     fireflies() { if (!this.ctx) return; [6, 4, 5, 3, 6].forEach((n, i) => this.tone(PENTA[n] * 4, 0.018, 0.9, 'sine', this.sfx, true, i * 0.11 + Math.random() * 0.05)); },
     // tilki: çalı hışırtısı ve uzaktan iki kısa, yukarı kalkıp inen yumuşak "yip"
     fox() {

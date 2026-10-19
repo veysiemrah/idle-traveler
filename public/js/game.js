@@ -16,7 +16,8 @@
     { id: 'crane',    dur: 25, speed: 3, w: 0 },   // Turna Yolu'nda geçen turna sürüsüne dokununca gelir
     { id: 'kite',     dur: 30, credit: 3, w: 0 },  // Uçurtma Yolu'nda ipi kopmuş uçurtmayı yakalayınca gelir (süresince yolcuya bağlı uçar)
     { id: 'hoopoe',   dur: 30, speed: 2, credit: 2, w: 0 }, // Göç Yolu'nda Hüdhüd'e dokununca gelir
-    { id: 'glow',     dur: 30, speed: 2, click: 3, w: 0 },  // Ateşböceği Yolu'nda ateşböceği sürüsüne dokununca gelir (süresince omuzda ışık)
+    { id: 'glow',     dur: 30, speed: 2, click: 3, w: 0 },
+    { id: 'dream',    dur: 30, speed: 2, credit: 2, w: 0 }, // Bulut Yolu'nda bir şeye benzeyen buluta dokununca gelir  // Ateşböceği Yolu'nda ateşböceği sürüsüne dokununca gelir (süresince omuzda ışık)
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -50,7 +51,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'routeMax',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'dreams', 'routeMax',
     'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'momentGold', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -75,6 +76,7 @@
       cranes: 0, // yakalanan turna sürüleri (Turna Yolu, ömür boyu)
       kites: 0, // yakalanan uçurtmalar (Uçurtma Yolu, ömür boyu)
       fireflies: 0, // eşlik eden ateşböceği sürüleri (Ateşböceği Yolu, ömür boyu)
+      dreams: {}, // dokunulan bulut biçimleri: { id: kaç kez } (Bulut Yolu, ömür boyu)
       letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
@@ -157,6 +159,8 @@
     s.fox = count(s.fox, Econ.foxNeed);
     const consts = isObj(d.consts) ? d.consts : {};
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
+    const dr = isObj(d.dreams) ? d.dreams : {};
+    s.dreams = Object.fromEntries(IT.CLOUD_SHAPES.filter(c => count(dr[c.id], 1e6)).map(c => [c.id, count(dr[c.id], 1e6)]));
     s.notes = cleanNotes(d.notes);
     const mo = isObj(d.moments) ? d.moments : {};
     s.moments = Object.fromEntries(MOMENTS.filter(m => mo[m.id] === 1 || mo[m.id] === true).map(m => [m.id, 1]));
@@ -502,6 +506,33 @@
     scene.addFloat(t('float.fireflies'), { color: '#f4ffc2', big: true });
     checkBadges();
   }
+  // Bulut Yolu: ara sıra bir şeye benzeyen bulut süzülür; dokununca kısa bir an canlanıp dağılır (Bulut Hayali). Henüz
+  // görülmemiş biçimler daha sık gelir; altısı da görülünce hayaller kalıcı olarak yarı yarıya uzun sürer.
+  // Turnalar gibi yağmurda, uzayda ve pencere açıkken gelmez; başka bir gök olayı beklenir.
+  let dreamIn = 30 + Math.random() * 25, dreamHints = 0;
+  const dreamsSeen = () => IT.CLOUD_SHAPES.filter(c => S.dreams[c.id]).length;
+  const dreamsAll = () => dreamsSeen() >= IT.CLOUD_SHAPES.length;
+  function updateDreams(dt) {
+    if (perk() !== 'clouds' || scene.dream || scene.cranes || scene.plane || scene.bird || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    dreamIn -= dt;
+    if (dreamIn > 0) return;
+    dreamIn = 100 + Math.random() * 70;
+    const fresh = IT.CLOUD_SHAPES.filter(c => !S.dreams[c.id]);
+    const c = fresh.length && Math.random() < 0.7 ? fresh[(Math.random() * fresh.length) | 0] : IT.CLOUD_SHAPES[(Math.random() * IT.CLOUD_SHAPES.length) | 0];
+    scene.spawnDream(c.id); Sound.dream();
+    if (!dreamsSeen() && dreamHints++ < 3) toast(t('toast.dreamsSeen'), 'teal');
+  }
+  function catchDream() {
+    Sound.unlock();
+    const id = scene.dream.id, first = !S.dreams[id], sh = IT.CLOUD_SHAPES.find(c => c.id === id);
+    S.dreams[id] = (S.dreams[id] || 0) + 1; uiDirty.journal = true;
+    const g = GIFT.dream, dur = addEffect(g, g.dur * (dreamsAll() ? 1.5 : 1)).dur;
+    Sound.gift(); Sound.dream();
+    toast(t(first ? 'toast.dreamNew' : 'toast.dream', { shape: esc(sh.name), name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    if (first && dreamsAll()) setTimeout(() => { toast(t('toast.dreamsAll'), 'gold'); Sound.region(); }, 900);
+    scene.addFloat(`${sh.e} ${t('float.dream')}`, { color: '#ffffff', big: true });
+    checkBadges();
+  }
   // Uçurtma Yolu: ipi kopmuş bir uçurtma rüzgârla süzülür; yakalanınca etki süresince yolcunun eline bağlı uçar
   // (Uçurtma Neşesi). Turnalar gibi yağmurda, uzayda ve pencere açıkken gelmez; uçak ya da sürü gökteyken beklenir.
   let kiteIn = 35 + Math.random() * 30, kiteHints = 0;
@@ -597,7 +628,7 @@
   }
   function updateConsts(dt) {
     const next = IT.CONSTELLATIONS.find(c => !S.consts[c.id]);
-    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || scene.bird || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
+    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.bird || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
     constIn -= dt;
     if (constIn > 0) return;
     constIn = (70 + Math.random() * 40) * (perk() === 'stars' ? 0.5 : 1);
@@ -693,7 +724,7 @@
   // Göç Yolu'nda kuşlar iki kat sık geçer; yalnızca orada arada bir (ilki 45–75 sn, sonra 150–240 sn) Hüdhüd görünür.
   let birdIn = 40 + Math.random() * 30, birdHints = 0, hoopoeIn = 45 + Math.random() * 30, hoopoeHints = 0;
   function updateBirds(dt) {
-    if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
+    if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
     const migrate = perk() === 'birds';
     if (migrate) {
       hoopoeIn -= dt;
@@ -771,7 +802,7 @@
   let letterIn = 70 + Math.random() * 40, planeHints = 0;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
-    if (!next || scene.plane || scene.cranes || scene.kiteFree() || scene.constel || scene.bird || !$('#modal').hidden || weather === 'rain') return;
+    if (!next || scene.plane || scene.cranes || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.constel || scene.bird || !$('#modal').hidden || weather === 'rain') return;
     letterIn -= dt;
     if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
     if (letterIn > 0) return;
@@ -969,7 +1000,7 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.dream = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
     weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
@@ -1257,6 +1288,7 @@
     updateConsts(et);
     updateKites(et);
     updateFireflies(et);
+    updateDreams(et);
     updateDolphins(et);
     updateBirds(et);
     updateHarvest();
@@ -2205,6 +2237,7 @@
         ${S.cranes ? `<div><dt>${t('j.cranes')}</dt><dd>${fmtNum(S.cranes)}</dd></div>` : ''}
         ${S.kites ? `<div><dt>${t('j.kites')}</dt><dd>${fmtNum(S.kites)}</dd></div>` : ''}
         ${S.fireflies ? `<div><dt>${t('j.fireflies')}</dt><dd>${fmtNum(S.fireflies)}</dd></div>` : ''}
+        ${dreamsSeen() ? `<div><dt>${t('j.dreamCount')}</dt><dd>${fmtNum(Object.values(S.dreams).reduce((a, b) => a + b, 0))}</dd></div>` : ''}
         ${S.dolphins ? `<div><dt>${t('j.dolphins')}</dt><dd>${fmtNum(S.dolphins)}</dd></div>` : ''}
         ${S.owned.chrono || S.autoSteps ? `<div><dt>${t('j.autoSteps')}</dt><dd id="jAuto">${fmtNum(S.autoSteps)}</dd></div>` : ''}
         <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
@@ -2220,6 +2253,11 @@
         ? `<li><div class="keep moment on" title="${esc(momentName(m.id))}"><span class="e" aria-hidden="true">${m.e}</span><b>${esc(momentName(m.id))}</b></div></li>`
         : `<li><div class="keep moment" title="${esc(t(`moment.${m.id}.hint`))}"><span class="e" aria-hidden="true">?</span><small>${esc(t(`moment.${m.id}.hint`))}</small></div></li>`).join('')}</ul>
       <p class="tag small">${momentCount() >= MOMENTS.length ? t('j.momentsDone') : S.momentGold ? t('j.momentsMore') : t('j.momentsHint')}</p>` : ''}
+      ${dreamsSeen() ? `<h3 class="sec" data-nav="${dreamsSeen()}/${IT.CLOUD_SHAPES.length}">${t('j.dreams')} <small>${t('j.dreamsSub', { n: dreamsSeen(), m: IT.CLOUD_SHAPES.length })}</small></h3>
+      <ul class="keeps dreams">${IT.CLOUD_SHAPES.map(c => S.dreams[c.id]
+        ? `<li><div class="keep dream on" title="${esc(c.name)}"><span class="e" aria-hidden="true">${c.e}</span><b>${esc(c.name)}</b><small>×${fmtNum(S.dreams[c.id])}</small></div></li>`
+        : `<li><div class="keep dream" role="img" aria-label="${esc(t('j.dreamUnknown'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
+      <p class="tag small">${dreamsAll() ? t('j.dreamsDone') : t('j.dreamsHint')}</p>` : ''}
       <h3 class="sec" data-nav="${S.mapPieces}/${MAP_PIECES}">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
@@ -2351,10 +2389,10 @@
       const prev = S.msIdx ? MILESTONES[S.msIdx - 1].at : 0;
       setMsName(m.name);
       setText('#msProg', `${fmtDist(S.distance)} / ${fmtDist(m.at)}`);
-      $('#msFill').style.transform = `scaleX(${Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev)))})`;
+      setMsRoad(Math.max(0, Math.min(1, (S.distance - prev) / (m.at - prev))));
     } else {
       setMsName(t('ms.unknown')); setText('#msProg', fmtDist(S.distance));
-      $('#msFill').style.transform = 'scaleX(1)';
+      setMsRoad(1);
     }
     // etkiler
     const now = Date.now();
@@ -2431,6 +2469,21 @@
     }
   }
   function setText(sel, t) { const el = $(sel); if (el && el.textContent !== t) el.textContent = t; }
+  // Durak çubuğu küçük bir yol: dolgu ve ucundaki yolcu işareti ilerlemeyi gösterir; durağa yaklaşınca sondaki bayrak dalgalanır.
+  // Yeni durağa geçişte işaret geri koşmaz, başa solarak döner (reset sınıfı geçişi bir kare kapatır).
+  let msRoadP = -1;
+  function setMsRoad(f) {
+    const q = Math.round(f * 1000) / 1000;
+    if (q === msRoadP) return;
+    const road = $('#msRoad'), back = q < msRoadP - 0.2;
+    road.classList.toggle('reset', back);
+    if (back) void road.offsetWidth;
+    msRoadP = q;
+    $('#msFill').style.transform = `scaleX(${q})`;
+    road.style.setProperty('--p', q);
+    road.classList.toggle('near', q >= 0.9 && q < 1);
+    if (back) requestAnimationFrame(() => road.classList.remove('reset'));
+  }
   // Uzun durak adı kırpılmaz: sığmıyorsa yavaşça sona kayıp geri döner (kutunun yüksekliği değişmez, sahne zıplamaz)
   function setMsName(name) {
     const el = $('#msName');
@@ -2510,6 +2563,7 @@
       if (scene.hitSeed(x, y)) { catchSeed(); return; }
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
       if (scene.hitSwarm(x, y)) { catchFireflies(); return; }
+      if (scene.hitDream(x, y)) { catchDream(); return; }
       const bd = scene.hitBird(x, y);
       if (bd) { catchBird(bd); return; }
       if (scene.hitKite(x, y)) { catchKite(); return; }

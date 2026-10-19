@@ -36,7 +36,7 @@ if ! curl -s -o /dev/null http://localhost:8765/; then
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
 export NODE_OPTIONS="-r $HERE/pw_name.js"
-ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient buffpips fireflies news"
+ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient buffpips fireflies news msroad dreams"
 # zamanlamaya ya da sayfa yenilemeye duyarlı betikler: paralel yük altında kararsızlaşmasınlar diye en sonda tek tek
 SERIAL=" off cycle cyctheme guards update persist backup stress "
 LIST="$ALL"; [ -n "$ONLY" ] && LIST="${ONLY//,/ }"
@@ -55,10 +55,11 @@ for f in $LIST; do
 done
 wait
 for f in $LIST; do case "$SERIAL" in *" $f "*) run_one "$f" ;; esac; done
-# paralel yükte zaman aşımına düşen betik sonda bir kez tek başına yeniden denenir; iki kez düşen gerçek hatadır
+# paralel yükte zaman aşımına düşen betik sonda bir kez tek başına yeniden denenir; iki kez düşen gerçek hatadır.
+# Hiç çıktı vermeyen betik de (300 sn sınırına takılıp sessizce kapanan) yeniden denenir.
 for f in $LIST; do
   case "$SERIAL" in *" $f "*) continue ;; esac
-  if grep -qE "Error|not defined" "$PARTS/$f.out" 2>/dev/null; then
+  if grep -qE "Error|not defined" "$PARTS/$f.out" 2>/dev/null || [ ! -s "$PARTS/$f.out" ]; then
     cp "$PARTS/$f.out" "$PARTS/$f.first"; run_one "$f"
     sed -i '1i (paralelde düştü, tek başına yeniden denendi)' "$PARTS/$f.out"
   fi
