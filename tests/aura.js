@@ -1,4 +1,4 @@
-// Sv. 300, 400 ve 500 görünümleri (v1.52, Sv. 400 v1.61): yıldız yörüngesi, ters dönen ikinci yörünge ve ışık huzmeleri; yerde,
+// Sv. 250, 300, 400 ve 500 görünümleri (v1.52, Sv. 400 v1.61, Sv. 250 v1.65: altın kelebekler): yıldız yörüngesi, ters dönen ikinci yörünge ve ışık huzmeleri; yerde,
 // trende ve uçan araçta, gündüz ve gece; garaj simgeleri; Sv. 299 → 300 ve 399 → 400 yükseltmelerinde "yeni görünüm" bildirimi
 const { chromium } = require('./lib/pw');
 (async () => {
@@ -13,7 +13,7 @@ const { chromium } = require('./lib/pw');
     return p;
   };
   // 1) sahnede: bisiklet, tren, uçak ve Anka; Sv. 300 ve 500
-  for (const [veh, lvl, dark] of [['bike', 300, false], ['bike', 400, true], ['bike', 500, true], ['train', 400, false], ['train', 300, true], ['plane', 400, true], ['plane', 500, false], ['anka', 500, true], ['walk', 300, false], ['walk', 400, false]]) {
+  for (const [veh, lvl, dark] of [['bike', 250, false], ['walk', 250, true], ['plane', 250, false], ['train', 250, true], ['bike', 300, false], ['bike', 400, true], ['bike', 500, true], ['train', 400, false], ['train', 300, true], ['plane', 400, true], ['plane', 500, false], ['anka', 500, true], ['walk', 300, false], ['walk', 400, false]]) {
     const owned = { walk: 1, [veh]: 1 };
     const p = await open({ owned, levels: { [veh]: lvl }, active: veh, distance: veh === 'anka' ? 5e15 : 900, regionIdx: veh === 'anka' ? 27 : 3, msIdx: 99, best: 1e30, settings: { sky: dark ? 'night' : 'day', bulk: 1 } }, dark ? { colorScheme: 'dark' } : {});
     await p.waitForTimeout(2400);
@@ -21,11 +21,16 @@ const { chromium } = require('./lib/pw');
     await p.close();
   }
   // 2) yükseltme: Sv. 299 → 300 ve 399 → 400 bildirimi; garaj simgeleri (Sv. 300, 400, 500)
-  const p = await open({ owned: { walk: 1, skates: 1, board: 1, bike: 1 }, levels: { walk: 299, skates: 300, board: 500, bike: 399 }, active: 'walk' });
+  const p = await open({ owned: { walk: 1, skates: 1, board: 1, bike: 1 }, levels: { walk: 299, skates: 249, board: 500, bike: 399 }, active: 'walk' });
   const line = () => p.$eval('[data-act="upgrade"][data-id="walk"]', e => e.closest('.up').innerText.replace(/\s+/g, ' '));
   console.log('Sv. 299:', await line());
   await p.click('[data-act="upgrade"][data-id="walk"]'); await p.waitForTimeout(400);
   console.log('Sv. 300:', await line(), '|', (await p.textContent('#toasts')).replace(/\s+/g, ' ').slice(-90));
+  const line25 = () => p.$eval('[data-act="upgrade"][data-id="skates"]', e => e.closest('.up').innerText.replace(/\s+/g, ' '));
+  console.log('Sv. 249:', await line25());
+  await p.$eval('[data-act="upgrade"][data-id="skates"]', e => e.scrollIntoView({ block: 'center' }));
+  await p.click('[data-act="upgrade"][data-id="skates"]'); await p.waitForTimeout(400);
+  console.log('Sv. 250:', await line25(), '|', (await p.textContent('#toasts')).replace(/\s+/g, ' ').slice(-90));
   const line4 = () => p.$eval('[data-act="upgrade"][data-id="bike"]', e => e.closest('.up').innerText.replace(/\s+/g, ' '));
   console.log('Sv. 399:', await line4());
   await p.$eval('[data-act="upgrade"][data-id="bike"]', e => e.scrollIntoView({ block: 'center' }));

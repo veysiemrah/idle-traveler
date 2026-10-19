@@ -459,10 +459,11 @@
     bfFreq: 0.05, bfDur: 0.05,
     butterflyFreq(lvl) { return 1 + Econ.bfFreq * (lvl || 0); },
     butterflyDur(lvl) { return 1 + Econ.bfDur * (lvl || 0); },
-    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–9).
+    // Aracın görsel aşaması: bu seviyelerde araç yeni bir parça kazanır (0–10).
     // 150: arkasında yıldız tozu izi, 200: gökkuşağı kuyruğu (v1.28, yeni ekonomide bu seviyelere ulaşılabiliyor)
-    // görünüm aşamaları: Sv. 300 ve 500 (v1.52) bütün araçlarda yıldız yörüngesi ve ışık huzmeleri; Sv. 400 (v1.61) ikinci yörünge
-    looks: [10, 25, 50, 100, 150, 200, 300, 400, 500],
+    // görünüm aşamaları: Sv. 300 ve 500 (v1.52) bütün araçlarda yıldız yörüngesi ve ışık huzmeleri; Sv. 400 (v1.61) ikinci yörünge;
+    // Sv. 250 (v1.65) aracın çevresinde dolanan iki altın kelebek
+    looks: [10, 25, 50, 100, 150, 200, 250, 300, 400, 500],
     lookTier(lvl) { return Econ.looks.filter(t => (lvl || 0) >= t).length; },
     // Yol arkadaşı: ilk seviye +%10 kredi, sonraki her seviye +%5; görünüm 2, 4, 7 ve 10. seviyede değişir
     palBonus(lvl) { return lvl > 0 ? 0.1 + 0.05 * (lvl - 1) : 0; },

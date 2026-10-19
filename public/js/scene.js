@@ -167,9 +167,9 @@
   function shoe(ctx, x, y, k) { ctx.fillStyle = P.shoe; ellipse(ctx, x + 2 * k, y - 1.6 * k, 4.6 * k, 2.3 * k); }
 
   /* ---------- Yükseltme görünümleri ----------
-     st.tier: aracın görsel aşaması (0–9). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır, 4. aşamada altın
-     süslemeler ve parıltı gelir; 5–6 (Sv. 150, 200) iz ve gökkuşağı kuyruğu (trail), 7–9 (Sv. 300, 400, 500) yörüngeler ve
-     huzme (aura). */
+     st.tier: aracın görsel aşaması (0–10). Seviye 10, 25, 50 ve 100'de araç yeni bir parça kazanır, 4. aşamada altın
+     süslemeler ve parıltı gelir; 5–6 (Sv. 150, 200) iz ve gökkuşağı kuyruğu (trail), 7 (Sv. 250) altın kelebekler, 8–10
+     (Sv. 300, 400, 500) yörüngeler ve huzme (aura). */
   const GOLD = '#e8b93c', GOLD_HI = '#fff1c2';
   // dört köşeli küçük parıltılar (yerleri sabit, ışıkları yanıp söner)
   function sparkles(ctx, cx, cy, k, t, n, w, h) {
@@ -1810,10 +1810,11 @@
     }
     ctx.restore();
   }
-  // Sv. 300 (7. aşama): aracın çevresinde kıyafet ve altın renklerinde altı küçük yıldızın döndüğü bir yörünge; yıldızlar
-  // aracın önünden ve arkasından geçer. Sv. 400 (8. aşama, v1.61): ilkine eğik ikinci bir yörüngede ters yönde dönen dört
-  // küçük, kuyruklu ay. Sv. 500 (9. aşama): arkada yavaşça dönen yumuşak ışık huzmeleri, yıldızlar daha iri ve kısa ışık
-  // kuyruklu. Bütün araçlarda aynı biçimde çizilir (sahne, garaj simgesi, diğer gezginler).
+  // Sv. 250 (7. aşama, v1.65): iki altın kelebek aracın çevresinde yatık bir sekiz çizerek dolanır (önünden ve arkasından
+  // geçer, kanat çırpar). Sv. 300 (8. aşama): aracın çevresinde kıyafet ve altın renklerinde altı küçük yıldızın döndüğü bir
+  // yörünge; yıldızlar aracın önünden ve arkasından geçer. Sv. 400 (9. aşama, v1.61): ilkine eğik ikinci bir yörüngede ters
+  // yönde dönen dört küçük, kuyruklu ay. Sv. 500 (10. aşama): arkada yavaşça dönen yumuşak ışık huzmeleri, yıldızlar daha
+  // iri ve kısa ışık kuyruklu. Bütün araçlarda aynı biçimde çizilir (sahne, garaj simgesi, diğer gezginler).
   function aura(ctx, id, x, y, k, st, front) {
     const T = st.tier || 0;
     if (T < 7) return;
@@ -1822,8 +1823,10 @@
     // simgede yörünge daralır (geniş araçlarda yıldızlar simgenin kenarından taşmasın)
     const rx = (train ? 72 : Math.min(st.icon ? 56 : 92, (r - l) / 2 + 16)) * k * (st.icon ? 0.75 : 1), ry = Math.max(16, top * 0.34) * k;
     ctx.save();
+    butterflies(ctx, cx, cy, rx, ry, k, st, front);
+    if (T < 8) { ctx.restore(); return; }
     ctx.globalCompositeOperation = 'lighter';
-    if (!front && T >= 9) {
+    if (!front && T >= 10) {
       // ışık huzmeleri: merkezden dışa açılan, uca doğru solan on iki ince üçgen
       const R = rx * 1.45;
       for (let i = 0; i < 12; i++) {
@@ -1838,12 +1841,12 @@
     // yörünge çizgisi: arka yarısı aracın arkasında, ön yarısı önünde
     ctx.strokeStyle = 'rgba(255,240,200,0.4)'; ctx.lineWidth = 1.2 * k;
     ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry * 0.55, 0, front ? 0 : Math.PI, front ? Math.PI : TAU); ctx.stroke();
-    const cols = [GOLD_HI, P.hat, '#ffffff', P.jacket, GOLD, '#cfe0ff'], big = T >= 9 ? 1.45 : 1;
+    const cols = [GOLD_HI, P.hat, '#ffffff', P.jacket, GOLD, '#cfe0ff'], big = T >= 10 ? 1.45 : 1;
     for (let i = 0; i < 6; i++) {
       const ang = t * 0.9 + i * TAU / 6, depth = Math.sin(ang);
       if ((depth > 0) !== front) continue;
       const sx = cx + Math.cos(ang) * rx, sy = cy + depth * ry * 0.55, s = (2.7 + 0.8 * Math.sin(t * 4 + i)) * k * big * (0.85 + 0.15 * depth);
-      if (T >= 9) for (let j = 1; j <= 4; j++) { // kısa ışık kuyruğu (yörüngede geride kalan noktalar)
+      if (T >= 10) for (let j = 1; j <= 4; j++) { // kısa ışık kuyruğu (yörüngede geride kalan noktalar)
         const aj = ang - j * 0.09, px = cx + Math.cos(aj) * rx, py = cy + Math.sin(aj) * ry * 0.55;
         ctx.fillStyle = `rgba(255,236,190,${(0.35 - j * 0.07).toFixed(3)})`; circle(ctx, px, py, s * (0.7 - j * 0.12));
       }
@@ -1854,7 +1857,7 @@
       ctx.quadraticCurveTo(sx, sy, sx - s * 1.8, sy); ctx.quadraticCurveTo(sx, sy, sx, sy - s * 1.8); ctx.fill();
       ctx.globalCompositeOperation = 'lighter';
     }
-    if (T >= 8) {
+    if (T >= 9) {
       // ikinci yörünge (Sv. 400): eğik, ilkinden biraz dar; dört ay ters yönde döner, arkalarında soluk bir kuyruk
       const rot = -0.38, cr = Math.cos(rot), sr = Math.sin(rot), ax = rx * 0.84, ay = ry * 0.55 * 1.25;
       const at = (a, rr) => { const lx = Math.cos(a) * ax * rr, ly = Math.sin(a) * ay * rr; return [cx + lx * cr - ly * sr, cy + lx * sr + ly * cr]; };
@@ -1876,6 +1879,36 @@
       }
     }
     ctx.restore();
+  }
+  // Sv. 250: iki altın kelebek. Yol yatık bir sekiz (lemniskat): öndeki yarıda aracın önünden, arkadaki yarıda arkasından
+  // geçer; ikincisi yarım tur geride ve biraz küçük. Kanatlar çırparken daralıp genişler, arkalarında soluk bir ışık kalır.
+  function butterflies(ctx, cx, cy, rx, ry, k, st, front) {
+    const t = st.t || 0, night = st.night || 0, ic = st.icon;
+    for (let i = 0; i < 2; i++) {
+      const a = t * 0.55 + i * Math.PI + 0.6, depth = Math.cos(a + 0.4);
+      if ((depth > 0) !== front) continue;
+      const bx = cx + Math.sin(a) * rx * (ic ? 0.95 : 1.12), by = cy - ry * (ic ? 0.55 : 0.9) + Math.sin(2 * a) * ry * 0.45 + Math.sin(t * 2.3 + i) * 2 * k;
+      const s = (ic ? 2.4 : 5.2) * k * (i ? 0.82 : 1) * (0.85 + 0.15 * depth), flap = 0.2 + 0.8 * Math.abs(Math.sin(t * (7 + i * 1.3) + i));
+      const tilt = Math.cos(a) * 0.3 + Math.sin(t * 1.7 + i) * 0.12;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, bx, by, s * 3.6, [255, 214, 120], 0.25 + 0.25 * night);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.translate(bx, by); ctx.rotate(tilt);
+      // önden görünüş: gövdenin iki yanında üstte iri, altta küçük kanat; çırparken yatay genişlikleri daralır
+      ctx.strokeStyle = 'rgba(120,70,10,0.6)'; ctx.lineWidth = Math.max(0.6, 0.16 * s);
+      for (const sd of [-1, 1]) {
+        ctx.fillStyle = '#ffd56b';
+        ctx.beginPath(); ctx.ellipse(sd * 0.95 * s * flap, -0.45 * s, 0.95 * s * flap + 0.05 * s, 0.85 * s, sd * 0.45, 0, TAU); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#f2a93b';
+        ctx.beginPath(); ctx.ellipse(sd * 0.62 * s * flap, 0.55 * s, 0.6 * s * flap + 0.05 * s, 0.55 * s, -sd * 0.5, 0, TAU); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'; circle(ctx, sd * 1.05 * s * flap, -0.6 * s, 0.22 * s);
+      }
+      ctx.fillStyle = '#5b3a12'; ctx.beginPath(); ctx.ellipse(0, 0.1 * s, 0.2 * s, 0.85 * s, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#5b3a12'; ctx.lineWidth = Math.max(0.5, 0.11 * s);
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(0, -0.65 * s); ctx.quadraticCurveTo(sd * 0.2 * s, -1.3 * s, sd * 0.55 * s, -1.45 * s); ctx.stroke(); }
+      ctx.restore();
+    }
   }
   function drawVehicle(ctx, id, x, y, k, st) {
     trail(ctx, id, x, y, k, st);

@@ -256,13 +256,16 @@ npx wrangler dev   # http://localhost:8787
 - **Araç görünümleri**: Yükseltmeler aracı görünür biçimde geliştirir. Seviye 10, 25, 50, 100, 150 ve 200'de her araç yeni
   bir görünüm kazanır (25'ten sonrakiler aynı zamanda hızın ikiye katlandığı eşikler); 100. seviyede altın süsler ve parıltı gelir.
   150. seviyede aracın arkasından kıyafet renklerinde yıldız tozu izi akar, 200. seviyede buna dalgalanan bir gökkuşağı kuyruğu
-  eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). v1.52'den beri iki aşama daha var: Sv. 300'de aracın
+  eklenir (trende iz lokomotifin bacasından çıkıp vagonların üstünden akar). Sv. 250'de (v1.65) iki altın kelebek aracın çevresinde
+  yatık bir sekiz çizerek dolanır (önünden ve arkasından geçer, kanat çırpar, gece hafifçe parlar; `scene.js` → `butterflies`).
+  v1.52'den beri iki aşama daha var: Sv. 300'de aracın
   çevresinde ince bir yörünge çizgisi üstünde kıyafet ve altın renklerinde altı yıldız döner (yıldızlar aracın önünden ve
   arkasından geçer), Sv. 400'de (v1.61) ilkine eğik ikinci bir yörüngede dört küçük, kuyruklu deniz yeşili ay ters yönde
   döner, Sv. 500'de arkada yavaşça dönen ışık huzmeleri belirir (gündüz daha soluk) ve yörüngedeki yıldızlar
   iri ve kısa ışık kuyruklu olur (`scene.js` → `aura`). Sv. 300 hem ×3 hem yeni görünüm olduğu için bildirim "hızı 3 katına
-  çıktı ve araç yeni bir görünüm kazandı" der. Diğer gezginlerin görünüm aşaması sunucuda 0–9 arası kabul edilir
-  (v1.61'den önce 0–8; Sv. 400 araya girdiği için eski istemcinin 8'i, yenilenene kadar Sv. 400 görünümüyle çizilir). Garaj simgelerinde bu aşamalar köşelerdeki altın
+  çıktı ve araç yeni bir görünüm kazandı" der. Diğer gezginlerin görünüm aşaması sunucuda 0–10 arası kabul edilir
+  (v1.61'den önce 0–8, v1.65'ten önce 0–9; araya yeni aşama girdiğinde eski istemcinin bildirdiği aşama, sayfası kendiliğinden
+  yenilenene kadar bir alttaki görünümle çizilir). Garaj simgelerinde bu aşamalar köşelerdeki altın
   yıldızlar ve aracın arkasındaki minik gökkuşağı yayıyla görünür; diğer gezginler ve Yolcular listesindeki simgeler de bu
   görünümle çizilir. Örnekler: yürüyüşte sopa, atkı ve
   şapka tüyü; patende dizlik; kaykayda boyalı tahta ve ışıklı tekerlek; bisiklette flama, altın jant ve heybe; atta saçaklı
