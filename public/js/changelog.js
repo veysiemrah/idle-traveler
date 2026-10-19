@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.64';
+  IT.VERSION = '1.65';
 
   IT.CHANGELOG = [
+    { v: '1.65', date: '2026-10-20', items: {
+      tr: ['Sv. 200 ile 300 arasındaki yol artık o kadar sessiz değil: Sv. 250’ye ulaşan araçlara küçük, kanatlı bir eşlik geliyor.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['The road between Lv. 200 and 300 isn’t so quiet anymore: vehicles that reach Lv. 250 get a small, winged escort.',
+        'A few small touches along the road.'],
+      de: ['Der Weg zwischen Stufe 200 und 300 ist nicht mehr so still: Fahrzeuge auf Stufe 250 bekommen eine kleine, geflügelte Begleitung.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['El camino entre el Nv. 200 y el 300 ya no es tan silencioso: los vehículos que llegan al Nv. 250 reciben una pequeña escolta con alas.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['La route entre le Niv. 200 et le 300 n’est plus si calme : les véhicules qui atteignent le Niv. 250 reçoivent une petite escorte ailée.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.64', date: '2026-10-20', items: {
       tr: ['On üçüncü kez eve dönenleri yeni bir rota bekliyor: Bulut Yolu. Orada gökyüzüne biraz uzun bak; bazı bulutlar bir şeye benziyor.',
         'Yol Defteri’nde yeni bir sayfa için yer açıldı. Kaç boş yuva olduğunu görünce merak edeceksin.', 'Yolda birkaç küçük rötuş.'],
