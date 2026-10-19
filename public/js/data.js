@@ -179,7 +179,15 @@
     { id: 'migrate', perk: 'birds', biomes: ['meadow', 'wheat', 'lavender', 'coast', 'pine', 'olive', 'tea', 'tulip', 'autumn', 'sakura', 'snow', 'canyon', 'cappadocia', 'desert', 'aurora'] },
     // 13. yolculuk: gece çimenlerde ateşböcekleri yanıp söner (yalnızca bu rotada); bir sürüye dokununca omuzda ışık olurlar
     { id: 'firefly', perk: 'fireflies', biomes: ['meadow', 'pine', 'tea', 'lavender', 'sakura', 'olive', 'tulip', 'autumn', 'coast', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    // 14. yolculuk: gökyüzünde ara sıra bir şeye benzeyen bulutlar süzülür (yalnızca bu rotada); dokununca canlanıp dağılır
+    { id: 'cloud', perk: 'clouds', biomes: ['meadow', 'wheat', 'lavender', 'cappadocia', 'tulip', 'coast', 'sakura', 'olive', 'tea', 'pine', 'autumn', 'canyon', 'desert', 'snow', 'aurora'] },
   ];
+  // Bulut Yolu'nda görülebilen bulut biçimleri (çizimleri scene.js → CLOUD_SHAPES); Yol Defteri'nde toplanır
+  const CLOUD_SHAPES = [
+    { id: 'rabbit', e: '🐇' }, { id: 'whale', e: '🐋' }, { id: 'heart', e: '🤍' },
+    { id: 'sheep', e: '🐑' }, { id: 'bird', e: '🕊️' }, { id: 'ship', e: '⛵' },
+  ];
+  CLOUD_SHAPES.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`dream.${c.id}`) }));
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
     rt.regions = rt.biomes.map((biome, i) => { const r = { biome, at: REGIONS[i].at }; Object.defineProperty(r, 'name', { get: () => T(`region.${NAME_OF[biome]}`) }); return r; });
@@ -580,7 +588,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, RARE_BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, CLOUD_SHAPES, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, RARE_BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

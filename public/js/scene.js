@@ -12,6 +12,15 @@
   const fract = x => x - Math.floor(x);
   // Ateşböceği Yolu: gece çimenlerdeki ateşböceği sayısı ve sürünün en uzun kalış süresi (sn)
   const FIREFLIES = 22, SWARM_LIFE = 40;
+  // Bulut Yolu: bir şeye benzeyen bulutların topakları [dx, dy, r] (sağa bakar, ölçek 1'de ~120 px); eye: canlanınca kırpışan göz
+  const CLOUD_SHAPES = {
+    rabbit: { p: [[0, 0, 20], [-14, 4, 16], [14, 6, 13], [26, -12, 13], [32, -6, 8], [22, -30, 6], [21, -40, 5.5], [20, -49, 5], [31, -29, 6], [34, -38, 5.5], [37, -46, 5], [-30, -4, 8], [-6, 18, 7], [16, 18, 6]], eye: [30, -15] },
+    whale: { p: [[-22, 2, 17], [-2, -4, 22], [20, 0, 19], [36, 6, 12], [6, 10, 16], [-40, -2, 10], [-52, -10, 8], [-62, -20, 7], [-54, 8, 7], [-64, 14, 6], [30, -30, 4], [25, -38, 5], [34, -39, 5], [29, -44, 4]], eye: [30, 4] },
+    heart: { p: [[-13, -10, 15], [13, -10, 15], [-9, 6, 12], [9, 6, 12], [-4, 16, 9], [4, 16, 9], [0, 24, 6], [0, 31, 3]] },
+    sheep: { p: [[-16, -2, 14], [0, -8, 16], [16, -2, 14], [-8, 8, 13], [10, 8, 13], [-24, 6, 9], [24, 4, 9], [34, -4, 9], [40, 2, 7], [-14, 22, 4.5], [-5, 23, 4.5], [8, 23, 4.5], [17, 22, 4.5]], eye: [37, -3] },
+    bird: { p: [[0, 0, 14], [-14, 3, 12], [-26, 5, 8], [18, -8, 10], [28, -6, 4], [-4, -16, 11], [-12, -29, 9], [-20, -40, 7], [-26, -50, 5], [-36, 8, 6], [-44, 10, 4]], eye: [21, -10] },
+    ship: { p: [[-30, 14, 6], [-18, 16, 8], [-4, 17, 9], [10, 17, 9], [24, 15, 7], [34, 11, 5], [-14, 2, 8], [-2, 2, 9], [8, 0, 8], [-6, -10, 8], [4, -12, 8], [0, -22, 7], [6, -24, 6], [4, -34, 5], [7, -43, 3.5]] },
+  };
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
   const mixc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -2037,6 +2046,8 @@
       // Ateşböceği Yolu: gece çimenlerdeki ateşböcekleri (fireflyAmb), yakalanabilir sürü (swarm) ve
       // etki süresince yolcuya eşlik eden ışık bulutu (glowOn: game.js verir, glowA: yumuşak beliriş/kayboluş)
       this.swarm = null; this.fireflyAmb = false; this.glowOn = false; this.glowA = 0;
+      // Bulut Yolu: bir şeye benzeyen bulut (dream); dokununca kısa bir an canlanır ve dağılır
+      this.dream = null;
       // Kâğıt uçak (mektup): soldan gelir, ortalarda bir takla atıp sağdan çıkar
       this.plane = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
@@ -2387,6 +2398,57 @@
           const ang = t * (1.4 + 0.2 * (i % 3)) + i * TAU / 8, r = (8 + 4 * Math.sin(t * 1.3 + i)) * k;
           dot(f.x + Math.cos(ang) * r, f.y + Math.sin(ang) * r * 0.7 + Math.sin(t * 2 + i) * 2 * k, a * (0.6 + 0.4 * Math.sin(t * 4 + i * 2)), 1.4 * k);
         }
+      }
+      ctx.restore();
+    }
+    // Bulut Yolu: sağdan bir şeye benzeyen bulut süzülür (sola, yolcuya doğru bakar). Göğün üst kısmında, bildirimlerin
+    // üstünden geçer; geniş ekranda konum kartının arkasından da geçebilir (öbür bulutlar gibi)
+    spawnDream(id) {
+      const sh = CLOUD_SHAPES[id] || CLOUD_SHAPES.heart, k = Math.max(this.k, 0.8), narrow = this.RW < 480, s = k * (narrow ? 1.25 : 1.75);
+      const y0 = Math.max(this.H * (narrow ? rand(0.17, 0.26) : rand(0.12, 0.2)), 56 * s);
+      this.dream = { id, t: 0, x: this.W + 80 * s, y0, y: y0, s, caught: 0, pres: 0, ph: Math.random() * TAU,
+        p: sh.p.map(([dx, dy, r], i) => ({ dx: -dx, dy, r, ph: i * 1.7 })), eye: sh.eye ? [-sh.eye[0], sh.eye[1]] : null };
+    }
+    hitDream(px, py) {
+      const d = this.dream;
+      if (!d || d.caught || d.t < 0.8) return false;
+      if (Math.hypot(px - d.x, py - d.y) < 62 * d.s) {
+        d.caught = 0.001;
+        this.burst(d.x, d.y, 18, ['#ffffff', '#fff3d6', '#e3f0ff', '#ffe3ef']);
+        return true;
+      }
+      return false;
+    }
+    // Bulut hayali: normal buluttan biraz parlak, kenarında ılık bir hale; yakalanınca zıplar, gözü kırpışır, sonra topakları
+    // dışa doğru açılıp solar
+    drawDream(ctx, d, col, night) {
+      const s = d.s, c = d.caught;
+      const fade = d.pres;
+      if (fade <= 0.01) return;
+      const hop = c && c < 0.9 ? Math.sin(Math.PI * c / 0.9) * 16 * s : 0, open = smooth(0.9, 2.2, c);
+      const pos = p => {
+        const w = Math.sin(this.t * 1.3 + p.ph) * 1.2 * s, len = Math.hypot(p.dx, p.dy) || 1;
+        return { x: d.x + p.dx * s + p.dx / len * open * 30 * s, y: d.y - hop + p.dy * s + w + p.dy / len * open * 20 * s - open * 14 * s, r: p.r * s * (1 - 0.45 * open) * (1 + (c && c < 0.9 ? 0.06 * Math.sin(Math.PI * c / 0.9) : 0)) };
+      };
+      const pts = d.p.map(pos), body = mixc(col, WHITE, 0.4 + 0.12 * night), rim = night > 0.5 ? [200, 214, 255] : [255, 228, 196];
+      const path = grow => { ctx.beginPath(); for (const q of pts) { ctx.moveTo(q.x + q.r + grow, q.y); ctx.arc(q.x, q.y, q.r + grow, 0, TAU); } };
+      ctx.save();
+      // ılık hale (gece ay ışığı mavisi): bulutu öbürlerinden ayırır ama dikkat çekecek kadar parlamaz
+      ctx.shadowColor = css(rim, 0.75 * fade); ctx.shadowBlur = 16 * s;
+      ctx.fillStyle = css(mixc(col, [128, 146, 192], 0.42 * (1 - night)), (0.6 - 0.25 * night) * fade); path(1.3 * s); ctx.fill();
+      ctx.shadowBlur = 0;
+      // alt gölge: gövde biraz yukarıda çizilir, topakların alt kenarında ince bir mavi-gri gölge kalır (biçim okunur)
+      ctx.translate(0, -2.6 * s);
+      ctx.fillStyle = css(body, 0.95 * fade); path(0); ctx.fill();
+      // hacim: her topakta sol üste kaymış yumuşak bir parıltı
+      ctx.fillStyle = css(WHITE, 0.32 * fade * (1 - night * 0.85));
+      ctx.beginPath(); for (const q of pts) { ctx.moveTo(q.x - q.r * 0.2 + q.r * 0.55, q.y - q.r * 0.25); ctx.arc(q.x - q.r * 0.2, q.y - q.r * 0.25, q.r * 0.55, 0, TAU); } ctx.fill();
+      // canlanınca göz: açılır, bir kez kırpışır
+      if (d.eye && c && c < 1.2) {
+        const ea = clamp(c / 0.15, 0, 1) * clamp((1.2 - c) / 0.25, 0, 1), blink = Math.abs(c - 0.55) < 0.07 ? 0.25 : 1;
+        const ex = d.x + d.eye[0] * s, ey = d.y - hop + d.eye[1] * s;
+        ctx.fillStyle = `rgba(60,70,100,${(0.8 * ea * fade).toFixed(3)})`;
+        ctx.beginPath(); ctx.ellipse(ex, ey, 2.2 * s, 2.6 * s * blink, 0, 0, TAU); ctx.fill();
       }
       ctx.restore();
     }
@@ -3086,6 +3148,18 @@
         if (s.caught) { s.caught += dt; if (s.caught > 1.2) this.swarm = null; }
         else { s.x -= this.W / 70 * dt; s.y += Math.sin(s.t * 0.7 + s.ph) * 6 * s.k * dt; if (s.x < -60 * s.k || s.t > SWARM_LIFE) this.swarm = null; }
       }
+      if (this.dream) {
+        const d = this.dream;
+        d.t += dt;
+        d.pres = clamp(d.t / 1.5, 0, 1) * (1 - smooth(1.0, 2.2, d.caught));
+        // yakalanmadıkça rüzgârla yavaşça sola süzülür ve hafifçe iner kalkar; yakalanınca yerinde canlanıp dağılır
+        if (d.caught) { d.caught += dt; if (d.caught > 2.3) this.dream = null; }
+        else {
+          d.x -= (this.W + 160 * d.s) / 46 * dt; d.y = d.y0 + Math.sin(d.t * 0.5 + d.ph) * 6 * d.s;
+          if (Math.random() < dt * 0.9) this.parts.push({ type: 'spark', x: d.x + rand(-40, 40) * d.s, y: d.y + rand(-24, 20) * d.s, vx: -rand(4, 14), vy: rand(-8, 2), life: 0, max: rand(0.8, 1.4), size: rand(1, 1.7), color: pick(['#ffffff', '#fff3d6']), rot: 0 });
+          if (d.x < -90 * d.s) this.dream = null;
+        }
+      }
       // ışık bulutu: sürü omza vardıktan sonra belirir, etki bitince yavaşça söner
       const glowIn = this.glowOn && !(this.swarm && this.swarm.caught);
       this.glowA = clamp(this.glowA + (glowIn ? dt * 1.4 : this.glowOn ? 0 : -dt * 0.7), 0, 1);
@@ -3303,6 +3377,7 @@
 
       // yakın bulutlar (uçarken öne geçenler)
       for (const c of this.clouds) if (c.depth >= 0.65) this.drawCloud(ctx, c, cloudCol, space);
+      if (this.dream) this.drawDream(ctx, this.dream, cloudCol, night);
       // dokunulacak takımyıldız bulutların önünde (kutusu dağların üstünde kalır, tepeler onu örtmez)
       if (this.constel) this.drawConst(ctx, this.constel, clamp(starA / 0.55, 0, 1));
 
@@ -3472,9 +3547,15 @@
     }
 
     drawCloud(ctx, c, col, space) {
-      const a = (0.55 + 0.35 * c.depth) * (1 - space * 0.4);
-      if (a < 0.02) return;
+      let a = (0.55 + 0.35 * c.depth) * (1 - space * 0.4);
       const y = c.y * this.H + this.shift(0.3 * c.depth);
+      // Bulut Yolu: bir şeye benzeyen bulutun çevresi açılır; yakınındaki sıradan bulutlar yumuşakça seyrelir
+      const d = this.dream;
+      if (d && d.pres > 0) {
+        const far = Math.max(Math.abs(c.x - d.x) / (120 * d.s + 50 * c.s), Math.abs(y - d.y) / (60 * d.s + 20 * c.s));
+        a *= 1 - d.pres * 0.85 * (1 - smooth(0.7, 1.25, far));
+      }
+      if (a < 0.02) return;
       ctx.fillStyle = css(col, a);
       const x0 = c.x + c.puffs[0].dx * c.s, x1 = c.x + c.puffs[c.puffs.length - 1].dx * c.s;
       ctx.beginPath();

@@ -36,7 +36,7 @@ if ! curl -s -o /dev/null http://localhost:8765/; then
 fi
 # eski kayıtlarla açılan testlerde ad penceresi araya girmesin
 export NODE_OPTIONS="-r $HERE/pw_name.js"
-ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient buffpips fireflies news msroad"
+ALL="func stress persist feat home off star daily outfit stable header cycle cyctheme scale settings tiers lookgame fxpill routes pals stack dismiss treasure trade keeps update looks200 zoom seed unittip cranes newveh reward letters fox backup consts kites fair dolphins guards layout birds harvest newveh3 notes migrate chrono album aura jnav moments ambient buffpips fireflies news msroad dreams"
 # zamanlamaya ya da sayfa yenilemeye duyarlı betikler: paralel yük altında kararsızlaşmasınlar diye en sonda tek tek
 SERIAL=" off cycle cyctheme guards update persist backup stress "
 LIST="$ALL"; [ -n "$ONLY" ] && LIST="${ONLY//,/ }"

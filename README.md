@@ -483,9 +483,21 @@ npx wrangler dev   # http://localhost:8787
     yavaşça söner, sayfa yeniden açılınca etki sürüyorsa yerinde belirir. Sürüler Yol Defteri'nde sayılır (`fireflies`);
     yedinci sürü *Işık Taşıyıcı* kıyafetini açar (v1.62).
     Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+  - **Bulut Yolu** (13., v1.64): buğday ovası, lavanta ve peri bacalarıyla başlar. Yalnızca bu rotada arada bir (ilki 30–55 sn,
+    sonra 100–170 sn arayla) göğün üst kısmında bir şeye benzeyen bir bulut sağdan sola süzülür: tavşan, balina, kalp, kuzu,
+    güvercin ya da yelkenli (`data.js` → `CLOUD_SHAPES`, topakları `scene.js` → `CLOUD_SHAPES`). Henüz görülmemiş biçimler
+    %70 olasılıkla seçilir. Bu bulut sıradan bulutlardan biraz parlaktır, ılık (gece ay ışığı mavisi) bir halesi ve ince bir alt
+    gölgesi vardır; yakınındaki sıradan bulutlar yumuşakça seyrelir ki biçim okunsun. Yağmurda, uzayda, pencere açıkken ve
+    turna, kâğıt uçak, kuş ya da takımyıldız gökteyken gelmez; o süzülürken kuş, takımyıldız ve mektup da beklenir. İlk biçim
+    görülene kadar (en çok üç kez) "Şu bulut bir şeye benzemiyor mu?" bildirimi gelir. Dokununca bulut bir an canlanır (zıplar,
+    hayvanlarda gözü açılıp kırpışır), sonra topakları dışa açılıp solar ve 30 saniye *Bulut Hayali* (hız ×2, kredi ×2) gelir.
+    Görülen biçimler Yol Defteri'nde *Bulut Hayalleri* sayfasında (ilk biçimden sonra görünür; görülmeyenler "?") kaçar kez
+    görüldükleriyle durur, toplamı *Canlanan bulutlar* satırındadır (`dreams`: `{ id: sayı }`, ömür boyu). Altı biçimin
+    hepsi görülünce hayaller kalıcı olarak 1,5 kat uzun sürer. Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+    Testi: `tests/dreams.js`.
   Yatay telefonda pano panele taşındığından durak kutusu kendi genişliğiyle ölçülür (`.dock-trail` kapsayıcı sorgusu):
   dar kalınca etiket ve mesafe gizlenir, durağın adı görünür.
-  Rotalar 13 tanedir; on ikinci eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  Rotalar 14 tanedir; on üçüncü eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
   yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden

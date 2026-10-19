@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.63';
+  IT.VERSION = '1.64';
 
   IT.CHANGELOG = [
+    { v: '1.64', date: '2026-10-20', items: {
+      tr: ['On üçüncü kez eve dönenleri yeni bir rota bekliyor: Bulut Yolu. Orada gökyüzüne biraz uzun bak; bazı bulutlar bir şeye benziyor.',
+        'Yol Defteri’nde yeni bir sayfa için yer açıldı. Kaç boş yuva olduğunu görünce merak edeceksin.', 'Yolda birkaç küçük rötuş.'],
+      en: ['A new route awaits those who return home for the thirteenth time: Cloud Road. Look up at the sky a little longer there; some clouds look like something.',
+        'Your Journal has room for a new page. You’ll be curious when you see how many empty slots there are.', 'A few small touches along the road.'],
+      de: ['Wer zum dreizehnten Mal heimkehrt, den erwartet eine neue Route: der Wolkenweg. Schau dort etwas länger in den Himmel; manche Wolken sehen aus wie etwas.',
+        'In deinem Tagebuch ist Platz für eine neue Seite. Wenn du siehst, wie viele leere Plätze es gibt, wirst du neugierig.', 'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una nueva ruta espera a quienes vuelven a casa por decimotercera vez: el Camino de las Nubes. Allí mira el cielo un poco más; algunas nubes se parecen a algo.',
+        'Tu Diario tiene sitio para una nueva página. Cuando veas cuántos huecos vacíos hay, sentirás curiosidad.', 'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle route attend ceux qui rentrent à la maison pour la treizième fois : la Route des Nuages. Là-bas, regarde le ciel un peu plus longtemps ; certains nuages ressemblent à quelque chose.',
+        'Ton Carnet a de la place pour une nouvelle page. Quand tu verras combien de places sont vides, tu seras curieux.', 'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.63', date: '2026-10-14', items: {
       tr: ['Sıradaki durak çubuğu artık küçük bir yol: ucunda sen yürüyorsun, sonunda durağın bayrağı seni bekliyor. Yaklaştığında bayrağa bir bak.',
         'Yolda birkaç küçük rötuş.'],

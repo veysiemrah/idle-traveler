@@ -205,6 +205,8 @@ button { font: inherit; color: inherit; }
 .fx-seed b { color: var(--teal); }
 .fx-crane { border-color: rgba(190, 212, 240, 0.9); }
 .fx-glow { border-color: rgba(214, 255, 130, 0.9); }
+.fx-dream { border-color: rgba(168, 200, 244, 0.95); background: radial-gradient(80% 140% at 15% 0%, rgba(255, 255, 255, 0.22), transparent 70%), var(--glass-strong); }
+.fx-dream b { color: var(--wish-ink); }
 .fx-hoopoe { border-color: rgba(232, 185, 60, 0.95); }
 .fx-caravan { border-color: rgba(111, 211, 193, 0.8); }
 .fx-caravan b { color: var(--teal); }
@@ -812,6 +814,16 @@ button { font: inherit; color: inherit; }
 .keep.moment { --c: #e8b93c; min-height: 82px; }
 .keep.moment.on { cursor: default; }
 .keep.moment.on:hover { transform: none; }
+/* Bulut Hayalleri (Bulut Yolu): gök mavisi yuvalar; görülen biçimler bulut gibi yavaşça süzülür */
+.keep.dream { --c: #8fb8e8; min-height: 82px; }
+.keep.dream.on { cursor: default; background: radial-gradient(ellipse at 50% 26%, color-mix(in srgb, #ffffff 22%, transparent), transparent 62%), radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--c) 26%, transparent), transparent 70%), var(--ink-2); }
+.keep.dream.on:hover { transform: none; }
+.keep.dream.on .e { animation: dreamDrift 5s ease-in-out infinite; }
+.dreams li:nth-child(2n) .keep.dream.on .e { animation-delay: -1.7s; }
+.dreams li:nth-child(3n) .keep.dream.on .e { animation-delay: -3.1s; }
+.keep.dream small { font-weight: 700; opacity: .7; }
+@keyframes dreamDrift { 50% { transform: translate(3px, -3px); } }
+@media (prefers-reduced-motion: reduce) { .keep.dream.on .e { animation: none; } }
 .album-mo { text-align: center; margin: -4px 0 8px; color: var(--apricot-text); }
 /* Kartpostal Albümü: Yol Defteri'nde hafifçe eğik duran küçük kartpostallar; dokununca düzelip öne çıkar */
 .album { list-style: none; margin: 0; padding: 4px 2px 2px; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
