@@ -1,5 +1,5 @@
 // Özel Anlar (v1.54): kartpostal çekilirken sahnedeki olay (altın kelebek, kuş…) yakalanır, fotoğrafın köşesine altın mühür
-// basılır, bildirim gelir ve Yol Defteri'nde işlenir; aynı an ikinci kez bildirilmez; dokuz anın hepsiyle (v1.60) kartpostallar
+// basılır, bildirim gelir ve Yol Defteri'nde işlenir; aynı an ikinci kez bildirilmez; on anın hepsiyle (v1.60 + v1.66) kartpostallar
 // altın çerçeveli olur, v1.54'ün sekiz anını toplamış eski kayıtlar çerçeveyi korur; albümün büyük görünümünde yakalanan anlar yazar; bozuk kayıt temizlenir
 const { chromium } = require('./lib/pw');
 (async () => {
@@ -37,7 +37,8 @@ const { chromium } = require('./lib/pw');
   console.log('albüm büyük görünüm:', await p.$eval('#modalBody', e => (e.querySelector('.album-mo') || { textContent: '(yok)' }).textContent.trim()));
   await p.close();
 
-  // 2) Dokuzuncu an (v1.60): yeni kayıtta sekiz an altın çerçeve vermez; ateşböceği sürüsüyle dokuzuncu an tamamlanınca verir
+  // 2) Dokuzuncu (v1.60) ve onuncu (v1.66) an: yeni kayıtta sekiz an altın çerçeve vermez; ateşböceğinden sonra da vermez,
+  // bulut anıyla onuncu tamamlanınca verir
   const all7 = { butterfly: 1, bird: 1, rainbow: 1, star: 1, plane: 1, dolphins: 1, fox: 1 };
   const q = await open({ photos: 3, moments: all7, momentGold: 0, distance: 1.3e7, regionIdx: 10, settings: { sky: 'night' } }, { colorScheme: 'dark' });
   await q.waitForTimeout(1500);
@@ -46,9 +47,14 @@ const { chromium } = require('./lib/pw');
   console.log('sekizinci an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Özel an[^·]*· \d\/\d/) || '(yok)');
   await q.evaluate(() => { __sc.spawnSwarm(); __sc.swarm.x = __sc.W * 0.6; __sc.swarm.t = 2; });
   await q.waitForTimeout(100);
+  await shoot(q, 'moments_nine');
+  qs = await saved(q);
+  console.log('dokuzuncu an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Özel an[^·]*· \d\/\d/) || '(yok)');
+  await q.evaluate(() => { __sc.spawnDream('whale'); __sc.dream.x = __sc.W * 0.6; __sc.dream.t = 2; });
+  await q.waitForTimeout(100);
   await shoot(q, 'moments_gold');
   qs = await saved(q);
-  console.log('dokuzuncu an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Bütün özel anlar[^·]*·[^·]*/) || '(yok)');
+  console.log('onuncu an:', Object.keys(qs.moments).length, '· altın çerçeve:', qs.momentGold, '·', (await toasts(q)).match(/Bütün özel anlar[^·]*·[^·]*/) || '(yok)');
   await shoot(q, 'moments_gold2');
   await q.close();
   // 3) eski kayıt: v1.54'ün sekiz anını toplamış oyuncu çerçevesini korur; defterde yeni an için boş yer ipucu

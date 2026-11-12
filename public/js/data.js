@@ -337,6 +337,8 @@
     { id: 'birder', need: 0, birds: 7, jacket: '#7d8a4a', jacketDark: '#636e39', hat: '#e9c98a', hatDark: '#c8a766', pack: '#b5523b' },
     // Ateşböceği Yolu'nda yedi sürü yanına gelince açılır (yosun yeşili ceket, ateşböceği sarısı şapka, fener sarısı çanta)
     { id: 'glow', need: 0, fireflies: 7, jacket: '#3f5a3a', jacketDark: '#2f4529', hat: '#d9f27a', hatDark: '#b5cc58', pack: '#f5c74f' },
+    // Bulut Yolu'nda altı bulut biçiminin hepsi görülünce açılır (puslu mavi ceket, bulut beyazı şapka, gül kurusu çanta)
+    { id: 'dreamer', need: 0, dreams: 6, jacket: '#7c9ec6', jacketDark: '#5d7da6', hat: '#f6efe1', hatDark: '#d8cbb6', pack: '#d98fae' },
   ];
 
   /* ---------- Takımyıldızlar: gece gökyüzünde birleştirilen parlak yıldızlar ----------

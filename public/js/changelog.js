@@ -5,9 +5,26 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.65';
+  IT.VERSION = '1.66';
 
   IT.CHANGELOG = [
+    { v: '1.66', date: '2026-10-23', items: {
+      tr: ['Bulut Yolu’nda gökyüzüne uzun uzun bakanları iki küçük sürpriz bekliyor…',
+        'Kartpostallara bir bulut daha sığdı. Gökyüzüne bakmayı unutma.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['Two small surprises await those who watch the sky on Cloud Road for a while…',
+        'There’s room for one more cloud on your postcards. Don’t forget to look up.',
+        'A few small touches along the road.'],
+      de: ['Zwei kleine Überraschungen warten auf alle, die am Wolkenweg etwas länger in den Himmel schauen …',
+        'Auf deinen Postkarten ist noch Platz für eine Wolke. Vergiss nicht, nach oben zu schauen.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Dos pequeñas sorpresas esperan a quienes miran el cielo un rato en el Camino de las Nubes…',
+        'En tus postales aún cabe una nube más. No olvides mirar arriba.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Deux petites surprises attendent ceux qui contemplent le ciel un moment sur la Route des Nuages…',
+        'Il reste de la place pour un nuage de plus sur tes cartes postales. N’oublie pas de lever les yeux.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.65', date: '2026-10-20', items: {
       tr: ['Sv. 200 ile 300 arasındaki yol artık o kadar sessiz değil: Sv. 250’ye ulaşan araçlara küçük, kanatlı bir eşlik geliyor.',
         'Yolda birkaç küçük rötuş.'],

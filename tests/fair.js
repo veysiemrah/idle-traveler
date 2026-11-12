@@ -48,6 +48,8 @@ const goHome = async p => {
   console.log('dönüş penceresi:', ((await v.textContent('#modalBody')).replace(/\s+/g, ' ').match(/Yeni rota açıldı: [^·]*/) || ['(yok)'])[0].trim());
   const sv = await saved(v);
   console.log('rota:', sv.route, '· routeMax:', sv.routeMax);
+  // eski kayıtta 10 duyurulmuş rotanın üstüne yalnızca sıradaki (11.) eklenir; aradaki rotalar atlanmaz
+  if (sv.route !== 'kite' || sv.routeMax !== 10) throw new Error(`rota sırası atlandı: ${sv.route}/${sv.routeMax}`);
   errs.push(...v.errs); await v.close();
 
   pw.speed(20); // olay zamanlayıcıları 20 kat hızlı (doğal geliş beklenir)
