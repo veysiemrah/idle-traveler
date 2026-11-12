@@ -158,29 +158,32 @@
      Her eve dönüş yeni bir rota açar. Rotalar aynı mesafe eşiklerini kullanır (tempo değişmez) ama bölgeleri
      farklı sırayla gezer; her rotanın küçük bir ayrıcalığı var. Bölge adı bölgenin biyomundan gelir. */
   const NAME_OF = Object.fromEntries(REGIONS.map((r, i) => [r.biome, i]));
+  // e: rota kartındaki küçük amblem (rota seçici)
   const ROUTES = [
-    { id: 'anatolia', perk: null,        biomes: REGIONS.map(r => r.biome) },
-    { id: 'coast',    perk: 'rain',      biomes: ['meadow', 'coast', 'olive', 'tulip', 'lavender', 'sakura', 'wheat', 'tea', 'canyon', 'cappadocia', 'autumn', 'pine', 'desert', 'snow', 'aurora'] },
-    { id: 'north',    perk: 'stars',     biomes: ['meadow', 'pine', 'autumn', 'tea', 'snow', 'aurora', 'lavender', 'wheat', 'coast', 'olive', 'tulip', 'sakura', 'canyon', 'cappadocia', 'desert'] },
-    { id: 'bloom',    perk: 'butterfly', biomes: ['meadow', 'lavender', 'tulip', 'sakura', 'tea', 'olive', 'wheat', 'autumn', 'coast', 'pine', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
-    { id: 'silk',     perk: 'gold',      biomes: ['meadow', 'wheat', 'cappadocia', 'canyon', 'desert', 'olive', 'coast', 'tea', 'sakura', 'lavender', 'tulip', 'autumn', 'pine', 'snow', 'aurora'] },
+    { id: 'anatolia', e: '🏡', perk: null,        biomes: REGIONS.map(r => r.biome) },
+    { id: 'coast', e: '🌊',    perk: 'rain',      biomes: ['meadow', 'coast', 'olive', 'tulip', 'lavender', 'sakura', 'wheat', 'tea', 'canyon', 'cappadocia', 'autumn', 'pine', 'desert', 'snow', 'aurora'] },
+    { id: 'north', e: '🌌',    perk: 'stars',     biomes: ['meadow', 'pine', 'autumn', 'tea', 'snow', 'aurora', 'lavender', 'wheat', 'coast', 'olive', 'tulip', 'sakura', 'canyon', 'cappadocia', 'desert'] },
+    { id: 'bloom', e: '🌸',    perk: 'butterfly', biomes: ['meadow', 'lavender', 'tulip', 'sakura', 'tea', 'olive', 'wheat', 'autumn', 'coast', 'pine', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'silk', e: '🏺',     perk: 'gold',      biomes: ['meadow', 'wheat', 'cappadocia', 'canyon', 'desert', 'olive', 'coast', 'tea', 'sakura', 'lavender', 'tulip', 'autumn', 'pine', 'snow', 'aurora'] },
     // 6. ve 7. yolculuk: kervan etkisi iki kat sayılır / hazine haritası parçaları iki kat sık düşer
-    { id: 'caravan',  perk: 'caravan',   biomes: ['meadow', 'desert', 'canyon', 'cappadocia', 'wheat', 'olive', 'tea', 'coast', 'tulip', 'lavender', 'sakura', 'autumn', 'pine', 'snow', 'aurora'] },
-    { id: 'compass',  perk: 'map',       biomes: ['meadow', 'coast', 'canyon', 'desert', 'cappadocia', 'olive', 'tulip', 'wheat', 'lavender', 'pine', 'autumn', 'tea', 'sakura', 'snow', 'aurora'] },
+    { id: 'caravan', e: '🐫',  perk: 'caravan',   biomes: ['meadow', 'desert', 'canyon', 'cappadocia', 'wheat', 'olive', 'tea', 'coast', 'tulip', 'lavender', 'sakura', 'autumn', 'pine', 'snow', 'aurora'] },
+    { id: 'compass', e: '🧭',  perk: 'map',       biomes: ['meadow', 'coast', 'canyon', 'desert', 'cappadocia', 'olive', 'tulip', 'wheat', 'lavender', 'pine', 'autumn', 'tea', 'sakura', 'snow', 'aurora'] },
     // 8. yolculuk: şanslı adımlar iki kat sık
-    { id: 'clover',   perk: 'lucky',     biomes: ['meadow', 'tulip', 'tea', 'pine', 'lavender', 'sakura', 'olive', 'coast', 'autumn', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'clover', e: '🍀',   perk: 'lucky',     biomes: ['meadow', 'tulip', 'tea', 'pine', 'lavender', 'sakura', 'olive', 'coast', 'autumn', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
     // 9. yolculuk: duraklarda (gerçek dünya mesafeleri) beş kat ödül
-    { id: 'lighthouse', perk: 'milestone', biomes: ['meadow', 'olive', 'coast', 'tulip', 'wheat', 'lavender', 'autumn', 'sakura', 'tea', 'pine', 'snow', 'aurora', 'canyon', 'cappadocia', 'desert'] },
+    { id: 'lighthouse', e: '🏮', perk: 'milestone', biomes: ['meadow', 'olive', 'coast', 'tulip', 'wheat', 'lavender', 'autumn', 'sakura', 'tea', 'pine', 'snow', 'aurora', 'canyon', 'cappadocia', 'desert'] },
     // 10. yolculuk: gökyüzünden ara sıra turna sürüleri geçer (yalnızca bu rotada); dokununca Turna Rüzgârı
-    { id: 'crane', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
+    { id: 'crane', e: '🪶', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
     // 11. yolculuk: rüzgârlı ovalar ve kıyılar; ipi kopmuş uçurtmalar süzülür (yalnızca bu rotada), yakalanan uçurtma yolcuya bağlanır
-    { id: 'kite', perk: 'kites', biomes: ['meadow', 'tulip', 'wheat', 'coast', 'lavender', 'olive', 'cappadocia', 'tea', 'sakura', 'autumn', 'pine', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'kite', e: '🪁', perk: 'kites', biomes: ['meadow', 'tulip', 'wheat', 'coast', 'lavender', 'olive', 'cappadocia', 'tea', 'sakura', 'autumn', 'pine', 'canyon', 'desert', 'snow', 'aurora'] },
     // 12. yolculuk: kuşlar iki kat sık geçer; yalnızca bu rotada kuşlara yol gösteren Hüdhüd (ibibik) görünür
-    { id: 'migrate', perk: 'birds', biomes: ['meadow', 'wheat', 'lavender', 'coast', 'pine', 'olive', 'tea', 'tulip', 'autumn', 'sakura', 'snow', 'canyon', 'cappadocia', 'desert', 'aurora'] },
+    { id: 'migrate', e: '🐦', perk: 'birds', biomes: ['meadow', 'wheat', 'lavender', 'coast', 'pine', 'olive', 'tea', 'tulip', 'autumn', 'sakura', 'snow', 'canyon', 'cappadocia', 'desert', 'aurora'] },
     // 13. yolculuk: gece çimenlerde ateşböcekleri yanıp söner (yalnızca bu rotada); bir sürüye dokununca omuzda ışık olurlar
-    { id: 'firefly', perk: 'fireflies', biomes: ['meadow', 'pine', 'tea', 'lavender', 'sakura', 'olive', 'tulip', 'autumn', 'coast', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'firefly', e: '✨', perk: 'fireflies', biomes: ['meadow', 'pine', 'tea', 'lavender', 'sakura', 'olive', 'tulip', 'autumn', 'coast', 'wheat', 'cappadocia', 'canyon', 'desert', 'snow', 'aurora'] },
     // 14. yolculuk: gökyüzünde ara sıra bir şeye benzeyen bulutlar süzülür (yalnızca bu rotada); dokununca canlanıp dağılır
-    { id: 'cloud', perk: 'clouds', biomes: ['meadow', 'wheat', 'lavender', 'cappadocia', 'tulip', 'coast', 'sakura', 'olive', 'tea', 'pine', 'autumn', 'canyon', 'desert', 'snow', 'aurora'] },
+    { id: 'cloud', e: '☁️', perk: 'clouds', biomes: ['meadow', 'wheat', 'lavender', 'cappadocia', 'tulip', 'coast', 'sakura', 'olive', 'tea', 'pine', 'autumn', 'canyon', 'desert', 'snow', 'aurora'] },
+    // 15. yolculuk: rüzgâr ara sıra birkaç nota taşır (yalnızca bu rotada); notaların hepsine dokununca ezgi çalar
+    { id: 'melody', e: '🎵', perk: 'tunes', biomes: ['meadow', 'tea', 'tulip', 'wheat', 'olive', 'lavender', 'coast', 'sakura', 'pine', 'autumn', 'cappadocia', 'canyon', 'snow', 'desert', 'aurora'] },
   ];
   // Bulut Yolu'nda görülebilen bulut biçimleri (çizimleri scene.js → CLOUD_SHAPES); Yol Defteri'nde toplanır
   const CLOUD_SHAPES = [
@@ -188,6 +191,17 @@
     { id: 'sheep', e: '🐑' }, { id: 'bird', e: '🕊️' }, { id: 'ship', e: '⛵' },
   ];
   CLOUD_SHAPES.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`dream.${c.id}`) }));
+  // Ezgi Yolu'nda rüzgârın taşıdığı ezgiler; Yol Defteri'nde toplanır ve dokununca yeniden çalar.
+  // n: pentatonik dizideki nota sıraları (audio.js → PENTA); ilk dördü gökyüzünde dokunulan notalardır. d: nota süreleri (vuruş)
+  const TUNES = [
+    { id: 'dawn',    e: '🌅', n: [0, 2, 3, 4, 3, 2, 3, 5], d: [1, 1, 1, 2, 1, 1, 1, 3] },
+    { id: 'meadow',  e: '🌼', n: [3, 4, 3, 2, 0, 2, 3, 2], d: [1, 1, 1, 1, 2, 1, 1, 3] },
+    { id: 'lullaby', e: '🌙', n: [4, 3, 2, 3, 2, 0, 1, 0], d: [2, 1, 1, 2, 2, 1, 1, 3] },
+    { id: 'sea',     e: '🌊', n: [0, 1, 2, 1, 3, 2, 1, 0], d: [1, 1, 2, 1, 1, 2, 1, 3] },
+    { id: 'steppe',  e: '🌾', n: [2, 3, 5, 4, 3, 4, 3, 2], d: [1, 1, 2, 2, 1, 1, 1, 3] },
+    { id: 'star',    e: '✨', n: [5, 4, 6, 5, 3, 4, 2, 3], d: [1, 1, 2, 1, 1, 2, 1, 3] },
+  ];
+  TUNES.forEach(c => Object.defineProperty(c, 'name', { get: () => T(`tune.${c.id}`) }));
   ROUTES.forEach(rt => {
     Object.defineProperties(rt, { name: { get: () => T(`route.${rt.id}.name`) }, perkText: { get: () => T(`route.${rt.id}.perk`) } });
     rt.regions = rt.biomes.map((biome, i) => { const r = { biome, at: REGIONS[i].at }; Object.defineProperty(r, 'name', { get: () => T(`region.${NAME_OF[biome]}`) }); return r; });
@@ -591,7 +605,7 @@
   }
 
   root.IT = Object.assign(root.IT || {}, {
-    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, CLOUD_SHAPES, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, RARE_BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
+    VEHICLES, VEH, BUFFS, BUFF, BIOMES, REGIONS, ROUTES, ROUTE, CLOUD_SHAPES, TUNES, setRoute, getRoute: () => route, MILESTONES, BADGES, TIERS, BADGE_TIERS, badgeCount, badgeBonus, OUTFITS, OUTFIT, LETTERS, KEEPSAKES, KEEP, keepCount, CONSTELLATIONS, CONST, constCount, BIRDS, RARE_BIRDS, BIRD, BIRD_OF, birdCount, HARVEST_BIOMES, festival, CONVOY, CREDITS_PER_M, SPEED_VIS, HOME, regionAt, regionIndexFor, Econ,
     fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, distUnit, unitLabel: unit, AU, LY, MI,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

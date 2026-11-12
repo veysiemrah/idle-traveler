@@ -2081,6 +2081,8 @@
       this.swarm = null; this.fireflyAmb = false; this.glowOn = false; this.glowA = 0;
       // Bulut Yolu: bir şeye benzeyen bulut (dream); dokununca kısa bir an canlanır ve dağılır
       this.dream = null;
+      // Ezgi Yolu: rüzgârın taşıdığı nota şeridi (tune); notalarına dokununca yanar, hepsi yanınca ezgi çalar
+      this.tune = null;
       // Kâğıt uçak (mektup): soldan gelir, ortalarda bir takla atıp sağdan çıkar
       this.plane = null;
       // Yadigâr: bulunmamış bölge hatırası yol kenarında bir cam kabarcık içinde süzülür (keepOk: oyun "henüz bulunmadı" der)
@@ -2484,6 +2486,76 @@
         ctx.beginPath(); ctx.ellipse(ex, ey, 2.2 * s, 2.6 * s * blink, 0, 0, TAU); ctx.fill();
       }
       ctx.restore();
+    }
+    // Ezgi Yolu: sağdan, rüzgârın çizdiği ince bir şerit üstünde dört nota süzülür. Dokunulan nota altın olur ve şerit
+    // bir süre bekler (yolcu notaları çalarken kaçmasın); dördü de yanınca ezgi çalarken notalar sırayla zıplar, sonra
+    // yükselip solar. seq: notaların perdeleri (yükseklikleri de buna göre), at: ezgideki notaların başlama saniyeleri
+    spawnTune(id, seq, at) {
+      const k = Math.max(this.k, 0.8), narrow = this.RW < 480, s = k * (narrow ? 1 : 1.35);
+      const y0 = Math.max(this.H * (narrow ? rand(0.2, 0.28) : rand(0.16, 0.24)), 60 * s);
+      const mid = seq.reduce((a, b) => a + b, 0) / seq.length;
+      this.tune = { id, t: 0, x: this.W + 110 * s, y0, y: y0, s, pres: 0, hold: 0, done: 0, ph: Math.random() * TAU,
+        at: at || [], len: at && at.length ? at[at.length - 1] + 1.1 : 2.5, beat: -1,
+        n: seq.map((p, i) => ({ p, dx: (i - (seq.length - 1) / 2) * 46, dy: -(p - mid) * 6.5, lit: 0, hop: 0, ph: i * 1.3 })) };
+    }
+    tunePos(u, q) {
+      const s = u.s, rise = smooth(u.len, u.len + 1, u.done) * 46 * s;
+      return { x: u.x + q.dx * s, y: u.y + q.dy * s + Math.sin(this.t * 1.5 + q.ph + u.ph) * 3.2 * s - Math.sin(Math.PI * clamp(q.hop / 0.38, 0, 1)) * 11 * s - rise };
+    }
+    // dokunulan notanın sırasını döner: { i, p (perde), again (zaten yanıyordu), all (hepsi yandı) }
+    hitTune(px, py) {
+      const u = this.tune;
+      if (!u || u.done || u.t < 0.6) return null;
+      let best = -1, bd = 30 * u.s;
+      u.n.forEach((q, i) => { const c = this.tunePos(u, q), d = Math.hypot(px - c.x, py - (c.y - 6 * u.s)); if (d < bd) { bd = d; best = i; } });
+      if (best < 0) return null;
+      const q = u.n[best], c = this.tunePos(u, q), again = !!q.lit;
+      q.lit = q.lit || 0.001; q.hop = 0.001; u.hold = 7;
+      this.burst(c.x, c.y - 6 * u.s, again ? 5 : 10, ['#ffd36b', '#fff1c2', '#ffffff']);
+      const all = u.n.every(n => n.lit);
+      if (all) u.done = 0.001;
+      return { i: best, p: q.p, again, all };
+    }
+    // tek nota: eğik oval baş, sap ve kıvrık bayrak; yanınca altın olur ve parlar
+    drawNote(ctx, x, y, s, ink, glow, a, lit) {
+      ctx.save();
+      ctx.translate(x, y); ctx.globalAlpha = a;
+      ctx.shadowColor = glow; ctx.shadowBlur = (lit ? 14 : 7) * s;
+      ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineWidth = 1.9 * s; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.ellipse(0, 0, 6.2 * s, 4.5 * s, -0.42, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(5.3 * s, -1.6 * s); ctx.lineTo(5.3 * s, -20 * s);
+      ctx.bezierCurveTo(8 * s, -15 * s, 14 * s, -14 * s, 11.5 * s, -6.5 * s); ctx.stroke();
+      ctx.restore();
+    }
+    drawTune(ctx, u, night) {
+      const s = u.s, fade = u.pres;
+      if (fade <= 0.01) return;
+      const pts = u.n.map(q => this.tunePos(u, q)), dn = night > 0.5;
+      const ink = dn ? 'rgb(226,232,255)' : 'rgb(74,62,128)', halo = dn ? 'rgba(150,175,255,0.85)' : 'rgba(255,255,255,0.95)';
+      // rüzgâr şeridi: notaların altından geçen, uçlarında solan iki ince çizgi
+      const x0 = pts[0].x - 44 * s, x1 = pts[pts.length - 1].x + 44 * s;
+      const g = ctx.createLinearGradient(x0, 0, x1, 0), rc = dn ? '205,218,255' : '255,255,255';
+      g.addColorStop(0, `rgba(${rc},0)`); g.addColorStop(0.2, `rgba(${rc},${(0.7 * fade).toFixed(3)})`);
+      g.addColorStop(0.8, `rgba(${rc},${(0.7 * fade).toFixed(3)})`); g.addColorStop(1, `rgba(${rc},0)`);
+      ctx.save();
+      ctx.strokeStyle = g; ctx.lineWidth = 1.6 * s; ctx.lineCap = 'round';
+      for (let r = 0; r < 2; r++) {
+        const off = (r ? 8 : 2) * s;
+        ctx.globalAlpha = r ? 0.6 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x0, pts[0].y + off + Math.sin(this.t * 1.1 + u.ph) * 4 * s);
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[i + 1] || { x: x1, y: a.y + Math.sin(this.t * 1.3 + u.ph + 2) * 5 * s };
+          ctx.quadraticCurveTo(a.x, a.y + off, (a.x + b.x) / 2, (a.y + b.y) / 2 + off);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+      u.n.forEach((q, i) => {
+        const c = pts[i], lit = clamp(q.lit / 0.25, 0, 1), pop = 1 + 0.28 * Math.sin(Math.PI * clamp(q.hop / 0.38, 0, 1));
+        if (lit < 1) this.drawNote(ctx, c.x, c.y, s, ink, halo, fade * (1 - lit) * 0.92, false);
+        if (lit > 0) this.drawNote(ctx, c.x, c.y, s * pop, 'rgb(255,201,77)', dn ? 'rgba(255,214,120,0.95)' : 'rgba(255,236,170,1)', fade * lit, true);
+      });
     }
     // Kuş Defteri: bölgenin kuşu (1–5 kuşluk küçük bir sürü) gökyüzünden geçer. Dokununca dürbün halkası belirir,
     // kuş sevinçle kanat çırpıp yükselir ve solar.
@@ -3193,6 +3265,29 @@
           if (d.x < -90 * d.s) this.dream = null;
         }
       }
+      if (this.tune) {
+        const u = this.tune;
+        u.t += dt; u.hold = Math.max(0, u.hold - dt);
+        for (const q of u.n) { if (q.lit) q.lit += dt; if (q.hop) { q.hop += dt; if (q.hop > 0.38) q.hop = 0; } }
+        if (u.done) {
+          // ezgi çalarken her nota vuruşunda sıradaki nota zıplar ve kıvılcım saçar; bitince şerit yükselip solar
+          u.done += dt;
+          while (u.beat + 1 < u.at.length && u.done >= u.at[u.beat + 1]) {
+            u.beat++;
+            const q = u.n[u.beat % u.n.length], c = this.tunePos(u, q);
+            q.hop = 0.001; this.burst(c.x, c.y - 6 * u.s, 4, ['#ffd36b', '#fff1c2']);
+          }
+          u.pres = 1 - smooth(u.len, u.len + 1, u.done);
+          if (u.done > u.len + 1) this.tune = null;
+        } else {
+          // dokunulmadıkça rüzgârla sola süzülür; bir notaya dokununca bir süre yerinde bekler
+          const go = 1 - smooth(0, 1.2, u.hold), edge = smooth(-70 * u.s, 30 * u.s, u.x);
+          u.pres = clamp(u.t / 1.2, 0, 1) * edge;
+          u.x -= (this.W + 240 * u.s) / 40 * dt * go; u.y = u.y0 + Math.sin(u.t * 0.6 + u.ph) * 7 * u.s;
+          if (Math.random() < dt * 1.2) this.parts.push({ type: 'spark', x: u.x + rand(-90, 90) * u.s, y: u.y + rand(-16, 14) * u.s, vx: -rand(6, 18), vy: rand(-6, 4), life: 0, max: rand(0.7, 1.2), size: rand(1, 1.6), color: pick(['#ffffff', '#fff1c2']), rot: 0 });
+          if (u.x < -110 * u.s) this.tune = null;
+        }
+      }
       // ışık bulutu: sürü omza vardıktan sonra belirir, etki bitince yavaşça söner
       const glowIn = this.glowOn && !(this.swarm && this.swarm.caught);
       this.glowA = clamp(this.glowA + (glowIn ? dt * 1.4 : this.glowOn ? 0 : -dt * 0.7), 0, 1);
@@ -3411,6 +3506,7 @@
       // yakın bulutlar (uçarken öne geçenler)
       for (const c of this.clouds) if (c.depth >= 0.65) this.drawCloud(ctx, c, cloudCol, space);
       if (this.dream) this.drawDream(ctx, this.dream, cloudCol, night);
+      if (this.tune) this.drawTune(ctx, this.tune, night);
       // dokunulacak takımyıldız bulutların önünde (kutusu dağların üstünde kalır, tepeler onu örtmez)
       if (this.constel) this.drawConst(ctx, this.constel, clamp(starA / 0.55, 0, 1));
 

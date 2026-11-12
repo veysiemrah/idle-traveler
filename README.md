@@ -500,9 +500,24 @@ npx wrangler dev   # http://localhost:8787
     bulut beyazı şapka, gül kurusu çanta; kilitliyken "Bulutlara bak…", ilk biçimden sonra "Bulutlar: n/6"). Bulut süzülürken
     çekilen kartpostal onuncu Özel An'ı (*Bulut Hayali*) yakalar. Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
     Testleri: `tests/dreams.js`, `tests/dreamer.js`.
+  - **Ezgi Yolu** (14., v1.66): çay bahçeleri, lale ve buğday ovasıyla başlar. Yalnızca bu rotada arada bir (ilki 30–55 sn,
+    sonra 100–170 sn arayla) rüzgâr, ince bir şerit üstünde dört nota taşır (`scene.js` → `tune`; sağdan sola süzülür; gündüz
+    mürekkep moru, gece ay ışığı rengi). Dokunulan nota kendi sesiyle çalar ve altın olur; şerit ilk dokunuştan sonra 7 sn
+    yerinde bekler (notalar hangi sırayla olursa olsun; yanmış notaya yeniden dokunmak yalnızca sesini çalar). Dördü de yanınca
+    ezginin tamamı (sekiz nota; `data.js` → `TUNES`, sesi `audio.js` → `tune`) çalar, notalar vuruşlarla sırayla zıplar, sonra
+    şerit yükselip solar ve 30 saniye *Yol Türküsü* (kredi ×2, tıklama ×3) gelir. Ses kapalıyken de notalar, kıvılcımlar ve
+    bildirim aynı çalışır. Yağmurda, uzayda, pencere açıkken ve başka bir gök olayı sürerken gelmez; o süzülürken öbür gök
+    olayları beklenir. İlk ezgi öğrenilene kadar (en çok üç kez) "Rüzgâr birkaç nota taşıyor…" bildirimi gelir. Henüz
+    duyulmamış ezgiler %70 olasılıkla seçilir. Altı ezgi (Sabah Ezgisi, Çayır Havası, Yol Ninnisi, Deniz Türküsü, Bozkır
+    Ezgisi, Yıldız Şarkısı) Yol Defteri'nde *Ezgi Defteri* sayfasında (ilk ezgiden sonra görünür; duyulmayanlar "?") durur;
+    öğrenilen ezginin kartına dokununca ezgi yeniden çalar ve kartındaki notalar sallanır. Toplamı *Çalınan ezgiler*
+    satırındadır (`tunes`: `{ id: sayı }`, ömür boyu). Altısı da öğrenilince türküler kalıcı olarak 1,5 kat uzun sürer.
+    Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir. Testi: `tests/tunes.js`.
+  Rota seçicide (v1.66) her rotanın küçük bir amblemi vardır (`data.js` → `ROUTES[].e`); seçili rota altın halkalı amblem ve
+  köşesinde bir onay işaretiyle, açılmamış rotalar kesik çizgili kart ve "?" amblemiyle görünür.
   Yatay telefonda pano panele taşındığından durak kutusu kendi genişliğiyle ölçülür (`.dock-trail` kapsayıcı sorgusu):
   dar kalınca etiket ve mesafe gizlenir, durağın adı görünür.
-  Rotalar 14 tanedir; on üçüncü eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  Rotalar 15 tanedir; on dördüncü eve dönüşle sonuncusu açılır. Bir dönüşte yalnızca sıradaki rota duyurulur (eski kayıtta arada kalan rotalar atlanmaz). Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
   yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden

@@ -201,13 +201,28 @@
       o.connect(g); g.connect(this.sfx); g.connect(this.delay);
       o.start(t); o.stop(t + 0.75);
     },
-    // ateşböcekleri: çok yüksekten, düzensiz aralıklarla tıngırdayan minik, yumuşak çanlar
     // bulut hayali: yumuşak bir esinti ve yavaşça yükselen üç tatlı, yuvarlak nota
     dream() {
       if (!this.ctx || !this.sfxOn) return;
       this.noise(0.05, 1.1, 900, 0.5);
       [0, 2, 4].forEach((n, i) => this.tone(PENTA[n] * 1.5, 0.022, 1.6, 'sine', this.sfx, true, 0.1 + i * 0.22));
     },
+    // Ezgi Yolu: kaval gibi yumuşak tek bir nota (i: PENTA sırası); alttan hafif bir oktav eşlik eder
+    tuneNote(i, when, vol) {
+      if (!this.ctx || !this.sfxOn) return;
+      const f = PENTA[i % PENTA.length], v = vol || 1;
+      this.tone(f, 0.05 * v, 1.1, 'sine', this.sfx, true, when);
+      this.tone(f / 2, 0.022 * v, 0.8, 'triangle', this.sfx, false, when);
+    },
+    // ezginin tamamı: at[j] saniyesinde n[j] notası
+    tune(n, at, vol) { n.forEach((i, j) => this.tuneNote(i, at[j], vol)); },
+    // rüzgârın getirdiği notalar belirirken: bir esinti ve uzaktan iki silik nota
+    tuneHint(n) {
+      if (!this.ctx || !this.sfxOn) return;
+      this.noise(0.05, 1.2, 1000, 0.5);
+      this.tuneNote(n[0], 0.25, 0.4); this.tuneNote(n[1], 0.6, 0.4);
+    },
+    // ateşböcekleri: çok yüksekten, düzensiz aralıklarla tıngırdayan minik, yumuşak çanlar
     fireflies() { if (!this.ctx) return; [6, 4, 5, 3, 6].forEach((n, i) => this.tone(PENTA[n] * 4, 0.018, 0.9, 'sine', this.sfx, true, i * 0.11 + Math.random() * 0.05)); },
     // tilki: çalı hışırtısı ve uzaktan iki kısa, yukarı kalkıp inen yumuşak "yip"
     fox() {
