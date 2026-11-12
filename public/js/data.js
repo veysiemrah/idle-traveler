@@ -173,7 +173,7 @@
     // 9. yolculuk: duraklarda (gerçek dünya mesafeleri) beş kat ödül
     { id: 'lighthouse', e: '🏮', perk: 'milestone', biomes: ['meadow', 'olive', 'coast', 'tulip', 'wheat', 'lavender', 'autumn', 'sakura', 'tea', 'pine', 'snow', 'aurora', 'canyon', 'cappadocia', 'desert'] },
     // 10. yolculuk: gökyüzünden ara sıra turna sürüleri geçer (yalnızca bu rotada); dokununca Turna Rüzgârı
-    { id: 'crane', e: '🪶', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
+    { id: 'crane', e: '🕊️', perk: 'cranes', biomes: ['meadow', 'autumn', 'wheat', 'lavender', 'pine', 'snow', 'tea', 'sakura', 'tulip', 'coast', 'olive', 'aurora', 'cappadocia', 'canyon', 'desert'] },
     // 11. yolculuk: rüzgârlı ovalar ve kıyılar; ipi kopmuş uçurtmalar süzülür (yalnızca bu rotada), yakalanan uçurtma yolcuya bağlanır
     { id: 'kite', e: '🪁', perk: 'kites', biomes: ['meadow', 'tulip', 'wheat', 'coast', 'lavender', 'olive', 'cappadocia', 'tea', 'sakura', 'autumn', 'pine', 'canyon', 'desert', 'snow', 'aurora'] },
     // 12. yolculuk: kuşlar iki kat sık geçer; yalnızca bu rotada kuşlara yol gösteren Hüdhüd (ibibik) görünür

@@ -358,11 +358,13 @@
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
   let routeGrace = false; // eve dönüş penceresi açıkken rota köyden çıkılmış olsa da seçilebilir
+  // rota az önce seçildiyse amblemi bir kez zıplar (seçici yeniden çizildikçe yinelenmesin diye zaman damgasıyla)
+  var routePickAt = 0;
   function routePicker() {
     const open = routesOpenFor(S.trips);
     return `<div class="routes" role="group">${IT.ROUTES.map((r, i) => {
       const on = S.route === r.id, ok = i < open;
-      return `<button class="route-btn${on ? ' on' : ''}${ok ? '' : ' locked'}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && (S.regionIdx === 0 || routeGrace) ? '' : 'disabled'}>
+      return `<button class="route-btn${on ? ' on' : ''}${on && Date.now() - routePickAt < 600 ? ' pick' : ''}${ok ? '' : ' locked'}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && (S.regionIdx === 0 || routeGrace) ? '' : 'disabled'}>
         <span class="route-h"><span class="route-e" aria-hidden="true">${ok ? r.e : '?'}</span><b>${ok ? esc(r.name) : '???'}</b></span><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
     }).join('')}</div>`;
   }
@@ -1127,7 +1129,7 @@
     route(id) {
       const i = IT.ROUTES.findIndex(r => r.id === id);
       if (i < 0 || i >= routesOpenFor(S.trips) || (S.regionIdx > 0 && !routeGrace) || S.route === id) return;
-      S.route = id; applyRoute(); save();
+      S.route = id; routePickAt = Date.now(); Sound.unlock(); Sound.chat(); applyRoute(); save();
     },
     // Yolcular: son 24 saat ya da tüm zamanlar
     trScope(id) {

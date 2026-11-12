@@ -556,12 +556,14 @@ button { font: inherit; color: inherit; }
 .route-btn:not(:disabled):hover .route-e { transform: rotate(-8deg) scale(1.08); }
 .route-btn:not(:disabled):active { transform: scale(.97); }
 .route-btn.on { border-color: rgba(255, 213, 107, 0.8); background: linear-gradient(180deg, rgba(255, 213, 107, 0.16), transparent 80%), var(--ink-2); box-shadow: 0 0 0 2px rgba(255, 213, 107, 0.16); }
-.route-btn.on .route-e { background: rgba(255, 213, 107, 0.26); box-shadow: inset 0 0 0 1.5px rgba(232, 185, 60, 0.9); animation: routePick .45s ease; }
+.route-btn.on .route-e { background: rgba(255, 213, 107, 0.26); box-shadow: inset 0 0 0 1.5px rgba(232, 185, 60, 0.9); }
+.route-btn.pick .route-e { animation: routePick .45s ease; }
 /* seçili rotanın köşesinde küçük bir onay işareti */
 .route-btn.on::after {
   content: ""; position: absolute; top: 7px; right: 8px; width: 9px; height: 5px; border: solid #e8b93c; border-width: 0 0 2px 2px;
-  transform: rotate(-45deg); animation: routeTick .3s ease .1s both;
+  transform: rotate(-45deg);
 }
+.route-btn.pick::after { animation: routeTick .3s ease .1s both; }
 .route-btn.on .route-h { padding-right: 14px; }
 .route-btn.locked { border-style: dashed; background: transparent; }
 .route-btn.locked .route-e { background: transparent; box-shadow: inset 0 0 0 1px var(--line-soft); font-weight: 800; font-size: 12px; color: var(--muted); }
@@ -569,7 +571,7 @@ button { font: inherit; color: inherit; }
 .route-btn:disabled.on { cursor: default; }
 @keyframes routePick { 40% { transform: scale(1.25) rotate(-10deg); } }
 @keyframes routeTick { from { opacity: 0; transform: rotate(-45deg) scale(.4); } }
-@media (prefers-reduced-motion: reduce) { .route-btn, .route-e { transition: none; } .route-btn.on .route-e, .route-btn.on::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .route-btn, .route-e { transition: none; } .route-btn.pick .route-e, .route-btn.pick::after { animation: none; } }
 /* Yol arkadaşı seçimi: Karabaş, Kanat, Tekir */
 .pals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }
 .pal-btn { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 7px 8px; border-radius: var(--r-sm); border: 1px solid var(--line-soft); background: var(--well); cursor: pointer; min-width: 0; }

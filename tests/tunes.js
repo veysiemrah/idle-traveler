@@ -52,6 +52,7 @@ const toasts = async p => (await p.textContent('#toasts')).replace(/\s+/g, ' ').
   console.log('ezgi öğrenildi:', st.tunes[id] === 1, '· etki:', !!fx, fx ? Math.round((fx.until - Date.now()) / 1000) + ' sn' : '', '· bildirim:', /Yeni bir ezgi/.test(await toasts(p)));
   await p.waitForTimeout(1200);
   await p.screenshot({ path: process.env.SP + '/tunes_play.png' });
+  if (st.tunes[id] !== 1 || !fx || Math.abs((fx.until - Date.now()) / 1000 - 29) > 3) throw new Error('ezgi öğrenilmedi ya da etki gelmedi');
   console.log('etki rozeti:', await p.$$eval('.fx-tune', e => e.length));
   await p.waitForTimeout(4500);
   console.log('şerit solup gitti:', await p.evaluate(() => !__sc.tune));
@@ -75,6 +76,7 @@ const toasts = async p => (await p.textContent('#toasts')).replace(/\s+/g, ' ').
   const ns = await saved(n), nfx = ns.effects.find(e => e.id === 'tune');
   await n.waitForTimeout(3900);
   console.log('altıncı ezgi:', ns.tunes.star === 1, '· süre:', nfx ? Math.round((nfx.until - Date.now()) / 1000 + 4.2) + ' sn' : 'yok', '· bildirim:', /Bütün ezgileri/.test(await toasts(n)));
+  if (ns.tunes.star !== 1 || !nfx || Math.abs((nfx.until - Date.now()) / 1000 + 4.2 - 45) > 3) throw new Error('altıncı ezgide süre 45 sn değil');
   errs.push(...n.errs); await n.close();
 
   // 5) telefon (320 px), koyu tema: şerit ekrana sığar, notalara dokunulur, defterde taşma yok
@@ -99,12 +101,15 @@ const toasts = async p => (await p.textContent('#toasts')).replace(/\s+/g, ' ').
   await o.waitForTimeout(6000);
   const os = await saved(o);
   console.log('başka rotada şerit:', await o.evaluate(() => !!__sc.tune), '· bozuk kayıt temizlendi:', JSON.stringify(os.tunes));
+  if (JSON.stringify(os.tunes) !== '{"star":4}') throw new Error('bozuk kayıt temizlenmedi: ' + JSON.stringify(os.tunes));
   errs.push(...o.errs); await o.close();
   pw.speed(0);
   for (const trips of [13, 14]) {
     const r = await open(b, { route: 'anatolia', trips, routeMax: 13, distance: 0, regionIdx: 0, tunes: undefined });
     await r.click('.tab[data-id="buffs"]').catch(() => {}); await r.waitForTimeout(400);
-    console.log(`${trips} dönüşte rota seçicide Ezgi Yolu:`, await r.evaluate(() => { const b = document.querySelector('[data-act="route"][data-id="melody"]'); return b ? (b.disabled ? 'kilitli' : 'açık') : '(yok)'; }),
+    const lock = await r.evaluate(() => { const b = document.querySelector('[data-act="route"][data-id="melody"]'); return b ? (b.disabled ? 'kilitli' : 'açık') : '(yok)'; });
+    if (lock !== (trips === 14 ? 'açık' : 'kilitli')) throw new Error(`${trips} dönüşte Ezgi Yolu: ${lock}`);
+    console.log(`${trips} dönüşte rota seçicide Ezgi Yolu:`, lock,
       '· eski kayıtta alan:', JSON.stringify((await saved(r)).tunes));
     errs.push(...r.errs); await r.close();
   }

@@ -2548,6 +2548,8 @@
           const a = pts[i], b = pts[i + 1] || { x: x1, y: a.y + Math.sin(this.t * 1.3 + u.ph + 2) * 5 * s };
           ctx.quadraticCurveTo(a.x, a.y + off, (a.x + b.x) / 2, (a.y + b.y) / 2 + off);
         }
+        // son parça: şerit sağ ucuna kadar uzanıp orada solar
+        ctx.lineTo(x1, pts[pts.length - 1].y + off + Math.sin(this.t * 1.3 + u.ph + 2) * 5 * s);
         ctx.stroke();
       }
       ctx.restore();
