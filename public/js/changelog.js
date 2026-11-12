@@ -5,9 +5,31 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.65';
+  IT.VERSION = '1.66';
 
   IT.CHANGELOG = [
+    { v: '1.66', date: '2026-11-13', items: {
+      tr: ['Yeni bir rota: Ezgi Yolu. Bu yolda rüzgâr eli boş gelmiyor; kulak ver, belki sen de eşlik edersin…',
+        'Bulut Yolu’nda gökyüzüne uzun uzun bakanları iki küçük sürpriz bekliyor…',
+        'Rota kartları küçük amblemlerine kavuştu: yolunu seçmek artık daha keyifli.',
+        'Yolda birkaç küçük rötuş.'],
+      en: ['A new route: Melody Road. The wind doesn’t come empty-handed here; lend an ear, and maybe you’ll join in…',
+        'Two small surprises await those who watch the sky on Cloud Road for a while…',
+        'Route cards now carry little emblems: picking your road is a bit more fun.',
+        'A few small touches along the road.'],
+      de: ['Eine neue Route: der Melodienweg. Hier kommt der Wind nicht mit leeren Händen; hör hin, vielleicht stimmst du mit ein …',
+        'Zwei kleine Überraschungen warten auf alle, die am Wolkenweg etwas länger in den Himmel schauen …',
+        'Die Routenkarten tragen jetzt kleine Embleme: Den Weg zu wählen macht noch mehr Freude.',
+        'Ein paar kleine Feinschliffe unterwegs.'],
+      es: ['Una ruta nueva: el Camino de las Melodías. Aquí el viento no llega con las manos vacías; presta oído, quizá te unas tú también…',
+        'Dos pequeñas sorpresas esperan a quienes miran el cielo un rato en el Camino de las Nubes…',
+        'Las tarjetas de ruta ahora llevan pequeños emblemas: elegir tu camino es un poco más divertido.',
+        'Algunos pequeños retoques por el camino.'],
+      fr: ['Une nouvelle route : la Route des Mélodies. Ici, le vent ne vient pas les mains vides ; tends l’oreille, tu te joindras peut-être à lui…',
+        'Deux petites surprises attendent ceux qui contemplent le ciel un moment sur la Route des Nuages…',
+        'Les cartes de route portent désormais de petits emblèmes : choisir son chemin devient un peu plus agréable.',
+        'Quelques petites retouches en chemin.'],
+    } },
     { v: '1.65', date: '2026-10-20', items: {
       tr: ['Sv. 200 ile 300 arasındaki yol artık o kadar sessiz değil: Sv. 250’ye ulaşan araçlara küçük, kanatlı bir eşlik geliyor.',
         'Yolda birkaç küçük rötuş.'],

@@ -496,11 +496,28 @@ npx wrangler dev   # http://localhost:8787
     hayvanlarda gözü açılıp kırpışır), sonra topakları dışa açılıp solar ve 30 saniye *Bulut Hayali* (hız ×2, kredi ×2) gelir.
     Görülen biçimler Yol Defteri'nde *Bulut Hayalleri* sayfasında (ilk biçimden sonra görünür; görülmeyenler "?") kaçar kez
     görüldükleriyle durur, toplamı *Canlanan bulutlar* satırındadır (`dreams`: `{ id: sayı }`, ömür boyu). Altı biçimin
-    hepsi görülünce hayaller kalıcı olarak 1,5 kat uzun sürer. Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
-    Testi: `tests/dreams.js`.
+    hepsi görülünce hayaller kalıcı olarak 1,5 kat uzun sürer ve *Hayalperest* kıyafeti açılır (v1.66; puslu mavi ceket,
+    bulut beyazı şapka, gül kurusu çanta; kilitliyken "Bulutlara bak…", ilk biçimden sonra "Bulutlar: n/6"). Bulut süzülürken
+    çekilen kartpostal onuncu Özel An'ı (*Bulut Hayali*) yakalar. Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir.
+    Testleri: `tests/dreams.js`, `tests/dreamer.js`.
+  - **Ezgi Yolu** (14., v1.66): çay bahçeleri, lale ve buğday ovasıyla başlar. Yalnızca bu rotada arada bir (ilki 30–55 sn,
+    sonra 100–170 sn arayla) rüzgâr, ince bir şerit üstünde dört nota taşır (`scene.js` → `tune`; sağdan sola süzülür; gündüz
+    mürekkep moru, gece ay ışığı rengi). Dokunulan nota kendi sesiyle çalar ve altın olur; şerit ilk dokunuştan sonra 7 sn
+    yerinde bekler (notalar hangi sırayla olursa olsun; yanmış notaya yeniden dokunmak yalnızca sesini çalar). Dördü de yanınca
+    ezginin tamamı (sekiz nota; `data.js` → `TUNES`, sesi `audio.js` → `tune`) çalar, notalar vuruşlarla sırayla zıplar, sonra
+    şerit yükselip solar ve 30 saniye *Yol Türküsü* (kredi ×2, tıklama ×3) gelir. Ses kapalıyken de notalar, kıvılcımlar ve
+    bildirim aynı çalışır. Yağmurda, uzayda, pencere açıkken ve başka bir gök olayı sürerken gelmez; o süzülürken öbür gök
+    olayları beklenir. İlk ezgi öğrenilene kadar (en çok üç kez) "Rüzgâr birkaç nota taşıyor…" bildirimi gelir. Henüz
+    duyulmamış ezgiler %70 olasılıkla seçilir. Altı ezgi (Sabah Ezgisi, Çayır Havası, Yol Ninnisi, Deniz Türküsü, Bozkır
+    Ezgisi, Yıldız Şarkısı) Yol Defteri'nde *Ezgi Defteri* sayfasında (ilk ezgiden sonra görünür; duyulmayanlar "?") durur;
+    öğrenilen ezginin kartına dokununca ezgi yeniden çalar ve kartındaki notalar sallanır. Toplamı *Çalınan ezgiler*
+    satırındadır (`tunes`: `{ id: sayı }`, ömür boyu). Altısı da öğrenilince türküler kalıcı olarak 1,5 kat uzun sürer.
+    Rota kartında ödül yazmaz; sürüm notunda yalnızca ipucu verilir. Testi: `tests/tunes.js`.
+  Rota seçicide (v1.66) her rotanın küçük bir amblemi vardır (`data.js` → `ROUTES[].e`); seçili rota altın halkalı amblem ve
+  köşesinde bir onay işaretiyle, açılmamış rotalar kesik çizgili kart ve "?" amblemiyle görünür.
   Yatay telefonda pano panele taşındığından durak kutusu kendi genişliğiyle ölçülür (`.dock-trail` kapsayıcı sorgusu):
   dar kalınca etiket ve mesafe gizlenir, durağın adı görünür.
-  Rotalar 14 tanedir; on üçüncü eve dönüşle sonuncusu açılır. Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
+  Rotalar 15 tanedir; on dördüncü eve dönüşle sonuncusu açılır. Bir dönüşte yalnızca sıradaki rota duyurulur (eski kayıtta arada kalan rotalar atlanmaz). Hangi rotaların duyurulduğu `routeMax` alanında tutulur: sonradan
   eklenen bir rota, bütün rotaları çoktan açmış oyuncuya da bir sonraki dönüşte "Yeni rota açıldı" diye gelir ve seçilir (eski
   kayıtlarda o zamanki 10 rotadan duyurulanlar sayılır). Eve dönüş penceresi açıkken yol akmaya devam eder; çok hatıralı
   yolculuklarda köy birkaç saniyede geçildiği için pencere açık kaldıkça rota köyden çıkılmış olsa da seçilebilir. Açılmamış rotaların adı gizlidir. Rota, köyden (ilk bölgeden) çıkmadan Eve Dönüş kartından ya da dönüş penceresinden
@@ -532,21 +549,24 @@ npx wrangler dev   # http://localhost:8787
   **Özel Anlar (v1.54)**: Kartpostal çekilirken sahnede bir olay varsa o an yakalanır (`game.js` → `MOMENTS`): altın kelebek,
   deftere yazılmamış bir kuş, gökkuşağı (ay gökkuşağı da), kayan yıldız, kâğıt uçak, havadaki bir yunus, yabani tilki ve gece
   Kuzey Işıkları bölgesi; v1.60'tan beri dokuzuncu olarak ateşböceği sürüsü (Ateşböceği Yolu; sürü karede ya da ateşböcekleri
-  omuzdayken, mührü 🎇). Yakalanan anlar fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük
-  görünümün altında adları yazar); yeni bir an "Özel an yakalandı: … (n/9)" diye bildirilir. İlk kartpostaldan sonra Yol
+  omuzdayken, mührü 🎇); v1.66'dan beri onuncu olarak Bulut Yolu'nda bir şeye benzeyen bulut (mührü ☁️). Yakalanan anlar
+  fotoğrafın sağ üst köşesinde küçük altın mühürlerle görünür (albümde de; büyük görünümün altında adları yazar); yeni bir an
+  "Özel an yakalandı: … (n/10)" diye bildirilir. İlk kartpostaldan sonra Yol
   Defteri'nde *Özel Anlar* bölümü görünür: bulunanlar adıyla, bulunmayanlar sezdiren bir ipucuyla ("Gökyüzü yedi renge
   boyandığında"). Yalnızca karede gerçekten görünen olay sayılır: ekranın içinde (kelebek, kuş, kâğıt uçak, havadaki yunus),
   solmamış (gökkuşağı ve Kuzey Işıkları çizildikleri yoğunluğa göre), gece tilkinin gövdesi belirmiş. Hepsi bulununca
   (seti tamamlayan kartpostal dahil) kartpostallar altın çerçeveli olur (köşelerinde küçük yıldızlar). `moments` alanında
   ömür boyu tutulur. Çerçeve bir kez kazanılınca kalır (`momentGold`): yeni bir an eklense de gitmez; v1.54'ün sekiz anını
   toplamış eski kayıtlar (alan henüz yokken) çerçeveyi korur, defterde "Altın çerçeven hep seninle. Yine de albümde yeni bir
-  an için boş bir yer açıldı…" yazar. Ekonomiye etkisi yoktur. Testi: `tests/moments.js`.
+  an için boş bir yer açıldı…" yazar. Ekonomiye etkisi yoktur. Testleri: `tests/moments.js`, `tests/dreamer.js`.
 - **Yolcunun kıyafeti**: Rozet kademesi topladıkça yeni renkler açılır: Klasik, Gök Mavisi (3 kademe), Orman (8), Lavanta (15),
   Gün Batımı (25), Gece Yolcusu (40) ve Altın Yolcu (60). *Kâşif* rozetle değil, yadigâr rafı dolunca (15 yadigâr) açılır.
   *Zamansız Gezgin* son mektupla (12 mektup), *Yıldız Haritacısı* gökyüzü haritası dolunca (8 takımyıldız), *Denizci* yedinci
   yunus selamıyla, *Kuş Gözlemcisi* Kuş Defteri dolunca (7 kuş), *Işık Taşıyıcı* (v1.62; yosun yeşili ceket, ateşböceği sarısı
   şapka, fener sarısı çanta) Ateşböceği Yolu'nda yedinci sürü yanına gelince açılır ("Ateşböcekleri seni tanıdı!"; kilitliyken
-  "Çimenlerde bir ışık…", ilk sürüden sonra "Ateşböcekleri: n/7"). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
+  "Çimenlerde bir ışık…", ilk sürüden sonra "Ateşböcekleri: n/7"). *Hayalperest* (v1.66; puslu mavi ceket, bulut beyazı şapka,
+  gül kurusu çanta) Bulut Yolu'nda altı biçimin hepsi görülünce açılır ("Bütün bulut biçimlerini gördün!"; kilitliyken
+  "Bulutlara bak…", ilk biçimden sonra "Bulutlar: n/6"). Açılmamış kıyafetlerin adı gizlidir. Yol Defteri'nden seçilen kıyafet yolcuya, araçların vurgu renklerine, garaj simgelerine
   ve kartpostallara yansır. Diğer gezginler kilitli bir kıyafeti göremez: sunucuya o an üzerinde olan kıyafet gider.
 - **Kademeli rozetler**: 17 rozet ailesi var: adım, ritim, şans, kelebek, gökkuşağı, gece, bölge, toplam yol, garaj, yükseltme,
   eve dönüş, hatıra, kartpostal, kayan yıldız, günlük seri, hazine ve yadigâr (Koleksiyoncu). Her aile sekiz kademeden geçer: Plastik, Ahşap, Metal, Bronz,

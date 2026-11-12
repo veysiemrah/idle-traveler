@@ -16,8 +16,9 @@
     { id: 'crane',    dur: 25, speed: 3, w: 0 },   // Turna Yolu'nda geçen turna sürüsüne dokununca gelir
     { id: 'kite',     dur: 30, credit: 3, w: 0 },  // Uçurtma Yolu'nda ipi kopmuş uçurtmayı yakalayınca gelir (süresince yolcuya bağlı uçar)
     { id: 'hoopoe',   dur: 30, speed: 2, credit: 2, w: 0 }, // Göç Yolu'nda Hüdhüd'e dokununca gelir
-    { id: 'glow',     dur: 30, speed: 2, click: 3, w: 0 },
-    { id: 'dream',    dur: 30, speed: 2, credit: 2, w: 0 }, // Bulut Yolu'nda bir şeye benzeyen buluta dokununca gelir  // Ateşböceği Yolu'nda ateşböceği sürüsüne dokununca gelir (süresince omuzda ışık)
+    { id: 'glow',     dur: 30, speed: 2, click: 3, w: 0 },  // Ateşböceği Yolu'nda ateşböceği sürüsüne dokununca gelir (süresince omuzda ışık)
+    { id: 'dream',    dur: 30, speed: 2, credit: 2, w: 0 }, // Bulut Yolu'nda bir şeye benzeyen buluta dokununca gelir
+    { id: 'tune',     dur: 30, credit: 2, click: 3, w: 0 }, // Ezgi Yolu'nda rüzgârın taşıdığı notaların hepsine dokununca gelir
   ];
   GIFTS.forEach(g => Object.defineProperties(g, {
     name: { get: () => t(`gift.${g.id}.name`) },
@@ -51,7 +52,7 @@
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
   const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
-    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'dreams', 'routeMax',
+    'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'dreams', 'tunes', 'routeMax',
     'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'momentGold', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
   const $ = sel => document.querySelector(sel);
@@ -77,6 +78,7 @@
       kites: 0, // yakalanan uçurtmalar (Uçurtma Yolu, ömür boyu)
       fireflies: 0, // eşlik eden ateşböceği sürüleri (Ateşböceği Yolu, ömür boyu)
       dreams: {}, // dokunulan bulut biçimleri: { id: kaç kez } (Bulut Yolu, ömür boyu)
+      tunes: {}, // öğrenilen ezgiler: { id: kaç kez çalındı } (Ezgi Yolu, ömür boyu)
       letters: 0, // okunan mektuplar (kâğıt uçakla gelir, sırayla; ömür boyu)
       fox: 0, // yabani tilkiyle dostça karşılaşmalar (Econ.foxNeed olunca Kızıl yol arkadaşı olur; ömür boyu)
       consts: {}, // bulunan takımyıldızlar: { id: 1 } (gökyüzü haritası, ömür boyu)
@@ -161,11 +163,13 @@
     s.consts = Object.fromEntries(IT.CONSTELLATIONS.filter(c => consts[c.id] === 1 || consts[c.id] === true).map(c => [c.id, 1]));
     const dr = isObj(d.dreams) ? d.dreams : {};
     s.dreams = Object.fromEntries(IT.CLOUD_SHAPES.filter(c => count(dr[c.id], 1e6)).map(c => [c.id, count(dr[c.id], 1e6)]));
+    const tu = isObj(d.tunes) ? d.tunes : {};
+    s.tunes = Object.fromEntries(IT.TUNES.filter(c => count(tu[c.id], 1e6)).map(c => [c.id, count(tu[c.id], 1e6)]));
     s.notes = cleanNotes(d.notes);
     const mo = isObj(d.moments) ? d.moments : {};
     s.moments = Object.fromEntries(MOMENTS.filter(m => mo[m.id] === 1 || mo[m.id] === true).map(m => [m.id, 1]));
-    // altın çerçeve bir kez kazanılınca kalır: v1.60'ta dokuzuncu an eklendi; o zamanki sekiz anı toplamış eski kayıtlar
-    // (alan henüz yok) çerçevelerini korur, yeni an onlara albümde boş bir yer olarak görünür
+    // altın çerçeve bir kez kazanılınca kalır: v1.60'ta dokuzuncu, v1.66'da onuncu an eklendi; eski kayıtlar
+    // (alan henüz yok) çerçevelerini korur, yeni anlar onlara albümde boş bir yer olarak görünür
     s.momentGold = d.momentGold === 1 || (d.momentGold === undefined && MOMENTS_V154.every(id => s.moments[id])) ? 1 : 0;
     if (typeof s.harvestDay !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.harvestDay)) s.harvestDay = '';
     const birds = isObj(d.birds) ? d.birds : {};
@@ -343,9 +347,10 @@
 
   const nBadges = () => IT.badgeCount(S);
   const outfitOpen = o => (o.keeps ? IT.keepCount(S) >= o.keeps : o.letters ? S.letters >= o.letters : o.consts ? IT.constCount(S) >= o.consts
-    : o.dolphins ? S.dolphins >= o.dolphins : o.birds ? IT.birdCount(S) >= o.birds : o.fireflies ? S.fireflies >= o.fireflies : nBadges() >= o.need);
+    : o.dolphins ? S.dolphins >= o.dolphins : o.birds ? IT.birdCount(S) >= o.birds : o.fireflies ? S.fireflies >= o.fireflies
+    : o.dreams ? dreamsSeen() >= o.dreams : nBadges() >= o.need);
   // rozetle değil, bir koleksiyonla açılan kıyafetler
-  const outfitSpecial = o => !!(o.keeps || o.letters || o.consts || o.dolphins || o.birds || o.fireflies);
+  const outfitSpecial = o => !!(o.keeps || o.letters || o.consts || o.dolphins || o.birds || o.fireflies || o.dreams);
   // Seçili kıyafet kilitliyse (ör. sıfırlamadan sonra) klasik giyilir
   function applyRoute() {
     IT.setRoute(S.route);
@@ -353,12 +358,14 @@
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
   let routeGrace = false; // eve dönüş penceresi açıkken rota köyden çıkılmış olsa da seçilebilir
+  // rota az önce seçildiyse amblemi bir kez zıplar (seçici yeniden çizildikçe yinelenmesin diye zaman damgasıyla)
+  var routePickAt = 0;
   function routePicker() {
     const open = routesOpenFor(S.trips);
     return `<div class="routes" role="group">${IT.ROUTES.map((r, i) => {
       const on = S.route === r.id, ok = i < open;
-      return `<button class="route-btn${on ? ' on' : ''}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && (S.regionIdx === 0 || routeGrace) ? '' : 'disabled'}>
-        <b>${ok ? esc(r.name) : '???'}</b><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
+      return `<button class="route-btn${on ? ' on' : ''}${on && Date.now() - routePickAt < 600 ? ' pick' : ''}${ok ? '' : ' locked'}" data-act="route" data-id="${r.id}" aria-pressed="${on}" ${ok && (S.regionIdx === 0 || routeGrace) ? '' : 'disabled'}>
+        <span class="route-h"><span class="route-e" aria-hidden="true">${ok ? r.e : '?'}</span><b>${ok ? esc(r.name) : '???'}</b></span><small>${ok ? esc(r.perkText) : t('homecard.routeLocked')}</small></button>`;
     }).join('')}</div>`;
   }
   // Üzerindeki kıyafet: seçili olan kilitliyse (ör. sıfırlamadan sonra) klasik
@@ -465,7 +472,7 @@
   // Turna Yolu: gökyüzünden geçen turna sürüsüne dokununca rüzgârlarını seninle paylaşırlar (Turna Rüzgârı, hız ×3)
   let craneIn = 35 + Math.random() * 30, craneHints = 0;
   function updateCranes(dt) {
-    if (perk() !== 'cranes' || scene.cranes || scene.plane || scene.constel || scene.bird || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'cranes' || scene.cranes || scene.plane || scene.constel || scene.bird || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.tune || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     craneIn -= dt;
     if (craneIn > 0) return;
     craneIn = 110 + Math.random() * 90;
@@ -486,7 +493,7 @@
   // konar ve etki süresince eşlik eder (Ateşböceği Işığı). Yağmurda, uzayda ve pencere açıkken gelmez; başka bir gök olayı beklenir.
   let swarmIn = 25 + Math.random() * 20, swarmHints = 0;
   function updateFireflies(dt) {
-    if (perk() !== 'fireflies' || scene.swarm || scene.cranes || scene.plane || scene.bird || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'fireflies' || scene.swarm || scene.cranes || scene.plane || scene.bird || scene.constel || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.tune || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     swarmIn -= dt * ((scene.nightAmt || 0) > 0.5 ? 1 : 0.5);
     if (swarmIn > 0) return;
     swarmIn = 90 + Math.random() * 70;
@@ -513,7 +520,7 @@
   const dreamsSeen = () => IT.CLOUD_SHAPES.filter(c => S.dreams[c.id]).length;
   const dreamsAll = () => dreamsSeen() >= IT.CLOUD_SHAPES.length;
   function updateDreams(dt) {
-    if (perk() !== 'clouds' || scene.dream || scene.cranes || scene.plane || scene.bird || scene.constel || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'clouds' || scene.dream || scene.tune || scene.cranes || scene.plane || scene.bird || scene.constel || scene.kiteFree() || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     dreamIn -= dt;
     if (dreamIn > 0) return;
     dreamIn = 100 + Math.random() * 70;
@@ -529,15 +536,50 @@
     const g = GIFT.dream, dur = addEffect(g, g.dur * (dreamsAll() ? 1.5 : 1)).dur;
     Sound.gift(); Sound.dream();
     toast(t(first ? 'toast.dreamNew' : 'toast.dream', { shape: esc(sh.name), name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
-    if (first && dreamsAll()) setTimeout(() => { toast(t('toast.dreamsAll'), 'gold'); Sound.region(); }, 900);
+    if (first && dreamsAll()) setTimeout(() => {
+      const o = OUTFITS.find(x => x.dreams);
+      applyOutfit();
+      toast(t('toast.dreamsAll', { name: esc(o.name) }), 'gold'); Sound.region();
+    }, 900);
     scene.addFloat(`${sh.e} ${t('float.dream')}`, { color: '#ffffff', big: true });
+    checkBadges();
+  }
+  // Ezgi Yolu: rüzgâr ara sıra dört notalık bir şerit taşır. Dokunulan nota kendi sesiyle çalar ve yanar; dördü de yanınca
+  // ezginin tamamı çalar ve Yol Türküsü gelir. Öğrenilen ezgiler Yol Defteri'nde durur (dokununca yeniden çalar);
+  // henüz duyulmamış ezgiler daha sık gelir, altısı da öğrenilince türküler kalıcı olarak yarı yarıya uzun sürer.
+  // Öbür gök olayları gibi yağmurda, uzayda ve pencere açıkken gelmez; başka bir gök olayı beklenir.
+  const TUNE_BEAT = 0.27;
+  const tuneTimes = (c, lead) => { let at = lead || 0; return c.d.map(b => { const w = at; at += b * TUNE_BEAT; return w; }); };
+  let tuneIn = 30 + Math.random() * 25, tuneHints = 0, tuneBusy = 0;
+  const tunesKnown = () => IT.TUNES.filter(c => S.tunes[c.id]).length;
+  const tunesAll = () => tunesKnown() >= IT.TUNES.length;
+  function updateTunes(dt) {
+    if (perk() !== 'tunes' || scene.tune || scene.dream || scene.cranes || scene.plane || scene.bird || scene.constel || scene.kiteFree() || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    tuneIn -= dt;
+    if (tuneIn > 0) return;
+    tuneIn = 100 + Math.random() * 70;
+    const fresh = IT.TUNES.filter(c => !S.tunes[c.id]);
+    const c = fresh.length && Math.random() < 0.7 ? fresh[(Math.random() * fresh.length) | 0] : IT.TUNES[(Math.random() * IT.TUNES.length) | 0];
+    scene.spawnTune(c.id, c.n.slice(0, 4), tuneTimes(c, 0.55)); Sound.tuneHint(c.n);
+    if (!tunesKnown() && tuneHints++ < 3) toast(t('toast.tunesSeen'), 'teal');
+  }
+  function tapTune(r) {
+    Sound.unlock(); Sound.tuneNote(r.p);
+    if (!r.all) return;
+    const c = IT.TUNES.find(x => x.id === scene.tune.id), first = !S.tunes[c.id];
+    S.tunes[c.id] = (S.tunes[c.id] || 0) + 1; uiDirty.journal = true;
+    const g = GIFT.tune, dur = addEffect(g, g.dur * (tunesAll() ? 1.5 : 1)).dur;
+    Sound.tune(c.n, tuneTimes(c, 0.55));
+    toast(t(first ? 'toast.tuneNew' : 'toast.tune', { tune: esc(c.name), name: g.name, dur: fmtDuration(dur), text: effText(g, 1) }), 'gold');
+    if (first && tunesAll()) setTimeout(() => { toast(t('toast.tunesAll'), 'gold'); Sound.region(); }, 3600);
+    scene.addFloat(`🎵 ${t('float.tune')}`, { color: '#ffe9a8', big: true });
     checkBadges();
   }
   // Uçurtma Yolu: ipi kopmuş bir uçurtma rüzgârla süzülür; yakalanınca etki süresince yolcunun eline bağlı uçar
   // (Uçurtma Neşesi). Turnalar gibi yağmurda, uzayda ve pencere açıkken gelmez; uçak ya da sürü gökteyken beklenir.
   let kiteIn = 35 + Math.random() * 30, kiteHints = 0;
   function updateKites(dt) {
-    if (perk() !== 'kites' || scene.kite || scene.cranes || scene.plane || scene.constel || scene.bird || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
+    if (perk() !== 'kites' || scene.kite || scene.cranes || scene.plane || scene.constel || scene.bird || (scene.dream && !scene.dream.caught) || scene.tune || !$('#modal').hidden || (scene.space || 0) > 0.3 || weather === 'rain') return;
     kiteIn -= dt;
     if (kiteIn > 0) return;
     kiteIn = 110 + Math.random() * 90;
@@ -585,7 +627,7 @@
   let keepIn = 45 + Math.random() * 40;
   function updateKeeps(dt) {
     const id = IT.regionAt(S.regionIdx).biome;
-    if (S.keeps[id] || !IT.KEEP[id] || scene.keep || scene.fox || !$('#modal').hidden) return;
+    if (S.keeps[id] || !IT.KEEP[id] || scene.keep || scene.chest || scene.fox || !$('#modal').hidden) return;
     keepIn -= dt;
     if (keepIn > 0) return;
     keepIn = 80 + Math.random() * 70;
@@ -628,7 +670,7 @@
   }
   function updateConsts(dt) {
     const next = IT.CONSTELLATIONS.find(c => !S.consts[c.id]);
-    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.bird || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
+    if (!next || scene.constel || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.tune || scene.bird || !$('#modal').hidden || weather === 'rain' || Math.max(scene.nightAmt || 0, scene.space || 0) < 0.55) return;
     constIn -= dt;
     if (constIn > 0) return;
     constIn = (70 + Math.random() * 40) * (perk() === 'stars' ? 0.5 : 1);
@@ -724,7 +766,7 @@
   // Göç Yolu'nda kuşlar iki kat sık geçer; yalnızca orada arada bir (ilki 45–75 sn, sonra 150–240 sn) Hüdhüd görünür.
   let birdIn = 40 + Math.random() * 30, birdHints = 0, hoopoeIn = 45 + Math.random() * 30, hoopoeHints = 0;
   function updateBirds(dt) {
-    if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
+    if (scene.bird || scene.cranes || scene.plane || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.tune || scene.constel || !$('#modal').hidden || weather === 'rain' || (scene.space || 0) > 0.3) return;
     const migrate = perk() === 'birds';
     if (migrate) {
       hoopoeIn -= dt;
@@ -802,7 +844,7 @@
   let letterIn = 70 + Math.random() * 40, planeHints = 0;
   function updateLetters(dt) {
     const next = IT.LETTERS[S.letters];
-    if (!next || scene.plane || scene.cranes || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.constel || scene.bird || !$('#modal').hidden || weather === 'rain') return;
+    if (!next || scene.plane || scene.cranes || scene.kiteFree() || (scene.dream && !scene.dream.caught) || scene.tune || scene.constel || scene.bird || !$('#modal').hidden || weather === 'rain') return;
     letterIn -= dt;
     if (!next.ready(S)) { letterIn = Math.max(letterIn, 90); return; }
     if (letterIn > 0) return;
@@ -1000,8 +1042,13 @@
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
-    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; giftIn = 25; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.dream = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
-    weather = 'clear'; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
+    combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.dream = null; scene.tune = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
+    // yeni yolculukta olaylar baştan zamanlanır: önceki yolculuktan kalan süreler hemen tetiklemez
+    giftIn = 25; starIn = 20 + Math.random() * 25; seedIn = 40 + Math.random() * 40; chestIn = 6;
+    craneIn = 35 + Math.random() * 30; swarmIn = 25 + Math.random() * 20; dreamIn = 30 + Math.random() * 25; tuneIn = 30 + Math.random() * 25; kiteIn = 35 + Math.random() * 30;
+    keepIn = 45 + Math.random() * 40; constIn = 60 + Math.random() * 40; foxIn = 50 + Math.random() * 40; dolphinIn = 30 + Math.random() * 30; dolphinSea = false;
+    birdIn = 40 + Math.random() * 30; hoopoeIn = 45 + Math.random() * 30; letterIn = 70 + Math.random() * 40;
+    weather = 'clear'; weatherT = 0; weatherIn = 150 + Math.random() * 120; scene.setWeather(0, 0);
     uiDirty = { garage: true, buffs: true, journal: true, travelers: true };
   }
   function disarm(el, label) {
@@ -1082,7 +1129,7 @@
     route(id) {
       const i = IT.ROUTES.findIndex(r => r.id === id);
       if (i < 0 || i >= routesOpenFor(S.trips) || (S.regionIdx > 0 && !routeGrace) || S.route === id) return;
-      S.route = id; applyRoute(); save();
+      S.route = id; routePickAt = Date.now(); Sound.unlock(); Sound.chat(); applyRoute(); save();
     },
     // Yolcular: son 24 saat ya da tüm zamanlar
     trScope(id) {
@@ -1111,6 +1158,16 @@
       el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
       h.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       h.classList.remove('flash'); void h.offsetWidth; h.classList.add('flash');
+    },
+    // Defterdeki ezgiye dokununca yeniden çalar; kartındaki notalar ezgi boyunca sallanır
+    tunePlay(id, el) {
+      const c = IT.TUNES.find(x => x.id === id);
+      if (!c || !S.tunes[id] || Date.now() < tuneBusy) return;
+      const at = tuneTimes(c, 0.05), len = at[at.length - 1] + 0.9;
+      tuneBusy = Date.now() + len * 1000;
+      Sound.unlock(); Sound.tune(c.n, at);
+      el.style.setProperty('--len', `${len.toFixed(2)}s`);
+      el.classList.remove('play'); void el.offsetWidth; el.classList.add('play');
     },
     // Albümdeki kartpostal büyük açılır
     albumPeek(id) { Sound.unlock(); Sound.chat(); showAlbumPhoto(+id); },
@@ -1188,9 +1245,11 @@
       // Yeni yolculuk yeni rotayla başlar: henüz duyurulmamış ilk açık rota (sonradan eklenenler dahil); hepsi
       // duyurulduysa sırayla dönülür
       const open = routesOpenFor(S.trips);
-      trip.route = open - 1 > S.routeMax;
-      if (trip.route) S.routeMax = open - 1;
-      S.route = IT.ROUTES[trip.route ? S.routeMax : S.trips % IT.ROUTES.length].id;
+      // bir dönüşte yalnızca sıradaki rota duyurulur: eski kayıtta arada kalan rotalar atlanmaz
+      const next = Math.min(open - 1, S.routeMax + 1);
+      trip.route = next > S.routeMax;
+      if (trip.route) S.routeMax = next;
+      S.route = IT.ROUTES[trip.route ? next : S.trips % IT.ROUTES.length].id;
       // dönüş penceresi açıkken yol akmaya devam eder (uzun yolculuklarda köy birkaç saniyede geçilir): pencere
       // kapanana kadar rota yine de seçilebilir
       routeGrace = true;
@@ -1289,6 +1348,7 @@
     updateKites(et);
     updateFireflies(et);
     updateDreams(et);
+    updateTunes(et);
     updateDolphins(et);
     updateBirds(et);
     updateHarvest();
@@ -1312,25 +1372,31 @@
       for (let n = 0; autoAcc >= 1 && n < 4; n++) { autoAcc -= 1; autoStep(); }
       autoAcc = Math.min(autoAcc, 1);
     }
-    if ($('#modal').hidden) giftIn -= et;
-    if (giftIn <= 0) {
-      if (!scene.gift) scene.spawnGift(14);
-      giftIn = (40 + Math.random() * 45) / Econ.butterflyFreq(S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
+    if ($('#modal').hidden) {
+      giftIn -= et;
+      if (giftIn <= 0) {
+        if (!scene.gift) scene.spawnGift(14);
+        giftIn = (40 + Math.random() * 45) / Econ.butterflyFreq(S.buffs.butterfly) * (perk() === 'butterfly' ? 0.6 : 1);
+      }
     }
     // hazine sandığı: harita tamamken gelir; kaçırılırsa 45 sn sonra yeniden
-    if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest && !scene.fox) {
+    if (S.mapPieces >= MAP_PIECES && $('#modal').hidden && !scene.chest && !scene.keep && !scene.fox) {
       chestIn -= et;
       if (chestIn <= 0) { scene.spawnChest(); chestIn = 45; }
     }
     // kayan yıldız: gece (ya da uzayda) ve yağmursuz gökyüzünde ara sıra kayar
-    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.55 && weather !== 'rain') starIn -= et;
-    if (starIn <= 0) {
-      if (!scene.star) scene.spawnStar();
-      starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
+    if ($('#modal').hidden && Math.max(scene.nightAmt || 0, scene.space || 0) > 0.55 && weather !== 'rain') {
+      starIn -= et;
+      if (starIn <= 0) {
+        if (!scene.star) scene.spawnStar();
+        starIn = (50 + Math.random() * 70) * (perk() === 'stars' ? 0.5 : 1);
+      }
     }
     // karahindiba tohumu: aydınlık, yağmursuz gündüzde (uzayda değilken)
-    if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) seedIn -= et;
-    if (seedIn <= 0) { scene.spawnSeed(); seedIn = (80 + Math.random() * 110) * (perk() === 'stars' ? 0.5 : 1); }
+    if ($('#modal').hidden && (scene.nightAmt || 0) < 0.35 && (scene.space || 0) < 0.3 && weather !== 'rain' && !scene.seed) {
+      seedIn -= et;
+      if (seedIn <= 0) { scene.spawnSeed(); seedIn = (80 + Math.random() * 110) * (perk() === 'stars' ? 0.5 : 1); }
+    }
 
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
     scene.palTier = Econ.palTier(S.buffs.pal);
@@ -1393,6 +1459,8 @@
     { id: 'aurora', e: '🌌', test: () => (scene.auroraVis || 0) > 0.5 && (scene.space || 0) < 0.3 },
     // v1.60: ateşböceği sürüsü kareye girerken ya da ateşböcekleri omzundayken (Ateşböceği Yolu)
     { id: 'fireflies', e: '🎇', test: () => { const s = scene.swarm; return !!(s && !s.caught && s.t > 0.6 && onScr(s.x, s.y)) || (scene.glowA || 0) > 0.8; } },
+    // v1.66: Bulut Yolu'nda bir şeye benzeyen bulut süzülürken
+    { id: 'dream', e: '☁️', test: () => { const d = scene.dream; return !!(d && !d.caught && d.t > 1 && onScr(d.x, d.y)); } },
   ];
   // v1.54'teki sekiz an: hepsini toplamış eski kayıtlar altın çerçeveyi korur (sanitize)
   const MOMENTS_V154 = ['butterfly', 'bird', 'rainbow', 'star', 'plane', 'dolphins', 'fox', 'aurora'];
@@ -2238,6 +2306,7 @@
         ${S.kites ? `<div><dt>${t('j.kites')}</dt><dd>${fmtNum(S.kites)}</dd></div>` : ''}
         ${S.fireflies ? `<div><dt>${t('j.fireflies')}</dt><dd>${fmtNum(S.fireflies)}</dd></div>` : ''}
         ${dreamsSeen() ? `<div><dt>${t('j.dreamCount')}</dt><dd>${fmtNum(Object.values(S.dreams).reduce((a, b) => a + b, 0))}</dd></div>` : ''}
+        ${tunesKnown() ? `<div><dt>${t('j.tuneCount')}</dt><dd>${fmtNum(Object.values(S.tunes).reduce((a, b) => a + b, 0))}</dd></div>` : ''}
         ${S.dolphins ? `<div><dt>${t('j.dolphins')}</dt><dd>${fmtNum(S.dolphins)}</dd></div>` : ''}
         ${S.owned.chrono || S.autoSteps ? `<div><dt>${t('j.autoSteps')}</dt><dd id="jAuto">${fmtNum(S.autoSteps)}</dd></div>` : ''}
         <div><dt>${t('j.streak')}</dt><dd>${t('j.streakVal', { n: S.day.streak, best: S.day.best })}</dd></div>
@@ -2258,6 +2327,11 @@
         ? `<li><div class="keep dream on" title="${esc(c.name)}"><span class="e" aria-hidden="true">${c.e}</span><b>${esc(c.name)}</b><small>×${fmtNum(S.dreams[c.id])}</small></div></li>`
         : `<li><div class="keep dream" role="img" aria-label="${esc(t('j.dreamUnknown'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
       <p class="tag small">${dreamsAll() ? t('j.dreamsDone') : t('j.dreamsHint')}</p>` : ''}
+      ${tunesKnown() ? `<h3 class="sec" data-nav="${tunesKnown()}/${IT.TUNES.length}">${t('j.tunes')} <small>${t('j.tunesSub', { n: tunesKnown(), m: IT.TUNES.length })}</small></h3>
+      <ul class="keeps tunes">${IT.TUNES.map(c => S.tunes[c.id]
+        ? `<li><button class="keep tune on" type="button" data-act="tunePlay" data-id="${c.id}" title="${esc(t('j.tunePlay', { name: c.name }))}"><span class="e" aria-hidden="true">${c.e}</span><span class="staff" aria-hidden="true">${c.n.slice(0, 4).map((n, i) => `<i style="--p:${n};--i:${i}"></i>`).join('')}</span><b>${esc(c.name)}</b></button></li>`
+        : `<li><div class="keep tune" role="img" aria-label="${esc(t('j.tuneUnknown'))}"><span class="e" aria-hidden="true">?</span></div></li>`).join('')}</ul>
+      <p class="tag small">${tunesAll() ? t('j.tunesDone') : t('j.tunesHint')}</p>` : ''}
       <h3 class="sec" data-nav="${S.mapPieces}/${MAP_PIECES}">${t('j.map')} <small>${t('j.mapSub', { n: S.mapPieces, m: MAP_PIECES, t: fmtNum(S.treasures) })}</small></h3>
       <div class="tmap">
         <div class="tmap-grid" aria-hidden="true">${Array.from({ length: MAP_PIECES }, (_, i) => `<i class="${i < S.mapPieces ? 'on' : ''}"></i>`).join('')}<b>✕</b></div>
@@ -2302,7 +2376,8 @@
           <small>${open ? (on ? t('j.wearing') : '&nbsp;') : o.keeps ? t('ui.outfitKeeps', { n: o.keeps }) : o.letters ? t('ui.outfitLetters', { n: o.letters }) : o.consts ? t('ui.outfitConsts', { n: o.consts })
             : o.dolphins ? (S.dolphins ? t('ui.outfitDolphins', { n: S.dolphins, m: o.dolphins }) : t('ui.outfitSea'))
             : o.birds ? (IT.birdCount(S) ? t('ui.outfitBirds', { n: IT.birdCount(S), m: o.birds }) : t('ui.outfitSky'))
-            : o.fireflies ? (S.fireflies ? t('ui.outfitFireflies', { n: Math.min(S.fireflies, o.fireflies), m: o.fireflies }) : t('ui.outfitGlow')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
+            : o.fireflies ? (S.fireflies ? t('ui.outfitFireflies', { n: Math.min(S.fireflies, o.fireflies), m: o.fireflies }) : t('ui.outfitGlow'))
+            : o.dreams ? (dreamsSeen() ? t('ui.outfitDreams', { n: dreamsSeen(), m: o.dreams }) : t('ui.outfitCloud')) : t('ui.outfitLock', { n: o.need })}</small></button></li>`;
       }).join('')}</ul>`;
     // Bölüm gezinme şeridi: defterin üstünde yapışkan, yatay kayan çipler (bölüm adı ve ilerleme); dokununca o bölüme
     // yumuşakça kayar. Şeridin kendi yatay kaydırması yeniden çizimde korunur.
@@ -2564,6 +2639,8 @@
       if (scene.hitCranes(x, y)) { catchCranes(); return; }
       if (scene.hitSwarm(x, y)) { catchFireflies(); return; }
       if (scene.hitDream(x, y)) { catchDream(); return; }
+      const tn = scene.hitTune(x, y);
+      if (tn) { tapTune(tn); return; }
       const bd = scene.hitBird(x, y);
       if (bd) { catchBird(bd); return; }
       if (scene.hitKite(x, y)) { catchKite(); return; }
