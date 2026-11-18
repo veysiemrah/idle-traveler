@@ -12,7 +12,7 @@ const KEY = 'idle-traveler-save-v1', BAK = KEY + '-bak';
     // yayın sırasında eski ve yeni dosyaların karışmasını taklit eder: data.js mektupları tanımıyor
     if (breakData) {
       p.broken = true;
-      await p.route('**/js/data.js', async r => { const res = await r.fetch(); r.fulfill({ response: res, body: (await res.text()) + (p.broken ? '\nIT.LETTERS = undefined;' : '') }); });
+      await p.route('**/js/data.js*', async r => { const res = await r.fetch(); r.fulfill({ response: res, body: (await res.text()) + (p.broken ? '\nIT.LETTERS = undefined;' : '') }); });
     }
     await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(1200);
     return p;

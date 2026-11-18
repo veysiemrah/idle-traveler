@@ -11,7 +11,9 @@ for (const [code, d] of Object.entries(L)) {
   const miss = Object.keys(ref).filter(k => !(k in d.strings)), extra = ks.filter(k => !(k in ref));
   const phBad = [], tagBad = [];
   for (const k of Object.keys(ref)) if (k in d.strings) {
-    const a = new Set(ph(ref[k])), b = new Set(ph(d.strings[k]));
+    // Both variables are supplied by game.js; Romance languages intentionally use the lowercase tier.
+    const normalize = tokens => tokens.map(token => k === 'toast.badge' && token === '{tierLow}' ? '{tier}' : token);
+    const a = new Set(normalize(ph(ref[k]))), b = new Set(normalize(ph(d.strings[k])));
     if ([...a].some(x => !b.has(x)) || [...b].some(x => !a.has(x))) phBad.push(`${k}: en ${[...a]} / ${code} ${[...b]}`);
     if (tags(ref[k]) !== tags(d.strings[k])) tagBad.push(k);
   }

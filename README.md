@@ -663,3 +663,16 @@ Tüm görseller kodla çizilir. Harici görsel ya da ses dosyası yoktur.
 
 Her yayında `public/js/changelog.js` içindeki `IT.VERSION` değerini artır ve `IT.CHANGELOG` dizisinin başına yeni sürümün
 notlarını beş dilde (tr, en, de, es, fr) ekle. Oyuncular bir sonraki açılışta Yenilikler düğmesinde noktayı görür.
+## V2 geliştirme sürümü
+
+Idle Traveler 2.0.0, ilk açılışta Atlas’ı, kampı ve Galaksinin Eşiği’ndeki yeni keşfi tanıtır. Atlas'tan sefer başlatılır; Kamp'ta ücretsiz ekipman seçilir ve ilk keşiflerden gelen araştırmayla yapılar geliştirilir. Oyun ilerledikçe 12 farklı dünya görünümü ve ayrı sefer kuralları açılır. 39 seferin üçü ana keşif hikâyesi tamamlandıktan sonra erişilen yeni sistemdedir.
+
+Eski kayıtlar v4'e geçirilmeden önce yedeklenir. Güncel v4 kurtarma kopyası eski istemcinin yazmasına karşı ayrı tutulur. En az 100.000 ışık yıllık arşiv uzaklığı olan kayıt, başlangıç görevlerini tekrar etmeden Galaksinin Eşiği girişine erişir.
+
+Tasarım: `docs/superpowers/specs/2026-11-18-idle-traveler-v2-design.md`.
+Uygulama planı: `docs/superpowers/plans/2026-11-18-idle-traveler-v2.md`.
+Test sonuçları ve kayıt anahtarları: `docs/v2/verification.md`.
+
+Yeni sıkı kontroller: `node tests/v2-run.js`, `node tests/v2-browser.js`, `node tests/keys.js`. Son tarayıcı ölçümü için yerel sunucu açıkken `node tests/v2-performance-browser.js`.
+
+Üretim yayını `main` dalındaki değişiklikleri kullanan Cloudflare Workers Builds üzerinden yapılır.

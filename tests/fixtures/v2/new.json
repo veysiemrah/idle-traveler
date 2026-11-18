@@ -1,0 +1,28 @@
+{
+  "v": 3,
+  "intro": true,
+  "lastSeen": 1795004118419,
+  "seenVer": "99",
+  "player": {
+    "id": "12345678-1234-4123-a123-123456789abc",
+    "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "name": "Gezgin"
+  },
+  "credits": 0,
+  "owned": {
+    "walk": true
+  },
+  "levels": {
+    "walk": 0
+  },
+  "active": "walk",
+  "distance": 0,
+  "lifeDist": 0,
+  "regionIdx": 27,
+  "msIdx": 99,
+  "unitTip": 2,
+  "settings": {
+    "sfx": false,
+    "music": false
+  }
+}

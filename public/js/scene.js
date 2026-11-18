@@ -962,6 +962,46 @@
     ctx.restore();
   }
 
+  // Two late-game craft, shared by the scene, garage and online travelers.
+  function drawPortal(ctx, x, y, k, st) {
+    const T = st.tier || 0, t = st.t || 0;
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    const col = T >= 4 ? GOLD : '#9c83f5';
+    for (let i = 0; i < 2 + Math.min(T, 3); i++) {
+      ctx.save(); ctx.translate(-12, -12); ctx.rotate(t * 0.35 + i * 0.7);
+      ctx.strokeStyle = i % 2 ? '#74e5ef' : col; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.ellipse(0, 0, 48 + i * 3, 20 + i * 2, 0, 0, TAU); ctx.stroke();
+      ctx.fillStyle = '#fff1bf'; circle(ctx, 48 + i * 3, 0, 3); ctx.restore();
+    }
+    ctx.fillStyle = '#35305c'; ctx.beginPath(); ctx.ellipse(0, 2, 43, 13, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#b7eff2'; ctx.beginPath(); ctx.ellipse(3, -10, 27, 23, 0, Math.PI, TAU); ctx.fill();
+    rider(ctx, 1, t, [-5, -3], [0, -24], [15, 9], [21, -8]);
+    if (T >= 1) { ctx.fillStyle = col; circle(ctx, 34, 0, 4); }
+    if (T >= 4) sparkles(ctx, 0, -12, 1, t, 9, 120, 80);
+    ctx.restore();
+  }
+
+  function drawCosmos(ctx, x, y, k, st) {
+    const T = st.tier || 0, t = st.t || 0;
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    const col = T >= 4 ? GOLD : '#6ddde0';
+    ctx.strokeStyle = '#c6b4ed'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(-5, 7); ctx.lineTo(-5, -70); ctx.stroke();
+    for (let side = -1; side <= 1; side += 2) {
+      ctx.fillStyle = side < 0 ? '#9681d6' : col;
+      ctx.beginPath(); ctx.moveTo(-5, -68); ctx.quadraticCurveTo(side * (60 + Math.sin(t) * 3), -45, side * 51, -13); ctx.lineTo(-5, -7); ctx.closePath(); ctx.fill();
+      ctx.stroke();
+      if (T >= 1) { ctx.fillStyle = '#fff2cb'; circle(ctx, side * 25, -32, 3); }
+    }
+    if (T >= 2) { ctx.strokeStyle = col; ctx.beginPath(); ctx.ellipse(-5, -25, 67, 18, Math.sin(t * 0.4) * 0.2, 0, TAU); ctx.stroke(); }
+    ctx.fillStyle = '#33365d'; ctx.beginPath(); ctx.moveTo(-57, 1); ctx.quadraticCurveTo(0, 38, 58, -3); ctx.lineTo(35, 15); ctx.quadraticCurveTo(-4, 34, -45, 17); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = col; ctx.stroke();
+    rider(ctx, 1, t, [12, 1], [17, -20], [28, 14], [34, -6]);
+    if (T >= 3) sparkles(ctx, -25, -15, 1, t, 8, 130, 95);
+    ctx.restore();
+  }
+
   // Karabaş: krem tüylü, kara maskeli Anadolu çoban köpeği; yolcunun yanında koşar.
   // tier: görünüm aşaması (1 tasma ve künye, 2 boyunluk, 3 sırtta heybe, 4 altın tasma ve parıltı)
   function drawDog(ctx, x, y, k, ph, t, tier) {
@@ -1748,18 +1788,18 @@
     ctx.restore();
   }
 
-  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true, comet: true, warp: true, whale: true, startrain: true, anka: true, chrono: true };
+  const FLYING = { balloon: true, plane: true, jet: true, rocket: true, sail: true, comet: true, warp: true, whale: true, startrain: true, anka: true, chrono: true, portal: true, cosmos: true };
   // Uçan araçların gökyüzündeki yüksekliği (sahne yüksekliğine oran). Kamera yerde kalır, yol hep görünür.
   // uzayda uzak halkalı gezegenin göründüğü araçlar
-  const RINGED = { sail: 1, comet: 1, warp: 1, whale: 1, startrain: 1, anka: 1, chrono: 1 };
-  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3, comet: 0.33, warp: 0.34, whale: 0.36, startrain: 0.36, anka: 0.34, chrono: 0.36 };
+  const RINGED = { sail: 1, comet: 1, warp: 1, whale: 1, startrain: 1, anka: 1, chrono: 1, portal: 1, cosmos: 1 };
+  const FLY_Y = { balloon: 0.4, plane: 0.42, jet: 0.38, rocket: 0.34, sail: 0.3, comet: 0.33, warp: 0.34, whale: 0.36, startrain: 0.36, anka: 0.34, chrono: 0.36, portal: 0.36, cosmos: 0.34 };
   // Araçların çizim sınırları (k = 1, çizim noktasına göre; görünüm aşamalarının en genişi): [sol, sağ] ve üst yükseklik.
   // Değerler araçlar tek tek çizilip piksel piksel ölçülerek bulundu.
   const VEH_EXT = { walk: [-23, 15], skates: [-23, 21], board: [-26, 25], bike: [-42, 37], horse: [-35, 41], moto: [-44, 43], car: [-46, 45],
     van: [-66, 46], train: [-340, 57], balloon: [-34, 34], plane: [-125, 49], jet: [-65, 61], rocket: [-61, 51], sail: [-106, 72], comet: [-117, 47], warp: [-76, 55],
     // trenin ışık rayı ve Anka'nın kuyruk uçları solarak biter: yerleşimde vagonun ve kuyruğun gövdeye yakın kısmı sayılır
-    whale: [-87, 61], startrain: [-104, 66], anka: [-120, 62], chrono: [-60, 52] };
-  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34, whale: 66, startrain: 56, anka: 72, chrono: 52 };
+    whale: [-87, 61], startrain: [-104, 66], anka: [-120, 62], chrono: [-60, 52], portal: [-70, 70], cosmos: [-78, 78] };
+  const VEH_TOP = { walk: 85, skates: 84, board: 82, bike: 83, horse: 93, moto: 78, car: 71, van: 72, train: 76, balloon: 72, plane: 27, jet: 22, rocket: 24, sail: 80, comet: 52, warp: 34, whale: 66, startrain: 56, anka: 72, chrono: 52, portal: 66, cosmos: 82 };
   // Karabaş, Tekir ve Kızıl'ın yavaş araçlarda koştuğu yer (aracın gerisinde)
   const PAL_BACK = { walk: 34, skates: 38, board: 40, bike: 52, horse: 62 };
   const GHOST_SCALE = 0.8;
@@ -1938,6 +1978,8 @@
       case 'startrain': return drawStarTrain(ctx, x, y, k, st);
       case 'anka': return drawAnka(ctx, x, y, k, st);
       case 'chrono': return drawChrono(ctx, x, y, k, st);
+      case 'portal': return drawPortal(ctx, x, y, k, st);
+      case 'cosmos': return drawCosmos(ctx, x, y, k, st);
     }
   }
 
@@ -3351,6 +3393,10 @@
     /* --- Çizim --- */
     draw(ui) {
       const ctx = this.ctx, W = this.W, H = this.H, k = this.k;
+      if (this.worldView && this.worldView.worldId !== 'earth' && IT.V2.WorldScene) {
+        IT.V2.WorldScene.draw(ctx, { width: W, height: H, k, reduced: this.reduced }, this.worldView, this.t, this);
+        return;
+      }
       const pal = blendPal(this.palFrom, this.palTo, this.blend);
       const e = Math.sin((this.tod - 0.25) * TAU);              // güneş yüksekliği
       const night = 1 - smooth(-0.32, 0.04, e);
@@ -4350,7 +4396,7 @@
     const sizes = { walk: [0.62, 0.5, 0.93], skates: [0.6, 0.5, 0.93], board: [0.6, 0.5, 0.93], bike: [0.56, 0.5, 0.93], horse: [0.5, 0.44, 0.96],
       moto: [0.5, 0.52, 0.93], car: [0.48, 0.5, 0.85], van: [0.46, 0.5, 0.88], train: [0.36, 0.5, 0.86], balloon: [0.46, 0.5, 0.62],
       plane: [0.52, 0.48, 0.5], jet: [0.5, 0.46, 0.55], rocket: [0.56, 0.42, 0.5], sail: [0.38, 0.62, 0.62], comet: [0.5, 0.66, 0.66], warp: [0.48, 0.5, 0.56],
-      whale: [0.48, 0.52, 0.66], startrain: [0.4, 0.66, 0.66], anka: [0.46, 0.62, 0.68], chrono: [0.58, 0.6, 0.66] };
+      whale: [0.48, 0.52, 0.66], startrain: [0.4, 0.66, 0.66], anka: [0.46, 0.62, 0.68], chrono: [0.58, 0.6, 0.66], portal: [0.42, 0.5, 0.64], cosmos: [0.38, 0.5, 0.7] };
     const [k, xf, yf] = sizes[id];
     const st = { phase: 0.9, wheel: 0.3, t: 1.2, night: 0, tier: tier || 0, icon: true };
     // Sv. 200: aracın arkasında minik bir gökkuşağı yayı (sahnedeki iz simgeye sığmaz)
@@ -4417,6 +4463,7 @@
     }
   }
 
+  IT.V2.drawTraveler = drawVehicle;
   IT.Scene = Scene;
   IT.drawIcon = drawIcon;
   IT.drawBirdIcon = drawBirdIcon;

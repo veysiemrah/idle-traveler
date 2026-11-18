@@ -5,9 +5,42 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '1.66';
+  IT.VERSION = '2.0.0';
 
   IT.CHANGELOG = [
+    { v: '2.0.0', date: '2026-11-18', items: {
+      "tr": [
+            "Idle Traveler 2 — Kendi Yolunu Çiz. Yeryüzünden Bulut Adaları’na, nebulalardan galaksilerarası boşluğa uzanan 12 farklı dünya.",
+            "39 sefer, 78 yol ayrımı: aracını ve ekipmanını hazırla, mürettebat rolünü seç, keşiflerinle kampını geliştir.",
+            "Galaksiler Ağı’nda üç bağımsız filo görevi açılır. Eski araçların keşif, yük, dayanıklılık ve menzil yetenekleri var.",
+            "100.000 ışık yılı ve ötesindeki yolcular için Galaksinin Eşiği’nde yeni bir sinyal bekliyor. Mevcut kayıtlar ve koleksiyonlar korunur."
+      ],
+      "en": [
+            "Idle Traveler 2 — Chart Your Own Course. Twelve worlds, from Cloud Islands to nebulae and the intergalactic void.",
+            "39 expeditions and 78 crossroads: prepare a vehicle, equipment and crew role, then build your camp through discovery.",
+            "Galaxy Network unlocks three independent fleet missions. Every vehicle now has exploration, cargo, endurance and range abilities.",
+            "Travelers at 100,000 light-years and beyond can follow a new signal at Galaxy’s Edge. Existing saves and collections are preserved."
+      ],
+      "de": [
+            "Idle Traveler 2 — Finde deinen eigenen Weg. Zwölf Welten von den Wolkeninseln bis zum Nebelmeer und zur intergalaktischen Leere.",
+            "39 Expeditionen und 78 Weggabelungen: Bereite Fahrzeug, Ausrüstung und Besatzung vor und entwickle dein Lager durch Entdeckungen.",
+            "Das Galaxiennetz öffnet drei unabhängige Flottenmissionen. Jedes Fahrzeug besitzt Erkundung, Fracht, Robustheit und Reichweite.",
+            "Ab 100.000 Lichtjahren wartet am Galaxienrand ein neues Signal. Spielstände und Sammlungen bleiben erhalten."
+      ],
+      "es": [
+            "Idle Traveler 2 — Traza tu Propio Rumbo. Doce mundos, desde las Islas de las Nubes hasta las nebulosas y el vacío intergaláctico.",
+            "39 expediciones y 78 encrucijadas: prepara vehículo, equipo y tripulación, y desarrolla el campamento con tus descubrimientos.",
+            "La Red de Galaxias abre tres misiones de flota independientes. Cada vehículo tiene exploración, carga, resistencia y alcance.",
+            "A partir de 100.000 años luz espera una nueva señal en el Borde de la Galaxia. Se conservan las partidas y colecciones."
+      ],
+      "fr": [
+            "Idle Traveler 2 — Trace ta Route. Douze mondes, des Îles des Nuages aux nébuleuses et au vide intergalactique.",
+            "39 expéditions et 78 croisées des chemins : prépare véhicule, équipement et équipage, puis développe ton camp grâce aux découvertes.",
+            "Le Réseau de Galaxies ouvre trois missions de flotte indépendantes. Chaque véhicule possède exploration, fret, résistance et autonomie.",
+            "À partir de 100 000 années-lumière, un nouveau signal attend au Bord de la Galaxie. Sauvegardes et collections sont conservées."
+      ]
+} },
+    { v: '1.67', date: '2026-11-18', items: {"tr": ["İki yeni araç: Solucan Deliği Kapsülü ve Evren Yelkenlisi. Zaman Makinesi’nden sonra yolculuğunu yeni ufuklara taşı; yükseltmelerle yeni görünümler keşfet."], "en": ["Two new vehicles: Wormhole Capsule and Cosmic Sailboat. Continue beyond the Time Machine with evolving vehicle designs."], "de": ["Zwei neue Fahrzeuge: Wurmlochkapsel und kosmisches Segelboot. Reise nach der Zeitmaschine mit neuen Entwicklungsstufen weiter."], "es": ["Dos vehículos nuevos: Cápsula de Gusano y Velero Cósmico. Sigue más allá de la Máquina del Tiempo con apariencias que evolucionan."], "fr": ["Deux nouveaux véhicules : Capsule de Ver et Voilier Cosmique. Continue après la Machine à Voyager dans le Temps avec des apparences évolutives."]} },
     { v: '1.66', date: '2026-11-13', items: {
       tr: ['Yeni bir rota: Ezgi Yolu. Bu yolda rüzgâr eli boş gelmiyor; kulak ver, belki sen de eşlik edersin…',
         'Bulut Yolu’nda gökyüzüne uzun uzun bakanları iki küçük sürpriz bekliyor…',

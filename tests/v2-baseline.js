@@ -1,0 +1,11 @@
+'use strict';
+const assert = require('node:assert/strict');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
+const runner = path.join(__dirname, 'v2-run.js');
+const check = args => spawnSync(process.execPath,[runner,...args],{encoding:'utf8'});
+assert.equal(check(['--probe=pass']).status,0);
+assert.notEqual(check(['--probe=assert']).status,0);
+assert.notEqual(check(['--probe=pageerror']).status,0);
+assert.notEqual(check(['missing-v2-test.js']).status,0);
+console.log('PASS baseline: failure propagation and missing tests');

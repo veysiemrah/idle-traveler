@@ -36,6 +36,8 @@
     { id: 'anka',      cost: 7.1e18, idle: 508000, click: 101500, road: 'asphalt', alt: 1.15 },
     // (v1.50) Zaman Makinesi: zincirin sonunda aynı oranlar; garajdayken yolcunun yerine adım atar (auto: Econ.autoRate)
     { id: 'chrono',    cost: 7.8e19, idle: 1270000, click: 254000, road: 'asphalt', alt: 1.15, auto: true },
+    { id: 'portal', cost: 8.6e20, idle: 3175000, click: 635000, road: 'asphalt', alt: 1.15 },
+    { id: 'cosmos', cost: 9.5e21, idle: 7937500, click: 1587500, road: 'asphalt', alt: 1.15 },
   ];
   VEHICLES.forEach((v, i) => {
     v.index = i; v.upBase = i === 0 ? 2 : Math.round(v.cost * 0.01);

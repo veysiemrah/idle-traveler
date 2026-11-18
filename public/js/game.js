@@ -5,6 +5,9 @@
   const { VEHICLES, VEH, BUFFS, BUFF, MILESTONES, BADGES, TIERS, BADGE_TIERS, OUTFITS, OUTFIT, CONVOY, HOME, Econ, Sound, fmtNum, fmtSmall, fmtDist, fmtGain, fmtSpeed, fmtDuration, fmtPct, fmtHours, t } = IT;
 
   const SAVE_KEY = 'idle-traveler-save-v1';
+  const V4_KEY = SAVE_KEY + '-v4';
+  const V2 = IT.V2;
+  let v2Views = null;
   const GIFTS = [
     { id: 'gust',     dur: 30, speed: 3, w: 3 },
     { id: 'harvest',  dur: 45, credit: 2, w: 3 },
@@ -51,7 +54,7 @@
   // Yağmur yağabilen biyomlar (kar, çöl ve kanyonda yağmur yağmaz)
   const RAINY = { meadow: 1, lavender: 1, pine: 1, wheat: 1, coast: 1, sakura: 1, autumn: 1, tea: 1, tulip: 1, olive: 1 };
   // Eve dönüşte korunan alanlar: istatistikler, rozetler, hatıralar ve ayarlar
-  const KEEP = ['created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
+  const KEEP = ['v2', 'created', 'clicks', 'playTime', 'best', 'gifts', 'crits', 'rainbows', 'nightTime', 'totalCredits', 'photos', 'wishes', 'day', 'seenVer',
     'bestCombo', 'bestRegion', 'bestGarage', 'bestLevel', 'legacyDist', 'palPick', 'mapPieces', 'treasures', 'keeps', 'unitTip', 'cranes', 'kites', 'fireflies', 'dreams', 'tunes', 'routeMax',
     'letters', 'fox', 'consts', 'dolphins', 'birds', 'harvestDay', 'notes', 'autoSteps', 'moments', 'momentGold', 'badges', 'settings', 'intro', 'player', 'memories', 'trips', 'lifeDist'];
 
@@ -62,7 +65,7 @@
   /* ---------- Durum ---------- */
   function defaultState() {
     return {
-      v: 3, created: Date.now(), lastSeen: Date.now(),
+      v: 4, v2: V2.createState(), created: Date.now(), lastSeen: Date.now(),
       distance: 0, credits: 0, totalCredits: 0, clicks: 0, playTime: 0, best: 0, gifts: 0,
       crits: 0, rainbows: 0, nightTime: 0, photos: 0, wishes: 0,
       day: { last: '', streak: 0, best: 0 }, seenVer: '',
@@ -104,15 +107,28 @@
   // kopya yedeğe (-bak) konur ve sağlam bir yedek varsa oyun ondan sürer. Ana kayıt sağlam açılınca yedek silinir.
   const BAK_KEY = SAVE_KEY + '-bak';
   // noStorage: tarayıcı depolamaya hiç izin vermiyor (site verileri engelli, gizli pencere kısıtı): kayıt yok sayılmaz, hiç yoktur
-  let saveLocked = false, otherTab = false, noStorage = false;
+  let saveLocked = false, otherTab = false, noStorage = false, observedSaveRaw = null, observedMirrorRaw = null;
   function load() {
     let raw = null, d;
-    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { saveLocked = noStorage = true; return null; }
+    try { raw = localStorage.getItem(SAVE_KEY); observedSaveRaw = raw; } catch (e) { saveLocked = noStorage = true; return null; }
+    let mirror = null, primary = null;
+    try {
+      observedMirrorRaw = localStorage.getItem(V4_KEY);
+      try { mirror = observedMirrorRaw ? JSON.parse(observedMirrorRaw) : null; } catch (e) { /* Keep primary as the authority for a damaged mirror. */ }
+      try { primary = raw ? JSON.parse(raw) : null; } catch (e) { /* Existing backup recovery below. */ }
+      if (+primary?.v > 4 || +mirror?.v > 4) { saveLocked = true; return null; }
+      if (mirror?.v === 4 && (!primary || +primary.v < 4 || (mirror.v2?.saveRevision || 0) > (primary.v2?.saveRevision || 0))) {
+        if (raw && +primary?.v < 4) {
+          try { localStorage.setItem(SAVE_KEY + '-legacy-after-v2', raw); } catch (e) { saveLocked = true; }
+        }
+        return guardedSave(mirror, observedMirrorRaw);
+      }
+    } catch (e) { saveLocked = true; return null; }
     if (raw) {
       try { d = JSON.parse(raw); } catch (e) { d = undefined; }
       if (d !== undefined) {
         try {
-          const s = sanitize(d);
+          const s = guardedSave(d, raw);
           if (s) { try { localStorage.removeItem(BAK_KEY); } catch (e) { /* yok say */ } return s; }
         } catch (e) { saveLocked = true; }
       }
@@ -120,8 +136,34 @@
       try { if (!localStorage.getItem(BAK_KEY)) localStorage.setItem(BAK_KEY, raw); } catch (e) { /* yok say */ }
       if (saveLocked) return null;
     }
-    try { const b = localStorage.getItem(BAK_KEY); if (b) return sanitize(JSON.parse(b)); } catch (e) { /* yok say */ }
+    try {
+      const b = localStorage.getItem(BAK_KEY);
+      if (b) {
+        let parsed;
+        try { parsed = JSON.parse(b); } catch (e) { return null; }
+        return guardedSave(parsed, b);
+      }
+    } catch (e) { saveLocked = true; }
     return null;
+  }
+  function guardedSave(data, raw) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+    if (+data.v > 4) throw new Error('Unsupported future save');
+    const clean = sanitize(data);
+    if (clean && !(+data.v >= 4)) {
+      const key = SAVE_KEY + '-pre-v2', existing = localStorage.getItem(key);
+      if (!existing) {
+        localStorage.setItem(key, raw);
+        if (localStorage.getItem(key) !== raw) throw new Error('Migration backup unavailable');
+      }
+    }
+    if (clean && !observedMirrorRaw) {
+      const mirrorRaw = JSON.stringify(clean);
+      localStorage.setItem(V4_KEY, mirrorRaw);
+      if (localStorage.getItem(V4_KEY) !== mirrorRaw) throw new Error('Recovery copy unavailable');
+      observedMirrorRaw = mirrorRaw;
+    }
+    return clean;
   }
   const isObj = o => o && typeof o === 'object' && !Array.isArray(o);
   // Açık rota sayısı: ilk yolculukta bir, her eve dönüşte bir tane daha
@@ -131,12 +173,13 @@
   // Bozuk ya da eski sürümden kalan kayıtları güvenli değerlere çeker
   function sanitize(d) {
     if (!isObj(d)) return null;
+    if (+d.v > 4) throw new Error('Unsupported future save');
     const s = defaultState();
     for (const key of Object.keys(s)) if (d[key] !== undefined) s[key] = d[key];
     // v1 → v2 (oyun v1.11): mesafeler 1/10'a indi. Kredi, araç ve bölge ilerlemesi aynı kalır.
     const v1 = !(+d.v >= 2), v2 = !(+d.v >= 3);
     if (v1) for (const k of ['distance', 'lifeDist', 'best']) if (typeof s[k] === 'number') s[k] /= 10;
-    s.v = 3;
+    s.v = 4;
     for (const k of ['distance', 'credits', 'totalCredits', 'playTime', 'best', 'nightTime', 'lifeDist']) if (typeof s[k] !== 'number' || !isFinite(s[k]) || s[k] < 0) s[k] = 0;
     for (const k of ['clicks', 'gifts', 'crits', 'rainbows', 'regionIdx', 'photos', 'wishes', 'cranes', 'kites', 'fireflies', 'dolphins', 'autoSteps']) s[k] = count(s[k]);
     s.memories = count(s.memories, 1e6); s.trips = count(s.trips, 1e5);
@@ -218,17 +261,94 @@
     if (typeof s.seenVer !== 'string' || !/^\d+(\.\d+)*$/.test(s.seenVer)) s.seenVer = '';
     const pl = isObj(d.player) ? d.player : {};
     s.player = IT.validId(pl.id) && IT.validKey(pl.key) ? { id: pl.id, key: pl.key, name: IT.cleanName(pl.name) || '' } : defaultState().player;
+    s.v2 = V2.migrateV3(Object.assign({}, s, { v2: d.v2 })).v2;
     return s;
   }
   // lastSeen'e burada dokunulmaz: onu yalnızca çalışan döngü (frame) ve açılış ilerletir. Gizli sekmede (döngü durmuşken)
   // gelen bir kayıt, ör. yeni sürüm yenilemesi, sekmenin gizli kaldığı süreyi silip çevrimdışı ilerlemeyi kaybettirmesin.
   function save() {
     if (saveLocked) return;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* depolama kapalı: oyun yine çalışır */ }
+    S.v2.unlockedWorlds = V2.availableEntries(S);
+    try {
+      // Check immediately before writing; storage events may still be queued in another window.
+      if (localStorage.getItem(SAVE_KEY) !== observedSaveRaw || localStorage.getItem(V4_KEY) !== observedMirrorRaw) { otherTab = saveLocked = true; return; }
+      S.v2.saveRevision = (S.v2.saveRevision || 0) + 1;
+      const raw = JSON.stringify(S);
+      localStorage.setItem(V4_KEY, raw);
+      if (localStorage.getItem(V4_KEY) !== raw) throw new Error('Recovery copy unavailable');
+      observedMirrorRaw = raw;
+      try { localStorage.setItem(SAVE_KEY, raw); observedSaveRaw = raw; } catch (e) { /* Latest state is already durable in the verified recovery copy. */ }
+      const warning = $('#v2SaveStatus'); if (warning) warning.hidden = true;
+      return true;
+    } catch (e) {
+      const warning = $('#v2SaveStatus'); if (warning) warning.hidden = false;
+      return false;
+    }
   }
 
   let S = null;
   let scene = null;
+
+  let v2MonotonicAt = null;
+  function settleV2(now) {
+    if ((saveLocked && !noStorage) || !S) return;
+    const previous = S.v2.lastAdvancedAt || S.lastSeen;
+    const monotonic = performance.now();
+    const activeGap = v2MonotonicAt === null ? null : Math.max(0, (monotonic - v2MonotonicAt) / 1000);
+    const wallGap = Math.max(0, (now - previous) / 1000);
+    let seconds = wallGap;
+    if (!document.hidden && activeGap !== null && activeGap <= 10) {
+      if (now < previous) {
+        seconds = activeGap; S.v2.rollbackWork = Math.min(172800, (S.v2.rollbackWork || 0) + seconds);
+      } else if (wallGap > activeGap + 10) {
+        seconds = Math.max(activeGap, wallGap - (S.v2.rollbackWork || 0)); S.v2.rollbackWork = 0;
+      } else { seconds = activeGap; S.v2.rollbackWork = 0; }
+    } else if (wallGap > 0) { seconds = Math.max(0, wallGap - (S.v2.rollbackWork || 0)); S.v2.rollbackWork = 0; }
+    v2MonotonicAt = monotonic;
+    if (S.intro) S.v2 = V2.advanceAll(S.v2, seconds, { capSeconds: Econ.offlineCapHours(S.buffs.camp) * 3600 }).state;
+    S.v2.lastAdvancedAt = Math.max(previous, now);
+  }
+  function v2Action(action, id, extra) {
+    if (saveLocked && !noStorage) return;
+    settleV2(Date.now());
+    if (action === 'showAtlas') { actions.tab('atlas'); return; }
+    try {
+      let transition;
+      if (action === 'start') {
+        S.v2.unlockedWorlds = V2.availableEntries(S);
+        const vehicleId = S.owned[extra.vehicleId] ? extra.vehicleId : S.active;
+        transition = V2.startExpedition(S.v2, id, { vehicleId, equipment: S.v2.equipment, role: extra.role, camp: S.v2.camp, creditRate: Econ.base(S).idle * Econ.base(S).cpm }, Date.now());
+      } else if (action === 'startFleet') transition = V2.startFleet(S.v2, +extra.slot, id, extra.role, Date.now(), Econ.base(S).idle * Econ.base(S).cpm);
+      else if (action === 'fleetChoose') transition = V2.fleetAction(S.v2, +extra.slot, 'choose', id);
+      else if (action === 'fleetClaim') transition = V2.fleetAction(S.v2, +extra.slot, 'claim');
+      else if (action === 'fleetAbandon') transition = V2.fleetAction(S.v2, +extra.slot, 'abandon');
+      else if (action === 'choose') transition = V2.choose(S.v2, id);
+      else if (action === 'claim') transition = V2.claimExpedition(S.v2);
+      else if (action === 'abandon') transition = V2.abandonExpedition(S.v2);
+      else if (action === 'upgradeCamp') transition = V2.upgradeCamp(S.v2, id);
+      else if (action === 'equip') transition = V2.equip(S.v2, extra.slot, id);
+      else if (action === 'selectWorld' && !S.v2.expedition && V2.availableEntries(S).includes(id)) {
+        S.v2.worldId = id; transition = { state: S.v2, effects: [] };
+      }
+      if (!transition) return;
+      S.v2 = transition.state;
+      for (const effect of transition.effects) if (effect.type === 'credits') {
+        const reward = effect.payload.amount;
+        if (Number.isFinite(reward)) { S.credits += reward; S.totalCredits += reward; }
+      }
+      save();
+      for (const effect of transition.effects) if (effect.type === 'discovery' && effect.payload.fresh) {
+        const found = V2.TEMPLATES.find(item => item.clueId === effect.payload.clueId);
+        if (found) {
+          toast(`<b>${esc(V2.text(found.name))}</b> · ${esc(V2.text(V2.WORLD[found.worldId].clues[found.index]))} · +${found.research} ${esc(t('v2.research'))}`, 'gold');
+          Sound.region();
+        }
+      }
+      if (action === 'start') actions.tab('voyage');
+      if (v2Views) v2Views.invalidate();
+      refreshUI();
+    } catch (error) { toast(t('v2.actionUnavailable'), 'teal'); }
+  }
 
   /* ---------- Hesaplar ---------- */
   /* ---------- Kervan ---------- */
@@ -308,6 +428,7 @@
   }
 
   function checkProgress(silent) {
+    silent = silent || S.v2.worldId !== 'earth';
     const found = [];
     const idx = IT.regionIndexFor(S.distance);
     while (S.regionIdx < idx) {
@@ -1040,6 +1161,7 @@
     if (keep) for (const k of keep) fresh[k] = S[k];
     // Yol arkadaşı Karabaş eve dönüşte de yolcuyla kalır
     if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
+    if (keep === KEEP) { fresh.v2 = V2.clone(S.v2); fresh.v2.expedition = null; fresh.v2.fleet = []; }
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
     combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.dream = null; scene.tune = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;
@@ -1061,6 +1183,7 @@
     S.credits -= cost; Sound.buy(); return true;
   }
   const actions = {
+    retrySave() { if (saveLocked && !otherTab) location.reload(); else save(); },
     buyVeh(id) {
       const v = VEH[id];
       if (S.owned[id] || !spend(v.cost)) return;
@@ -1193,6 +1316,7 @@
       toast(t('toast.named', { name: esc(name) }), 'teal');
     },
     tab(id, el) {
+      if (id === 'atlas') S.v2.onboardingSeen = true;
       if (layoutMode === 'port' && el) {
         const same = $(`.tab[data-id="${id}"]`).getAttribute('aria-selected') === 'true';
         if (sheetOpen() && same) { sheet(false); return; }
@@ -1269,7 +1393,9 @@
       }
       // kayıt korunurken (okunamadı ya da oyun başka sekmede sürüyor) sıfırlama korunan kaydı silmesin
       if (saveLocked && !noStorage) { toast(t(otherTab ? 'toast.otherTab' : 'toast.saveLocked'), 'teal'); Sound.deny(); return; }
-      try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); localStorage.removeItem(ALBUM_KEY); } catch (e) { /* yok say */ }
+      try {
+        if (localStorage.getItem(SAVE_KEY) !== observedSaveRaw || localStorage.getItem(V4_KEY) !== observedMirrorRaw) { otherTab = saveLocked = true; return; }
+        localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); localStorage.removeItem(ALBUM_KEY); localStorage.removeItem(V4_KEY); observedSaveRaw = observedMirrorRaw = null; } catch (e) { /* yok say */ }
       newTrip(['settings', 'intro', 'player', 'seenVer']);
       applyOutfit(); applyRoute();
       $('#hint').classList.remove('gone');
@@ -1280,7 +1406,7 @@
 
   let stageGround = false;
   function groundUnderControls() {
-    if (!scene.fox && !scene.chest && !scene.keep) return false;
+    if (S.v2.worldId !== 'earth' || (!scene.fox && !scene.chest && !scene.keep)) return false;
     if ($('#btnChat').getAttribute('aria-expanded') === 'true') return false;
     const r = scene.canvas.getBoundingClientRect(), z = scene.zoom, k = scene.k, pts = [];
     if (scene.fox) { const p = scene.foxPos(); pts.push([p.x - 4 * k, p.y - 14 * k, 36 * k]); }
@@ -1326,10 +1452,12 @@
     const cur = current();
     if (performance.now() - lastClick > 900) combo = Math.max(0, combo - dt * 10);
     const before = S.distance;
+    settleV2(wall);
     addDistance(cur.idle * dt, cur.cpm);
     S.playTime += dt;
     // karanlık gökyüzü gece sayılır: açık temada oynayan da uzayda Gece Kuşu kademeleri kazanır
-    if (Math.max(scene.nightAmt || 0, scene.space || 0) > 0.5) S.nightTime += dt;
+    const worldNight = S.v2.worldId === 'earth' ? Math.max(scene.nightAmt || 0, scene.space || 0) : scene.nightAmt || 0;
+    if (worldNight > 0.5) S.nightTime += dt;
     // Gün döngüsünde akşam ve sabah kendiliğinden gelir
     if (scene.cycle) {
       const n = (scene.nightAmt || 0) > 0.5;
@@ -1339,6 +1467,7 @@
     checkProgress();
     S.effects = S.effects.filter(e => e.until > Date.now());
     const et = dt * TEST_SPEED; // olay zamanlayıcıları (testte hızlanabilir)
+    if (S.v2.worldId === 'earth') {
     updateWeather(et);
     updateKeeps(et);
     updateCranes(et);
@@ -1352,6 +1481,7 @@
     updateDolphins(et);
     updateBirds(et);
     updateHarvest();
+    }
 
     const gained = S.distance - before + clickBuffer;
     clickBuffer = 0;
@@ -1372,6 +1502,7 @@
       for (let n = 0; autoAcc >= 1 && n < 4; n++) { autoAcc -= 1; autoStep(); }
       autoAcc = Math.min(autoAcc, 1);
     }
+    if (S.v2.worldId === 'earth') {
     if ($('#modal').hidden) {
       giftIn -= et;
       if (giftIn <= 0) {
@@ -1398,6 +1529,7 @@
       if (seedIn <= 0) { scene.spawnSeed(); seedIn = (80 + Math.random() * 110) * (perk() === 'stars' ? 0.5 : 1); }
     }
 
+    }
     scene.companion = S.buffs.pal > 0 ? S.palPick : null;
     scene.palTier = Econ.palTier(S.buffs.pal);
     scene.constFound = Object.keys(S.consts);
@@ -1412,9 +1544,16 @@
     if (groundOver !== stageGround) { stageGround = groundOver; $('#stage').classList.toggle('ground-on', groundOver); }
     scene.vehTier = Econ.lookTier(S.levels[S.active]);
     scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
+    const nextWorldView = V2.sceneView(S.v2);
+    if (scene.worldView && scene.worldView.worldId !== nextWorldView.worldId) scene.worldFade = scene.reduced ? 0 : 0.6;
+    scene.worldView = nextWorldView;
     scene.draw();
+    if (scene.worldFade > 0) {
+      scene.ctx.save(); scene.ctx.fillStyle = `rgba(17,27,46,${Math.min(0.75, scene.worldFade / 0.6)})`;
+      scene.ctx.fillRect(0, 0, scene.W, scene.H); scene.ctx.restore(); scene.worldFade = Math.max(0, scene.worldFade - dt);
+    }
     Sound.tick(dt, Math.min(1, scene.vs / 700), scene.rain || 0);
-    Sound.ambient(dt, { biome: scene.biome, night: scene.nightAmt || 0, space: scene.space || 0, rain: scene.rain || 0 });
+    Sound.ambient(dt, { worldId: S.v2.worldId, biome: scene.biome, night: scene.nightAmt || 0, space: scene.space || 0, rain: scene.rain || 0 });
 
     uiTimer += dt;
     if (uiTimer > 0.12) { uiTimer = 0; checkDaily(); checkBadges(); refreshUI(); scene.hudBottom = hudBottom(); scene.hudRight = hudEdge(); }
@@ -1529,7 +1668,7 @@
       x.fillText(m.e, mx, my + r * 0.06);
       x.textAlign = 'left'; x.textBaseline = 'alphabetic';
     });
-    const region = IT.regionAt(S.regionIdx).name, fs = capH * 0.3;
+    const region = S.v2.worldId === 'earth' ? IT.regionAt(S.regionIdx).name : V2.text(V2.WORLD[S.v2.worldId].name), fs = capH * 0.3;
     x.fillStyle = '#2b2a45'; x.textBaseline = 'alphabetic';
     x.font = `800 ${Math.round(fs)}px "Baloo 2", system-ui, sans-serif`;
     // Sol sütun (başlık ve alt satır) sağdaki marka yazısına ve pula binmesin diye genişliği sınırlı
@@ -1555,7 +1694,7 @@
   }
   function takePostcard() {
     Sound.unlock(); Sound.gift();
-    const shot = MOMENTS.filter(m => m.test()), fresh = shot.filter(m => !S.moments[m.id]);
+    const shot = (S.v2.worldId === 'earth' ? MOMENTS.filter(m => m.test()) : []), fresh = shot.filter(m => !S.moments[m.id]);
     // seti tamamlayan kartpostal da altın çerçeveli olur; kazanılmış çerçeve yeni bir an eklense de kalır
     const c = makePostcard(shot, !!S.momentGold || momentCount() + fresh.length >= MOMENTS.length);
     for (const m of fresh) S.moments[m.id] = 1;
@@ -1570,7 +1709,7 @@
     const url = c.toDataURL('image/png');
     const name = `idle-traveler-${Date.now()}.png`;
     // Paylaşım metni fotoğrafın çekildiği anı anlatsın
-    const dist = S.distance, region = IT.regionAt(S.regionIdx).name;
+    const dist = S.distance, region = S.v2.worldId === 'earth' ? IT.regionAt(S.regionIdx).name : V2.text(V2.WORLD[S.v2.worldId].name);
     S.photos++; note('photo'); checkBadges(); save();
     const inAlbum = albumAdd(c, region, fmtDist(dist), shot.map(m => m.id)); uiDirty.journal = true;
     openModal(() => ({ btn: t('pc.close'), html: `
@@ -1698,9 +1837,13 @@
       <p class="small muted">${t('home.note')}</p>
     ` }), () => { routeGrace = false; uiDirty.buffs = true; });
   }
-  function showIntro() {
-    // Yeni oyuncu eski sürüm notlarını "yeni" olarak görmesin
-    openModal(() => ({ html: introHtml(), btn: t('intro.btn') }), () => { S.intro = true; S.seenVer = IT.VERSION; syncNews(); save(); });
+  function showWelcome(isNew) {
+    openModal(() => ({ html: introHtml(isNew), btn: t(isNew ? 'intro.btn' : 'html.ok') }), () => {
+      if (isNew) S.intro = true;
+      S.seenVer = IT.VERSION;
+      syncNews();
+      save();
+    });
   }
 
   /* ---------- Gezgin adı ---------- */
@@ -1804,13 +1947,13 @@
   }
   IT.checkUpdate = checkUpdate;
 
-  function introHtml() {
+  function introHtml(isNew) {
     return `
-      <p class="eyebrow">${t('intro.eyebrow')}</p>
-      <h2>Idle Traveler</h2>
-      <p class="lead">${t('intro.lead')}</p>
-      <ul class="intro-list">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<li>${t('intro.li' + i)}</li>`).join('')}</ul>
-      <label class="intro-lang"><span>${t('j.lang')}</span>${langSelect('introLang')}</label>`;
+      <h2>Idle Traveler 2</h2>
+      <p class="lead">${esc(t('v2.welcome.lead'))}</p>
+      <ul class="intro-list">${['atlas', 'camp', 'signal'].map(key => `<li>${esc(t('v2.welcome.' + key))}</li>`).join('')}</ul>
+      ${isNew ? `<p class="small">${esc(t('v2.welcome.step'))}</p>
+        <label class="intro-lang"><span>${t('j.lang')}</span>${langSelect('introLang')}</label>` : ''}`;
   }
   let modalRender = null;
   function langSelect(id) {
@@ -2429,6 +2572,9 @@
   }
 
   function refreshUI() {
+    const canCamp = Object.entries(S.v2.camp).some(([id,level]) => level < 5 && S.v2.research >= V2.COSTS[level]);
+    $('.tab[data-id="camp"]').classList.toggle('dot', canCamp);
+    if (v2Views) v2Views.render(S.v2, { owned: S.owned, active: S.active, locked: saveLocked && !noStorage, entries: V2.availableEntries(S) });
     if (uiDirty.garage) { renderGarage(); uiDirty.garage = false; }
     if (uiDirty.buffs) { renderBuffs(); uiDirty.buffs = false; }
     if (uiDirty.journal) { renderJournal(); uiDirty.journal = false; }
@@ -2443,7 +2589,7 @@
     setText('#trCount', IT.Online.status === 'ok' && od ? fmtNum(od.online) : '');
     const cur = current();
     const region = IT.regionAt(S.regionIdx);
-    setText('#hudRegion', region.name);
+    setText('#hudRegion', S.v2.worldId === 'earth' ? region.name : V2.text(V2.WORLD[S.v2.worldId].name));
     setText('#hudDist', fmtDist(S.distance));
     syncUnitTip();
     setText('#hudSpeed', fmtSpeed(Math.max(rateEma, cur.idle)));
@@ -2578,12 +2724,18 @@
 
   /* ---------- Başlatma ---------- */
   function start(hotSave) {
-    S = (hotSave && sanitize(hotSave)) || load() || defaultState();
+    S = load();
+    if (!S && !saveLocked && hotSave) {
+      try { S = guardedSave(hotSave, JSON.stringify(hotSave)); } catch (e) { saveLocked = true; }
+    }
+    S = S || defaultState();
+    settleV2(Date.now());
     checkBadges(true); // eski kayıtlardan gelen ya da sessizce hak edilen kademeler bildirimsiz verilir
     IT.setRoute(S.route);
     IT.setUnits(S.settings.units); IT.setLang(S.settings.lang);
     applyStatic();
     scene = new IT.Scene($('#scene'));
+    v2Views = V2.Views.mount($('.panes'), v2Action);
     applySky(); applyOutfit();
     // Sahne tarayıcı temasını izler: açık tema gündüz, koyu tema gece
     const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
@@ -2629,6 +2781,7 @@
       if (e.target.closest('#hudDist.unit-tip')) { if (layoutMode === 'desk') { Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal'); } return; }
       if (e.target === stage || e.target.closest('button, a, .chat-pop, .trail, .dock')) return;
       if (chatJustClosed()) return;
+      if (S.v2.worldId !== 'earth') { const before = S.distance; step(); clickBuffer += S.distance - before; return; }
       const r = scene.canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
       if (scene.hitGift(x, y)) { catchGift(); return; }
@@ -2763,6 +2916,7 @@
     });
     // Oyun iki sekmede açıksa birbirinin ilerlemesini ezmesin: başka sekme kaydı yazınca bu sekme kaydetmeyi ve Yolcular'a
     // haber vermeyi bırakır; bu sekmeye dönülünce sayfa yumuşakça yenilenir ve son kayıtla sürer.
+    document.addEventListener('visibilitychange', () => { v2MonotonicAt = null; });
     window.addEventListener('storage', e => {
       if (e.key !== SAVE_KEY || !e.newValue || otherTab) return;
       otherTab = saveLocked = true;
@@ -2802,14 +2956,15 @@
     (() => {
       const head = $('#sheetHead'), panel = $('#panel');
       let y0 = null, dy = 0;
-      head.addEventListener('pointerdown', e => { if (!sheetOpen()) return; y0 = e.clientY; dy = 0; head.setPointerCapture(e.pointerId); panel.style.transition = 'none'; });
+      head.addEventListener('pointerdown', e => { if (e.target.closest('button') || !sheetOpen()) return; y0 = e.clientY; dy = 0; head.setPointerCapture(e.pointerId); panel.style.transition = 'none'; });
       head.addEventListener('pointermove', e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); panel.style.transform = `translateY(${dy}px)`; });
       const end = () => { if (y0 === null) return; y0 = null; panel.style.transition = ''; panel.style.transform = ''; if (dy > 70) sheet(false); };
       head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
     })();
-    let tab = 'garage';
-    try { tab = localStorage.getItem('idle-traveler-tab') || 'garage'; } catch (e) { /* yok say */ }
-    actions.tab(['garage', 'buffs', 'journal', 'travelers'].includes(tab) ? tab : 'garage');
+    let tab = 'atlas';
+    try { tab = localStorage.getItem('idle-traveler-tab') || 'atlas'; } catch (e) { /* yok say */ }
+    if (!S.v2.onboardingSeen) tab = 'atlas';
+    actions.tab(['garage', 'buffs', 'journal', 'travelers', 'voyage', 'atlas', 'camp'].includes(tab) ? tab : 'garage');
 
     // Kayıt bu kodla okunamadıysa (yayın sırasında karışan dosyalar): tanıtım ve ad sorulmaz, oturum kaydedilmez,
     // oyuncuya söylenir ve yeni sürüm yayındaysa sayfa kendiliğinden yenilenir
@@ -2822,7 +2977,8 @@
       setTimeout(() => (tried ? checkUpdate() : location.reload()), tried ? 2000 : 2500);
     }
     // İlk açılış ya da çevrimdışı dönüş
-    if (!S.intro && (!saveLocked || noStorage)) showIntro();
+    const comingFromV1 = S.seenVer && IT.verCmp(S.seenVer, '2.0.0') < 0;
+    if ((!S.intro || comingFromV1) && (!saveLocked || noStorage)) showWelcome(!S.intro);
     // Adı olmayan oyuncuya (yeni ya da eski) bir kez sorulur; çevrimdışı özeti bundan sonra gelir
     if (!S.player.name && (!saveLocked || noStorage)) showName();
     if (S.intro) resume((Date.now() - S.lastSeen) / 1000);
@@ -2863,6 +3019,10 @@
   }
 
   function boot() {
+    if (!V2 || !V2.Views || !V2.WorldScene || !V2.migrateV3 || !V2.advanceAll) {
+      $('#modal').hidden = false; $('#modalBody').textContent = t('v2.updateNeeded');
+      $('#modalBtn').onclick = () => location.reload(); return;
+    }
     const hot = window.claude && window.claude.hot;
     const run = data => start(data && data.save);
     if (hot && hot.ready) hot.ready(run); else run(hot && hot.data || {});

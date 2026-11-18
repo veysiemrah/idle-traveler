@@ -70,6 +70,24 @@
     // Bölgelerin ses manzarası: dt'ye göre seyrek olaylar (kuş cıvıltısı, cırcır böceği, ağaçkakan, kuru esinti, kar
     // ıslığı, kuzey ışıltısı) ve iki sürekli katman (deniz, uzay). Sürekli katmanlar saniyede dört kez güncellenir.
     ambient(dt, env) {
+      if (env && env.worldId && env.worldId !== 'earth') {
+        const profiles = {
+          cloud: ['snow', 0, 659, 16], storm: ['snow', 0.15, 110, 22], upper: ['aurora', 0.5, 523, 20],
+          planets: ['aurora', 0.85, 330, 14], nebula: ['aurora', 1, 415, 18], deep: ['aurora', 1, 82, 35],
+          rim: ['aurora', 1, 277, 26], void: ['aurora', 1, 65, 45], galaxies: ['aurora', 1, 392, 15],
+          fracture: ['aurora', 1, 233, 19], frontier: ['aurora', 0.7, 587, 17]
+        };
+        const profile = profiles[env.worldId];
+        if (profile) {
+          if (this.worldSound !== env.worldId) { this.worldSound = env.worldId; this.worldToneIn = 3; }
+          env = Object.assign({}, env, { biome: profile[0], space: profile[1], rain: env.worldId === 'storm' ? 0.5 : 0 });
+          if (this.ctx && this.musicOn) {
+            this.worldToneIn -= dt;
+            if (this.worldToneIn <= 0) { this.worldToneIn = profile[3]; this.tone(profile[2], 0.012, 3.5, 'sine', this.music, true); }
+          }
+        }
+      }
+
       if (!this.ctx || !this.musicOn || !env) return;
       const c = this.ctx, night = env.night || 0, space = env.space || 0, rain = env.rain || 0, b = env.biome;
       const sea = (b === 'coast' || b === 'olive') ? 1 - space : 0;

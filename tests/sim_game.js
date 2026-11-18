@@ -65,10 +65,17 @@ function run(seed) {
   const reached = {}; let goal = null;
   // olay zamanlayıcıları (game.js'teki aralıklar; şanslı oyuncuda kısa ucu)
   let giftIn = 25, starIn = 20 + roll('low') * 25, weatherIn = 150 + roll('low') * 120, seedIn = 40 + roll('low') * 40, rain = 0, chestIn = Infinity, keepIn = 45 + roll('low') * 40, keepBiome = 'meadow';
+  // Optional conservative V2 envelope: four simultaneous ships from the start,
+  // fastest measured normal interval, maximum bounded reward, and no removal of legacy gifts.
+  let v2Snapshot = 0;
   const T = P.hours * 3600;
   for (let t = 0; t < T; t++) {
     const night = (t % 600) / 600 >= 1 - P.night; // 10 dakikalık gün döngüsü
     const m = tempMult(t), b = Econ.base(s);
+    if (P.v2UpperBound && t % 649 === 0) {
+      if (t) grant(v2Snapshot * 240 * 4);
+      v2Snapshot = b.idle * b.cpm;
+    }
     const dIdle = b.idle * m.speed, dClick = b.click * m.speed * m.click * comboMult() * critEV() * P.cps;
     const d = dIdle + dClick, c = d * b.cpm * m.credit;
     // ödüller kalıcı gelirle ölçeklenir (v1.37): geçici kelebek, gökkuşağı ve dilek çarpanları sayılmaz
@@ -164,6 +171,24 @@ function run(seed) {
 // toplam yol sınırı (Worker LIFE_CAP) bu eğrinin güvenli bir katıdır: kaydın yaşına göre, sık istekle büyümez.
 if (P.reach) {
   const runs = Array.from({ length: P.runs }, (_, i) => run(P.seed + i));
+  if (P.verifyCap) {
+    const source = require('fs').readFileSync(path.resolve(__dirname, '../src/worker.js'), 'utf8');
+    const reach = JSON.parse(/const REACH = (\[[\s\S]*?\]);/.exec(source)[1]);
+    const slack = Number(/const LIFE_SLACK = ([0-9.]+)/.exec(source)[1]);
+    const cap = seconds => {
+      const t = Math.max(reach[0][0], seconds), last = reach[reach.length - 1];
+      if (t > last[0]) return slack * last[1] * (t / last[0]) ** 2;
+      let i = 1; while (i < reach.length - 1 && reach[i][0] < t) i++;
+      const [t0,d0] = reach[i-1], [t1,d1] = reach[i];
+      return slack * d0 * (t / t0) ** (Math.log(d1/d0) / Math.log(t1/t0));
+    };
+    let peak = 0;
+    for (const run of runs) for (let i = 0; i < run.track.length; i++) {
+      const ratio = run.track[i] / cap(i+1); peak = Math.max(peak, ratio);
+      if (ratio > 1) throw Error('Honest V2 distance exceeds Worker cap at '+(i+1)+' seconds');
+    }
+    console.log('Verified Worker cap; peak ratio '+peak.toFixed(6));
+  }
   for (const T of [60, 300, 900, 1800, 3600, 7200, 4 * 3600, 8 * 3600, 16 * 3600, 24 * 3600, 48 * 3600]) {
     const ds = runs.map(r => r.track[Math.min(T, r.track.length) - 1]).filter(x => x !== undefined);
     if (ds.length && T <= runs[0].track.length) console.log(`${String(T).padStart(6)} sn: en uzak ${Math.max(...ds).toExponential(3)} m`);

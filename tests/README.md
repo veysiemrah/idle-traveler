@@ -71,3 +71,10 @@ Garaj dengesini değiştirirken önce verimli oyuncu simülasyonuna bak; ayarlar
 node tests/sim_switch.js 12 1                                     # data.js'teki değerlerle: geçiş seviyeleri, saatlik yol
 node tests/sim_switch.js 12 1 '{"R":2.5,"C0":800,"Q":6,"S":1.05,"f":0.01,"g":1.095,"gain":0.1,"dbl":[25,50,100,150,200],"click":0.5}'
 ```
+
+
+## V2 kontrolleri
+
+`node tests/v2-run.js` sekiz assertion suite’ini çalıştırır; her başarısız süreç nonzero sonuç verir. `node tests/v2-browser.js` kendi yerel sunucusunu açar; göç, kurtarma kopyası, sefer/ödül/kamp döngüsü, kota, eski istemci, düşük FPS, saat ve 12 dünya ekranını kontrol eder. `node tests/v2-performance-browser.js` 8765 üzerinde sunucu ister ve 60 saniyelik ölçüm yapar.
+
+Klasik testlerdeki `pw_name.js` ön yüklemesi eski fixture’ları açıkça Yeryüzü ve Garaj başlangıcına ayarlar; scene örneğini testlere kaydeder. V2 testleri bu ön yüklemeyi kullanmaz; yeni oyuncunun Atlas başlangıcını gerçek uygulama davranışıyla test eder. Sürümlenmiş JS URL’lerini kesen test route glob’ları sonlarındaki `*` ile query parametrelerini de kapsar.

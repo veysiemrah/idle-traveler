@@ -3,7 +3,7 @@ const { chromium } = require('./lib/pw');
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage();
   const src = require('fs').readFileSync(require('path').resolve(__dirname, '../public/js/scene.js'), 'utf8').replace('IT.drawIcon = drawIcon;', 'IT.drawIcon = drawIcon; IT._drawVehicle = drawVehicle;');
-  await p.route('**/js/scene.js', r => r.fulfill({ body: src, contentType: 'text/javascript' }));
+  await p.route('**/js/scene.js*', r => r.fulfill({ body: src, contentType: 'text/javascript' }));
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(400);
   const r = await p.evaluate(() => {
     const out = {};

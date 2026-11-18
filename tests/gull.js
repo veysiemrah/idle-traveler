@@ -4,7 +4,7 @@ const { chromium } = require('./lib/pw');
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 900, height: 200 } });
   // test için çizim işlevini dışarı aç (yalnızca bu sayfada)
   const src = require('fs').readFileSync(require('path').resolve(__dirname, '../public/js/scene.js'), 'utf8').replace('IT.drawIcon = drawIcon;', 'IT.drawIcon = drawIcon; IT._drawGull = drawGull;');
-  await p.route('**/js/scene.js', r => r.fulfill({ body: src, contentType: 'text/javascript' }));
+  await p.route('**/js/scene.js*', r => r.fulfill({ body: src, contentType: 'text/javascript' }));
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(500);
   await p.evaluate(() => {
     const c = document.createElement('canvas'); c.width = 900; c.height = 200; c.id = 'gc';
