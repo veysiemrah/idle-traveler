@@ -309,6 +309,17 @@
     S.v2.lastAdvancedAt = Math.max(previous, now);
   }
   function v2Action(action, id, extra) {
+    if (action === 'showVoyage') {
+      actions.tab('voyage');
+      if (id === 'fleet') {
+        const heading = $('#v2FleetTitle');
+        if (heading) {
+          heading.scrollIntoView({ block: 'start' });
+          heading.focus({ preventScroll: true });
+        }
+      }
+      return;
+    }
     if (saveLocked && !noStorage) return;
     settleV2(Date.now());
     if (action === 'showAtlas') { actions.tab('atlas'); return; }

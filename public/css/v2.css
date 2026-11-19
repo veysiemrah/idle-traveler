@@ -7,6 +7,11 @@
 .v2-pane p { line-height: 1.55; font-size: .9rem; }
 .v2-heading { display: flex; align-items: center; gap: 16px; padding: 16px 0 22px; border-bottom: 1px solid var(--line,#c4d1d9); margin-bottom: 20px; }
 .v2-heading p { margin: 5px 0 0; color: var(--muted); }
+.v2-guide { margin: 0 0 20px; padding: 8px 0 8px 12px; border-inline-start: 2px solid var(--chart); }
+.v2-guide p,.v2-note { margin: 0 0 8px; }
+.v2-guide p:last-child { margin-bottom: 0; }
+.v2-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.v2-pane h3.v2-section-title { margin-top: 22px; }
 .v2-world-mark { flex: 0 0 54px; height: 54px; display: grid; place-items: center; font-size: 42px; color: var(--chart); }
 .v2-intro { font-size: 1.3rem!important; font-weight: 700; }
 .v2-button { min-height: 44px; padding: 10px 14px; border: 1px solid #719b9e; border-radius: 10px; background: var(--ink-2); color: var(--paper); cursor: pointer; font: inherit; text-align: left; max-width: 100%; }
@@ -27,6 +32,7 @@
 .v2-stats div { display: flex; justify-content: space-between; padding: 8px; background: #207b8010; }
 .v2-stats dd { margin: 0; font-weight: 700; }
 .v2-mission { padding: 16px 0; border-top: 1px solid var(--line,#c4d1d9); }
+.v2-mission h4 { margin: 0 0 6px; font-size: 1rem; }
 .v2-mission p { margin: 0 0 10px; }
 .v2-world-list { list-style: none; margin: 12px 0 0; padding: 0; }
 .v2-world-list li { display: flex; gap: 18px; position: relative; padding: 12px 0 25px; }

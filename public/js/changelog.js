@@ -5,9 +5,21 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '2.0.0';
+  IT.VERSION = '2.0.1';
 
   IT.CHANGELOG = [
+    { v: '2.0.1', date: '2026-11-19', items: {
+      tr: ['Atlas artık ilk keşiflerini, bölge kurallarını ve yeni bölgeleri nasıl açacağını gösteriyor.',
+        'Yol ayrımlarında gereken yetenek ve enerjiyi gör. Kamp geliştirmeleri ve filo görevleri için oyun içi yönlendirmeleri izle.'],
+      en: ['The Atlas now shows first discoveries, regional rules, and how to unlock new regions.',
+        'See the skills and energy needed at each fork, and follow in-game guidance for camp upgrades and fleet missions.'],
+      de: ['Der Atlas zeigt jetzt Erstentdeckungen, regionale Regeln und den Weg zu neuen Regionen.',
+        'Sieh an Weggabelungen, welche Fähigkeiten und wie viel Energie du brauchst. Hinweise im Spiel helfen beim Lagerausbau und bei Flottenmissionen.'],
+      es: ['El Atlas muestra los primeros descubrimientos, las reglas de cada región y cómo desbloquear nuevas regiones.',
+        'Consulta la habilidad y la energía necesarias en cada cruce. Sigue las indicaciones del juego para mejorar el campamento y gestionar la flota.'],
+      fr: ['L’Atlas affiche les premières découvertes, les règles de chaque région et les conditions d’accès aux nouvelles régions.',
+        'Consulte les compétences et l’énergie requises aux embranchements. Des indications en jeu t’aident à améliorer le camp et à gérer la flotte.'],
+    } },
     { v: '2.0.0', date: '2026-11-18', items: {
       "tr": [
             "Idle Traveler 2 — Kendi Yolunu Çiz. Yeryüzünden Bulut Adaları’na, nebulalardan galaksilerarası boşluğa uzanan 12 farklı dünya.",

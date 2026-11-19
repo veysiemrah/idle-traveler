@@ -11,6 +11,14 @@ const server=http.createServer((req,res)=>{
 });
 const base={v:3,intro:true,lastSeen:Date.now(),seenVer:'99',player:{id:'12345678-1234-4123-a123-123456789abc',key:'a'.repeat(64),name:'Gezgin'},credits:1e23,owned:{walk:true,balloon:true,chrono:true},levels:{chrono:10},active:'chrono',distance:100000*IT.LY,lifeDist:100000*IT.LY,regionIdx:27,msIdx:99,unitTip:2,settings:{sfx:false,music:false}};
 
+async function finishLeg(page,nextAction){
+ await page.clock.fastForward(3600000);
+ await nextAction.waitFor({state:'visible'});
+ const resume=page.locator('#modal:not([hidden]) #modalBtn').filter({hasText:/^(Keep going|Yola devam et)$/});
+ if(await resume.isVisible())await resume.click();
+ await nextAction.click();
+}
+
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const browser=await pw.chromium.launch();
@@ -42,6 +50,35 @@ const base={v:3,intro:true,lastSeen:Date.now(),seenVer:'99',player:{id:'12345678
   await newcomer.locator('#modalBtn').click();
   await newcomer.reload();
   assert.equal(await newcomer.locator('#modal').isHidden(),true);
+  await newcomer.clock.install();
+  await newcomer.locator('.tab[data-id="voyage"]').click();
+  await newcomer.getByRole('button',{name:'Open the Atlas'}).click();
+  const firstWorkshop=newcomer.locator('[data-v2="upgradeCamp"][data-key="workshop"]');
+  const firstAtlas=newcomer.locator('#pane-atlas');
+  assert.match(await firstAtlas.innerText(),/0\/3 first discoveries/);
+  await newcomer.locator('.tab[data-id="camp"]').click();
+  assert.ok(await firstWorkshop.isDisabled());
+  await newcomer.getByRole('button',{name:'Open the Atlas'}).click();
+  const cloudEntry=firstAtlas.locator('.v2-world-list li').filter({has:newcomer.getByRole('heading',{name:'Cloud Islands',exact:true})});
+  assert.match(await cloudEntry.innerText(),/hot air balloon/i);
+  for(const [index,id] of ['earth-survey','earth-delivery','earth-pass'].entries()){
+   await firstAtlas.locator('[data-v2="start"][data-key="'+id+'"]').click();
+   for(let fork=0;fork<2;fork++){
+    await finishLeg(newcomer,newcomer.locator('[data-v2="choose"]').last());
+   }
+   await finishLeg(newcomer,newcomer.locator('[data-v2="claim"]'));
+   await newcomer.getByRole('button',{name:'Open the Atlas'}).click();
+   assert.match(await firstAtlas.innerText(),new RegExp((index+1)+'/3 first discoveries'));
+  }
+  await cloudEntry.locator('[data-v2="selectWorld"]').click();
+  assert.match(await firstAtlas.locator('h2').innerText(),/Cloud Islands/);
+  assert.equal(await newcomer.locator('.panes').evaluate(el=>el.scrollTop),0,'visiting a region should reveal its atlas heading');
+  await newcomer.locator('.tab[data-id="camp"]').click();
+  await firstWorkshop.click();
+  await newcomer.locator('[data-v2="equip"][data-key="scanner"]').click();
+  await newcomer.reload();
+  assert.match(await newcomer.locator('.v2-building').first().innerText(),/1\/5/);
+  assert.equal(await newcomer.locator('[data-v2="equip"][data-key="scanner"]').getAttribute('aria-pressed'),'true');
   await newcomer.close();
   const returning=await open({...base,seenVer:'1.66'});
   assert.match(await returning.locator('#modalBody h2').innerText(),/Idle Traveler 2/);
@@ -53,8 +90,18 @@ const base={v:3,intro:true,lastSeen:Date.now(),seenVer:'99',player:{id:'12345678
   assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1-pre-v2')).v),3);
   await p.locator('.tab[data-id="atlas"]').click();
   assert.match(await p.locator('#pane-atlas h2').innerText(),/Galaksinin/);
+  assert.match(await p.locator('#pane-atlas').innerText(),/0\/3 ilk keşif/);
+  assert.match(await p.locator('#pane-atlas').innerText(),/Sinyali çözmek/);
   await p.locator('[data-v2="start"][data-key="rim-signal"]').click();
   assert.equal(await p.locator('#pane-voyage').isVisible(),true);
+  await p.locator('.tab[data-id="atlas"]').click();
+  assert.equal(await p.locator('[data-v2="start"][data-key="rim-signal"]').isDisabled(),true);
+  await p.getByRole('button',{name:'Seferi Yolculuk’ta aç'}).click();
+  assert.equal(await p.locator('#pane-voyage').isVisible(),true);
+  await p.locator('.tab[data-id="camp"]').click();
+  assert.match(await p.locator('#pane-camp').innerText(),/İlk kez bitirdiğin seferlerin ödülünü/);
+  assert.match(await p.locator('#pane-camp').innerText(),/Seferin bitince ekipman değiştirebilirsin/);
+  await p.getByRole('button',{name:'Seferi Yolculuk’ta aç'}).click();
   await p.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
   let saved=await p.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
   assert.equal(saved.v,4);assert.equal(saved.v2.expedition.templateId,'rim-signal');assert.equal(saved.player.name,'Gezgin');
@@ -70,6 +117,7 @@ const base={v:3,intro:true,lastSeen:Date.now(),seenVer:'99',player:{id:'12345678
   const q=await open(choiceSave);
   await q.locator('.tab[data-id="voyage"]').click();
   assert.equal(await q.locator('#pane-voyage [data-v2="choose"]').count(),2);
+  assert.match(await q.locator('#pane-voyage [data-v2="choose"]').filter({hasText:'Gerekli'}).innerText(),/3\+.*enerji/su);
   await q.locator('#pane-voyage [data-v2="choose"]').first().click();
   assert.equal(await q.locator('#pane-voyage [data-v2="choose"]').count(),0);
   const next=await q.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
@@ -90,7 +138,44 @@ const base={v:3,intro:true,lastSeen:Date.now(),seenVer:'99',player:{id:'12345678
   await claimPage.locator('.tab[data-id="camp"]').click();await claimPage.locator('[data-v2="upgradeCamp"][data-key="workshop"]').click();
   await claimPage.locator('[data-v2="equip"][data-key="scanner"]').click();
   const completed=await claimPage.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
-  assert.equal(completed.v2.expedition,null);assert.equal(completed.v2.camp.workshop,1);assert.equal(completed.v2.research,0);assert.equal(completed.v2.equipment.utility,'scanner');assert.ok(completed.v2.clues.includes('rim-0'));await claimPage.close();
+  assert.equal(completed.v2.expedition,null);assert.equal(completed.v2.camp.workshop,1);assert.equal(completed.v2.research,0);assert.equal(completed.v2.equipment.utility,'scanner');assert.ok(completed.v2.clues.includes('rim-0'));
+  await claimPage.locator('.tab[data-id="atlas"]').click();
+  assert.match(await claimPage.locator('#pane-atlas').innerText(),/1\/3 ilk keşif/);
+  assert.match(await claimPage.locator('[data-v2="start"][data-key="rim-signal"]').innerText(),/Yeniden/);
+  await claimPage.close();
+  const fleetSeed=await p.evaluate(seed=>{
+   seed.v2.unlockedWorlds.push('galaxies');
+   seed.v2=IT.V2.startFleet(seed.v2,0,'rim-signal','guide',1).state;
+   seed.lastSeen=Date.now();return seed;
+  }, readySave);
+  const fleetPage=await open(fleetSeed);
+  await fleetPage.locator('.tab[data-id="atlas"]').click();
+  assert.match(await fleetPage.locator('#pane-atlas').innerText(),/1\/3 gemi görevde/);
+  const fleetButton=fleetPage.locator('[data-v2="startFleet"][data-key="rim-signal"]');
+  assert.equal(await fleetButton.isDisabled(),true);
+  assert.match(await fleetPage.locator('#pane-atlas').innerText(),/Bu rol başka bir/);
+  await fleetPage.selectOption('#v2Role','researcher');
+  assert.equal(await fleetButton.isEnabled(),true);
+  await fleetButton.click();
+  assert.match(await fleetPage.locator('#pane-atlas').innerText(),/2\/3 gemi görevde/);
+  await fleetPage.getByRole('button',{name:'Filoyu Yolculuk’ta aç'}).click();
+  assert.match(await fleetPage.evaluate(()=>document.activeElement.textContent),/Keşif filosu/);
+  await fleetPage.locator('.tab[data-id="atlas"]').click();
+  await fleetPage.getByRole('button',{name:'Seferi Yolculuk’ta aç'}).click();
+  await fleetPage.locator('[data-v2="claim"]').click();
+  await fleetPage.locator('.tab[data-id="atlas"]').click();
+  await fleetPage.getByRole('button',{name:'Filoyu Yolculuk’ta aç'}).click();
+  assert.match(await fleetPage.evaluate(()=>document.activeElement.textContent),/Keşif filosu/);
+  await fleetPage.clock.install();
+  for(let fork=0;fork<2;fork++){
+   await finishLeg(fleetPage,fleetPage.locator('[data-v2="fleetChoose"][data-slot="1"]').last());
+  }
+  await finishLeg(fleetPage,fleetPage.locator('[data-v2="fleetClaim"][data-slot="1"]'));
+  await fleetPage.reload();
+  assert.equal(await fleetPage.locator('[data-fleet-progress]').count(),1);
+  await fleetPage.locator('.tab[data-id="atlas"]').click();
+  assert.match(await fleetPage.locator('#pane-atlas').innerText(),/1\/3 gemi görevde/);
+  await fleetPage.close();
   const legacy=await open(next);
   await legacy.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
   await legacy.evaluate(()=>{const key='idle-traveler-save-v1';const s=JSON.parse(localStorage.getItem(key));s.v=3;delete s.v2;localStorage.setItem(key,JSON.stringify(s));});
