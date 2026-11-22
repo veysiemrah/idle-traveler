@@ -5,6 +5,8 @@ IT.addLang('es', {
   suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T', 'C', 'mil C', 'Qn', 'mil Qn'],
   units: { cm: 'cm', in: 'pulg.', m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    'tr.waveTo': "Saludar a {name}",
+    'tr.waveSent': "Has saludado a <b>{name}</b>.",
     "v2.nextChoiceIn": "Próximo cruce en unos {n} min",
     "v2.discoveryIn": "Descubrimiento en unos {n} min",
     "v2.openAtlas": "Abrir el Atlas",
@@ -197,7 +199,7 @@ IT.addLang('es', {
     'name.btn': "En marcha",
     'name.save': "Guardar",
     'toast.named': "Ahora apareces en la lista de viajeros como <b>{name}</b>.",
-    'tr.lead': "Viajeros en el camino en las últimas 24 horas: primero quienes están en camino ahora y luego el resto, cada grupo ordenado por lo que ha recorrido en este viaje. Quienes están en camino ahora también viajan a tu lado en la escena; toca a alguien para saludar.",
+    'tr.lead': "Viajeros de las últimas 24 horas. Mira en qué mundo están quienes siguen en ruta y salúdalos. En la escena puedes cruzarte con viajeros de tu mundo.",
     'tr.online': "En camino ahora",
     'tr.total': "Últimas 24 horas",
     'tr.you': "tú",

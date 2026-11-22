@@ -71,7 +71,10 @@ function draw(c,viewport,view,time,scene){
  const px=W*.38,py=H*.54+Math.sin(t*.8)*3,k=Math.min(1.1,Math.max(.55,viewport.k));
  if(['walk','skates','board','bike','horse','moto','car','van','train'].includes(scene.vehicle)){ellipse(c,px,py+5,62*k,12*k,'#748a9d');}
  if(!sky&&localNight>0){c.fillStyle=`rgba(10,17,47,${localNight*.65})`;c.fillRect(0,0,W,H);}
+ scene.drawGhosts(c,scene.nightAmt);
  if(V.drawTraveler)V.drawTraveler(c,scene.vehicle,px,py,k,{phase:scene.phase,wheel:scene.wheel,t,night:scene.nightAmt,tier:scene.vehTier||0,pal:0});
+ scene.drawTags(c,scene.nightAmt);
+ scene.drawBubbles(c,{x:px,y:py,scale:k});
  c.restore();
 }
 V.WorldScene={draw,hitRegions(){return [];}};

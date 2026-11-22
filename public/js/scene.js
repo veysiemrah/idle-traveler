@@ -2887,6 +2887,10 @@
     // Gezginler aracının gerçek genişliğine göre dizilir: kendi aracından (vagonlar, köpek dahil) başlayıp aralarında boşluk
     // bırakarak öne ve geriye doğru. Yerde ve gökyüzünde iki ayrı sıra vardır; sığmayan gezgin gösterilmez (yumuşakça çekilir).
     ghostSlots() {
+      if (this.worldView && this.worldView.worldId !== 'earth') {
+        const slots = this.W < 640 ? [0.74, 0.15] : [0.64, 0.15, 0.86];
+        return this.others.slice(0, slots.length).map((o, i) => [o, this.W * slots[i]]);
+      }
       const k = this.k, W = this.W, tx = this.travelerX, gap = 26 * k, sc = GHOST_SCALE;
       const nA = W < 640 ? 1 : W < 1000 ? 2 : 3, nB = W < 640 ? 1 : 2;
       const layer = v => (FLYING[v] ? 1 : 0), own = layer(this.vehicle);
@@ -2933,6 +2937,11 @@
       const k = this.k, o = g.o, s = GHOST_SCALE;
       const x = g.x + Math.sin(this.t * 0.45 + g.seed) * 8 * k;
       const hop = g.wave > 0 ? Math.abs(Math.sin(g.wave * 9)) * 7 * k : 0;
+      if (this.worldView && this.worldView.worldId !== 'earth') {
+        const scale = Math.min(0.76, Math.max(0.37, k * 0.65), this.W / 480);
+        const y = this.H * (g.tx > this.W * 0.8 ? 0.70 : 0.60) + (this.reduced ? 0 : Math.sin(this.t * 0.8 + g.seed) * 4) - hop;
+        return { x: this.reduced ? g.tx : x, y, s: scale / k, top: y - (VEH_TOP[o.veh] || 80) * scale };
+      }
       // uçan gezgin konum kartının altına denk gelirse (etiketi ve balonu da) kartın altında kalır; kartın kenarında
       // yumuşakça geçiş yapar (birden zıplamaz)
       const fy = this.flyY(o.veh, k) - 34 * k, under = clamp(((this.hudRight || 0) - (x - 120 * k)) / (60 * k), 0, 1);
@@ -3010,11 +3019,12 @@
     sayMine(text, life) { this.myMsg = { text, t: 0, life: life || MSG_LIFE }; }
     // El sallayan gezgin sahnede küçük bir sıçrayış yapar
     hop(pub) { const g = this.ghosts.get(pub); if (g) g.wave = 1.2; }
-    drawBubbles(ctx) {
+    drawBubbles(ctx, anchor) {
       const k = this.k;
       if (this.myMsg) {
-        const top = this.riderY() - (VEH_TOP[this.vehicle] || 80) * k - this.stepKick * 2.5 * k;
-        this.drawBubble(ctx, this.travelerX, top - 10 * k, this.myMsg);
+        const top = anchor ? anchor.y - (VEH_TOP[this.vehicle] || 80) * anchor.scale
+          : this.riderY() - (VEH_TOP[this.vehicle] || 80) * k - this.stepKick * 2.5 * k;
+        this.drawBubble(ctx, anchor ? anchor.x : this.travelerX, top - 10 * k, this.myMsg);
       }
       for (const g of this.ghosts.values()) {
         const m = this.msgs.get(g.o.pub);
@@ -3057,7 +3067,7 @@
     hitGhost(px, py) {
       const k = Math.max(this.k, 0.8);
       for (const g of this.ghosts.values()) {
-        if (g.alpha < 0.4) continue;
+        if (g.alpha < 0.4 || g.gone) continue;
         const p = this.ghostPos(g);
         if (Math.abs(px - p.x) < 34 * k && py > p.top - 34 * k && py < p.y + 8 * k) {
           return g.o;

@@ -5,6 +5,8 @@ IT.addLang('en', {
   suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'],
   units: { cm: 'cm', in: 'in', m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    'tr.waveTo': "Wave to {name}",
+    'tr.waveSent': "You waved to <b>{name}</b>.",
     "v2.nextChoiceIn": "Next fork in about {n} min",
     "v2.discoveryIn": "Discovery in about {n} min",
     "v2.openAtlas": "Open the Atlas",
@@ -197,7 +199,7 @@ IT.addLang('en', {
     'name.btn': "Set off",
     'name.save': "Save",
     'toast.named': "You now appear on the Travelers list as <b>{name}</b>.",
-    'tr.lead': "Travelers on the road in the last 24 hours: those on the road right now come first, then the rest, each group ranked by how far they've gone on this trip. Those on the road right now travel beside you in the scene too; tap one to wave.",
+    'tr.lead': "Travelers from the last 24 hours. See where active travelers are and wave to them. You can meet travelers in your world in the scene.",
     'tr.online': "On the road now",
     'tr.total': "Last 24 hours",
     'tr.you': "you",

@@ -7,6 +7,8 @@ IT.addLang('tr', {
   suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk', 'Sp', 'Ok', 'Nn', 'Ds'],
   units: { cm: 'cm', in: 'inç', m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
   strings: {
+    'tr.waveTo': "{name} adlı gezgine el salla",
+    'tr.waveSent': "El salladın: <b>{name}</b>.",
     "v2.nextChoiceIn": "Yol ayrımına yaklaşık {n} dk",
     "v2.discoveryIn": "Keşfe yaklaşık {n} dk",
     "v2.openAtlas": "Atlas’ı aç",
@@ -207,7 +209,7 @@ IT.addLang('tr', {
     'name.btn': "Yola çık",
     'name.save': "Kaydet",
     'toast.named': "Yolcular listesinde artık <b>{name}</b> adıyla görünüyorsun.",
-    'tr.lead': "Son 24 saatte yolda olan gezginler: şu an yolda olanlar başta, sonra diğerleri; her grup bu yolculukta gittikleri yola göre sıralı. Şu an yolda olanlar sahnede de yanında yolculuk eder; birine dokunup el sallayabilirsin.",
+    'tr.lead': "Son 24 saatin gezginleri. Şu an yolda olanların haritasını görebilir ve onlara el sallayabilirsin. Aynı haritadaki gezginlerle sahnede karşılaşırsın.",
     'tr.online': "Şu an yolda",
     'tr.total': "Son 24 saatte",
     'tr.you': "sen",

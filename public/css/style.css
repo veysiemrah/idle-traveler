@@ -911,6 +911,14 @@ button { font: inherit; color: inherit; }
   background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: var(--r-sm); padding: 6px 10px 6px 6px;
 }
 .tr-row.me { border-color: rgba(111, 211, 193, 0.55); background: linear-gradient(90deg, rgba(111, 211, 193, 0.12), transparent 70%), var(--ink-2); }
+.tr-row:has(.tr-wave) { grid-template-columns: 26px 46px minmax(0, 1fr) auto 40px; }
+.tr-world { margin: 3px 0 0; font-size: 12px; color: var(--teal); overflow-wrap: anywhere; }
+.tr-wave { width: 40px; min-height: 44px; padding: 0; border: 1px solid var(--line-soft); border-radius: var(--r-sm); background: var(--ink-3); color: var(--paper); cursor: pointer; }
+.tr-wave:hover, .tr-wave:focus-visible { border-color: var(--teal); }
+@media (max-width: 420px) {
+  .tr-row:has(.tr-wave) { grid-template-columns: 20px 30px minmax(0, 1fr) auto 40px; gap: 5px; }
+  .tr-row:has(.tr-wave) .tr-icon { width: 30px; height: auto; }
+}
 .tr-rank { text-align: center; font: 800 15px var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
 .tr-row:nth-child(1) .tr-rank { color: var(--gold); }
 .tr-icon { width: 46px; height: 36px; }

@@ -1,7 +1,7 @@
 /* Idle Traveler — Worker: statik site + "Yolcular" API'si (D1).
    /api/* dışındaki her istek public/ klasöründeki statik dosyalara gider.
 
-   POST /api/hello   { id, key, name, dist, life, spd, trip, veh, route, tier, outfit, pal } → kaydı günceller, yolcu listesini döner
+   POST /api/hello   { id, key, name, dist, life, spd, trip, veh, route, world, tier, outfit, pal } → genel liste ve harita komşuları
    GET  /api/players                                           → yalnızca yolcu listesi
    POST /api/top     { id? }                                   → tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50
    POST /api/say     { id, key, msg, to? }                     → hazır mesaj ya da el sallama (msg 'wave', to: alıcının pub'ı)
@@ -9,6 +9,7 @@
 
 const VEHICLES = ['walk', 'skates', 'board', 'bike', 'horse', 'moto', 'car', 'van', 'train', 'balloon', 'plane', 'jet', 'rocket', 'sail', 'comet', 'warp', 'whale', 'startrain', 'anka', 'chrono', 'portal', 'cosmos'];
 const ROUTES = ['anatolia', 'coast', 'north', 'bloom', 'silk', 'caravan', 'compass', 'clover', 'lighthouse', 'crane', 'kite', 'migrate', 'firefly', 'cloud', 'melody'];
+const WORLDS = ['earth', 'cloud', 'storm', 'upper', 'planets', 'nebula', 'deep', 'rim', 'void', 'galaxies', 'fracture', 'frontier'];
 const OUTFITS = ['classic', 'sky', 'forest', 'lavender', 'sunset', 'night', 'gold', 'explorer', 'timeless', 'stargazer', 'sailor', 'birder', 'glow', 'dreamer'];
 const PALS = ['', 'dog', 'bird', 'cat', 'fox'];
 // Hazır mesajlar: sunucu yalnızca kimliği saklar, metni her oyuncu kendi dilinde görür
@@ -70,23 +71,25 @@ async function sha256(text) {
 // me: isteği yapanın satırı (ilk 50'de değilse aynı kurala göre sırasıyla eklenir)
 // pub: gizli kimliği açık etmeyen kısa, kalıcı bir anahtar (sahnede aynı gezgini tanımak için)
 const pubOf = async id => (await sha256('pub:' + id)).slice(0, 12);
-const COLS = 'id, name, dist, life, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt';
+const COLS = 'id, name, dist, life, spd, trip, veh, tier, outfit, pal, seen, msg, msgAt, world';
 const validId = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
 const validKey = v => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
 // Son mesajlar: { pub, msg, at } (at sunucu saatidir; istemci now ile kendi saatine çevirir)
 async function feed(db, now) {
-  const r = await db.prepare('SELECT id, msg, msgAt, msgTo FROM players WHERE msgAt > ?1 ORDER BY msgAt DESC LIMIT 30').bind(now - FEED_MS).all();
-  return Promise.all(r.results.map(async x => ({ pub: await pubOf(x.id), msg: x.msg, at: x.msgAt, to: x.msgTo || '' })));
+  const r = await db.prepare('SELECT id, name, msg, msgAt, msgTo FROM players WHERE msgAt > ?1 ORDER BY msgAt DESC LIMIT 30').bind(now - FEED_MS).all();
+  return Promise.all(r.results.map(async x => ({ pub: await pubOf(x.id), msg: x.msg, at: x.msgAt, to: x.msgTo || '', name: x.name })));
 }
-async function listPlayers(db, id, now) {
+async function listPlayers(db, id, now, world) {
   const since = now - LIST_MS, onlineSince = now - ONLINE_MS;
-  const [rows, counts] = await db.batch([
+  const queries = [
     db.prepare(`SELECT ${COLS} FROM players WHERE seen > ?1 ORDER BY (seen > ?3) DESC, dist DESC LIMIT ?2`).bind(since, LIST_MAX, onlineSince),
     db.prepare('SELECT COUNT(*) AS total, SUM(seen > ?2) AS online FROM players WHERE seen > ?1').bind(since, onlineSince),
-  ]);
+  ];
+  if (world) queries.push(db.prepare(`SELECT ${COLS} FROM players WHERE world = ?1 AND seen > ?2 AND id != ?3 ORDER BY seen DESC LIMIT ?4`).bind(world, onlineSince, id, LIST_MAX));
+  const [rows, counts, local] = await db.batch(queries);
   const map = async r => ({
     pub: await pubOf(r.id), name: r.name, dist: r.dist, life: Math.max(r.life || 0, r.dist), spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier, outfit: r.outfit, pal: r.pal,
-    online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
+    world: r.world, online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
     msg: r.msgAt > now - 60e3 ? r.msg : '', msgAgo: Math.max(0, now - r.msgAt),
   });
   const players = await Promise.all(rows.results.map(async (r, i) => Object.assign(await map(r), { rank: i + 1 })));
@@ -102,7 +105,9 @@ async function listPlayers(db, id, now) {
     }
   }
   const c = counts.results[0] || {};
-  return { now, online: c.online || 0, total: c.total || 0, players, me, feed: await feed(db, now) };
+  const ranked = new Map(rows.results.map((r, i) => [r.id, players[i]]));
+  const neighbors = local ? await Promise.all(local.results.map(r => ranked.get(r.id) || map(r))) : undefined;
+  return { now, online: c.online || 0, total: c.total || 0, players, me, neighbors, feed: await feed(db, now) };
 }
 // Tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50; me: isteği yapanın satırı (ilk 50'de değilse sırasıyla)
 async function topPlayers(db, id, now) {
@@ -113,7 +118,7 @@ async function topPlayers(db, id, now) {
   ]);
   const map = async r => ({
     pub: await pubOf(r.id), name: r.name, life: Math.max(r.life || 0, r.dist), spd: r.spd, trip: r.trip, veh: r.veh, tier: r.tier,
-    online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
+    world: r.world, online: r.seen > onlineSince, ago: Math.max(0, now - r.seen), me: r.id === id,
   });
   const players = await Promise.all(rows.results.map(async (r, i) => Object.assign(await map(r), { rank: i + 1 })));
   let me = players.find(p => p.me) || null;
@@ -149,6 +154,7 @@ async function hello(request, env) {
   if (!Number.isInteger(trip) || trip < 1 || trip > 1e5 + 1) return json({ error: 'bad-trip' }, 400);
   const veh = VEHICLES.includes(b.veh) ? b.veh : 'walk';
   const route = ROUTES.includes(b.route) ? b.route : 'anatolia';
+  const world = WORLDS.includes(b.world) ? b.world : 'earth';
   const tier = Number.isInteger(b.tier) && b.tier >= 0 && b.tier <= 10 ? b.tier : 0;
   const outfit = OUTFITS.includes(b.outfit) ? b.outfit : 'classic';
   const pal = PALS.includes(b.pal) ? b.pal : '';
@@ -162,17 +168,17 @@ async function hello(request, env) {
   // tavanın 1/30'u: yeni kayıtta ~2,6e6 m/sn; hızlı araçlara ancak saatler sonra ulaşılır, tavan da kaydın yaşıyla büyür), yoksa sahte bir hızla 3 dakika liste başı olunurdu
   const speed = Math.min(spdIn, cap / 30);
   // Yeni kimlik eklenir; var olan kimlik yalnızca anahtar tutuyorsa ve son yazımdan 5 sn geçtiyse güncellenir
-  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14)
+  const res = await env.DB.prepare(`INSERT INTO players (id, key, name, dist, trip, veh, route, created, seen, tier, outfit, pal, spd, life, world) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?10, ?11, ?12, ?13, ?14, ?15)
     ON CONFLICT (id) DO UPDATE SET name = excluded.name, dist = excluded.dist, trip = excluded.trip, veh = excluded.veh, route = excluded.route, seen = excluded.seen,
-      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd, life = MAX(players.life, excluded.life)
-    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, distOk, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed, lifeOk).run();
+      tier = excluded.tier, outfit = excluded.outfit, pal = excluded.pal, spd = excluded.spd, life = MAX(players.life, excluded.life), world = excluded.world
+    WHERE players.key = excluded.key AND players.seen < excluded.seen - ?9`).bind(id, hash, name, distOk, trip, veh, route, now, MIN_GAP_MS, tier, outfit, pal, speed, lifeOk, world).run();
   if (!res.meta.changes) {
     const row = await env.DB.prepare('SELECT key FROM players WHERE id = ?1').bind(id).first();
     if (row && row.key !== hash) return json({ error: 'not-yours' }, 403);
   }
   // Ara sıra eski kayıtları temizle
   if (Math.random() < 0.01) await env.DB.prepare('DELETE FROM players WHERE seen < ?1 AND life < ?2').bind(now - PRUNE_MS, PRUNE_LIFE).run();
-  return json(await listPlayers(env.DB, id, now));
+  return json(await listPlayers(env.DB, id, now, world));
 }
 
 // Hazır mesaj: yalnızca yolda olan (son 3 dakikada haber vermiş) ve anahtarı tutan yolcu gönderebilir

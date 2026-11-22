@@ -38,7 +38,7 @@
     onConflict: null, // kimlik başkasına aitse (403) yeni kimlik istenir
     onMessage: null,  // yeni bir hazır mesaj gelince: { pub, msg, age }
     top: null, topAt: 0, topStatus: 'wait', // tüm zamanlar listesi (istendiğinde getirilir)
-    _get: null, _timer: 0, _busy: false, _feedTimer: 0, _seen: new Set(),
+    _get: null, _timer: 0, _busy: false, _feedTimer: 0, _seen: new Set(), _worldPending: false,
     // Bu tarayıcının sahnedeki anahtarı (kendi mesajını iki kez göstermemek için)
     myPub() { const d = this.data; const m = d && (d.me || d.players.find(p => p.me)); return m ? m.pub : null; },
     // Başka biri yoldaysa ve sekme açıksa mesaj akışı yoklanır; yoksa hiç istek atılmaz
@@ -62,7 +62,7 @@
         if (this._seen.has(key) || !(MSGS.includes(m.msg) || m.msg === 'wave')) continue;
         this._seen.add(key);
         const age = Math.max(0, d.now - m.at);
-        if (age < MSG_FRESH_MS && this.onMessage) this.onMessage({ pub: m.pub, msg: m.msg, age, to: m.to || '' });
+        if (age < MSG_FRESH_MS && this.onMessage) this.onMessage({ pub: m.pub, msg: m.msg, age, to: m.to || '', name: m.name });
       }
       if (this._seen.size > 500) this._seen = new Set([...this._seen].slice(-200));
     },
@@ -85,10 +85,12 @@
     start(get) { this._get = get; this.now(); this._feedNext(); },
     // Hemen haber ver (isim değişince, sayfa yeniden görünür olunca)
     now() { clearTimeout(this._timer); this._beat(); },
+    worldChanged() { this._worldPending = true; this.now(); },
     _next(ms) { clearTimeout(this._timer); this._timer = setTimeout(() => this._beat(), ms); },
     async _beat() {
       if (this._busy) return;
       this._busy = true;
+      this._worldPending = false;
       const body = this._get && this._get();
       const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timer = ctl && setTimeout(() => ctl.abort(), TIMEOUT_MS);
@@ -108,7 +110,10 @@
       if (timer) clearTimeout(timer);
       this.status = ok ? 'ok' : 'error';
       this._busy = false;
-      this._next(ok ? BEAT_MS : RETRY_MS);
+      const storedWorld = this.data?.me?.world;
+      // A world switch can land inside the server's five-second write window.
+      const retryWorld = ok && body?.world && storedWorld && storedWorld !== body.world;
+      this._next(this._worldPending ? 0 : retryWorld ? 5200 : ok ? BEAT_MS : RETRY_MS);
       if (this.onUpdate) this.onUpdate();
     },
     // Tüm zamanlar: bütün yolculuklarda gidilen toplam yola göre ilk 50 (id verilirse kendi satırın da gelir)

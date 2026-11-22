@@ -372,8 +372,8 @@
     const d = IT.Online.data, before = caravan.size, next = new Set();
     if (IT.Online.status === 'ok' && d) {
       const win = Math.max(CARAVAN_MIN, S.distance * CARAVAN_NEAR);
-      for (const p of d.players) {
-        if (!p.online || p.me || !p.pub) continue;
+      for (const p of d.neighbors || d.players) {
+        if (!isWorldNeighbor(p)) continue;
         const gap = Math.abs(IT.Online.liveDist(p) - S.distance);
         if (gap <= win || (caravan.has(p.pub) && gap <= win * 1.25)) next.add(p.pub);
       }
@@ -1319,6 +1319,10 @@
     },
     nameDice() { nameDraft = randomName(); },
     nameAsk() { showName(); },
+    waveTraveler(pub) {
+      const player = onlineTraveler(pub);
+      if (player?.online && !player.me) waveAt(player);
+    },
     rename() {
       const inp = $('#setName'), name = inp && IT.cleanName(inp.value);
       if (!name) { Sound.deny(); toast(t('name.bad')); return; }
@@ -1554,10 +1558,16 @@
     const groundOver = groundUnderControls();
     if (groundOver !== stageGround) { stageGround = groundOver; $('#stage').classList.toggle('ground-on', groundOver); }
     scene.vehTier = Econ.lookTier(S.levels[S.active]);
-    scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     const nextWorldView = V2.sceneView(S.v2);
-    if (scene.worldView && scene.worldView.worldId !== nextWorldView.worldId) scene.worldFade = scene.reduced ? 0 : 0.6;
+    if (scene.worldView && scene.worldView.worldId !== nextWorldView.worldId) {
+      scene.worldFade = scene.reduced ? 0 : 0.6;
+      scene.ghosts.clear();
+      scene.setOthers(othersOnStage());
+      IT.Online.worldChanged();
+      uiDirty.travelers = true;
+    }
     scene.worldView = nextWorldView;
+    scene.update(dt, Math.max(rateEma, cur.idle) * IT.SPEED_VIS, scene.nightAmt || 0);
     scene.draw();
     if (scene.worldFade > 0) {
       scene.ctx.save(); scene.ctx.fillStyle = `rgba(17,27,46,${Math.min(0.75, scene.worldFade / 0.6)})`;
@@ -2169,18 +2179,25 @@
       </div></article>`;
   }
 
-  // Sahnede görünen gezginler: şu an yolda olanlar, senden önde/geride olmalarına göre ve yakınlık sırasıyla
+  const playerWorld = p => Object.hasOwn(V2.WORLD, p.world) ? p.world : 'earth';
+  const isWorldNeighbor = p => p.online && !p.me && p.pub && playerWorld(p) === S.v2.worldId;
+  function onlineTraveler(pub) {
+    const d = IT.Online.data;
+    return d?.players.find(p => p.pub === pub) || d?.neighbors?.find(p => p.pub === pub) || IT.Online.top?.players.find(p => p.pub === pub);
+  }
+  // Yeryüzü'nde yol mesafesi, V2 dünyalarında ise konuşma ve kararlı bir görünüm sırası kullanılır.
   function othersOnStage() {
     const d = IT.Online.data;
     if (!S.settings.others || IT.Online.status !== 'ok' || !d) return [];
     // az önce konuşan gezgin önce gelir: balonu sahnede görünsün
     const talking = p => { const at = talkAt.get(p.pub); return at && Date.now() - at < 9e3 ? 0 : 1; };
-    return d.players.filter(p => p.online && !p.me && p.pub)
+    const earth = S.v2.worldId === 'earth';
+    return (d.neighbors || d.players).filter(isWorldNeighbor)
       .map(p => ({ p, diff: IT.Online.liveDist(p) - S.distance, talk: talking(p) }))
-      .sort((a, b) => a.talk - b.talk || Math.abs(a.diff) - Math.abs(b.diff))
+      .sort((a, b) => a.talk - b.talk || (earth ? Math.abs(a.diff) - Math.abs(b.diff) : a.p.pub.localeCompare(b.p.pub)))
       .map(({ p, diff }) => ({ pub: p.pub, name: p.name, veh: VEH[p.veh] ? p.veh : 'walk', tier: p.tier || 0, outfit: p.outfit, pal: p.pal, trip: p.trip,
         // birkaç metre yakındaysa "yanında": "−0 m" gibi tuhaf bir etiket çıkmaz; kervandaki gezginin etiketinde 🐫 durur
-        ahead: diff > 0, diff, sub: (caravan.has(p.pub) ? '🐫 ' : '') + (Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff))) }));
+        ahead: diff > 0, diff, world: playerWorld(p), sub: (caravan.has(p.pub) ? '🐫 ' : '') + (!earth || Math.abs(diff) < 5 ? t('others.near') : (diff > 0 ? '+' : '−') + fmtDist(Math.abs(diff))) }));
   }
   // Büyük mesafe birimlerinin açıklaması (AB, ışık yılı); sayılar oyuncunun birim sistemiyle (km ya da mil) yazılır
   function unitVars() {
@@ -2254,24 +2271,26 @@
     else if (r !== 'too-soon') toast(t('chat.fail'));
   }
   // Bir gezgine el salla: 👋 senin başında belirir ve o gezgine iletilir (onun ekranında senin başında görünür)
-  function waveAt(g) {
+  async function waveAt(g) {
     Sound.unlock();
     // az önce mesaj ya da el sallama gönderildiyse sunucu kabul etmez: halka dolana kadar bekletilir
     if (!S.player.name) { showName(); return; }
     if (Date.now() < chatCoolUntil) { Sound.deny(); return; }
+    startCool();
+    const result = await IT.Online.say('wave', S.player.id, S.player.key, g.pub);
+    if (result !== 'ok') { Sound.deny(); if (result !== 'too-soon') toast(t('chat.fail')); return; }
     Sound.wave();
     scene.sayMine('👋', 3.5);
-    const key = Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
-    toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff)) }), 'teal');
-    startCool();
-    IT.Online.say('wave', S.player.id, S.player.key, g.pub);
+    const key = !Number.isFinite(g.diff) || playerWorld(g) !== 'earth' ? 'tr.waveSent'
+      : Math.abs(g.diff) < 5 ? 'others.waveNear' : g.ahead ? 'others.waveAhead' : 'others.waveBehind';
+    toast(t(key, { name: esc(g.name), n: fmtNum(g.trip), d: fmtDist(Math.abs(g.diff || 0)) }), 'teal');
   }
   // Başka bir gezginden mesaj geldi: başının üstünde balon (gezgin sahnede değilse ya da gizliyse kısa bir bildirim)
   let lastListAsk = 0;
   function onMessage(m) {
     const mine = IT.Online.myPub();
     if (m.pub === mine) return;
-    const d = IT.Online.data, p = d && d.players.find(x => x.pub === m.pub);
+    const p = onlineTraveler(m.pub);
     // el sallama: herkes gezginin başında 👋 görür, yalnızca el sallanan kişiye bildirim gelir; listedeki son mesajı
     // silmez, ama gezgin mesajdaki gibi sahnede öne alınır
     talkAt.set(m.pub, Date.now() - m.age);
@@ -2282,7 +2301,8 @@
       scene.say(m.pub, '👋', 3.5); scene.hop(m.pub);
       if (m.to && m.to === mine) {
         if (!document.hidden) Sound.wave();
-        if (p) toast(t(S.settings.others ? 'others.wavedYou' : 'others.wavedYou0', { name: esc(p.name) }), 'teal');
+        const name = p?.name || m.name;
+        if (name) toast(t(p && S.settings.others && isWorldNeighbor(p) ? 'others.wavedYou' : 'others.wavedYou0', { name: esc(name) }), 'teal');
       }
       if (!p && Date.now() - lastListAsk > 10e3) { lastListAsk = Date.now(); IT.Online.now(); }
       return;
@@ -2306,19 +2326,24 @@
   // Yolcular: son 24 saatte oynayan gezginler (önce yoldakiler) ya da tüm zamanların gezginleri (toplam yola göre)
   function renderTravelers() {
     const pane = $('#pane-travelers'), O = IT.Online, all = S.settings.trScope === 'all', d = all ? O.top : O.data;
+    const focusedWave = pane.contains(document.activeElement) && document.activeElement.matches('.tr-wave') ? document.activeElement.dataset.id : '';
     const rtf = new Intl.RelativeTimeFormat(IT.locale(), { numeric: 'auto', style: 'short' });
     const ago = ms => { const m = Math.floor(ms / 60e3); return m < 60 ? rtf.format(-Math.max(1, m), 'minute') : m < 1440 ? rtf.format(-Math.floor(m / 60), 'hour') : rtf.format(-Math.floor(m / 1440), 'day'); };
     const row = p => {
       // Kendi satırın sunucuyu beklemeden güncel değerleri gösterir
       const me = p.me, veh = VEH[me ? S.active : p.veh] || VEH.walk, trip = me ? S.trips + 1 : p.trip;
+      const world = V2.text(V2.WORLD[me ? S.v2.worldId : playerWorld(p)].name);
+      const canWave = !me && p.online && /^[0-9a-f]{12}$/.test(p.pub);
       return `<li class="tr-row${me ? ' me' : ''}">
         <span class="tr-rank">${fmtNum(p.rank)}</span>
         <canvas class="tr-icon" data-icon="${veh.id}" data-tier="${me ? Econ.lookTier(S.levels[S.active]) : Math.max(0, Math.min(Econ.looks.length, p.tier | 0))}" width="72" height="56" aria-hidden="true"></canvas>
         <div class="tr-main">
           <p class="tr-name"><b>${esc(me ? S.player.name : p.name)}</b>${me ? `<span class="chip on">${t('tr.you')}</span>` : ''}</p>
           <p class="tr-sub"><i class="tr-dot${p.online || me ? ' on' : ''}" aria-hidden="true"></i>${said(p) ? `<span class="tr-say">“${esc(msgText(said(p)))}”</span>` : p.online || me ? t('tr.now') : ago(O.ago(p, all ? O.topAt : O.at))} · ${t('tr.trip', { n: fmtNum(trip) })} · ${veh.name}</p>
+          ${p.online || me ? `<p class="tr-world">${esc(world)}</p>` : ''}
         </div>
         <b class="tr-dist"${me ? ' id="trMeDist"' : ''}>${fmtDist(me ? (all ? myTopLife() : S.distance) : p.dist)}</b>
+        ${canWave ? `<button class="tr-wave" type="button" data-act="waveTraveler" data-id="${p.pub}" aria-label="${esc(t('tr.waveTo', { name: p.name }))}">👋</button>` : ''}
       </li>`;
     };
     let body;
@@ -2357,6 +2382,7 @@
       ${S.player.name ? '' : `<div class="card tr-ask"><p class="tag">${t('tr.noName')}</p><button class="buy" data-act="nameAsk"><span>${t('tr.pick')}</span></button></div>`}
       ${body}`;
     pane.querySelectorAll('canvas[data-icon]').forEach(c => IT.drawIcon(c, c.dataset.icon, false, +c.dataset.tier || 0));
+    if (/^[0-9a-f]{12}$/.test(focusedWave)) pane.querySelector(`.tr-wave[data-id="${focusedWave}"]`)?.focus({ preventScroll: true });
     trRenderedAt = Date.now();
   }
   let trRenderedAt = 0, lastTopTry = 0;
@@ -2792,9 +2818,13 @@
       if (e.target.closest('#hudDist.unit-tip')) { if (layoutMode === 'desk') { Sound.unlock(); Sound.chat(); toast(unitHint(IT.distUnit(S.distance)), 'teal'); } return; }
       if (e.target === stage || e.target.closest('button, a, .chat-pop, .trail, .dock')) return;
       if (chatJustClosed()) return;
-      if (S.v2.worldId !== 'earth') { const before = S.distance; step(); clickBuffer += S.distance - before; return; }
       const r = scene.canvas.getBoundingClientRect();
       const x = (e.clientX - r.left) / scene.zoom, y = (e.clientY - r.top) / scene.zoom;
+      if (S.v2.worldId !== 'earth') {
+        const traveler = scene.hitGhost(x, y);
+        if (traveler) { waveAt(traveler); return; }
+        const before = S.distance; step(); clickBuffer += S.distance - before; return;
+      }
       if (scene.hitGift(x, y)) { catchGift(); return; }
       if (scene.hitStar(x, y)) { catchStar(); return; }
       const cs = scene.hitConst(x, y);
@@ -3015,7 +3045,7 @@
     IT.Online.onConflict = () => { const p = defaultState().player; S.player.id = p.id; S.player.key = p.key; save(); };
     // hız: sekme açıkken gerçek tempo, gizliyken çevrimdışı oranla (diğerleri aradaki mesafeyi bununla tahmin eder)
     const reportSpeed = () => { const idle = current().idle; return document.hidden ? idle * Econ.offlineRate(S.buffs.dream) : Math.max(rateEma, idle); };
-    IT.Online.start(() => S.player.name && (!saveLocked || noStorage) ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route,
+    IT.Online.start(() => S.player.name && (!saveLocked || noStorage) ? { id: S.player.id, key: S.player.key, name: S.player.name, dist: S.distance, life: myLife(), spd: reportSpeed(), trip: S.trips + 1, veh: S.active, route: S.route, world: S.v2.worldId,
       tier: Econ.lookTier(S.levels[S.active]), outfit: wornOutfit(), pal: S.buffs.pal > 0 ? S.palPick : '' } : null);
 
     const hot = window.claude && window.claude.hot;

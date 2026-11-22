@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '2.0.2';
+  IT.VERSION = '2.0.3';
 
   IT.CHANGELOG = [
+    { v: '2.0.3', date: '2026-11-22', items: {
+      tr: ['Aynı dünyadaki gezginlerle sahnede karşılaş. Yolcular panelinden farklı dünyalardakilerin nerede olduğunu gör ve onlara el salla.'],
+      en: ['Meet travelers in your world in the scene. Check the Travelers panel to see where others are and wave across worlds.'],
+      de: ['Begegne Reisenden in deiner Welt. In der Reisendenliste siehst du, wo die anderen unterwegs sind, und kannst ihnen über Welten hinweg zuwinken.'],
+      es: ['Encuéntrate con viajeros de tu mundo en la escena. Consulta el panel de Viajeros para ver dónde están los demás y saludarlos desde cualquier mundo.'],
+      fr: ['Croise les voyageurs de ton monde dans la scène. Dans le panneau Voyageurs, retrouve les autres et fais-leur signe d’un monde à l’autre.'],
+    } },
     { v: '2.0.2', date: '2026-11-21', items: {
       tr: ['Seferlerinde ve keşif filonda bir sonraki yol ayrımına ya da keşfe kalan süreyi gör.', 'Yolculuk ekranında küçük rötuşlar.'],
       en: ['See the time to the next fork or discovery on your expeditions and exploration fleet.', 'Small refinements to the Journey screen.'],

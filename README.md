@@ -85,6 +85,7 @@ Ayarları doğrulamak için yerelde kuru çalıştırma yapabilirsin: `npx wrang
   böylece Hintçe gibi yazılardaki adlar geçer ama yığılan işaretler sahnedeki etiketi taşıramaz.
 - Tüm zamanlar sorgusu `life` sütununa göre sıralar (`life ≥ dist` her zaman sağlanır: 0006 göçü, `lifeOk ≥ distOk`, `MAX`),
   böylece `players_life` dizini kullanılır.
+- `POST /api/hello`, V2 haritasını `world` alanında saklar ve genel listeye ek olarak o haritanın çevrimiçi yolcularını `neighbors` alanında döner. Eski istemciler Yeryüzü’nde (`earth`) görünür. Genel sıralama dünyalar arasında ortaktır. Harita sorgusu, genel ilk 50 dışında kalan gezginleri de sahneye getirebilir.
 
 Yerelde API ile denemek için:
 
@@ -669,6 +670,8 @@ notlarını beş dilde (tr, en, de, es, fr) ekle. Oyuncular bir sonraki açılı
 Idle Traveler 2.0.0, ilk açılışta Atlas’ı, kampı ve Galaksinin Eşiği’ndeki yeni keşfi tanıtır. Atlas'tan sefer başlatılır; Kamp'ta ücretsiz ekipman seçilir ve ilk keşiflerden gelen araştırmayla yapılar geliştirilir. Oyun ilerledikçe 12 farklı dünya görünümü ve ayrı sefer kuralları açılır. 39 seferin üçü ana keşif hikâyesi tamamlandıktan sonra erişilen yeni sistemdedir.
 
 Atlas, her bölgenin kuralını, tamamlanan ilk keşifleri ve yeni bölgeleri açma koşullarını gösterir. Yolculuk’ta rota seçeneklerinin yetenek ve enerji gereksinimleri görülür ve seferin ödülü alınır. Galaksiler Ağı açıldığında Atlas’tan filo görevleri gönderilir. Filo kararları ve ödülleri Yolculuk’ta yönetilir.
+
+Sahnede aynı dünyadaki çevrimiçi gezginlerle karşılaşılır. Kervan için mevcut yakınlık kuralı sürer ve yalnızca aynı dünyadaki yolcular sayılır. Yolcular paneli çevrimiçi gezginlerin dünyasını gösterir ve dünyalar arasında el sallamaya izin verir. Yerel D1 üzerinde iki tarayıcı oturumuyla `node tests/world-presence.js` kullanılarak doğrulanır. 2.0.3 yayınından önce D1’e `0007_world_presence.sql` göçü uygulanır.
 
 Yolculuk ve filo kartları bir sonraki yol ayrımına veya keşfe kalan yaklaşık süreyi dakika olarak gösterir. Süre, seçilen rotanın hızına göre güncellenir; karar veya ödül beklerken geri sayım yerine durum gösterilir. Seferi bırakmak için dört saniye içinde ikinci kez dokunmak gerekir; onay yalnızca o sefere aittir.
 

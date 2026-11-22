@@ -26,8 +26,12 @@ for f in mp chat wave caravan popmodal forge; do
   echo "== $f"
   timeout 200 node "$f.js" 2>&1 | grep -vE "^\s+at |^\s*$" | tail -6
 done
+echo '== world-presence'
+timeout 90 node world-presence.js
+world_status=$?
 [ -n "$DEV" ] && killtree "$DEV"
 # Windows: npx → cmd → wrangler → workerd zinciri bash'in süreç kimliğinden her zaman bulunamıyor; komut satırından bulunup kapatılır
 if [ -n "$DEV" ] && ! command -v pgrep >/dev/null 2>&1 && command -v powershell >/dev/null 2>&1; then
   powershell -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match "wrangler(\.js)?.? dev --port 8787" } | ForEach-Object { taskkill /F /T /PID $_.ProcessId 2>$null | Out-Null }' >/dev/null 2>&1
 fi
+exit "$world_status"

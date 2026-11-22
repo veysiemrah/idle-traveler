@@ -6,6 +6,8 @@ IT.addLang('de', {
   suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.', 'Quadr.', 'Quadrd.', 'Quint.', 'Quintd.'],
   units: { cm: 'cm', in: 'Zoll', m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
   strings: {
+    'tr.waveTo': "{name} zuwinken",
+    'tr.waveSent': "Du hast <b>{name}</b> zugewinkt.",
     "v2.nextChoiceIn": "Nächste Weggabelung in etwa {n} Min.",
     "v2.discoveryIn": "Entdeckung in etwa {n} Min.",
     "v2.openAtlas": "Atlas öffnen",
@@ -206,7 +208,7 @@ IT.addLang('de', {
     'name.btn': "Losgehen",
     'name.save': "Speichern",
     'toast.named': "In der Liste der Reisenden heißt du jetzt <b>{name}</b>.",
-    'tr.lead': "Reisende der letzten 24 Stunden: Wer gerade unterwegs ist, steht oben, danach die anderen – jeweils sortiert nach der Strecke auf ihrer aktuellen Reise. Wer gerade unterwegs ist, reist auch im Bild neben dir; tippe jemanden an, um zu winken.",
+    'tr.lead': "Reisende der letzten 24 Stunden. Sieh, in welcher Welt sie gerade unterwegs sind, und winke ihnen zu. Reisenden in deiner Welt kannst du in der Szene begegnen.",
     'tr.online': "Gerade unterwegs",
     'tr.total': "Letzte 24 Stunden",
     'tr.you': "du",

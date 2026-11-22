@@ -7,6 +7,8 @@ IT.addLang('fr', {
   suffixes: ['M', 'Md', 'Bn', 'Bd', 'Tn', 'Td', 'Qn', 'Qd', 'Qt', 'Qtd'],
   units: { cm: 'cm', in: 'po', m: 'm', km: 'km', au: 'UA', ly: 'années-lumière', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'j', h: 'h', min: 'min', s: 's' },
   strings: {
+    'tr.waveTo': "Faire signe à {name}",
+    'tr.waveSent': "Tu as fait signe à <b>{name}</b>.",
     "v2.nextChoiceIn": "Prochain embranchement dans environ {n} min",
     "v2.discoveryIn": "Découverte dans environ {n} min",
     "v2.openAtlas": "Ouvrir l’Atlas",
@@ -199,7 +201,7 @@ IT.addLang('fr', {
     'name.btn': "En route",
     'name.save': "Enregistrer",
     'toast.named': "Tu apparais maintenant dans la liste des voyageurs sous le nom <b>{name}</b>.",
-    'tr.lead': "Les voyageurs sur la route ces dernières 24 heures : d'abord ceux qui sont sur la route en ce moment, puis les autres, chaque groupe classé selon la distance parcourue pendant ce voyage. Ceux qui sont sur la route en ce moment voyagent aussi à tes côtés dans la scène ; touche-en un pour lui faire signe.",
+    'tr.lead': "Les voyageurs des dernières 24 heures. Regarde dans quel monde se trouvent ceux qui sont en route et fais-leur signe. Tu peux croiser les voyageurs de ton monde dans la scène.",
     'tr.online': "Sur la route",
     'tr.total': "Dernières 24 h",
     'tr.you': "toi",
