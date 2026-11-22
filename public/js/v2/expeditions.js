@@ -42,28 +42,35 @@ function advance(state,elapsed,options={}){
  if(x.workDone>=x.workRequired-1e-8){x.workDone=x.workRequired;x.status=t.nodes[x.nodeIndex].choices?'awaitingChoice':'readyToClaim';}
  return result(s,[],spent);
 }
+function choiceReadiness(expedition,choice,worldId){
+ const stats=expedition.loadout.stats;
+ const prepared=stats[choice.ability]>=3&&expedition.resources.energy>=choice.energy;
+ if(worldId==='fracture')return {prepared,fast:stats.endurance>=3||stats.explore>=4};
+ if(worldId==='storm')return {prepared,fast:prepared&&stats.endurance>=3};
+ return {prepared,fast:prepared};
+}
 function choose(state,choiceId){
  const e=state.expedition;if(!e||e.status!=='awaitingChoice')throw Error('No choice pending');
  const t=V.TEMPLATE[e.templateId],node=t.nodes[e.nodeIndex],choice=node.choices.find(c=>c.id===choiceId);
  if(!choice)throw Error('Invalid choice');
- const s=copy(state),x=s.expedition,ability=x.loadout.stats[choice.ability],prepared=ability>=3&&x.resources.energy>=choice.energy;
+ const s=copy(state),x=s.expedition;
+ const {prepared,fast}=choiceReadiness(x,choice,t.worldId);
  x.choices.push(choice.id); x.resources.energy=Math.max(0,x.resources.energy-(prepared?choice.energy:0));
  if(choice.safe){x.resources.energy=Math.min(5,x.resources.energy+1);x.resources.cargo=Math.min(10,x.resources.cargo+1);}
  if(choice.reveal&&prepared)x.bonus=Math.min(2,x.bonus+1);
- x.workRate=choice.safe?0.9:prepared?1.25:0.75;
+ x.workRate=choice.safe?0.9:fast?1.25:0.75;
  // Each world changes the expedition's local rules; none changes permanent base income.
  if(t.worldId==='upper'&&choice.safe)x.resources.energy=Math.min(5,x.resources.energy+1);
  if(t.worldId==='planets'&&choice.safe)x.resources.cargo=Math.min(10,x.resources.cargo+2);
  if(t.worldId==='nebula'&&choice.reveal&&prepared)x.resources.scan=Math.min(2,x.resources.scan+1);
  if(t.worldId==='nebula'&&x.resources.scan)x.workRate=Math.min(1.4,x.workRate+.1*x.resources.scan);
  if(t.worldId==='deep'&&!choice.safe&&prepared)x.resources.energy=Math.max(0,x.resources.energy-1);
- if(t.worldId==='storm')x.workRate=choice.safe?0.85:prepared&&x.loadout.stats.endurance>=3?1.35:0.65;
+ if(t.worldId==='storm')x.workRate=choice.safe?0.85:fast?1.35:0.65;
  if(t.worldId==='rim'&&prepared)x.resources.signals=Math.min(2,x.resources.signals+1);
  if(t.worldId==='void'&&choice.safe)x.resources.energy=Math.min(5,x.resources.energy+1);
  if(t.worldId==='fracture'){
-  const stable=x.loadout.stats.endurance>=3||x.loadout.stats.explore>=4;
-  x.resources.stability=Math.min(2,x.resources.stability+(stable?1:0));
-  x.workRate=choice.safe?0.9:stable?1.4:0.6;
+  x.resources.stability=Math.min(2,x.resources.stability+(fast?1:0));
+  x.workRate=choice.safe?0.9:fast?1.4:0.6;
  }
  if(t.worldId==='frontier'&&prepared)x.resources.signals=Math.min(2,x.resources.signals+1);
  x.nodeIndex++;const next=t.nodes[x.nodeIndex];x.nodeId=next.id;x.workDone=0;x.workRequired=next.seconds;x.status='traveling';
@@ -111,5 +118,5 @@ function advanceAll(state,elapsed,options){
  }
  return result(s,[],tr.consumedSeconds);
 }
-Object.assign(V,{startFleet,fleetAction,advanceAll,sanitizeExpedition,startExpedition,advance,choose,claimExpedition,abandonExpedition});
+Object.assign(V,{startFleet,fleetAction,advanceAll,sanitizeExpedition,startExpedition,advance,choiceReadiness,choose,claimExpedition,abandonExpedition});
 })(typeof window!=='undefined'?window:globalThis);

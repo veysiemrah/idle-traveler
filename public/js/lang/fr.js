@@ -7,6 +7,9 @@ IT.addLang('fr', {
   suffixes: ['M', 'Md', 'Bn', 'Bd', 'Tn', 'Td', 'Qn', 'Qd', 'Qt', 'Qtd'],
   units: { cm: 'cm', in: 'po', m: 'm', km: 'km', au: 'UA', ly: 'années-lumière', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'j', h: 'h', min: 'min', s: 's' },
   strings: {
+    'v2.fractureFast': "Passage rapide : Résistance 3+ ou Exploration 4+.",
+    'v2.fractureBonus': "Bonus d’itinéraire : {ability} à 3 ou plus (tu as {skill}) et {required} d’énergie (tu as {energy}).",
+    'v2.stormFast': "Un passage rapide exige aussi une Résistance de 3 ou plus.",
     'tr.waveTo': "Faire signe à {name}",
     'tr.waveSent': "Tu as fait signe à <b>{name}</b>.",
     "v2.nextChoiceIn": "Prochain embranchement dans environ {n} min",

@@ -117,9 +117,14 @@
       try { mirror = observedMirrorRaw ? JSON.parse(observedMirrorRaw) : null; } catch (e) { /* Keep primary as the authority for a damaged mirror. */ }
       try { primary = raw ? JSON.parse(raw) : null; } catch (e) { /* Existing backup recovery below. */ }
       if (+primary?.v > 4 || +mirror?.v > 4) { saveLocked = true; return null; }
-      if (mirror?.v === 4 && (!primary || +primary.v < 4 || (mirror.v2?.saveRevision || 0) > (primary.v2?.saveRevision || 0))) {
-        if (raw && +primary?.v < 4) {
-          try { localStorage.setItem(SAVE_KEY + '-legacy-after-v2', raw); } catch (e) { saveLocked = true; }
+      const legacyPrimary = isObj(primary) && !(+primary.v >= 4);
+      if (mirror?.v === 4 && (!isObj(primary) || legacyPrimary || (mirror.v2?.saveRevision || 0) > (primary.v2?.saveRevision || 0))) {
+        if (legacyPrimary) {
+          try {
+            const archiveKey = SAVE_KEY + '-legacy-after-v2';
+            localStorage.setItem(archiveKey, raw);
+            if (localStorage.getItem(archiveKey) !== raw) saveLocked = true;
+          } catch (e) { saveLocked = true; }
         }
         return guardedSave(mirror, observedMirrorRaw);
       }
@@ -1171,8 +1176,14 @@
     const fresh = defaultState();
     if (keep) for (const k of keep) fresh[k] = S[k];
     // Yol arkadaşı Karabaş eve dönüşte de yolcuyla kalır
-    if (keep === KEEP) fresh.buffs.pal = S.buffs.pal || 0;
-    if (keep === KEEP) { fresh.v2 = V2.clone(S.v2); fresh.v2.expedition = null; fresh.v2.fleet = []; }
+    if (keep === KEEP) {
+      fresh.buffs.pal = S.buffs.pal || 0;
+      fresh.v2 = V2.clone(S.v2);
+      // New road routes start on Earth while earned Atlas access stays available.
+      fresh.v2.worldId = 'earth';
+      fresh.v2.expedition = null;
+      fresh.v2.fleet = [];
+    }
     S = fresh;
     scene.setBiome('meadow', true); scene.setVehicle('walk', true);
     combo = 0; rateEma = 0; creditEma = 0; baseEma = 0; scene.gift = null; scene.star = null; scene.seed = null; scene.chest = null; scene.keep = null; scene.cranes = null; scene.swarm = null; scene.dream = null; scene.tune = null; scene.plane = null; scene.fox = null; scene.constel = null; scene.kite = null; scene.dolphins = null; scene.bird = null;

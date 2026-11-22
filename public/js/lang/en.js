@@ -5,6 +5,9 @@ IT.addLang('en', {
   suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'],
   units: { cm: 'cm', in: 'in', m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    'v2.fractureFast': "Fast crossing: Endurance 3+ or Exploration 4+.",
+    'v2.fractureBonus': "Route bonus: {ability} 3+ (you have {skill}) and {required} energy (you have {energy}).",
+    'v2.stormFast': "A fast crossing also requires Endurance 3+.",
     'tr.waveTo': "Wave to {name}",
     'tr.waveSent': "You waved to <b>{name}</b>.",
     "v2.nextChoiceIn": "Next fork in about {n} min",

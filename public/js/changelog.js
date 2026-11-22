@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '2.0.3';
+  IT.VERSION = '2.0.4';
 
   IT.CHANGELOG = [
+    { v: '2.0.4', date: '2026-11-22', items: {
+      tr: ['Eve dönüş ve yeni yolculuk akışında küçük rötuşlar. Fırtına Kuşağı ve Kırık Uzay’da rota hazırlığına dair daha açık ipuçları.'],
+      en: ['Small refinements to returning home and starting a new journey. Clearer route preparation hints in the Storm Belt and Fractured Space.'],
+      de: ['Kleine Verbesserungen bei der Heimkehr und beim Start einer neuen Reise. Klarere Hinweise zur Vorbereitung im Sturmgürtel und im Gebrochenen Raum.'],
+      es: ['Pequeños ajustes al volver a casa y empezar un nuevo viaje. Indicaciones más claras para preparar rutas en el Cinturón de Tormentas y el Espacio Fracturado.'],
+      fr: ['Quelques retouches au retour à la maison et au départ d’un nouveau voyage. Des indications plus claires pour préparer tes itinéraires dans la Ceinture des Tempêtes et l’Espace Fracturé.'],
+    } },
     { v: '2.0.3', date: '2026-11-22', items: {
       tr: ['Aynı dünyadaki gezginlerle sahnede karşılaş. Yolcular panelinden farklı dünyalardakilerin nerede olduğunu gör ve onlara el salla.'],
       en: ['Meet travelers in your world in the scene. Check the Travelers panel to see where others are and wave across worlds.'],

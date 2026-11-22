@@ -6,6 +6,9 @@ IT.addLang('de', {
   suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.', 'Quadr.', 'Quadrd.', 'Quint.', 'Quintd.'],
   units: { cm: 'cm', in: 'Zoll', m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
   strings: {
+    'v2.fractureFast': "Schnelle Passage: Robustheit 3+ oder Erkundung 4+.",
+    'v2.fractureBonus': "Routenbonus: {ability} 3+ (du hast {skill}) und {required} Energie (du hast {energy}).",
+    'v2.stormFast': "Für eine schnelle Passage brauchst du außerdem Robustheit 3+.",
     'tr.waveTo': "{name} zuwinken",
     'tr.waveSent': "Du hast <b>{name}</b> zugewinkt.",
     "v2.nextChoiceIn": "Nächste Weggabelung in etwa {n} Min.",

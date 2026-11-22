@@ -4015,8 +4015,9 @@ const TEMPLATES=[
 const FAMILIES={
  walk:[4,1,3,1],skates:[3,1,2,3],board:[3,1,2,4],bike:[4,2,3,3],horse:[3,2,5,2],moto:[3,2,2,5],car:[2,4,3,3],van:[2,5,4,2],train:[2,5,5,2],balloon:[5,2,2,3],plane:[3,3,3,5],jet:[2,2,3,5],rocket:[3,3,4,5],sail:[5,3,2,4],comet:[4,1,3,5],warp:[3,3,4,5],whale:[4,4,5,3],startrain:[2,5,5,4],anka:[5,2,4,4],chrono:[5,2,3,4],portal:[4,2,4,5],cosmos:[5,4,3,4]
 };
-const VEHICLE_ROLES=Object.fromEntries(Object.entries(FAMILIES).map(([id,a])=>[id,Object.fromEntries(['explore','cargo','endurance','range'].map((k,i)=>[k,a[i]]))]));
-const WORLD=Object.fromEntries(WORLDS.map(w=>[w.id,w])), TEMPLATE=Object.fromEntries(TEMPLATES.map(t=>[t.id,t]));
+const byId=entries=>Object.assign(Object.create(null),Object.fromEntries(entries));
+const VEHICLE_ROLES=byId(Object.entries(FAMILIES).map(([id,a])=>[id,Object.fromEntries(['explore','cargo','endurance','range'].map((k,i)=>[k,a[i]]))]));
+const WORLD=byId(WORLDS.map(w=>[w.id,w])), TEMPLATE=byId(TEMPLATES.map(t=>[t.id,t]));
 const n=x=>typeof x==='number'&&Number.isFinite(x)&&x>0?x:0;
 function eligibility(save){
  const ids=['earth'], owned=save.owned||{}, all=IT.VEHICLES||[];

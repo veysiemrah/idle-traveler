@@ -445,7 +445,8 @@ npx wrangler dev   # http://localhost:8787
   yükseltmeler, güçlendirmeler ve bölgeler sıfırlanır. Rozetler, istatistikler ve ayarlar kalır. Yolculuğun uzunluğuna göre
   hatıra kazanırsın (100.000 km'de 10 hatıra; mesafe 8 katına çıkınca hatıralar 2 katına çıkar). Her hatıra sonraki yolculuklarda
   kalıcı olarak +%10 hız verir.
-- **Seyahat rotaları**: Her eve dönüş yeni bir rota açar. Rotalar aynı mesafe eşiklerini kullanır, yani tempo değişmez,
+- **Seyahat rotaları**: Eve dönüşten sonra yeni yolculuk Yeryüzü’nde seçilen rotada başlar. Atlas’ta açılmış dünyalara yeniden gidilebilir.
+  Her eve dönüş yeni bir rota açar. Rotalar aynı mesafe eşiklerini kullanır, yani tempo değişmez,
   ama bölgeleri farklı sırayla gezer ve her birinin bir ayrıcalığı vardır:
   - **Anadolu Yolu**: ilk yolculuğun rotası, bölgeler tanıdık sırayla.
   - **Kıyı Yolu** (1. eve dönüş): Ege kıyısı ve zeytinliklerle başlar; yağmur ve gökkuşağı iki kat sık.
@@ -675,7 +676,7 @@ Sahnede aynı dünyadaki çevrimiçi gezginlerle karşılaşılır. Kervan için
 
 Yolculuk ve filo kartları bir sonraki yol ayrımına veya keşfe kalan yaklaşık süreyi dakika olarak gösterir. Süre, seçilen rotanın hızına göre güncellenir; karar veya ödül beklerken geri sayım yerine durum gösterilir. Seferi bırakmak için dört saniye içinde ikinci kez dokunmak gerekir; onay yalnızca o sefere aittir.
 
-Eski kayıtlar v4'e geçirilmeden önce yedeklenir. Güncel v4 kurtarma kopyası eski istemcinin yazmasına karşı ayrı tutulur. En az 100.000 ışık yıllık arşiv uzaklığı olan kayıt, başlangıç görevlerini tekrar etmeden Galaksinin Eşiği girişine erişir.
+Eski kayıtlar v4'e geçirilmeden önce yedeklenir. Güncel v4 kurtarma kopyası ayrı tutulur. Ana kayıt eski istemci tarafından yeniden yazılmışsa, sürüm numarası olmasa da kurtarma öncesinde arşivlenir. Geçersiz bir dünya kimliği görülürse yolculuk Yeryüzü’nde açılır ve geçerli Atlas keşifleri korunur. En az 100.000 ışık yıllık arşiv uzaklığı olan kayıt, başlangıç görevlerini tekrar etmeden Galaksinin Eşiği girişine erişir.
 
 Tasarım: `docs/superpowers/specs/2026-11-18-idle-traveler-v2-design.md`.
 Uygulama planı: `docs/superpowers/plans/2026-11-18-idle-traveler-v2.md`.

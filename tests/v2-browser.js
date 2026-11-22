@@ -40,6 +40,50 @@ async function finishLeg(page,nextAction){
    await page.goto(`http://127.0.0.1:${server.address().port}/index.html`,{waitUntil:'domcontentloaded'});
    await page.waitForTimeout(250);return page;
   }
+  const unversioned=await open({...base,v:4});
+  await unversioned.evaluate(()=>{
+   const key='idle-traveler-save-v1';
+   const current=JSON.parse(localStorage.getItem(key));
+   localStorage.setItem(key+'-v4',JSON.stringify({...current,v:4,v2:{worldId:'cloud',unlockedWorlds:['earth','cloud'],saveRevision:0,research:9,onboardingSeen:true}}));
+   delete current.v;delete current.v2;current.credits=123456789;
+   localStorage.setItem(key,JSON.stringify(current));
+  });
+  await unversioned.reload();
+  await unversioned.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+  const recovery=await unversioned.evaluate(()=>{
+   const key='idle-traveler-save-v1';
+   return {archive:JSON.parse(localStorage.getItem(key+'-legacy-after-v2')),active:JSON.parse(localStorage.getItem(key))};
+  });
+  assert.equal(recovery.archive?.credits,123456789,'preserve an unversioned overwritten primary before restoring V4');
+  assert.equal(recovery.active.v2.research,9,'prefer a valid V4 recovery copy even at revision zero');
+  assert.match(await unversioned.locator('#hudRegion').innerText(),/Bulut Adaları/);
+  await unversioned.close();
+  const home=await open({...base,v:4,distance:4e9,lifeDist:0,v2:{worldId:'cloud',unlockedWorlds:['earth','cloud'],onboardingSeen:true,
+   claimedRewards:['earth-survey'],research:3,camp:{workshop:1}}});
+  assert.match(await home.locator('#hudRegion').innerText(),/Bulut Adaları/);
+  await home.locator('.tab[data-id="buffs"]').click();
+  const homeButton=home.locator('[data-act="home"]');
+  const earthReport=home.waitForRequest(request=>request.url().endsWith('/api/hello')&&request.postDataJSON()?.world==='earth');
+  await homeButton.click();await homeButton.click();
+  const coast=home.locator('#modalBody [data-act="route"][data-id="coast"]');
+  assert.equal(await coast.getAttribute('aria-pressed'),'true','the first homecoming selects the coast route');
+  const readHome=()=>home.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1')));
+  let homeSave=await readHome();
+  assert.equal(homeSave.v2.worldId,'earth','the new route must be visible even after a trip in a V2 world');
+  await earthReport;
+  assert.equal(homeSave.route,'coast');
+  assert.equal(homeSave.v2.camp.workshop,1);
+  assert.equal(homeSave.v2.research,3);
+  assert.ok(homeSave.v2.claimedRewards.includes('earth-survey')&&homeSave.v2.unlockedWorlds.includes('cloud'));
+  await home.locator('#modalBody [data-act="route"][data-id="anatolia"]').click();
+  await coast.click();
+  await home.locator('#modalBtn').click();
+  await home.reload();
+  await home.waitForFunction(()=>document.querySelector('#hudRegion').textContent===IT.regionAt(0).name);
+  homeSave=await readHome();
+  assert.equal(homeSave.v2.worldId,'earth');assert.equal(homeSave.route,'coast');
+  assert.ok(await home.locator('[data-v2="selectWorld"][data-key="cloud"]').isEnabled());
+  await home.close();
   const newcomer=await open({v:3,intro:false,lastSeen:Date.now()},{viewport:{width:320,height:640}});
   assert.match(await newcomer.locator('#modalBody h2').innerText(),/Idle Traveler 2/);
   assert.match(await newcomer.locator('#modalBody').innerText(),/39 sefer/);

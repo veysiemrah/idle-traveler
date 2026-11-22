@@ -44,6 +44,11 @@ assert.equal(V.equip(state,'hull','reinforced').state.equipment.hull,'reinforced
 assert.throws(()=>V.equip(state,'hull','scanner'));
 const dirty=V.sanitizeState({research:Infinity,camp:{workshop:999},worldId:'bogus',expedition:{templateId:'bogus'},claimedRewards:['fake']});
 assert.equal(dirty.research,0);assert.equal(dirty.worldId,'earth');assert.equal(dirty.camp.workshop,5);assert.equal(dirty.expedition,null);
+const invalidIds=V.sanitizeState({worldId:'constructor',unlockedWorlds:['cloud','constructor','toString'],claimedRewards:['earth-survey','constructor'],research:9});
+assert.equal(invalidIds.worldId,'earth','invalid saved world must fall back to Earth');
+assert.deepEqual(invalidIds.unlockedWorlds,['earth','cloud']);
+assert.deepEqual(invalidIds.claimedRewards,['earth-survey']);
+assert.equal(invalidIds.research,9);
 let frontier=V.createState();frontier.unlockedWorlds.push('frontier');
 assert.equal(V.availableTemplates(frontier,'frontier').length,3);
 assert.throws(()=>V.startExpedition(frontier,'frontier-ocean',{vehicleId:'walk'},1));

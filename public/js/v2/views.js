@@ -9,11 +9,19 @@ const button=(action,id,label,disabled=false,extra='')=>`<button type="button" c
 function choiceLabel(choice,expedition,worldId){
  const ability=IT.t('v2.'+choice.ability),skill=expedition.loadout.stats[choice.ability];
  const energy=expedition.resources.energy;
- const ready=skill>=3&&energy>=choice.energy;
+ const {fast}=V.choiceReadiness(expedition,choice,worldId);
  const hint=choice.safe
   ?t('safe',{n:worldId==='upper'||worldId==='void'?2:1})
-  :t(ready?'prepared':'slow');
- const requirement=choice.safe?'':`<small>${t('choiceRequirement',{ability,skill,energy,required:choice.energy})}</small>`;
+  :t(fast?'prepared':'slow');
+ let requirement='';
+ if(!choice.safe){
+  const needed={ability,skill,energy,required:choice.energy};
+  if(worldId==='fracture')requirement=`<small>${t('fractureFast')}</small><small>${t('fractureBonus',needed)}</small>`;
+  else {
+   requirement=`<small>${t('choiceRequirement',needed)}</small>`;
+   if(worldId==='storm'&&choice.ability!=='endurance')requirement+=`<small>${t('stormFast')}</small>`;
+  }
+ }
  return `<strong>${h(V.text(choice.text))}</strong><small>${hint}</small>${requirement}`;
 }
 function sceneView(state){const e=state.expedition;return {worldId:state.worldId,nodeId:e?.nodeId||'',travelProgress:e?e.workDone/e.workRequired:0,landmarks:state.completedNodes,weather:state.worldId==='storm'?'storm':'clear',scanReveal:Math.min(1,(e?.resources.scan||0)/2+state.completedNodes.filter(id=>id.startsWith('nebula')).length/6),transitionProgress:1,frontierOpen:state.claimedRewards.includes('frontier-dawn')};}

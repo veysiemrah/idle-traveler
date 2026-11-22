@@ -5,6 +5,9 @@ IT.addLang('es', {
   suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T', 'C', 'mil C', 'Qn', 'mil Qn'],
   units: { cm: 'cm', in: 'pulg.', m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    'v2.fractureFast': "Travesía rápida: Resistencia 3+ o Exploración 4+.",
+    'v2.fractureBonus': "Ventaja de ruta: {ability} 3+ (tienes {skill}) y {required} de energía (tienes {energy}).",
+    'v2.stormFast': "Una travesía rápida también requiere Resistencia 3+.",
     'tr.waveTo': "Saludar a {name}",
     'tr.waveSent': "Has saludado a <b>{name}</b>.",
     "v2.nextChoiceIn": "Próximo cruce en unos {n} min",

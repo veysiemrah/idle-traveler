@@ -7,6 +7,9 @@ IT.addLang('tr', {
   suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk', 'Sp', 'Ok', 'Nn', 'Ds'],
   units: { cm: 'cm', in: 'inç', m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
   strings: {
+    'v2.fractureFast': "Hızlı geçiş: Dayanıklılık 3+ veya Keşif 4+.",
+    'v2.fractureBonus': "Rota avantajı: {ability} 3+ (sende {skill}), enerji {required} (sende {energy}).",
+    'v2.stormFast': "Hızlı geçiş için Dayanıklılık 3+ da gerekli.",
     'tr.waveTo': "{name} adlı gezgine el salla",
     'tr.waveSent': "El salladın: <b>{name}</b>.",
     "v2.nextChoiceIn": "Yol ayrımına yaklaşık {n} dk",

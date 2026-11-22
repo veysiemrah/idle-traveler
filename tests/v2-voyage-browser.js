@@ -63,6 +63,34 @@ const pw=require('./lib/pw');
   await page.evaluate(()=>{s=IT.V2.advanceAll(s,1000).state;views.render(s,m);});
   assert.match(await eta.innerText(),/Keşif tamamlandı/);
   console.log('PASS v2 voyage timing');
+  const fractureRate=vehicleId=>page.evaluate(vehicleId=>{
+   const V=IT.V2, state=V.createState();
+   state.unlockedWorlds.push('fracture');
+   state.nextId=vehicleId==='car'?10:11;
+   s=V.advance(V.startExpedition(state,'fracture-clock',{vehicleId,role:'guide'}).state,1000).state;
+   views.render(s,{...m,entries:['earth','fracture']});
+   return V.choose(s,'fracture-clock-0-0').state.expedition.workRate;
+  },vehicleId);
+  const fork=page.locator('[data-v2="choose"][data-key="fracture-clock-0-0"]');
+  assert.equal(await fractureRate('car'),1.4,'a car qualifies for the fast route by endurance');
+  assert.match(await fork.innerText(),/Hazırlığın yeterli/);
+  assert.match(await fork.innerText(),/Dayanıklılık 3\+.*Keşif 4\+/);
+  assert.equal(await fractureRate('skates'),0.6,'exploration 3 and endurance 2 miss the fast-route thresholds');
+  assert.match(await fork.innerText(),/Hazırlığın eksik/);
+  console.log('PASS v2 fracture route readiness');
+  const stormRate=await page.evaluate(()=>{
+   const V=IT.V2, state=V.createState();
+   state.unlockedWorlds.push('storm');
+   s=V.advance(V.startExpedition(state,'storm-shelter',{vehicleId:'balloon',role:'guide'}).state,1000).state;
+   s=V.advance(V.choose(s,'storm-shelter-0-0').state,1000).state;
+   views.render(s,{...m,entries:['earth','storm']});
+   return V.choose(s,'storm-shelter-1-0').state.expedition.workRate;
+  });
+  assert.equal(stormRate,0.65);
+  const stormFork=await page.locator('[data-v2="choose"][data-key="storm-shelter-1-0"]').innerText();
+  assert.match(stormFork,/Hazırlığın eksik/);
+  assert.match(stormFork,/Dayanıklılık 3\+/);
+  console.log('PASS v2 storm route readiness');
   console.log('no errors');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
