@@ -28,6 +28,7 @@ npx --prefix tests wrangler dev                                    # http://loca
 `tests/` klasöründe oyunu gerçek bir tarayıcıda açıp tıklayan Playwright testleri ve ekonomi simülasyonları var.
 Kurulum ve kullanım için `tests/README.md` dosyasına bak. Kısaca: `tests/run-all.sh` tam regresyon setini,
 `tests/run-online.sh` çok oyunculu testleri çalıştırır; `node tests/keys.js` beş dil sözlüğünü karşılaştırır.
+Regresyon çalıştırıcısı alt betiklerin çıkış kodlarını ve tam loglarını saklar; saptanan hata veya süre aşımında başarısız çıkış kodu verir. Çalıştırıcının hata yakalama kontrolü: `node tests/runner-check.js` (ayrı çalıştırılır).
 
 ## Yayın: Cloudflare Workers → idle-traveler.vebaban.com
 
@@ -669,6 +670,8 @@ Idle Traveler 2.0.0, ilk açılışta Atlas’ı, kampı ve Galaksinin Eşiği�
 
 Atlas, her bölgenin kuralını, tamamlanan ilk keşifleri ve yeni bölgeleri açma koşullarını gösterir. Yolculuk’ta rota seçeneklerinin yetenek ve enerji gereksinimleri görülür ve seferin ödülü alınır. Galaksiler Ağı açıldığında Atlas’tan filo görevleri gönderilir. Filo kararları ve ödülleri Yolculuk’ta yönetilir.
 
+Yolculuk ve filo kartları bir sonraki yol ayrımına veya keşfe kalan yaklaşık süreyi dakika olarak gösterir. Süre, seçilen rotanın hızına göre güncellenir; karar veya ödül beklerken geri sayım yerine durum gösterilir. Seferi bırakmak için dört saniye içinde ikinci kez dokunmak gerekir; onay yalnızca o sefere aittir.
+
 Eski kayıtlar v4'e geçirilmeden önce yedeklenir. Güncel v4 kurtarma kopyası eski istemcinin yazmasına karşı ayrı tutulur. En az 100.000 ışık yıllık arşiv uzaklığı olan kayıt, başlangıç görevlerini tekrar etmeden Galaksinin Eşiği girişine erişir.
 
 Tasarım: `docs/superpowers/specs/2026-11-18-idle-traveler-v2-design.md`.
@@ -676,5 +679,6 @@ Uygulama planı: `docs/superpowers/plans/2026-11-18-idle-traveler-v2.md`.
 Test sonuçları ve kayıt anahtarları: `docs/v2/verification.md`.
 
 Yeni sıkı kontroller: `node tests/v2-run.js`, `node tests/v2-browser.js`, `node tests/keys.js`. Son tarayıcı ölçümü için yerel sunucu açıkken `node tests/v2-performance-browser.js`.
+Sefer süresi ve bırakma onayının tarayıcı regresyonu: `node tests/v2-voyage-browser.js`.
 
 Üretim yayını `main` dalındaki değişiklikleri kullanan Cloudflare Workers Builds üzerinden yapılır.

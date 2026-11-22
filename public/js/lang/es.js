@@ -5,6 +5,8 @@ IT.addLang('es', {
   suffixes: ['M', 'mil M', 'B', 'mil B', 'T', 'mil T', 'C', 'mil C', 'Qn', 'mil Qn'],
   units: { cm: 'cm', in: 'pulg.', m: 'm', km: 'km', au: 'UA', ly: 'años luz', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    "v2.nextChoiceIn": "Próximo cruce en unos {n} min",
+    "v2.discoveryIn": "Descubrimiento en unos {n} min",
     "v2.openAtlas": "Abrir el Atlas",
     "v2.openVoyage": "Ver expedición en Viaje",
     "v2.openFleet": "Ver la flota en Viaje",

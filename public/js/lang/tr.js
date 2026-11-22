@@ -7,6 +7,8 @@ IT.addLang('tr', {
   suffixes: ['Mn', 'Mr', 'Tn', 'Ka', 'Kn', 'Sk', 'Sp', 'Ok', 'Nn', 'Ds'],
   units: { cm: 'cm', in: 'inç', m: 'm', km: 'km', au: 'AB', ly: 'ışık yılı', kmh: 'km/sa', yd: 'yd', mi: 'mil', mph: 'mil/sa', d: 'g', h: 'sa', min: 'dk', s: 'sn' },
   strings: {
+    "v2.nextChoiceIn": "Yol ayrımına yaklaşık {n} dk",
+    "v2.discoveryIn": "Keşfe yaklaşık {n} dk",
     "v2.openAtlas": "Atlas’ı aç",
     "v2.openVoyage": "Seferi Yolculuk’ta aç",
     "v2.openFleet": "Filoyu Yolculuk’ta aç",

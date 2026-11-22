@@ -5,9 +5,16 @@
   'use strict';
   const IT = root.IT = root.IT || {};
 
-  IT.VERSION = '2.0.1';
+  IT.VERSION = '2.0.2';
 
   IT.CHANGELOG = [
+    { v: '2.0.2', date: '2026-11-21', items: {
+      tr: ['Seferlerinde ve keşif filonda bir sonraki yol ayrımına ya da keşfe kalan süreyi gör.', 'Yolculuk ekranında küçük rötuşlar.'],
+      en: ['See the time to the next fork or discovery on your expeditions and exploration fleet.', 'Small refinements to the Journey screen.'],
+      de: ['Sieh bei Expeditionen und Flottenmissionen die verbleibende Zeit bis zur nächsten Weggabelung oder Entdeckung.', 'Kleine Verbesserungen am Reisebildschirm.'],
+      es: ['Consulta el tiempo hasta el próximo cruce o descubrimiento en tus expediciones y misiones de flota.', 'Pequeños retoques en la pantalla de Viaje.'],
+      fr: ['Consulte le temps restant avant le prochain embranchement ou la prochaine découverte pour tes expéditions et ta flotte.', 'Quelques retouches à l’écran Voyage.'],
+    } },
     { v: '2.0.1', date: '2026-11-19', items: {
       tr: ['Atlas artık ilk keşiflerini, bölge kurallarını ve yeni bölgeleri nasıl açacağını gösteriyor.',
         'Yol ayrımlarında gereken yetenek ve enerjiyi gör. Kamp geliştirmeleri ve filo görevleri için oyun içi yönlendirmeleri izle.'],

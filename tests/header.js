@@ -7,6 +7,9 @@ const { chromium } = require('./lib/pw');
     p.on('console', m => { if (m.type() === 'error' && !/ERR_CERT|net::|501 \(Unsupported/.test(m.text())) errs.push(m.text()); });
     await p.addInitScript(() => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), credits: 3e4, clicks: 50, distance: 9000, regionIdx: 3, owned: { walk: 1, skates: 1, board: 1 }, active: 'board', seenVer: '1.7' })); } });
     await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(700);
+    // A returning V1 traveler acknowledges the V2 introduction first.
+    await p.locator('#modalBody h2').filter({ hasText: 'Idle Traveler 2' }).waitFor();
+    await p.click('#modalBtn');
     const tb = await p.$eval('.topbar', e => { const r = e.getBoundingClientRect(); return `${Math.round(r.width)}x${Math.round(r.height)} sw${e.scrollWidth}`; });
     console.log(`${locale} ${w} ${scheme} | topbar ${tb} | nokta: ${await p.isVisible('.ver-dot')} | sürüm: ${await p.textContent('#verNum')} | bildirim: ${(await p.textContent('#toasts')).replace(/\s+/g, ' ').trim().slice(0, 90)}`);
     await p.screenshot({ path: `${process.env.SP}/header_${w}_${scheme}.png` });

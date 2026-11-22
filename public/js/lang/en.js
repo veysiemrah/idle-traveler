@@ -5,6 +5,8 @@ IT.addLang('en', {
   suffixes: ['M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'],
   units: { cm: 'cm', in: 'in', m: 'm', km: 'km', au: 'AU', ly: 'light-years', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'd', h: 'h', min: 'min', s: 's' },
   strings: {
+    "v2.nextChoiceIn": "Next fork in about {n} min",
+    "v2.discoveryIn": "Discovery in about {n} min",
     "v2.openAtlas": "Open the Atlas",
     "v2.openVoyage": "Open expedition in Journey",
     "v2.openFleet": "Open fleet in Journey",

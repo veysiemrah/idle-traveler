@@ -1,5 +1,23 @@
 # V2 uygulama ve doğrulama kaydı
 
+## 2.0.2 — 21 Kasım 2026
+
+- Sefer ve filo kartlarında mevcut etap hızına göre sonraki yol ayrımına veya keşfe kalan yaklaşık dakika gösterilir. Karar ve ödül beklerken durum gösterilir.
+- Seferi bırakma onayı panel yeniden çizilirken korunur, dört saniyede sona erer ve başka bir sefere taşınmaz. Önce başarısız tarayıcı assertion'ıyla yeniden üretildi, ardından düzeltme doğrulandı.
+- `node tests/v2-run.js`: 8 paket geçti (234 denge rotası ve 39 sefer dahil).
+- `node tests/v2-voyage-browser.js`: bırakma onayı, süre güncellemesi, güvenli rota hızı, son etap ve bağımsız filo sayacı geçti.
+- `node tests/v2-browser.js`: kayıt/göç korumaları, kararlar, 12 dünya ve beş dilde 320 px açık/koyu sefer görünümü geçti. Türkçe mobil koyu, Fransızca mobil açık ve Türkçe masaüstü açık ekran görüntüleri görsel olarak incelendi; görüntüler `tests/out/v2-voyage-*.png` altında.
+- `node tests/keys.js`: 899 anahtar/dil, eksik/fazla/yer tutucu/etiket farkı sıfır. Değişen JavaScript dosyaları sözdizimi denetiminden geçti.
+- `bash tests/run-all.sh quick` tamamlandı. Eski `header`, `cycle`, `news` betikleri zaman aşımı bildirdi; `header` ve `news` tek başına otomatik yeniden denemede de zaman aşımına uğradı. Başlık ekran görüntüsünde V1 kaydının açtığı V2 karşılama penceresi arka plan kontrollerini engelliyor; eski ön yükleyici bu pencereyi atlamıyor. Bu koşu tümüyle başarılı kabul edilmez. Eski çalıştırıcı bazı başarısızlıklarda da sıfır çıkış kodu verdiğinden loglar kontrol edildi.
+- Yerel sürüm adayı hazırlandı; commit, push veya canlı yayın yapılmadı.
+
+### Devam kontrolü — 21 Kasım 2026
+
+- Eski `header`, `cycle`, `news` testleri V1 kaydından sonra açılan V2 karşılama penceresini onaylayarak gerçek kullanıcı akışını izliyor. `bash tests/run-all.sh only header,cycle,news`: üç betik ve beş dil anahtar kontrolü geçti, çıkış kodu 0. Önceki hızlı koşudaki bu üç başarısızlık giderildi; tüm hızlı set bu devam turunda yeniden çalıştırılmadı.
+- Shell çalıştırıcısı artık filtrelenmiş çıktının yerine alt sürecin çıkış kodunu saklıyor. Sessiz nonzero çıkış ve süre aşımı kaybolmuyor; tanınan çalışma zamanı hata logları da başarısız sayılıyor. İlk başarısız koşunun tam logu korunuyor; son başarısızlıklar ve yardımcı kontrollerin sonuçları genel çıkış koduna katılıyor.
+- `node tests/runner-check.js`: önce eski çalıştırıcıda sessiz başarısızlığa rağmen 0 sonucu yeniden üretildi. Düzeltmeden sonra sessiz nonzero, loglanan `ReferenceError` ve başarılı alt betik kontrolleri geçti. Kontrol geçici betiklerini sonunda temizliyor ve regresyon setinden ayrı çalıştırılıyor.
+- Bu devam turunda oyun kodu ve sürüm numarası değiştirilmedi; yerel aday 2.0.2 olarak kaldı.
+
 Yerel sürüm adayı: **2.0.0**. Canlı yayın/push yapılmadı.
 
 ## İçerik

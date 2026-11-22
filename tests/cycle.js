@@ -6,6 +6,8 @@ const { chromium } = require('./lib/pw');
   await p.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const S0 = window.IT.Scene; window.IT.Scene = function (...a) { const s = new S0(...a); window.__sc = s; return s; }; }); });
   await p.addInitScript(() => { if (!sessionStorage.getItem('s')) { sessionStorage.setItem('s', 1); localStorage.setItem('idle-traveler-save-v1', JSON.stringify({ intro: true, lastSeen: Date.now(), credits: 100, clicks: 50, seenVer: '1.10' })); } });
   await p.goto('http://localhost:8765/index.html'); await p.waitForTimeout(500);
+  await p.locator('#modalBody h2').filter({ hasText: 'Idle Traveler 2' }).waitFor();
+  await p.click('#modalBtn');
   // Seçenek
   await p.click('#btnSettings'); await p.waitForTimeout(200);
   console.log('gökyüzü seçenekleri:', (await p.$$eval('[data-act="sky"]', bs => bs.map(b => b.textContent))).join(' / '));

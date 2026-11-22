@@ -17,8 +17,14 @@ function choiceLabel(choice,expedition,worldId){
  return `<strong>${h(V.text(choice.text))}</strong><small>${hint}</small>${requirement}`;
 }
 function sceneView(state){const e=state.expedition;return {worldId:state.worldId,nodeId:e?.nodeId||'',travelProgress:e?e.workDone/e.workRequired:0,landmarks:state.completedNodes,weather:state.worldId==='storm'?'storm':'clear',scanReveal:Math.min(1,(e?.resources.scan||0)/2+state.completedNodes.filter(id=>id.startsWith('nebula')).length/6),transitionProgress:1,frontierOpen:state.claimedRewards.includes('frontier-dawn')};}
+function timing(e){
+ if(e.status!=='traveling')return IT.t('v2.'+e.status);
+ const n=Math.max(1,Math.ceil((e.workRequired-e.workDone)/e.workRate/60));
+ const node=V.TEMPLATE[e.templateId].nodes[e.nodeIndex];
+ return IT.t('v2.'+(node.choices?'nextChoiceIn':'discoveryIn'),{n});
+}
 function mount(rootEl,onAction){
- let signature='',state,model,vehicle='',role='guide',abandonUntil=0,inspectedWorld='';
+ let signature='',state,model,vehicle='',role='guide',abandonUntil=0,abandonId='',inspectedWorld='';
  const panes={voyage:rootEl.querySelector('#pane-voyage'),atlas:rootEl.querySelector('#pane-atlas'),camp:rootEl.querySelector('#pane-camp')};
  const listener=e=>{
   const b=e.target.closest('[data-v2]');if(!b||!rootEl.contains(b)||b.disabled)return;
@@ -30,8 +36,11 @@ function mount(rootEl,onAction){
    panes.atlas.querySelector('#v2AtlasTitle').focus({preventScroll:true});
    return;
   }
-  if(b.dataset.v2==='abandon'&&Date.now()>abandonUntil){abandonUntil=Date.now()+4000;b.textContent=IT.t('v2.confirmAbandon');return;}
-  if(b.dataset.v2==='abandon')abandonUntil=0;
+  if(b.dataset.v2==='abandon'){
+   if(!state.expedition)return;
+   if(abandonId!==state.expedition.id||Date.now()>=abandonUntil){abandonId=state.expedition.id;abandonUntil=Date.now()+4000;render(state,model);return;}
+   abandonUntil=0;abandonId='';
+  }
   onAction(b.dataset.v2,b.dataset.key,{vehicleId:vehicle||model.active,role,slot:b.dataset.slot});
  };
  const change=e=>{if(e.target.id==='v2Vehicle')vehicle=e.target.value;else if(e.target.id==='v2Role')role=e.target.value;else return;signature='';render(state,model);};
@@ -40,8 +49,9 @@ function mount(rootEl,onAction){
   state=s;model=m;
   if(inspectedWorld&&!m.entries.includes(inspectedWorld))inspectedWorld='';
   const e=s.expedition,percent=e?Math.floor(100*e.workDone/e.workRequired):0;
-  const mark=JSON.stringify([s.worldId,s.unlockedWorlds,s.claimedRewards,s.research,s.camp,s.equipment,s.clues,e&&[e.id,e.status,e.nodeIndex,e.resources],m.active,m.owned,m.entries,m.locked,IT.lang(),vehicle,role,inspectedWorld,s.fleet.map(f=>[f.id,f.status,f.nodeIndex])]);
-  if(mark===signature){ for (const f of s.fleet) { const p=rootEl.querySelector(`[data-fleet-progress="${f.slot}"]`); if(p)p.value=Math.floor(100*f.workDone/f.workRequired); } const bar=panes.voyage.querySelector('.v2-expedition progress');if(bar)bar.value=percent;const p=panes.voyage.querySelector('[data-progress]');if(p)p.textContent=percent+'%';return;}
+  const confirming=!!e&&abandonId===e.id&&Date.now()<abandonUntil;
+  const mark=JSON.stringify([s.worldId,s.unlockedWorlds,s.claimedRewards,s.research,s.camp,s.equipment,s.clues,e&&[e.id,e.status,e.nodeIndex,e.resources],m.active,m.owned,m.entries,m.locked,IT.lang(),vehicle,role,inspectedWorld,confirming,s.fleet.map(f=>[f.id,f.status,f.nodeIndex])]);
+  if(mark===signature){ for (const f of s.fleet) { const p=rootEl.querySelector(`[data-fleet-progress="${f.slot}"]`); if(p)p.value=Math.floor(100*f.workDone/f.workRequired); } const bar=panes.voyage.querySelector('.v2-expedition progress');if(bar)bar.value=percent;const p=panes.voyage.querySelector('[data-progress]');if(p)p.textContent=percent+'%';for(const x of [e,...s.fleet].filter(Boolean)){const el=panes.voyage.querySelector(`[data-v2-eta="${x.slot??'main'}"]`);if(el)el.textContent=timing(x);}return;}
   signature=mark;
   const focus=document.activeElement,focusKey=rootEl.contains(focus)?[focus.dataset.v2,focus.dataset.key,focus.id]:null;
   const world=V.WORLD[s.worldId],locked=m.locked;
@@ -51,16 +61,17 @@ function mount(rootEl,onAction){
   else {
    const template=V.TEMPLATE[e.templateId],node=template.nodes[e.nodeIndex];
    body=`<div class="v2-expedition"><p class="v2-status">${t(e.status)}</p><h3>${h(V.text(template.name))}</h3><div class="v2-progress-row"><span>${e.nodeIndex+1} / ${template.nodes.length}</span><strong data-progress>${percent}%</strong></div><progress max="100" value="${percent}" aria-label="${t('traveling')}"></progress><p class="v2-energy">${t('energy')}: ${e.resources.energy} / 5</p><p class="v2-mechanic">${t('mechanic.'+s.worldId)}</p><dl class="v2-stats">${Object.entries(e.resources).filter(([key])=>key!=='energy').map(([key,value])=>`<div><dt>${t(key)}</dt><dd>${value}</dd></div>`).join('')}</dl>`;
+   body+=`<p class="v2-timing" data-v2-eta="main">${h(timing(e))}</p>`;
    if(e.status==='awaitingChoice')body+=`<p>${t('choiceHelp')}</p><div class="v2-choices">`+node.choices.map(c=>button('choose',c.id,choiceLabel(c,e,template.worldId),locked)).join('')+'</div>';
    if(e.status==='readyToClaim')body+=`<p>${t('claimHelp')}</p>`+button('claim','',t('claim'),locked);
-   body+=button('abandon','',t('abandon'),locked,'data-quiet="true"')+'</div>';
+   body+=button('abandon','',t(confirming?'confirmAbandon':'abandon'),locked,'data-quiet="true"')+'</div>';
   }
   let fleet='';
   if(s.fleet.length)fleet=`<h3 id="v2FleetTitle" tabindex="-1">${t('fleet')}</h3>`+s.fleet.map(f=>{
    const mission=V.TEMPLATE[f.templateId];let controls='';
    if(f.status==='awaitingChoice')controls=mission.nodes[f.nodeIndex].choices.map(c=>button('fleetChoose',c.id,choiceLabel(c,f,mission.worldId),locked,`data-slot="${f.slot}"`)).join('');
    if(f.status==='readyToClaim')controls=button('fleetClaim','',t('claim'),locked,`data-slot="${f.slot}"`);
-   return `<article class="v2-mission"><h3>${t('ship')} ${f.slot+1} · ${h(V.text(mission.name))}</h3><p>${t(f.status)} · ${t(f.loadout.role)}</p><progress data-fleet-progress="${f.slot}" max="100" value="${Math.floor(100*f.workDone/f.workRequired)}" aria-label="${t('traveling')}"></progress><div class="v2-choices">${controls}</div></article>`;
+   return `<article class="v2-mission"><h3>${t('ship')} ${f.slot+1} · ${h(V.text(mission.name))}</h3><p>${t(f.status)} · ${t(f.loadout.role)}</p><progress data-fleet-progress="${f.slot}" max="100" value="${Math.floor(100*f.workDone/f.workRequired)}" aria-label="${t('traveling')}"></progress><p class="v2-timing" data-v2-eta="${f.slot}">${h(timing(f))}</p><div class="v2-choices">${controls}</div></article>`;
   }).join('');
   panes.voyage.innerHTML=cleanHTML(heading+(locked?`<p role="alert">${t('saveProtected')}</p>`:'')+body+fleet);
   const equippedVehicle=m.owned[vehicle]?vehicle:m.active;vehicle=equippedVehicle;

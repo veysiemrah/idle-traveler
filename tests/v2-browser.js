@@ -251,6 +251,18 @@ async function finishLeg(page,nextAction){
    const save=JSON.parse(localStorage.getItem('idle-traveler-save-v1'));save.v2=IT.V2.createState();save.v2=IT.V2.startExpedition(save.v2,'earth-survey',{vehicleId:'walk',role:'guide',creditRate:10},1).state;save.lastSeen=Date.now();return save;
   });
   const slow=await open(activeSeed);
+  for(const locale of ['tr-TR','en-US','de-DE','es-ES','fr-FR'])for(const colorScheme of ['light','dark']){
+   const view=await open(activeSeed,{locale,viewport:{width:320,height:740},colorScheme});
+   await view.locator('.tab[data-id="voyage"]').click();await view.waitForTimeout(350);
+   assert.ok((await view.locator('[data-v2-eta="main"]').innerText()).includes('5'));
+   assert.equal(await view.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'voyage overflow '+locale+' '+colorScheme);
+   await view.screenshot({path:path.join(process.env.SP,'v2-voyage-'+locale+'-'+colorScheme+'.png')});
+   if(locale==='tr-TR'){
+    await view.setViewportSize({width:1440,height:900});await view.waitForTimeout(350);
+    await view.screenshot({path:path.join(process.env.SP,'v2-voyage-desktop-'+colorScheme+'.png')});
+   }
+   await view.close();
+  }
   await slow.evaluate(()=>{window.requestAnimationFrame=cb=>setTimeout(()=>cb(performance.now()),500);});
   await slow.waitForTimeout(2400);await slow.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
   const beforeBack=await slow.evaluate(()=>JSON.parse(localStorage.getItem('idle-traveler-save-v1')).v2.expedition.workDone);

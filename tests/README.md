@@ -23,6 +23,7 @@ tests/run-all.sh only birds,kites   # yalnızca adı verilen betikler (geliştir
 JOBS=6 tests/run-all.sh             # aynı anda çalışan betik sayısı (varsayılan 4)
 tests/run-online.sh    # çok oyunculu testler; Worker'ı yerel D1 ile 8787 portunda kendisi başlatır
 node tests/keys.js     # beş dil sözlüğünü karşılaştırır: eksik/fazla anahtar, yer tutucu ve etiket farkları
+node tests/runner-check.js # ayrı çalıştır: shell çalıştırıcısının hata ve başarı çıkışlarını doğrular
 ```
 
 Betikler JOBS kadarı aynı anda çalışır; zamanlamaya ya da sayfa yenilemeye duyarlı olanlar (`off`, `cycle`, `cyctheme`, `guards`,
@@ -30,8 +31,8 @@ Betikler JOBS kadarı aynı anda çalışır; zamanlamaya ya da sayfa yenilemeye
 bölümler (kuş, turna, uçurtma, mektup, tilki, takımyıldız, yunus, yadigâr, karahindiba, hasat penceresi, Göç Yolu) oyunu
 `pw.speed(20)` ile `?testspeed=20` adresinden açar: olay zamanlayıcıları 20 kat hızlı işler (yalnızca localhost'ta, en çok 50;
 ekonomi ve etki süreleri etkilenmez; beklenen olay gelince test `__testSpeed(1)` ile hızı normale döndürebilir).
-Paralel koşuda zaman aşımına ya da yükleme hatasına düşen betik, sonda bir kez tek başına yeniden denenir (çıktıda
-"paralelde düştü, tek başına yeniden denendi" yazar); hiç çıktı vermeden süresi dolan betik de yeniden denenir; iki kez düşen gerçek hatadır.
+Başarısız betik sonda bir kez tek başına yeniden denenir (çıktıda "ilk koşu başarısız, tek başına yeniden denendi" yazar).
+Alt süreçlerin çıkış kodları `out/parts/<ad>.status`, tam çıktıları `out/parts/<ad>.log` dosyasında saklanır; yeniden denemeden önceki log `<ad>.first.log` olarak korunur. Çıktı vermeyen nonzero çıkışlar, süre aşımları ve tanınan çalışma zamanı hata mesajları koşuyu başarısız yapar; özet filtrelemesi sonucu gizlemez. Dil, fuzz, sunucusuz Yolcular ve anahtar kontrollerinin çıkışları da genel sonuca katılır. `runner-check.js` aynı rapor klasörünü kullandığından diğer test koşuları ile eşzamanlı çalıştırılmaz.
 
 Tek bir testi çalıştırmak için önce oyunu sun, sonra betiği çağır:
 

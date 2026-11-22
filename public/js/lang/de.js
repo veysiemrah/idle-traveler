@@ -6,6 +6,8 @@ IT.addLang('de', {
   suffixes: ['Mio.', 'Mrd.', 'Bio.', 'Brd.', 'Trio.', 'Trd.', 'Quadr.', 'Quadrd.', 'Quint.', 'Quintd.'],
   units: { cm: 'cm', in: 'Zoll', m: 'm', km: 'km', au: 'AE', ly: 'Lichtjahre', kmh: 'km/h', yd: 'yd', mi: 'mi', mph: 'mph', d: 'T', h: 'Std.', min: 'Min.', s: 's' },
   strings: {
+    "v2.nextChoiceIn": "Nächste Weggabelung in etwa {n} Min.",
+    "v2.discoveryIn": "Entdeckung in etwa {n} Min.",
     "v2.openAtlas": "Atlas öffnen",
     "v2.openVoyage": "Expedition unter Reise öffnen",
     "v2.openFleet": "Flotte unter Reise öffnen",
